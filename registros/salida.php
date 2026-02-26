@@ -8,7 +8,7 @@ include '../includes/sidebar.php';
 ?>
 <div class="main-content">
   <div class="topbar">
-    <div><h4><i class="bi bi-box-arrow-right me-2 text-primary"></i>Registrar Salida</h4><p>Checkout de huésped</p></div>
+    <div><h4><i class="bi bi-box-arrow-right me-2 text-primary"></i>Registrar Salida</h4><p>Registro de salida del huésped</p></div>
     <a href="index.php" class="btn-outline-custom"><i class="bi bi-arrow-left"></i> Volver</a>
   </div>
 
@@ -18,7 +18,7 @@ include '../includes/sidebar.php';
     <div class="form-card" v-if="!loading">
       <div class="mb-4 d-flex align-items-center gap-3">
         <div class="stat-icon red" style="width:44px;height:44px;font-size:18px"><i class="bi bi-box-arrow-right"></i></div>
-        <div><h5 class="mb-0 fw-bold">Checkout</h5><small class="text-muted">Seleccione el registro activo</small></div>
+        <div><h5 class="mb-0 fw-bold">Registro de salida</h5><small class="text-muted">Seleccione el registro activo</small></div>
       </div>
 
       <div v-if="error" class="alert-custom alert-error mb-3"><i class="bi bi-exclamation-triangle-fill"></i> {{ error }}</div>

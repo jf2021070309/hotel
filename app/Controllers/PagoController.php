@@ -21,10 +21,10 @@ class PagoController {
         $metodo      = $body['metodo'] ?? 'efectivo';
         $fecha       = $body['fecha']  ?? date('Y-m-d');
 
-        if ($registro_id <= 0)   json_response(false, null, 422, 'Seleccione un huésped activo');
-        if ($monto <= 0)         json_response(false, null, 422, 'El monto debe ser mayor a 0');
+        if ($registro_id <= 0)   { json_response(false, null, 422, 'Seleccione un huésped activo'); return; }
+        if ($monto <= 0)         { json_response(false, null, 422, 'El monto debe ser mayor a 0'); return; }
         if (!in_array($metodo, ['efectivo','tarjeta']))
-            json_response(false, null, 422, 'Método de pago inválido');
+            { json_response(false, null, 422, 'Método de pago inválido'); return; }
 
         $id = $this->model->create(compact('registro_id','monto','metodo','fecha'));
         json_response(true, ['id' => $id], 201, 'Pago registrado');

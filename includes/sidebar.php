@@ -9,8 +9,8 @@ $folder  = basename(dirname($_SERVER['PHP_SELF']));
 
 function isActive(string $page, string $folder_): string {
     global $current, $folder;
-    if ($folder_ !== '' && $folder === $folder_) return 'active';
-    if ($folder_ === '' && $current === $page) return 'active';
+    if ($folder_ !== '' && $folder === $folder_ && $current === $page) return 'active';
+    if ($folder_ === '' && $folder === 'hotel' && $current === $page) return 'active';
     return '';
 }
 

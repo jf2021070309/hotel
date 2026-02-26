@@ -64,7 +64,7 @@ include '../includes/sidebar.php';
 
         <div class="col-md-6">
           <label class="form-label">Fecha de Ingreso</label>
-          <input v-model="form.fecha_ingreso" type="date" class="form-control">
+          <input v-model="form.fecha_ingreso" type="datetime-local" class="form-control">
         </div>
         <div class="col-md-6">
           <label class="form-label">Precio por Noche (S/)</label>

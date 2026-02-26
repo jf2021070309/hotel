@@ -23,8 +23,10 @@ Vue.createApp({
     methods: {
         fmtFecha(d) {
             if (!d) return '—';
-            const [y, m, day] = d.split('-');
-            return `${day}/${m}/${y}`;
+            const [fecha, hora] = d.split('T').length > 1 ? d.split('T') : d.split(' ');
+            const [y, m, day] = fecha.split('-');
+            const time = hora ? hora.slice(0, 5) : '';
+            return time ? `${day}/${m}/${y} ${time}` : `${day}/${m}/${y}`;
         },
 
         async cargar() {

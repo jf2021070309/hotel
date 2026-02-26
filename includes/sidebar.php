@@ -86,7 +86,7 @@ $base = str_repeat('../', max(0, $currentDepth));
   </nav>
 
   <div class="sidebar-footer">
-    <a href="<?= $base ?>index.php">
+    <a href="<?= $base ?>logout.php">
       <i class="bi bi-box-arrow-left"></i> Cerrar Sesión
     </a>
   </div>

@@ -15,7 +15,7 @@ Vue.createApp({
                 habitacion_id: (typeof PRE_HAB !== 'undefined' && PRE_HAB) ? PRE_HAB : '',
                 cliente_id: (typeof PRE_CLIENTE !== 'undefined' && PRE_CLIENTE) ? PRE_CLIENTE : '',
                 nombre: '', dni: '', telefono: '',
-                fecha_ingreso: new Date().toISOString().slice(0, 10),
+                fecha_ingreso: new Date().toISOString().slice(0, 16),
                 precio: ''
             }
         };

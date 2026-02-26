@@ -11,7 +11,7 @@ Vue.createApp({
             registros: [],
             form: {
                 registro_id: (typeof PRE_REG_ID !== 'undefined' && PRE_REG_ID) ? PRE_REG_ID : '',
-                fecha_salida: new Date().toISOString().slice(0, 10)
+                fecha_salida: new Date().toISOString().slice(0, 16)
             }
         };
     },
@@ -37,8 +37,10 @@ Vue.createApp({
 
         fmtFecha(d) {
             if (!d) return '—';
-            const [y, m, day] = d.split('-');
-            return `${day}/${m}/${y}`;
+            const [fecha, hora] = d.split('T').length > 1 ? d.split('T') : d.split(' ');
+            const [y, m, day] = fecha.split('-');
+            const time = hora ? hora.slice(0, 5) : '';
+            return time ? `${day}/${m}/${y} ${time}` : `${day}/${m}/${y}`;
         },
 
         async cargar() {

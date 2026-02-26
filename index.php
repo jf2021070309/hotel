@@ -46,13 +46,13 @@ include 'includes/sidebar.php';
         <div class="col-6 col-md-4 col-xl-2">
           <div class="stat-card">
             <div class="stat-icon cyan"><i class="bi bi-cash-coin"></i></div>
-            <div class="stat-info"><label>Ingresos del Día</label><span style="font-size:16px">{{ fmt(stats.ingresos_dia) }}</span></div>
+            <div class="stat-info"><label>Ingresos del Día</label><span>{{ fmt(stats.ingresos_dia) }}</span></div>
           </div>
         </div>
         <div class="col-6 col-md-4 col-xl-2">
           <div class="stat-card">
             <div class="stat-icon amber"><i class="bi bi-graph-down-arrow"></i></div>
-            <div class="stat-info"><label>Gastos del Día</label><span style="font-size:16px">{{ fmt(stats.gastos_dia) }}</span></div>
+            <div class="stat-info"><label>Gastos del Día</label><span>{{ fmt(stats.gastos_dia) }}</span></div>
           </div>
         </div>
         <div class="col-6 col-md-4 col-xl-2">
@@ -60,7 +60,7 @@ include 'includes/sidebar.php';
             <div class="stat-icon" :class="stats.ganancia_dia >= 0 ? 'green' : 'red'"><i class="bi bi-graph-up-arrow"></i></div>
             <div class="stat-info">
               <label>Ganancia del Día</label>
-              <span style="font-size:16px" :style="{color: stats.ganancia_dia >= 0 ? 'var(--success)' : 'var(--danger)'}">{{ fmt(stats.ganancia_dia) }}</span>
+              <span :style="{color: stats.ganancia_dia >= 0 ? 'var(--success)' : 'var(--danger)'}">{{ fmt(stats.ganancia_dia) }}</span>
             </div>
           </div>
         </div>

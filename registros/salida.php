@@ -48,7 +48,7 @@ include '../includes/sidebar.php';
 
         <div class="col-md-6">
           <label class="form-label">Fecha de Salida</label>
-          <input v-model="form.fecha_salida" type="date" class="form-control" @change="calcularNoches">
+          <input v-model="form.fecha_salida" type="datetime-local" class="form-control" @change="calcularNoches">
         </div>
 
         <!-- Resumen de noches y total -->

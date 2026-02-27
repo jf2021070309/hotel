@@ -11,7 +11,11 @@ Vue.createApp({
             registros: [],
             form: {
                 registro_id: (typeof PRE_REG_ID !== 'undefined' && PRE_REG_ID) ? PRE_REG_ID : '',
-                fecha_salida: new Date().toISOString().slice(0, 16)
+                fecha_salida: (() => {
+                    const now = new Date();
+                    const pad = n => String(n).padStart(2, '0');
+                    return `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+                })()
             }
         };
     },

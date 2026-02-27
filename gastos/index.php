@@ -9,15 +9,18 @@ include '../includes/sidebar.php';
   <div class="topbar">
     <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list"></i></button>
     <div><h4><i class="bi bi-receipt-cutoff me-2 text-primary"></i>Gastos</h4><p>Control de gastos operativos</p></div>
-    <div class="d-flex gap-2 flex-wrap">
+    <div class="d-flex gap-2 align-items-center">
       <button class="btn-primary-custom" onclick="__appGastos?.mostrarForm !== undefined && (__appGastos.mostrarForm = true)" title="Nuevo Gasto">
-        <i class="bi bi-plus-circle-fill"></i> Nuevo Gasto
+        <i class="bi bi-plus-circle-fill"></i>
+        <span class="d-none d-sm-inline"> Nuevo Gasto</span>
       </button>
       <button class="btn-outline-custom" onclick="__appGastos?.exportarPDF()" title="Exportar PDF">
-        <i class="bi bi-file-earmark-pdf-fill text-danger"></i> PDF
+        <i class="bi bi-file-earmark-pdf-fill text-danger"></i>
+        <span class="d-none d-md-inline"> PDF</span>
       </button>
       <button class="btn-outline-custom" onclick="__appGastos?.exportarExcel()" title="Exportar Excel">
-        <i class="bi bi-file-earmark-excel-fill text-success"></i> Excel
+        <i class="bi bi-file-earmark-excel-fill text-success"></i>
+        <span class="d-none d-md-inline"> Excel</span>
       </button>
     </div>
   </div>

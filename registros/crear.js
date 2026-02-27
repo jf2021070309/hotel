@@ -31,6 +31,8 @@ Vue.createApp({
             this.habitaciones = h.data ?? [];
             this.clientes = c.data ?? [];
             this.loading = false;
+            // Si hay habitación pre-seleccionada (venimos del dashboard), auto-llenar precio
+            if (this.form.habitacion_id) this.autoFillPrecio();
         },
 
         autoFillPrecio() {

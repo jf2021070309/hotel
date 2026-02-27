@@ -1,13 +1,11 @@
 FROM dunglas/frankenphp:latest
 
 WORKDIR /app
-
 COPY . /app
 
-RUN install-php-extensions mysqli pdo_mysql
-
-# FrankenPHP usará el puerto que Railway asigna automáticamente
-ENV SERVER_NAME=":{$PORT}"
-ENV DOCUMENT_ROOT=/app
+RUN echo ':8080 {
+    root * /app
+    php_server
+}' > /etc/caddy/Caddyfile
 
 EXPOSE 8080

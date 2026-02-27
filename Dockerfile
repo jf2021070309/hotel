@@ -4,9 +4,9 @@ WORKDIR /app
 
 COPY . /app
 
-# Configuración correcta para Railway
-RUN printf ":80 {\nroot * /app\nencode gzip\nfile_server\nphp_server\n}\n" > /etc/caddy/Caddyfile
+RUN printf ":{$PORT} {\nroot * /app\nphp_server\n}\n" > /etc/caddy/Caddyfile
 
+ENV PORT=8080
 ENV CADDY_GLOBAL_OPTIONS="auto_https off"
 
-EXPOSE 80
+EXPOSE 8080

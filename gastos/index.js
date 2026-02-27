@@ -2,7 +2,7 @@
  * gastos/index.js
  * Vue 3 Options API
  */
-Vue.createApp({
+window.__appGastos = Vue.createApp({
     data() {
         return {
             loading: true,
@@ -80,6 +80,42 @@ Vue.createApp({
             await this.cargar();
             this.msg.text = 'Gasto eliminado.'; this.msg.ok = true;
             setTimeout(() => this.msg.text = '', 3000);
+        },
+
+        exportarPDF() {
+            const cols = [
+                { header: '#', key: 'num', align: 'center', width: 8 },
+                { header: 'Descripción', key: 'descripcion', align: 'left', width: 140 },
+                { header: 'Monto', key: 'monto', align: 'right', width: 32 },
+                { header: 'Fecha', key: 'fecha', align: 'center', width: 28 }
+            ];
+            const filas = this.gastosFiltrados.map((g, i) => ({
+                num: i + 1,
+                descripcion: g.descripcion,
+                monto: `S/ ${parseFloat(g.monto).toFixed(2)}`,
+                fecha: this.fmtFecha(g.fecha)
+            }));
+            const filtro = this.filtroFecha ? ` — Fecha: ${this.fmtFecha(this.filtroFecha)}` : '';
+            exportarPDF('Control de Gastos',
+                `Total: S/ ${parseFloat(this.totalGastos).toFixed(2)}${filtro}`,
+                cols, filas, `gastos_${new Date().toISOString().slice(0, 10)}`);
+        },
+
+        exportarExcel() {
+            const cols = [
+                { header: '#', key: 'num' },
+                { header: 'Descripción', key: 'descripcion' },
+                { header: 'Monto', key: 'monto' },
+                { header: 'Fecha', key: 'fecha' }
+            ];
+            const filas = this.gastosFiltrados.map((g, i) => ({
+                num: i + 1,
+                descripcion: g.descripcion,
+                monto: parseFloat(g.monto).toFixed(2),
+                fecha: this.fmtFecha(g.fecha)
+            }));
+            exportarExcel('Gastos', cols, filas,
+                `gastos_${new Date().toISOString().slice(0, 10)}`);
         }
     },
 

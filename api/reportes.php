@@ -21,6 +21,10 @@ if ($tipo === 'diario') {
     $year  = (int)($_GET['year']  ?? date('Y'));
     $month = (int)($_GET['month'] ?? date('n'));
     $ctrl->mensual($year, $month);
+} elseif ($tipo === 'graficos') {
+    $year  = (int)($_GET['year']  ?? date('Y'));
+    $month = (int)($_GET['month'] ?? date('n'));
+    $ctrl->graficos($year, $month);
 } else {
-    json_response(false, null, 400, 'Tipo de reporte inválido. Use: diario o mensual');
+    json_response(false, null, 400, 'Tipo de reporte inválido. Use: diario, mensual o graficos');
 }

@@ -9,12 +9,14 @@ include 'includes/sidebar.php';
 ?>
 <div class="main-content">
   <div class="topbar">
+    <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list"></i></button>
     <div>
       <h4><i class="bi bi-grid-1x2-fill me-2 text-primary"></i>Dashboard</h4>
       <p>Resumen general del hotel — <?= date('d/m/Y') ?></p>
     </div>
     <span class="badge bg-primary px-3 py-2" id="reloj"></span>
   </div>
+
   <div class="page-body">
     <div id="app-dashboard">
       <!-- Vue se monta aquí -->

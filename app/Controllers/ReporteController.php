@@ -197,4 +197,55 @@ class ReporteController {
             'habitaciones' => $habitaciones,
         ]);
     }
+
+    /** Datos para gráficos: ocupación actual + top habitaciones por ingresos */
+    public function graficos(int $year, int $month): void {
+        $inicio = sprintf('%04d-%02d-01', $year, $month);
+        $fin    = date('Y-m-t', strtotime($inicio));
+
+        // Estado actual de habitaciones
+        $row = $this->db->query("
+            SELECT COUNT(*) total,
+                   SUM(estado='libre')   libres,
+                   SUM(estado='ocupado') ocupadas
+            FROM habitaciones
+        ")->fetch_assoc();
+
+        // Top 6 habitaciones por ingresos en el mes
+        $stmt = $this->db->prepare("
+            SELECT CONCAT('Hab. ', h.numero) habitacion,
+                   IFNULL(SUM(p.monto), 0) total
+            FROM habitaciones h
+            LEFT JOIN registros r ON r.habitacion_id = h.id
+            LEFT JOIN pagos p ON p.registro_id = r.id
+                               AND p.fecha BETWEEN ? AND ?
+            GROUP BY h.id, h.numero
+            ORDER BY total DESC
+            LIMIT 6
+        ");
+        $stmt->bind_param('ss', $inicio, $fin);
+        $stmt->execute();
+        $top_hab = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+
+        // Check-ins por día del mes
+        $stmt = $this->db->prepare("
+            SELECT DATE(fecha_ingreso) dia, COUNT(*) total
+            FROM registros
+            WHERE fecha_ingreso BETWEEN ? AND ?
+            GROUP BY DATE(fecha_ingreso) ORDER BY dia
+        ");
+        $stmt->bind_param('ss', $inicio, $fin);
+        $stmt->execute();
+        $checkins_dia = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+
+        json_response(true, [
+            'hab_total'    => (int)$row['total'],
+            'hab_libres'   => (int)$row['libres'],
+            'hab_ocupadas' => (int)$row['ocupadas'],
+            'top_hab'      => $top_hab,
+            'checkins_dia' => $checkins_dia,
+        ]);
+    }
 }

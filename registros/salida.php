@@ -8,9 +8,11 @@ include '../includes/sidebar.php';
 ?>
 <div class="main-content">
   <div class="topbar">
+    <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list"></i></button>
     <div><h4><i class="bi bi-box-arrow-right me-2 text-primary"></i>Registrar Salida</h4><p>Registro de salida del huésped</p></div>
     <a href="index.php" class="btn-outline-custom"><i class="bi bi-arrow-left"></i> Volver</a>
   </div>
+
 
   <div class="page-body" id="app-salida">
     <div class="text-center py-5" v-if="loading"><div class="spinner-border text-primary"></div></div>

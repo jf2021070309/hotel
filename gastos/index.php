@@ -1,16 +1,25 @@
 <?php
 // gastos/index.php — Shell PHP para gastos
 require_once '../config/conexion.php';
-$base = '../'; $page_title = 'Gastos — Hotel Manager';
+$base = '../'; $page_title = 'Gastos — Hotel Manager'; $export_enabled = true;
 include '../includes/head.php';
 include '../includes/sidebar.php';
 ?>
 <div class="main-content" id="app-gastos">
   <div class="topbar">
+    <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list"></i></button>
     <div><h4><i class="bi bi-receipt-cutoff me-2 text-primary"></i>Gastos</h4><p>Control de gastos operativos</p></div>
-    <button class="btn-primary-custom" @click="mostrarForm = true" v-if="!loading">
-      <i class="bi bi-plus-circle-fill"></i> Nuevo Gasto
-    </button>
+    <div class="d-flex gap-2 flex-wrap">
+      <button class="btn-primary-custom" onclick="__appGastos?.mostrarForm !== undefined && (__appGastos.mostrarForm = true)" title="Nuevo Gasto">
+        <i class="bi bi-plus-circle-fill"></i> Nuevo Gasto
+      </button>
+      <button class="btn-outline-custom" onclick="__appGastos?.exportarPDF()" title="Exportar PDF">
+        <i class="bi bi-file-earmark-pdf-fill text-danger"></i> PDF
+      </button>
+      <button class="btn-outline-custom" onclick="__appGastos?.exportarExcel()" title="Exportar Excel">
+        <i class="bi bi-file-earmark-excel-fill text-success"></i> Excel
+      </button>
+    </div>
   </div>
 
   <div class="page-body">

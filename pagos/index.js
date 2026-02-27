@@ -2,7 +2,7 @@
  * pagos/index.js
  * Vue 3 Options API
  */
-Vue.createApp({
+window.__appPagos = Vue.createApp({
     data() {
         return {
             loading: true,
@@ -76,6 +76,49 @@ Vue.createApp({
             } finally {
                 this.form.guardando = false;
             }
+        },
+
+        exportarPDF() {
+            const cols = [
+                { header: '#', key: 'num', align: 'center', width: 8 },
+                { header: 'Habitación', key: 'hab', align: 'left', width: 30 },
+                { header: 'Cliente', key: 'cliente', align: 'left', width: 65 },
+                { header: 'Monto', key: 'monto', align: 'right', width: 32 },
+                { header: 'Método', key: 'metodo', align: 'center', width: 32 },
+                { header: 'Fecha', key: 'fecha', align: 'center', width: 28 }
+            ];
+            const filas = this.pagos.map((p, i) => ({
+                num: i + 1,
+                hab: `Hab. ${p.hab_num}`,
+                cliente: p.cliente,
+                monto: `S/ ${parseFloat(p.monto).toFixed(2)}`,
+                metodo: p.metodo,
+                fecha: this.fmtFecha(p.fecha)
+            }));
+            exportarPDF('Registro de Pagos',
+                `Total: S/ ${parseFloat(this.totalPagos).toFixed(2)} — ${filas.length} pagos`,
+                cols, filas, `pagos_${new Date().toISOString().slice(0, 10)}`);
+        },
+
+        exportarExcel() {
+            const cols = [
+                { header: '#', key: 'num' },
+                { header: 'Habitación', key: 'hab' },
+                { header: 'Cliente', key: 'cliente' },
+                { header: 'Monto', key: 'monto' },
+                { header: 'Método', key: 'metodo' },
+                { header: 'Fecha', key: 'fecha' }
+            ];
+            const filas = this.pagos.map((p, i) => ({
+                num: i + 1,
+                hab: `Hab. ${p.hab_num}`,
+                cliente: p.cliente,
+                monto: parseFloat(p.monto).toFixed(2),
+                metodo: p.metodo,
+                fecha: this.fmtFecha(p.fecha)
+            }));
+            exportarExcel('Pagos', cols, filas,
+                `pagos_${new Date().toISOString().slice(0, 10)}`);
         }
     },
 

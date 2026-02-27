@@ -1,14 +1,23 @@
 <?php
 // registros/index.php — Shell PHP para listado de registros
 require_once '../config/conexion.php';
-$base = '../'; $page_title = 'Registros — Hotel Manager';
+$base = '../'; $page_title = 'Registros — Hotel Manager'; $export_enabled = true;
 include '../includes/head.php';
 include '../includes/sidebar.php';
 ?>
 <div class="main-content">
   <div class="topbar">
+    <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list"></i></button>
     <div><h4><i class="bi bi-journal-text me-2 text-primary"></i>Registros</h4><p>Historial de ingresos y salidas</p></div>
-    <a href="crear.php" class="btn-primary-custom"><i class="bi bi-person-plus-fill"></i> Nuevo Ingreso</a>
+    <div class="d-flex gap-2 flex-wrap">
+      <a href="crear.php" class="btn-primary-custom"><i class="bi bi-person-plus-fill"></i> Nuevo Ingreso</a>
+      <button class="btn-outline-custom" onclick="__appReg?.exportarPDF()" title="Exportar PDF">
+        <i class="bi bi-file-earmark-pdf-fill text-danger"></i> PDF
+      </button>
+      <button class="btn-outline-custom" onclick="__appReg?.exportarExcel()" title="Exportar Excel">
+        <i class="bi bi-file-earmark-excel-fill text-success"></i> Excel
+      </button>
+    </div>
   </div>
 
   <div class="page-body" id="app-registros">

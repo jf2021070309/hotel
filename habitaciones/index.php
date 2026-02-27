@@ -8,6 +8,7 @@ include '../includes/sidebar.php';
 <div id="app-habitaciones" style="display:contents">
 <div class="main-content">
   <div class="topbar">
+    <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list"></i></button>
     <div>
       <h4><i class="bi bi-building me-2 text-primary"></i>Habitaciones</h4>
       <p>Gestión de habitaciones del hotel</p>
@@ -15,6 +16,7 @@ include '../includes/sidebar.php';
     <button class="btn-primary-custom" @click="abrirModal(null)">
       <i class="bi bi-plus-circle-fill"></i> Nueva Habitación
     </button>
+
   </div>
 
   <div class="page-body">

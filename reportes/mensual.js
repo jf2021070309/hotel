@@ -2,7 +2,7 @@
  * reportes/mensual.js
  * Vue 3 Options API
  */
-Vue.createApp({
+window.__appMensual = Vue.createApp({
     data() {
         return {
             loading: true,
@@ -45,6 +45,48 @@ Vue.createApp({
             if (this.month < 1) { this.month = 12; this.year--; }
             if (this.month > 12) { this.month = 1; this.year++; }
             this.cargar();
+        },
+
+        exportarPDF() {
+            if (!this.data) return;
+            const cols = [
+                { header: 'Fecha', key: 'fecha', align: 'left', width: 32 },
+                { header: 'Ingresos', key: 'ing', align: 'right', width: 45 },
+                { header: 'Gastos', key: 'gas', align: 'right', width: 45 },
+                { header: 'Balance', key: 'bal', align: 'right', width: 45 }
+            ];
+            const filas = this.diasConMovimiento.map(d => ({
+                fecha: this.fmtFecha(d.dia),
+                ing: `S/ ${d.ing.toFixed(2)}`,
+                gas: `S/ ${d.gas.toFixed(2)}`,
+                bal: `S/ ${(d.ing - d.gas).toFixed(2)}`
+            }));
+            const meses = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+                'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+            exportarPDF(
+                `Reporte Mensual — ${meses[this.month]} ${this.year}`,
+                `Ingresos: ${this.fmt(this.data.total_ingresos)} | Gastos: ${this.fmt(this.data.total_gastos)} | Ganancia: ${this.fmt(this.data.ganancia_mes)}`,
+                cols, filas, `mensual_${this.year}_${String(this.month).padStart(2, '0')}`);
+        },
+
+        exportarExcel() {
+            if (!this.data) return;
+            const cols = [
+                { header: 'Fecha', key: 'fecha', width: 32 },
+                { header: 'Ingresos', key: 'ing', width: 45 },
+                { header: 'Gastos', key: 'gas', width: 45 },
+                { header: 'Balance', key: 'bal', width: 45 }
+            ];
+            const filas = this.diasConMovimiento.map(d => ({
+                fecha: this.fmtFecha(d.dia),
+                ing: d.ing.toFixed(2),
+                gas: d.gas.toFixed(2),
+                bal: (d.ing - d.gas).toFixed(2)
+            }));
+            exportarExcel(
+                `${this.year}-${String(this.month).padStart(2, '0')}`,
+                cols, filas,
+                `mensual_${this.year}_${String(this.month).padStart(2, '0')}`);
         }
     },
 

@@ -5,7 +5,8 @@ COPY . /app
 
 RUN docker-php-ext-install mysqli pdo pdo_mysql
 
+RUN mv /app/Caddyfile /etc/caddy/Caddyfile
+
 ENV SERVER_NAME=":8080"
-ENV DOCUMENT_ROOT="/app"
 
 EXPOSE 8080

@@ -1,7 +1,7 @@
 <?php
 // habitaciones/index.php — Shell PHP, Vue monta tabla de habitaciones
 require_once '../config/conexion.php';
-$base = '../'; $page_title = 'Habitaciones — Hotel Manager';
+$base = '../'; $page_title = 'Habitaciones — Hotel Manager'; $export_enabled = true;
 include '../includes/head.php';
 include '../includes/sidebar.php';
 ?>
@@ -14,15 +14,15 @@ include '../includes/sidebar.php';
       <p>Gestión de habitaciones del hotel</p>
     </div>
     <div class="d-flex gap-2 align-items-center">
-      <button class="btn-primary-custom" onclick="__appHabs && (__appHabs.mostrarForm = true)" title="Nueva Habitación">
+      <button class="btn-primary-custom" @click="abrirModal(null)" title="Nueva Habitación">
         <i class="bi bi-plus-circle-fill"></i>
         <span class="d-none d-sm-inline"> Nueva Habitación</span>
       </button>
-      <button class="btn-outline-custom" onclick="__appHabs?.exportarPDF()" title="Exportar PDF">
+      <button class="btn-outline-custom" @click="exportarPDF" title="Exportar PDF">
         <i class="bi bi-file-earmark-pdf-fill text-danger"></i>
         <span class="d-none d-md-inline"> PDF</span>
       </button>
-      <button class="btn-outline-custom" onclick="__appHabs?.exportarExcel()" title="Exportar Excel">
+      <button class="btn-outline-custom" @click="exportarExcel" title="Exportar Excel">
         <i class="bi bi-file-earmark-excel-fill text-success"></i>
         <span class="d-none d-md-inline"> Excel</span>
       </button>

@@ -2,7 +2,7 @@
  * habitaciones/index.js
  * Vue 3 Options API
  */
-Vue.createApp({
+const __appHabs = Vue.createApp({
     data() {
         return {
             loading: true,
@@ -72,10 +72,44 @@ Vue.createApp({
             } finally {
                 this.modal.guardando = false;
             }
+        },
+
+        exportarPDF() {
+            const cols = [
+                { header: 'NÚMERO', key: 'numero', width: 20 },
+                { header: 'TIPO', key: 'tipo', width: 30 },
+                { header: 'PISO', key: 'piso', align: 'center', width: 15 },
+                { header: 'PRECIO BASE', key: 'precio_base', align: 'right', width: 25 },
+                { header: 'ESTADO', key: 'estado', align: 'center', width: 20 }
+            ];
+            const filas = this.habitaciones.map(h => ({
+                ...h,
+                precio_base: 'S/ ' + parseFloat(h.precio_base).toFixed(2),
+                estado: h.estado.toUpperCase()
+            }));
+            window.exportarPDF('Listado de Habitaciones', 'Total: ' + this.habitaciones.length + ' habitaciones', cols, filas, 'habitaciones_hotel');
+        },
+
+        exportarExcel() {
+            const cols = [
+                { header: 'NÚMERO', key: 'numero' },
+                { header: 'TIPO', key: 'tipo' },
+                { header: 'PISO', key: 'piso' },
+                { header: 'PRECIO BASE', key: 'precio_base' },
+                { header: 'ESTADO', key: 'estado' }
+            ];
+            const filas = this.habitaciones.map(h => ({
+                ...h,
+                precio_base: parseFloat(h.precio_base),
+                estado: h.estado.toUpperCase()
+            }));
+            window.exportarExcel('Habitaciones', cols, filas, 'habitaciones_hotel');
         }
     },
 
     mounted() {
         this.cargar();
     }
-}).mount('#app-habitaciones');
+});
+
+window.__appHabs = __appHabs.mount('#app-habitaciones');

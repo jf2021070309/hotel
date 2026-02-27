@@ -35,7 +35,7 @@ class ReporteController {
         // Habitaciones ocupadas ese día
         $stmt = $this->db->prepare("
             SELECT COUNT(*) FROM registros
-            WHERE fecha_ingreso <= ? AND (fecha_salida >= ? OR fecha_salida IS NULL)
+            WHERE DATE(fecha_ingreso) <= ? AND (DATE(fecha_salida) >= ? OR fecha_salida IS NULL)
               AND estado = 'activo'
         ");
         $stmt->bind_param('ss', $fecha, $fecha);
@@ -232,8 +232,8 @@ class ReporteController {
         $stmt = $this->db->prepare("
             SELECT DATE(fecha_ingreso) dia, COUNT(*) total
             FROM registros
-            WHERE fecha_ingreso BETWEEN ? AND ?
-            GROUP BY DATE(fecha_ingreso) ORDER BY dia
+            WHERE DATE(fecha_ingreso) BETWEEN ? AND ?
+            GROUP BY dia ORDER BY dia
         ");
         $stmt->bind_param('ss', $inicio, $fin);
         $stmt->execute();

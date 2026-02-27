@@ -35,18 +35,23 @@ if ($mysql_url) {
 }
 
 // ============================================================
+// CONFIGURACIÓN GLOBAL
+// ============================================================
+date_default_timezone_set('America/Lima');
+
+// ============================================================
 // CONEXIÓN
 // ============================================================
 
 $conn = new mysqli($host, $user, $pass, $db, (int)$port);
 
 if ($conn->connect_error) {
-
     die("Error de conexión MySQL: " . $conn->connect_error);
-
 }
 
 $conn->set_charset(DB_CHARSET);
+// Sincronizar zona horaria de MySQL con PHP
+$conn->query("SET time_zone = '-05:00'");
 // ============================================================
 // HELPERS
 // ============================================================

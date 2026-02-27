@@ -7,17 +7,20 @@ include '../includes/sidebar.php';
 ?>
 <div id="app-habitaciones" style="display:contents">
 <div class="main-content">
-  <div class="topbar">
-    <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list"></i></button>
-    <div>
-      <h4><i class="bi bi-building me-2 text-primary"></i>Habitaciones</h4>
-      <p>Gestión de habitaciones del hotel</p>
+    <div class="d-flex gap-2 align-items-center">
+      <button class="btn-primary-custom" onclick="__appHabs?.mostrarForm = true" title="Nueva Habitación">
+        <i class="bi bi-plus-circle-fill"></i>
+        <span class="d-none d-sm-inline"> Nueva Habitación</span>
+      </button>
+      <button class="btn-outline-custom" onclick="__appHabs?.exportarPDF()" title="Exportar PDF">
+        <i class="bi bi-file-earmark-pdf-fill text-danger"></i>
+        <span class="d-none d-md-inline"> PDF</span>
+      </button>
+      <button class="btn-outline-custom" onclick="__appHabs?.exportarExcel()" title="Exportar Excel">
+        <i class="bi bi-file-earmark-excel-fill text-success"></i>
+        <span class="d-none d-md-inline"> Excel</span>
+      </button>
     </div>
-    <button class="btn-primary-custom" @click="abrirModal(null)">
-      <i class="bi bi-plus-circle-fill"></i> Nueva Habitación
-    </button>
-
-  </div>
 
   <div class="page-body">
     <!-- Spinner -->

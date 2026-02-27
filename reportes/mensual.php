@@ -10,13 +10,18 @@ $meses = ['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','
   <div class="topbar">
     <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list"></i></button>
     <div><h4><i class="bi bi-calendar-month-fill me-2 text-primary"></i>Reporte Mensual</h4><p>Resumen por mes</p></div>
-    <div class="d-flex gap-2 flex-wrap">
-      <button onclick="window.print()" class="btn-outline-custom"><i class="bi bi-printer-fill"></i> Imprimir</button>
+    <div class="d-flex gap-2 align-items-center">
+      <button onclick="window.print()" class="btn-outline-custom" title="Imprimir">
+        <i class="bi bi-printer-fill"></i>
+        <span class="d-none d-sm-inline"> Imprimir</span>
+      </button>
       <button class="btn-outline-custom" onclick="__appMensual?.exportarPDF()" title="Exportar PDF">
-        <i class="bi bi-file-earmark-pdf-fill text-danger"></i> PDF
+        <i class="bi bi-file-earmark-pdf-fill text-danger"></i>
+        <span class="d-none d-md-inline"> PDF</span>
       </button>
       <button class="btn-outline-custom" onclick="__appMensual?.exportarExcel()" title="Exportar Excel">
-        <i class="bi bi-file-earmark-excel-fill text-success"></i> Excel
+        <i class="bi bi-file-earmark-excel-fill text-success"></i>
+        <span class="d-none d-md-inline"> Excel</span>
       </button>
     </div>
   </div>

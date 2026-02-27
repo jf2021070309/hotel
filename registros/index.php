@@ -9,13 +9,18 @@ include '../includes/sidebar.php';
   <div class="topbar">
     <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list"></i></button>
     <div><h4><i class="bi bi-journal-text me-2 text-primary"></i>Registros</h4><p>Historial de ingresos y salidas</p></div>
-    <div class="d-flex gap-2 flex-wrap">
-      <a href="crear.php" class="btn-primary-custom"><i class="bi bi-person-plus-fill"></i> Nuevo Ingreso</a>
-      <button class="btn-outline-custom" onclick="__appReg?.exportarPDF()" title="Exportar PDF">
-        <i class="bi bi-file-earmark-pdf-fill text-danger"></i> PDF
+    <div class="d-flex gap-2 align-items-center">
+      <a href="crear.php" class="btn-primary-custom" title="Registrar Ingreso">
+        <i class="bi bi-plus-circle-fill"></i>
+        <span class="d-none d-sm-inline"> Registrar Ingreso</span>
+      </a>
+      <button class="btn-outline-custom" onclick="__appRegs?.exportarPDF()" title="Exportar PDF">
+        <i class="bi bi-file-earmark-pdf-fill text-danger"></i>
+        <span class="d-none d-md-inline"> PDF</span>
       </button>
-      <button class="btn-outline-custom" onclick="__appReg?.exportarExcel()" title="Exportar Excel">
-        <i class="bi bi-file-earmark-excel-fill text-success"></i> Excel
+      <button class="btn-outline-custom" onclick="__appRegs?.exportarExcel()" title="Exportar Excel">
+        <i class="bi bi-file-earmark-excel-fill text-success"></i>
+        <span class="d-none d-md-inline"> Excel</span>
       </button>
     </div>
   </div>
@@ -58,10 +63,10 @@ include '../includes/sidebar.php';
               </span>
             </td>
             <td class="text-end d-flex gap-1 justify-content-end">
-              <a v-if="r.estado === 'activo'" :href="'salida.php?id=' + r.id" class="btn-danger-custom btn-sm">
+              <a v-if="r.estado === 'activo'" :href="'salida.php?id=' + r.id" class="btn-danger-custom btn-sm" title="Registrar Salida">
                 <i class="bi bi-box-arrow-right"></i>
               </a>
-              <a v-if="r.estado === 'activo'" :href="'../pagos/index.php?reg=' + r.id" class="btn-outline-custom btn-sm">
+              <a v-if="r.estado === 'activo'" :href="'../pagos/index.php?reg=' + r.id" class="btn-outline-custom btn-sm" title="Registrar Pago">
                 <i class="bi bi-cash-coin"></i>
               </a>
             </td>

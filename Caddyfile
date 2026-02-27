@@ -1,9 +1,0 @@
-{
-	auto_https off
-}
-
-:8080 {
-	root * /app
-	rewrite * /index.php
-	php_server
-}

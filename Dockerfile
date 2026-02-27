@@ -1,13 +1,11 @@
-FROM dunglas/frankenphp:latest
+FROM php:8.2-apache
 
-RUN rm -f /app/index.php
-
-WORKDIR /app
-COPY . /app
+WORKDIR /var/www/html
+COPY . /var/www/html
 
 RUN docker-php-ext-install mysqli pdo pdo_mysql
-RUN mv /app/Caddyfile /etc/caddy/Caddyfile
 
-ENV SERVER_NAME=":8080"
+ENV PORT=8080
+RUN sed -i 's/80/${PORT}/g' /etc/apache2/ports.conf /etc/apache2/sites-enabled/000-default.conf
 
 EXPOSE 8080

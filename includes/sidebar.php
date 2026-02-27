@@ -9,20 +9,23 @@ $folder  = basename(dirname($_SERVER['PHP_SELF']));
 
 function isActive(string $page, string $folder_): string {
     global $current, $folder;
+    // Módulos normales (registros, pagos, etc.)
     if ($folder_ !== '' && $folder === $folder_ && $current === $page) return 'active';
-    if ($folder_ === '' && $folder === 'hotel' && $current === $page) return 'active';
+    // Dashboard: en XAMPP $folder='hotel', en Railway $folder=''
+    if ($folder_ === '' && ($folder === 'hotel' || $folder === '' || $folder === 'app') && $current === $page) return 'active';
     return '';
 }
 
-// Ruta base hacia raíz
-$depth = ($folder === 'hotel' || dirname($_SERVER['PHP_SELF']) === '/hotel') ? '' : '../';
-// Detectar profundidad real
-$path = str_replace('\\', '/', $_SERVER['PHP_SELF']);
-$parts = explode('/', trim($path, '/'));
-// Buscar índice de 'hotel'
-$hotelIdx = array_search('hotel', $parts);
-$currentDepth = count($parts) - $hotelIdx - 2; // cuántos niveles debajo de /hotel/
-$base = str_repeat('../', max(0, $currentDepth));
+// Calcular $base: cuántos niveles subir para llegar a la raíz del proyecto
+// Funciona en XAMPP (/hotel/modulo/archivo.php) y Railway (/modulo/archivo.php)
+$_selfPath  = str_replace('\\', '/', $_SERVER['PHP_SELF']);
+$_dirParts  = array_filter(explode('/', dirname($_selfPath)), 'strlen');
+$_dirParts  = array_values($_dirParts);
+// Quitar 'hotel' si existe (instalación XAMPP en subdirectorio)
+if (!empty($_dirParts) && $_dirParts[0] === 'hotel') {
+    array_shift($_dirParts);
+}
+$base = str_repeat('../', count($_dirParts));
 ?>
 <!-- Sidebar overlay (mobile) -->
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>

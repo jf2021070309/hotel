@@ -9,8 +9,9 @@ include '../includes/sidebar.php';
   <div class="topbar">
     <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list"></i></button>
     <div><h4><i class="bi bi-people-fill me-2 text-primary"></i>Clientes</h4><p>Registro de huéspedes</p></div>
-    <a href="crear.php" class="btn-primary-custom">
-      <i class="bi bi-person-plus-fill"></i> Nuevo Cliente
+    <a href="crear.php" class="btn-primary-custom" title="Nuevo Cliente">
+      <i class="bi bi-person-plus-fill"></i>
+      <span class="d-none d-sm-inline"> Nuevo Cliente</span>
     </a>
 
   </div>

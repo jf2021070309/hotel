@@ -1,65 +1,52 @@
 <?php
 // ============================================================
 // config/conexion.php
-// Compatible con LOCAL (XAMPP) y RAILWAY
+// Compatible con Railway, XAMPP y cualquier hosting
 // ============================================================
 
 define('DB_CHARSET', 'utf8mb4');
 
 // ============================================================
-// CONFIGURACIÓN RAILWAY (PRODUCCIÓN)
-// Railway usa variables de entorno automáticamente
+// Detectar Railway mediante MYSQL_URL (método más fiable)
 // ============================================================
 
-$host = getenv('MYSQLHOST');
-$port = getenv('MYSQLPORT');
-$db   = getenv('MYSQLDATABASE');
-$user = getenv('MYSQLUSER');
-$pass = getenv('MYSQLPASSWORD');
+$mysql_url = getenv('MYSQL_URL');
 
-// Si Railway no está presente, usar localhost (fallback)
-if (!$host) {
+if ($mysql_url) {
 
-    // ========================================================
-    // CONFIGURACIÓN LOCAL (XAMPP)
-    // ========================================================
-    /*
+    // PRODUCCIÓN (Railway)
+    $parts = parse_url($mysql_url);
+
+    $host = $parts['host'];
+    $port = $parts['port'] ?? 3306;
+    $user = $parts['user'];
+    $pass = $parts['pass'];
+    $db   = ltrim($parts['path'], '/');
+
+} else {
+
+    // LOCAL (XAMPP)
     $host = 'localhost';
     $port = 3306;
-    $db   = 'hotel_db';
     $user = 'root';
     $pass = '';
-    */
+    $db   = 'hotel_db';
 
-    // Puedes activar local descomentando arriba
 }
 
 // ============================================================
 // CONEXIÓN
 // ============================================================
 
-$conn = new mysqli($host, $user, $pass, $db, $port);
+$conn = new mysqli($host, $user, $pass, $db, (int)$port);
 
 if ($conn->connect_error) {
 
-    if (isset($_SERVER['HTTP_ACCEPT']) && str_contains($_SERVER['HTTP_ACCEPT'], 'application/json')) {
+    die("Error de conexión MySQL: " . $conn->connect_error);
 
-        header('Content-Type: application/json');
-
-        echo json_encode([
-            'ok' => false,
-            'message' => 'Error de conexión a la base de datos',
-            'error' => $conn->connect_error
-        ]);
-
-        exit;
-    }
-
-    die('Error de conexión: ' . $conn->connect_error);
 }
 
 $conn->set_charset(DB_CHARSET);
-
 // ============================================================
 // HELPERS
 // ============================================================

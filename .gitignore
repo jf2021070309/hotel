@@ -1,0 +1,26 @@
+# Dependencias de Composer (si las hubiera)
+vendor/
+
+# Variables de entorno locales
+.env
+.env.local
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+
+# PHP temporales
+*.tmp
+*.cache
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+
+# Archivos de prueba
+test.php

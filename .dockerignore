@@ -1,0 +1,10 @@
+.git
+.gitignore
+test.php
+database_railway.sql
+*.md
+*.log
+.DS_Store
+Thumbs.db
+.vscode
+.idea

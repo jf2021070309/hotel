@@ -3,9 +3,6 @@ FROM dunglas/frankenphp:latest
 WORKDIR /app
 COPY . /app
 
-RUN echo ':8080 {
-    root * /app
-    php_server
-}' > /etc/caddy/Caddyfile
+RUN printf ":8080 {\nroot * /app\nphp_server\n}\n" > /etc/caddy/Caddyfile
 
 EXPOSE 8080

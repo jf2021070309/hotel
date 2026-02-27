@@ -1,10 +1,8 @@
 {
-	frankenphp
-	auto_https off
-	admin off
+    frankenphp
 }
 
 :{$PORT} {
-	root * /app
-	php_server
+    root * /app
+    php_server
 }

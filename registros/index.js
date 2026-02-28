@@ -2,7 +2,7 @@
  * registros/index.js
  * Vue 3 Options API
  */
-window.__appReg = Vue.createApp({
+window.__appRegs = Vue.createApp({
     data() {
         return {
             loading: true,

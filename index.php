@@ -6,6 +6,7 @@ require_once 'config/conexion.php';
 $base = ''; $page_title = 'Dashboard — Hotel Manager';
 include 'includes/head.php';
 include 'includes/sidebar.php';
+require_once 'rutas.php';
 ?>
 <div class="main-content">
   <div class="topbar">
@@ -95,7 +96,7 @@ include 'includes/sidebar.php';
             <div class="room-guest"><i class="bi bi-person-fill me-1"></i>{{ h.cliente }}</div>
             <div class="room-price mt-1">{{ fmt(h.precio_actual) }}/noche</div>
             <div class="room-action">
-              <a :href="'registros/salida.php?id=' + h.reg_id" class="btn-danger-custom w-100 justify-content-center">
+              <a :href="'<?= route('registros/salida.php') ?>?id=' + h.reg_id" class="btn-danger-custom w-100 justify-content-center">
                 <i class="bi bi-box-arrow-right"></i> Salida
               </a>
             </div>
@@ -103,7 +104,7 @@ include 'includes/sidebar.php';
           <template v-else>
             <div class="room-price">{{ fmt(h.precio_base) }}/noche</div>
             <div class="room-action">
-              <a :href="'registros/crear.php?hab=' + h.id" class="btn-primary-custom w-100 justify-content-center">
+              <a :href="'<?= route('registros/crear.php') ?>?hab=' + h.id" class="btn-primary-custom w-100 justify-content-center">
                 <i class="bi bi-person-plus"></i> Registrar Ingreso
               </a>
             </div>

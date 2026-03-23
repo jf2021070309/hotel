@@ -3,6 +3,7 @@
 // habitaciones/crear.php — Formulario para crear habitación
 // ============================================================
 require_once '../../../config/conexion.php';
+require_once '../../../auth/middleware.php';
 $base = '../../../'; $page_title = 'Nueva Habitación — Hotel Manager';
 include '../../../includes/head.php';
 include '../../../includes/sidebar.php';
@@ -55,6 +56,7 @@ include '../../../includes/sidebar.php';
 </div>
 <script src="crear.js"></script>
 </body></html>
+
 
 
 

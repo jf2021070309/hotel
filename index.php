@@ -3,6 +3,7 @@
 // index.php — Dashboard shell (Vue monta #app-dashboard)
 // ============================================================
 require_once 'config/conexion.php';
+require_once 'auth/middleware.php';
 $base = ''; $page_title = 'Dashboard — Hotel Manager';
 include 'includes/head.php';
 include 'includes/sidebar.php';
@@ -46,27 +47,7 @@ require_once 'rutas.php';
             <div class="stat-info"><label>Libres</label><span>{{ stats.libres }}</span></div>
           </div>
         </div>
-        <div class="col-6 col-md-4 col-xl-2">
-          <div class="stat-card">
-            <div class="stat-icon cyan"><i class="bi bi-cash-coin"></i></div>
-            <div class="stat-info"><label>Ingresos del Día</label><span>{{ fmt(stats.ingresos_dia) }}</span></div>
-          </div>
-        </div>
-        <div class="col-6 col-md-4 col-xl-2">
-          <div class="stat-card">
-            <div class="stat-icon amber"><i class="bi bi-graph-down-arrow"></i></div>
-            <div class="stat-info"><label>Gastos del Día</label><span>{{ fmt(stats.gastos_dia) }}</span></div>
-          </div>
-        </div>
-        <div class="col-6 col-md-4 col-xl-2">
-          <div class="stat-card">
-            <div class="stat-icon" :class="stats.ganancia_dia >= 0 ? 'green' : 'red'"><i class="bi bi-graph-up-arrow"></i></div>
-            <div class="stat-info">
-              <label>Ganancia del Día</label>
-              <span :style="{color: stats.ganancia_dia >= 0 ? 'var(--success)' : 'var(--danger)'}">{{ fmt(stats.ganancia_dia) }}</span>
-            </div>
-          </div>
-        </div>
+        <!-- Finanzas deshabilitadas -->
       </div>
 
       <!-- MAPA DE HABITACIONES -->
@@ -92,23 +73,9 @@ require_once 'rutas.php';
           <div class="room-badge" :class="h.estado">
             <span class="dot"></span>{{ h.estado === 'libre' ? 'Libre' : 'Ocupada' }}
           </div>
-          <template v-if="h.estado === 'ocupado'">
-            <div class="room-guest"><i class="bi bi-person-fill me-1"></i>{{ h.cliente }}</div>
-            <div class="room-price mt-1">{{ fmt(h.precio_actual) }}/noche</div>
-            <div class="room-action">
-              <a :href="'<?= route('registros/salida.php') ?>?id=' + h.reg_id" class="btn-danger-custom w-100 justify-content-center">
-                <i class="bi bi-box-arrow-right"></i> Salida
-              </a>
-            </div>
-          </template>
-          <template v-else>
-            <div class="room-price">{{ fmt(h.precio_base) }}/noche</div>
-            <div class="room-action">
-              <a :href="'<?= route('registros/crear.php') ?>?hab=' + h.id" class="btn-primary-custom w-100 justify-content-center">
-                <i class="bi bi-person-plus"></i> Registrar Ingreso
-              </a>
-            </div>
-          </template>
+          <div class="room-action">
+             <div class="text-center text-muted small py-2">Módulo en reestructuración</div>
+          </div>
         </div>
       </div>
     </div><!-- /#app-dashboard -->

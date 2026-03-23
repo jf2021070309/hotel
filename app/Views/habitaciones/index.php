@@ -1,6 +1,7 @@
 <?php
 // habitaciones/index.php — Shell PHP, Vue monta tabla de habitaciones
 require_once '../../../config/conexion.php';
+require_once '../../../auth/middleware.php';
 $base = '../../../'; $page_title = 'Habitaciones — Hotel Manager'; $export_enabled = true;
 include '../../../includes/head.php';
 include '../../../includes/sidebar.php';
@@ -124,6 +125,7 @@ include '../../../includes/sidebar.php';
 </style>
 <script src="index.js"></script>
 </body></html>
+
 
 
 

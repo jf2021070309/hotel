@@ -1,6 +1,7 @@
 <?php
 // reportes/cuadre_diario.php — Shell PHP para cuadre diario
 require_once '../../../config/conexion.php';
+require_once '../../../auth/middleware.php';
 $base = '../../../'; $page_title = 'Cuadre Diario — Hotel Manager'; $export_enabled = true;
 include '../../../includes/head.php';
 include '../../../includes/sidebar.php';
@@ -125,6 +126,7 @@ include '../../../includes/sidebar.php';
 <style>@media print { .sidebar, .topbar button, input, button { display:none!important; } .main-content {margin-left:0!important;} }</style>
 <script src="cuadre_diario.js"></script>
 </body></html>
+
 
 
 

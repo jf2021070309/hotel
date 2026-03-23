@@ -167,21 +167,15 @@ class ReporteController {
             FROM habitaciones
         ")->fetch_assoc();
 
-        // Ingresos del día
-        $r = $this->db->query("SELECT IFNULL(SUM(monto),0) FROM pagos WHERE fecha = CURDATE()");
-        $ingresos = (float)$r->fetch_row()[0];
+        // Ingresos del día (Deshabilitado temporalmente)
+        $ingresos = 0;
 
-        // Gastos del día
-        $r = $this->db->query("SELECT IFNULL(SUM(monto),0) FROM gastos WHERE fecha = CURDATE()");
-        $gastos = (float)$r->fetch_row()[0];
+        // Gastos del día (Deshabilitado temporalmente)
+        $gastos = 0;
 
-        // Habitaciones con huésped activo
-        $sql = "SELECT h.id, h.numero, h.tipo, h.piso, h.estado, h.precio_base,
-                       c.nombre cliente, r.precio precio_actual,
-                       r.id reg_id, r.fecha_ingreso
+        // Habitaciones (Listado básico)
+        $sql = "SELECT h.id, h.numero, h.tipo, h.piso, h.estado, h.precio_base
                 FROM habitaciones h
-                LEFT JOIN registros r ON r.habitacion_id = h.id AND r.estado = 'activo'
-                LEFT JOIN clientes  c ON c.id = r.cliente_id
                 ORDER BY h.piso, h.numero";
         $habitaciones = $this->db->query($sql)->fetch_all(MYSQLI_ASSOC);
 

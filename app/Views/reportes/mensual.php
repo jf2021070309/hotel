@@ -1,6 +1,7 @@
 <?php
 // reportes/mensual.php — Shell PHP para reporte mensual
 require_once '../../../config/conexion.php';
+require_once '../../../auth/middleware.php';
 $base = '../../../'; $page_title = 'Reporte Mensual — Hotel Manager'; $export_enabled = true;
 include '../../../includes/head.php';
 include '../../../includes/sidebar.php';
@@ -137,6 +138,7 @@ $meses = ['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','
 <style>@media print { .sidebar, .topbar button, select, button { display:none!important; } .main-content {margin-left:0!important;} }</style>
 <script src="mensual.js"></script>
 </body></html>
+
 
 
 

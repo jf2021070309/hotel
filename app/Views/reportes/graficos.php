@@ -1,4 +1,5 @@
 <?php
+require_once '../../../auth/middleware.php';
 // ============================================================
 // reportes/graficos.php — Dashboard de gráficos
 // ============================================================
@@ -8,7 +9,8 @@ $chartjs_enabled = true;
 require_once '../../includes/head.php';
 ?>
 <div class="wrapper">
-<?php require_once '../../includes/sidebar.php'; ?>
+<?php
+require_once '../../../auth/middleware.php'; require_once '../../includes/sidebar.php'; ?>
 
 <div class="main-content">
   <div class="topbar">
@@ -22,9 +24,11 @@ require_once '../../includes/head.php';
         <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
       </select>
       <select id="selAnio" class="form-select form-select-sm" style="width:90px" onchange="__appGraficos?.cambiarFecha()">
-        <?php for ($y = date('Y'); $y >= date('Y') - 3; $y--): ?>
+        <?php
+require_once '../../../auth/middleware.php'; for ($y = date('Y'); $y >= date('Y') - 3; $y--): ?>
           <option value="<?= $y ?>"><?= $y ?></option>
-        <?php endfor; ?>
+        <?php
+require_once '../../../auth/middleware.php'; endfor; ?>
       </select>
     </div>
   </div>
@@ -121,6 +125,7 @@ require_once '../../includes/head.php';
 <script src="graficos.js"></script>
 </body>
 </html>
+
 
 
 

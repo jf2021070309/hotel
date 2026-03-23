@@ -35,11 +35,16 @@ require_once $base . 'rutas.php';
 
 <aside class="sidebar" id="mainSidebar">
   <div class="sidebar-brand">
-    <div class="brand-icon"><i class="bi bi-building"></i></div>
-    <div class="brand-text">
-      <h6>Hotel Manager</h6>
-      <small>Sistema de Gestión</small>
+    <div class="d-flex align-items-center gap-3 overflow-hidden">
+      <div class="brand-icon"><i class="bi bi-building"></i></div>
+      <div class="brand-text">
+        <h6>Hotel Manager</h6>
+        <small>Sistema de Gestión</small>
+      </div>
     </div>
+    <button id="btnToggleSidebar" class="btn-toggle-sidebar" onclick="toggleSidebar()" title="Alternar menú">
+      <i class="bi bi-chevron-left"></i>
+    </button>
   </div>
 
   <nav class="sidebar-nav">
@@ -47,61 +52,35 @@ require_once $base . 'rutas.php';
 
     <div class="nav-item">
       <a href="<?= route('index.php', $base) ?>" class="<?= isActive('index.php','') ?>" onclick="closeSidebarOnMobile()">
-        <i class="bi bi-grid-1x2-fill"></i> Dashboard
+        <i class="bi bi-grid-1x2-fill"></i> <span>Dashboard</span>
       </a>
     </div>
     <div class="nav-item">
       <a href="<?= route('habitaciones/index.php', $base) ?>" class="<?= isActive('index.php','habitaciones') ?>" onclick="closeSidebarOnMobile()">
-        <i class="bi bi-building"></i> Habitaciones
+        <i class="bi bi-building"></i> <span>Habitaciones</span>
       </a>
     </div>
     <div class="nav-item">
       <a href="<?= route('clientes/index.php', $base) ?>" class="<?= isActive('index.php','clientes') ?>" onclick="closeSidebarOnMobile()">
-        <i class="bi bi-people-fill"></i> Clientes
-      </a>
-    </div>
-    <div class="nav-item">
-      <a href="<?= route('registros/crear.php', $base) ?>" class="<?= isActive('crear.php','registros') ?>" onclick="closeSidebarOnMobile()">
-        <i class="bi bi-person-plus-fill"></i> Registrar Ingreso
-      </a>
-    </div>
-    <div class="nav-item">
-      <a href="<?= route('registros/salida.php', $base) ?>" class="<?= isActive('salida.php','registros') ?>" onclick="closeSidebarOnMobile()">
-        <i class="bi bi-box-arrow-right"></i> Registrar Salida
-      </a>
-    </div>
-    <div class="nav-item">
-      <a href="<?= route('pagos/index.php', $base) ?>" class="<?= isActive('index.php','pagos') ?>" onclick="closeSidebarOnMobile()">
-        <i class="bi bi-credit-card-fill"></i> Pagos
-      </a>
-    </div>
-    <div class="nav-item">
-      <a href="<?= route('gastos/index.php', $base) ?>" class="<?= isActive('index.php','gastos') ?>" onclick="closeSidebarOnMobile()">
-        <i class="bi bi-receipt-cutoff"></i> Gastos
+        <i class="bi bi-people-fill"></i> <span>Clientes</span>
       </a>
     </div>
 
-    <div class="nav-label mt-2">Reportes</div>
+    <?php if (tienePermiso('admin')): ?>
+    <div class="nav-label mt-2">Configuración</div>
     <div class="nav-item">
-      <a href="<?= route('reportes/cuadre_diario.php', $base) ?>" class="<?= isActive('cuadre_diario.php','reportes') ?>" onclick="closeSidebarOnMobile()">
-        <i class="bi bi-bar-chart-line-fill"></i> Cuadre Diario
+      <a href="<?= route('admin/usuarios.php', $base) ?>" class="<?= isActive('usuarios.php','admin') ?>" onclick="closeSidebarOnMobile()">
+        <i class="bi bi-people-fill text-danger"></i> <span>Gestión Usuarios</span>
       </a>
     </div>
-    <div class="nav-item">
-      <a href="<?= route('reportes/mensual.php', $base) ?>" class="<?= isActive('mensual.php','reportes') ?>" onclick="closeSidebarOnMobile()">
-        <i class="bi bi-calendar-month-fill"></i> Reporte Mensual
-      </a>
-    </div>
-    <div class="nav-item">
-      <a href="<?= route('reportes/graficos.php', $base) ?>" class="<?= isActive('graficos.php','reportes') ?>" onclick="closeSidebarOnMobile()">
-        <i class="bi bi-graph-up"></i> Gráficos
-      </a>
-    </div>
+    <?php endif; ?>
+
+    <!-- Reportes removidos por ahora -->
   </nav>
 
   <div class="sidebar-footer">
     <a href="<?= route('logout.php', $base) ?>">
-      <i class="bi bi-box-arrow-left"></i> Cerrar Sesión
+      <i class="bi bi-box-arrow-left"></i> <span>Cerrar Sesión</span>
     </a>
   </div>
 </aside>
@@ -120,4 +99,36 @@ function closeSidebar() {
 function closeSidebarOnMobile() {
   if (window.innerWidth <= 768) closeSidebar();
 }
+
+// --- COLLAPSIBLE LOGIC ---
+function toggleSidebar() {
+  const sidebar = document.getElementById('mainSidebar');
+  const mainContent = document.querySelector('.main-content');
+  const btn = document.getElementById('btnToggleSidebar');
+
+  sidebar.classList.toggle('collapsed');
+  if (mainContent) mainContent.classList.toggle('sidebar-collapsed');
+
+  const isCollapsed = sidebar.classList.contains('collapsed');
+  localStorage.setItem('sidebar_collapsed', isCollapsed ? 'true' : 'false');
+  
+  const icon = btn.querySelector('i');
+  icon.className = isCollapsed ? 'bi bi-chevron-right' : 'bi bi-chevron-left';
+}
+
+// Restore state on load
+(function() {
+  const isCollapsed = localStorage.getItem('sidebar_collapsed') === 'true';
+  if (isCollapsed && window.innerWidth > 768) {
+    document.addEventListener('DOMContentLoaded', () => {
+      const sidebar = document.getElementById('mainSidebar');
+      const main = document.querySelector('.main-content');
+      const btn = document.getElementById('btnToggleSidebar');
+      
+      if (sidebar) sidebar.classList.add('collapsed');
+      if (main) main.classList.add('sidebar-collapsed');
+      if (btn) btn.querySelector('i').className = 'bi bi-chevron-right';
+    });
+  }
+})();
 </script>

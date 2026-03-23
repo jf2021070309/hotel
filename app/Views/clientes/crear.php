@@ -1,6 +1,7 @@
 <?php
 // clientes/crear.php — Formulario para registrar nuevo cliente
 require_once '../../../config/conexion.php';
+require_once '../../../auth/middleware.php';
 $base = '../../../'; $page_title = 'Nuevo Cliente — Hotel Manager';
 include '../../../includes/head.php';
 include '../../../includes/sidebar.php';
@@ -45,6 +46,7 @@ include '../../../includes/sidebar.php';
 </div>
 <script src="crear.js"></script>
 </body></html>
+
 
 
 

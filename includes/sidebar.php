@@ -66,11 +66,16 @@ require_once $base . 'rutas.php';
       </a>
     </div>
 
-    <?php if (tienePermiso('admin')): ?>
+    <?php if (tienePermiso('cajera')): ?>
     <div class="nav-label mt-2">Configuración</div>
     <div class="nav-item">
       <a href="<?= route('admin/usuarios.php', $base) ?>" class="<?= isActive('usuarios.php','admin') ?>" onclick="closeSidebarOnMobile()">
         <i class="bi bi-people-fill text-danger"></i> <span>Gestión Usuarios</span>
+      </a>
+    </div>
+    <div class="nav-item">
+      <a href="<?= route('admin/auditoria.php', $base) ?>" class="<?= isActive('auditoria.php','admin') ?>" onclick="closeSidebarOnMobile()">
+        <i class="bi bi-journal-text text-warning"></i> <span>Auditoría</span>
       </a>
     </div>
     <?php endif; ?>
@@ -78,11 +83,31 @@ require_once $base . 'rutas.php';
     <!-- Reportes removidos por ahora -->
   </nav>
 
-  <div class="sidebar-footer">
-    <a href="<?= route('logout.php', $base) ?>">
-      <i class="bi bi-box-arrow-left"></i> <span>Cerrar Sesión</span>
-    </a>
+  <div class="sidebar-user px-3 py-3 border-top border-secondary border-opacity-10">
+    <div class="d-flex align-items-center justify-content-between">
+      <div class="d-flex align-items-center gap-2 overflow-hidden">
+        <div id="sidebarAvatarLetter" class="user-avatar bg-dark text-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" 
+             style="width:34px; height:34px; font-weight:700; font-size:13px; border: 1px solid rgba(255,255,255,0.1);">
+          <?= strtoupper(substr($_SESSION['auth_nombre'] ?? 'U', 0, 1)) ?>
+        </div>
+        <div class="user-details overflow-hidden">
+          <div id="sidebarUserName" class="text-white fw-bold text-truncate" style="font-size:13px; line-height:1.1;">
+            <?= htmlspecialchars($_SESSION['auth_nombre'] ?? 'Usuario') ?>
+          </div>
+          <div id="sidebarUserLogin" class="text-secondary text-truncate" style="font-size:11px; line-height:1.1; opacity:0.7;">
+            <?= htmlspecialchars($_SESSION['auth_usuario'] ?? 'user') ?>
+          </div>
+          <div id="sidebarUserRole" class="text-secondary fw-bold text-truncate" style="font-size:11px; line-height:1.1; margin-top: 2px;">
+            <?= ucwords($_SESSION['auth_rol'] ?? 'Invitado') ?>
+          </div>
+        </div>
+      </div>
+      <a href="<?= route('logout.php', $base) ?>" class="text-secondary btn-logout-inline p-1" title="Cerrar Sesión">
+        <i class="bi bi-box-arrow-right" style="font-size: 18px;"></i>
+      </a>
+    </div>
   </div>
+
 </aside>
 
 <script>

@@ -66,6 +66,8 @@ function obtenerUsuarioActual(): array {
  * Orden de jerarquía: admin > supervisor > cajera > limpieza
  */
 function tienePermiso(string $rol_minimo): bool {
+    // Escala para el futuro: Aquí se podrán definir permisos granulares.
+    // Por ahora, todos tienen acceso a sus niveles según la jerarquía.
     $roles = ['limpieza', 'cajera', 'supervisor', 'admin'];
     $user_rol = $_SESSION['auth_rol'] ?? 'limpieza';
     

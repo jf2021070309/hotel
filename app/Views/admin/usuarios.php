@@ -4,26 +4,26 @@
  */
 $base = '../../../';
 require_once $base . 'auth/middleware.php';
-protegerPorRol('admin');
+protegerPorRol('cajera');
 
 $page_title = 'Gestión de Usuarios — Hotel Manager';
 include $base . 'includes/head.php';
 include $base . 'includes/sidebar.php';
 ?>
 
-<div class="main-content">
+<div class="main-content" id="app-usuarios">
   <div class="topbar">
     <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list"></i></button>
     <div>
       <h4><i class="bi bi-people-fill me-2 text-primary"></i>Gestión de Usuarios</h4>
       <p>Administración de personal y permisos</p>
     </div>
-    <button class="btn btn-primary d-flex align-items-center gap-2" @click="abrirModalCrear">
+    <button class="btn btn-primary d-flex align-items-center gap-2" @click="nuevaUsuario">
       <i class="bi bi-person-plus-fill"></i> Nuevo Usuario
     </button>
   </div>
 
-  <div class="page-body" id="app-usuarios">
+  <div class="page-body">
     <!-- Alertas via SweetAlert2 (eliminamos div feedback) -->
 
     <!-- LISTA DE USUARIOS -->
@@ -157,145 +157,17 @@ include $base . 'includes/sidebar.php';
   </div>
 </div>
 
+<script>
+  window.authUser = <?= json_encode(['id' => $_SESSION['auth_id'], 'nombre' => $_SESSION['auth_nombre'], 'usuario' => $_SESSION['auth_usuario']]) ?>;
+</script>
 <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="usuarios.js?v=<?= time() ?>"></script>
 
-<script>
-  const { createApp, ref, reactive, onMounted } = Vue;
 
-  createApp({
-    setup() {
-      const usuarios = ref([]);
-      const loading  = ref(false);
-      const editMode = ref(false);
-      const newPassword = ref('');
-      const current  = reactive({ id: null, nombre: '', usuario: '', rol: 'cajera', estado: 1, password: '' });
-      const authUser = <?= json_encode(obtenerUsuarioActual()) ?>;
 
-      let modalBS = null;
-      let modalPassBS = null;
-
-      const fetchUsuarios = async () => {
-        try {
-          const res = await axios.get('../../../api/usuarios/listar.php');
-          usuarios.value = res.data.data;
-        } catch (err) {
-          showToast('Error al cargar usuarios', 'error');
-        }
-      };
-
-      const abrirModalCrear = () => {
-        editMode.value = false;
-        Object.assign(current, { id: null, nombre: '', usuario: '', rol: 'cajera', estado: 1, password: '' });
-        modalBS.show();
-      };
-
-      const abrirModalEditar = (u) => {
-        editMode.value = true;
-        Object.assign(current, { ...u });
-        modalBS.show();
-      };
-
-      const abrirModalPass = (u) => {
-        Object.assign(current, { ...u });
-        newPassword.value = '';
-        modalPassBS.show();
-      };
-
-      const guardarUsuario = async () => {
-        loading.value = true;
-        try {
-          const url = editMode.value ? '../../../api/usuarios/editar.php' : '../../../api/usuarios/crear.php';
-          const res = await axios.post(url, current);
-          if (res.data.ok) {
-            showToast(res.data.msg, 'success');
-            modalBS.hide();
-            fetchUsuarios();
-          }
-        } catch (err) {
-          showToast(err.response?.data?.msg || 'Error al guardar', 'error');
-        } finally {
-          loading.value = false;
-        }
-      };
-
-      const cambiarPass = async () => {
-        loading.value = true;
-        try {
-          const res = await axios.post('../../../api/usuarios/cambiar_pass.php', { id: current.id, password: newPassword.value });
-          if (res.data.ok) {
-            showToast('Contraseña actualizada', 'success');
-            modalPassBS.hide();
-          }
-        } catch (err) {
-          showToast('Error al cambiar contraseña', 'error');
-        } finally {
-          loading.value = false;
-        }
-      };
-
-      const toggleEstado = async (u) => {
-        if (u.id === authUser.id) return showToast('No puedes desactivar tu propio usuario', 'warning');
-        
-        const resSwal = await Swal.fire({
-          title: '¿Estás seguro?',
-          text: `Vas a ${u.estado == 1 ? 'desactivar' : 'activar'} a ${u.nombre}`,
-          icon: 'question',
-          showCancelButton: true,
-          confirmButtonText: 'Sí, continuar',
-          cancelButtonText: 'Cancelar'
-        });
-
-        if (!resSwal.isConfirmed) return;
-        
-        try {
-          const nuevoEstado = u.estado == 1 ? 0 : 1;
-          await axios.post('../../../api/usuarios/editar.php', { ...u, estado: nuevoEstado });
-          showToast('Estado actualizado', 'success');
-          fetchUsuarios();
-        } catch (err) {
-          showToast(err.response?.data?.msg || 'Error al cambiar estado', 'error');
-        }
-      };
-
-      const getRolClass = (rol) => {
-        switch(rol) {
-          case 'admin': return 'bg-danger text-white';
-          case 'supervisor': return 'bg-warning text-dark';
-          case 'cajera': return 'bg-primary text-white';
-          case 'limpieza': return 'bg-success text-white';
-          default: return 'bg-secondary';
-        }
-      };
-
-      const showToast = (msg, tipo = 'success') => {
-        Swal.fire({
-          toast: true,
-          position: 'top-end',
-          showConfirmButton: false,
-          timer: 3000,
-          timerProgressBar: true,
-          icon: tipo,
-          title: msg
-        });
-      };
-
-      const fmtFecha = (fecha) => new Date(fecha).toLocaleDateString('es-PE', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
-
-      onMounted(() => {
-        fetchUsuarios();
-        modalBS = new bootstrap.Modal(document.getElementById('modalUsuario'));
-        modalPassBS = new bootstrap.Modal(document.getElementById('modalPass'));
-      });
-
-      return { usuarios, current, loading, editMode, newPassword, authUser, 
-               abrirModalCrear, abrirModalEditar, abrirModalPass, guardarUsuario, 
-               cambiarPass, toggleEstado, getRolClass, fmtFecha, fetchUsuarios };
-    }
-  }).mount('#app-usuarios');
-</script>
 
 <style>
   .btn-white { background: white; }

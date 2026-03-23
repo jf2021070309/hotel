@@ -98,8 +98,32 @@ body {
 .sidebar.collapsed .brand-text,
 .sidebar.collapsed .nav-label,
 .sidebar.collapsed .nav-item a span,
-.sidebar.collapsed .sidebar-footer a span {
-  display: none;
+.sidebar.collapsed .sidebar-footer a span,
+.sidebar.collapsed .sidebar-user .user-details,
+.sidebar.collapsed .sidebar-user .btn-logout-inline {
+  display: none !important;
+}
+
+.btn-logout-inline {
+  transition: all 0.2s;
+  opacity: 0.6;
+}
+
+.btn-logout-inline:hover {
+  opacity: 1;
+  color: #fff !important;
+  transform: translateX(2px);
+}
+
+.sidebar.collapsed .sidebar-user {
+  padding: 20px 10px !important;
+  display: flex !important;
+  justify-content: center;
+  border-top: 1px solid rgba(255, 255, 255, .05);
+}
+
+.text-secondary {
+  color: #94a3b8 !important;
 }
 
 .btn-toggle-sidebar {

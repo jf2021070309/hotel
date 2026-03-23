@@ -1,31 +1,21 @@
 <?php
-// ============================================================
-// api/habitaciones.php
-// GET  /?libres=1        → habitaciones libres
-// GET  /                 → todas las habitaciones
-// GET  /?id=#            → una habitación
-// POST /                 → crear
-// PUT  /?id=#            → actualizar
-// ============================================================
-require_once '../config/conexion.php';
-require_once '../app/Controllers/HabitacionController.php';
+/**
+ * api/habitaciones.php
+ */
+require_once '../config/db.php';
+require_once '../auth/session.php';
+require_once '../auth/middleware.php';
+require_once '../app/Models/HabitacionModel.php';
 
+protegerPorRol('cajera');
 
-require_once __DIR__ . '/../auth/session.php';
-if (!estaAutenticado()) { json_response(false, null, 401, 'No autorizado'); }
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') json_response(true, null);
+$model = new HabitacionModel($pdo);
+$action = $_GET['action'] ?? 'libres';
 
-$ctrl   = new HabitacionController($conn);
-$method = $_SERVER['REQUEST_METHOD'];
-$id     = (int)($_GET['id']     ?? 0);
-$libres = isset($_GET['libres']) && $_GET['libres'] === '1';
-$body   = get_json_body();
-
-match(true) {
-    $method === 'GET' && $libres => $ctrl->libres(),
-    $method === 'GET'            => $ctrl->index($id),
-    $method === 'POST'           => $ctrl->store($body),
-    $method === 'PUT'            => $ctrl->update($id, $body),
-    default                     => json_response(false, null, 405, 'Método no permitido'),
-};
-
+switch ($action) {
+    case 'libres':
+        json_response(true, $model->getLibres());
+        break;
+    default:
+        json_response(false, null, 400);
+}

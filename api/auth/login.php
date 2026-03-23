@@ -36,10 +36,8 @@ if ($userData && password_verify($pass, $userData['password'])) {
     iniciarSesion($userData);
     $audit_model->registrar($userData['id'], $userData['nombre'], 'LOGIN_EXITOSO', 'AUTH');
     
-    // Redirigir según rol
-    $redirect = 'index.php'; // Dashboard por defecto
-    if ($userData['rol'] === 'cajera') $redirect = 'registros/index.php';
-    if ($userData['rol'] === 'limpieza') $redirect = 'habitaciones/index.php';
+    // Redirigir según rol (Todos al dashboard por ahora)
+    $redirect = 'index.php';
 
     json_response(true, ['redirect' => $redirect], 200, "Login exitoso");
 } else {

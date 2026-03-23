@@ -27,31 +27,54 @@ class RoomingController {
         $stayData = $input['stay'];
         $paxList = $input['pax'];
         
-        // Agregar info de sesión
-        $stayData['usuario_id'] = $_SESSION['auth_id'];
-        $stayData['operador']   = $_SESSION['auth_nombre'];
-        $stayData['cobrador']   = $_SESSION['auth_nombre'];
+        // Mapeo manual de campos para coincidir con los placeholders del Modelo
+        $mapped = [
+            'operador'     => $_SESSION['auth_nombre'],
+            'fecha_reg'    => $stayData['fecha_registro'],
+            'fecha_out'    => $stayData['fecha_checkout'],
+            'hora_in'      => $stayData['hora_checkin'],
+            'medio'        => $stayData['medio_reserva'],
+            'hab_id'       => $stayData['habitacion_id'],
+            'tipo_hab'     => $stayData['tipo_hab_declarado'] ?? 'ESTANDAR',
+            'noches'       => $stayData['noches'],
+            'pax_total'    => count($paxList),
+            'total'        => $stayData['total_pago'],
+            'moneda'       => $stayData['moneda_pago'],
+            'monto_orig'   => $stayData['monto_original'],
+            'tc'           => $stayData['tc_aplicado'] ?? 1,
+            'recargo'      => $stayData['recargo_tarjeta'] ?? 0,
+            'metodo'       => $stayData['metodo_pago'],
+            'comprobante'  => $stayData['tipo_comprobante'],
+            'num_comp'     => $stayData['num_comprobante'] ?? '',
+            'ruc'          => $stayData['ruc_factura'] ?? '',
+            'cobrador'     => $_SESSION['auth_nombre'],
+            'procedencia'  => $stayData['procedencia'] ?? '',
+            'obs'          => $stayData['observaciones'] ?? '',
+            'uid'          => $_SESSION['auth_id'],
+            'cobrado'      => $stayData['total_cobrado'] ?? 0,
+            'est_pago'     => $stayData['estado_pago'] ?? 'pendiente'
+        ];
         
         try {
-            $stay_id = $this->model->registrarStay($stayData, $paxList);
+            $stay_id = $this->model->registrarStay($mapped, $paxList);
             
             // Si hay pago inicial, registrarlo como anticipo
-            if ($stayData['total_cobrado'] > 0) {
+            if ($mapped['cobrado'] > 0) {
                 $pago = [
                     'stay_id'   => $stay_id,
-                    'monto'     => $stayData['monto_original'] ?? $stayData['total_cobrado'],
-                    'moneda'    => $stayData['moneda_pago'],
-                    'monto_pen' => $stayData['total_cobrado'],
-                    'tc'        => $stayData['tc_aplicado'] ?? 1,
-                    'tipo'      => $stayData['metodo_pago'],
-                    'recibo'    => $stayData['num_comprobante'],
+                    'monto'     => $input['adelanto'] ?? $mapped['cobrado'],
+                    'moneda'    => $mapped['moneda'],
+                    'monto_pen' => $mapped['cobrado'],
+                    'tc'        => $mapped['tc'],
+                    'tipo'      => $mapped['metodo'],
+                    'recibo'    => $mapped['num_comp'],
                     'fecha'     => date('Y-m-d'),
                     'uid'       => $_SESSION['auth_id']
                 ];
                 $this->model->registrarPago($pago);
             }
 
-            $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'CHECKIN_REGISTRADO', 'ROOMING', "Check-in hab #{$stayData['habitacion_id']}, ID Stay: $stay_id");
+            $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'CHECKIN_REGISTRADO', 'ROOMING', "Check-in hab #{$mapped['hab_id']}, ID Stay: $stay_id");
             
             return ['ok' => true, 'id' => $stay_id, 'msg' => "Check-in realizado correctamente"];
         } catch (Exception $e) {
@@ -65,6 +88,15 @@ class RoomingController {
             return ['ok' => true, 'msg' => "Check-out realizado"];
         }
         return ['ok' => false, 'msg' => "No se pudo realizar el checkout"];
+    }
+
+    public function lateCheckout(int $id) {
+        $stmt = $this->pdo->prepare("UPDATE rooming_stays SET estado = 'late_checkout' WHERE id = ?");
+        if ($stmt->execute([$id])) {
+            $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'LATE_CHECKOUT', 'ROOMING', "Late checkout stay ID: $id");
+            return ['ok' => true, 'msg' => 'Late checkout aplicado'];
+        }
+        return ['ok' => false, 'msg' => 'No se pudo aplicar late checkout'];
     }
 
     public function registrarPago(array $input) {

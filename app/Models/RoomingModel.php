@@ -10,11 +10,12 @@ class RoomingModel {
     }
 
     public function getStaysActivos(): array {
-        $sql = "SELECT s.*, h.numero as hab_numero, h.tipo as hab_tipo 
+        $sql = "SELECT s.*, h.numero as hab_numero, h.tipo as hab_tipo,
+                (SELECT nombre_completo FROM rooming_pax WHERE stay_id = s.id AND es_titular = 1 LIMIT 1) as titular_nombre
                 FROM rooming_stays s 
                 JOIN habitaciones h ON s.habitacion_id = h.id 
                 WHERE s.estado = 'activo' 
-                ORDER BY h.numero ASC";
+                ORDER BY s.id DESC";
         return $this->pdo->query($sql)->fetchAll();
     }
 
@@ -57,11 +58,21 @@ class RoomingModel {
 
             // Insertar PAX
             $sqlPax = "INSERT INTO rooming_pax (stay_id, nombre_completo, documento_tipo, documento_num, nacionalidad, ciudad, es_titular) 
-                       VALUES (:stay_id, :nombre, :doc_tipo, :doc_num, :nacionalidad, :ciudad, :es_titular)";
+                       VALUES (:stay_id, :nombre_completo, :documento_tipo, :documento_num, :nacionalidad, :ciudad, :es_titular)";
             $stmtPax = $this->pdo->prepare($sqlPax);
             foreach ($paxList as $pax) {
+                // Asegurar que stay_id esté presente
                 $pax['stay_id'] = $stay_id;
-                $stmtPax->execute($pax);
+                // Filtrar solo las llaves necesarias para evitar errores de PDO
+                $stmtPax->execute([
+                    'stay_id'         => $stay_id,
+                    'nombre_completo' => $pax['nombre_completo'] ?? '',
+                    'documento_tipo'  => $pax['documento_tipo'] ?? 'DNI',
+                    'documento_num'   => $pax['documento_num'] ?? '',
+                    'nacionalidad'    => $pax['nacionalidad'] ?? '',
+                    'ciudad'          => $pax['ciudad'] ?? '',
+                    'es_titular'      => $pax['es_titular'] ? 1 : 0
+                ]);
             }
 
             // Actualizar habitación a ocupado

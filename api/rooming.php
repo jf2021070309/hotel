@@ -29,6 +29,9 @@ switch ($action) {
     case 'pago':
         json_response_obj($controller->registrarPago($input));
         break;
+    case 'late_checkout':
+        json_response_obj($controller->lateCheckout((int)$input['id']));
+        break;
     default:
         json_response(false, null, 400, "Acción no válida");
         break;

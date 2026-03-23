@@ -57,7 +57,17 @@ require_once $base . 'rutas.php';
     </div>
     <div class="nav-item">
       <a href="<?= route('habitaciones/index.php', $base) ?>" class="<?= isActive('index.php','habitaciones') ?>" onclick="closeSidebarOnMobile()">
-        <i class="bi bi-building"></i> <span>Habitaciones</span>
+        <i class="bi bi-door-open-fill"></i> <span>Habitaciones</span>
+      </a>
+    </div>
+    <div class="nav-item">
+      <a href="<?= route('rooming/index.php', $base) ?>" class="<?= isActive('index.php','rooming') ?>" onclick="closeSidebarOnMobile()">
+        <i class="bi bi-calendar-check-fill text-primary"></i> <span>Rooming / Check-in</span>
+      </a>
+    </div>
+    <div class="nav-item">
+      <a href="<?= route('cuadro_reservas/index.php', $base) ?>" class="<?= isActive('index.php','cuadro_reservas') ?>" onclick="closeSidebarOnMobile()">
+        <i class="bi bi-grid-3x3-gap-fill text-warning"></i> <span>Cuadro de Reservas</span>
       </a>
     </div>
     <div class="nav-item">

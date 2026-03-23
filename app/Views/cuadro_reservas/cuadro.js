@@ -32,6 +32,7 @@ createApp({
     const viewMode      = ref('normal');   // 'compacto' | 'normal' | 'ampliado'
     const staySeleccionado = ref(null);
     const segsActualizado  = ref(0);
+    const ctxMenu = reactive({ visible: false, x: 0, y: 0, stay: null });
 
     const pagoRapido = reactive({ monto: 0, moneda: 'PEN', metodo: 'efectivo' });
 
@@ -134,6 +135,21 @@ createApp({
       stays: h.stays.map(s => ({ ...s, cols: calcCols(s) }))
     }));
 
+    // ─── Scroll to today ──────────────────────────────────────────────
+    const scrollToToday = () => {
+      setTimeout(() => {
+        const todayCell = document.querySelector('.today-hdr');
+        const wrapper = document.querySelector('.cuadro-wrapper');
+        if (todayCell && wrapper) {
+          const stickyWidth = 160; // Ancho de la primera columna fija
+          wrapper.scrollTo({
+            left: Math.max(0, todayCell.offsetLeft - stickyWidth - 10),
+            behavior: 'smooth'
+          });
+        }
+      }, 100);
+    };
+
     // ─── Navigation ───────────────────────────────────────────────────
     const cambiarMes = (delta) => {
       let m = mesActual.value + delta;
@@ -145,10 +161,11 @@ createApp({
       cargarDatos();
     };
 
-    const irHoy = () => {
+    const irHoy = async () => {
       mesActual.value  = today.getMonth() + 1;
       anioActual.value = today.getFullYear();
-      cargarDatos();
+      await cargarDatos();
+      scrollToToday();
     };
 
     // ─── Date helpers ─────────────────────────────────────────────────
@@ -173,6 +190,30 @@ createApp({
       pagoRapido.metodo = 'efectivo';
       const modal = new bootstrap.Modal(document.getElementById('modalDetalleCuadro'));
       modal.show();
+    };
+
+    // ─── Context Menu ─────────────────────────────────────────────────
+    const closeContextMenu = () => { ctxMenu.visible = false; };
+    const openContextMenu = (e, stay) => {
+      e.preventDefault();
+      ctxMenu.visible = true;
+      ctxMenu.x = e.clientX;
+      ctxMenu.y = e.clientY;
+      ctxMenu.stay = stay;
+    };
+    const handleCtxAction = (action) => {
+      const stay = ctxMenu.stay;
+      closeContextMenu();
+      if (!stay) return;
+
+      if (action === 'detalle') {
+        abrirDetalle(stay);
+      } else if (action === 'cobrar') {
+        abrirDetalle(stay);
+        setTimeout(() => document.querySelector('input[placeholder="Monto"]')?.focus(), 500);
+      } else if (action === 'checkout') {
+        checkout(stay);
+      }
     };
 
     // ─── Pago rápido ──────────────────────────────────────────────────
@@ -278,13 +319,16 @@ createApp({
 
     // ─── Lifecycle ────────────────────────────────────────────────────
     onMounted(async () => {
+      document.addEventListener('click', closeContextMenu);
       await cargarDatos();
       // Enrich with cols after loading
       habitaciones.value = enrichHabs(habitaciones.value);
       iniciarPolling();
+      scrollToToday();
     });
 
     onUnmounted(() => {
+      document.removeEventListener('click', closeContextMenu);
       clearInterval(pollingTimer);
       clearInterval(segsTimer);
     });
@@ -301,6 +345,7 @@ createApp({
       cargarDatos, cambiarMes, irHoy,
       getCeldaStay, esInicioStay, esDiaEstadoEspecial, calcCols,
       getDiaSemana, onCeldaClick, abrirDetalle,
+      openContextMenu, handleCtxAction, ctxMenu,
       guardarPagoRapido, checkout, lateCheckout,
       badgeClass, barClass, porcentajePago,
       viewMode, colWidth, rowHeight,

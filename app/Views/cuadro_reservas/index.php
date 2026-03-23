@@ -193,6 +193,29 @@ include $base . 'includes/sidebar.php';
     .cuadro-wrapper { overflow: visible !important; max-height: none !important; }
     .cuadro-table { font-size: 8px; }
   }
+
+  /* ── Context Menu ──────────────────────────────────────── */
+  .context-menu {
+    position: fixed;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    z-index: 9999;
+    min-width: 160px;
+    padding: 6px 0;
+    overflow: hidden;
+    font-size: 13px;
+  }
+  .context-menu .cm-item {
+    display: block;
+    padding: 8px 16px;
+    color: #333;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .context-menu .cm-item:hover { background: #f0f0f0; }
+  .context-menu .cm-item i { margin-right: 8px; opacity: 0.7; }
 </style>
 
 <div class="main-content" id="app-cuadro">
@@ -319,7 +342,7 @@ include $base . 'includes/sidebar.php';
                      class="stay-block"
                      :class="'est-' + getCeldaStay(hab, d).estado_pago"
                      :style="{ width: (getCeldaStay(hab, d).cols * colWidth - 3) + 'px' }"
-                     @click.stop="abrirDetalle(getCeldaStay(hab, d))">
+                     @click.stop="openContextMenu($event, getCeldaStay(hab, d))">
                   <span class="titular">{{ getCeldaStay(hab, d).titular }}</span>
                   <span v-if="viewMode !== 'compacto'" class="badge-pax">{{ getCeldaStay(hab, d).pax }} PAX</span>
                 </div>
@@ -444,6 +467,13 @@ include $base . 'includes/sidebar.php';
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- ─── CONTEXT MENU ────────────────────────────────────── -->
+  <div v-if="ctxMenu.visible" class="context-menu" :style="{ top: ctxMenu.y + 'px', left: ctxMenu.x + 'px' }">
+    <div class="cm-item" @click="handleCtxAction('detalle')"><i class="bi bi-info-circle text-primary"></i>Ver Detalles</div>
+    <div class="cm-item" @click="handleCtxAction('cobrar')"><i class="bi bi-cash-coin text-success"></i>Cobrar / Pagos</div>
+    <div class="cm-item" @click="handleCtxAction('checkout')"><i class="bi bi-door-open text-danger"></i>Hacer Check Out</div>
   </div>
 
 </div><!-- /#app-cuadro -->

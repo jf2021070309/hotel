@@ -21,7 +21,7 @@ class CajaChicaModel {
 
         if (!$ciclo) return null;
 
-        $stmtMovs = $this->pdo->prepare("SELECT m.*, u.nombre_completo AS operador FROM caja_chica_movimientos m LEFT JOIN usuarios u ON m.usuario_id = u.id WHERE m.caja_id = ? ORDER BY m.id DESC");
+        $stmtMovs = $this->pdo->prepare("SELECT m.*, u.nombre AS operador FROM caja_chica_movimientos m LEFT JOIN usuarios u ON m.usuario_id = u.id WHERE m.caja_id = ? ORDER BY m.id DESC");
         $stmtMovs->execute([$ciclo['id']]);
         $ciclo['movimientos'] = $stmtMovs->fetchAll(PDO::FETCH_ASSOC);
 
@@ -44,8 +44,8 @@ class CajaChicaModel {
                 c.id, c.nombre, c.saldo_inicial, c.saldo_final, 
                 c.fecha_apertura, c.fecha_cierre, c.estado,
                 COALESCE((SELECT SUM(monto) FROM caja_chica_movimientos WHERE caja_id=c.id AND tipo='egreso' AND anulado=0), 0) AS total_gastado,
-                u1.nombre_completo AS usuario_apertura,
-                u2.nombre_completo AS usuario_cierre
+                u1.nombre AS usuario_apertura,
+                u2.nombre AS usuario_cierre
             FROM caja_chica c
             LEFT JOIN usuarios u1 ON c.usuario_apertura = u1.id
             LEFT JOIN usuarios u2 ON c.usuario_cierre = u2.id

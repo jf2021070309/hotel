@@ -19,12 +19,14 @@ $controller = new CajaChicaController($pdo);
 switch ($action) {
     case 'ciclo_activo':
         if ($method !== 'GET') json_response(false, null, 405, 'Método no permitido');
-        json_response(true, $controller->cicloActivo());
+        $res = $controller->cicloActivo();
+        json_response($res['ok'], $res['data'] ?? null, 200, $res['msg'] ?? '');
         break;
 
     case 'listar':
         if ($method !== 'GET') json_response(false, null, 405, 'Método no permitido');
-        json_response(true, $controller->listar());
+        $res = $controller->listar();
+        json_response($res['ok'], $res['data'] ?? null, 200, $res['msg'] ?? '');
         break;
 
     case 'abrir':

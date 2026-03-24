@@ -1,12 +1,12 @@
-<?php
-/**
- * app/Models/CajaChicaModel.php
- */
+require_once __DIR__ . '/../Helpers/FinanzasHelper.php';
+
 class CajaChicaModel {
     private PDO $pdo;
+    private FinanzasHelper $finanzas;
 
     public function __construct(PDO $pdo) {
         $this->pdo = $pdo;
+        $this->finanzas = new FinanzasHelper($pdo);
     }
 
     public function getCategorias(): array {
@@ -57,7 +57,20 @@ class CajaChicaModel {
     public function abrirCiclo(string $nombre, float $saldoInicial, int $usuarioId): int {
         $stmt = $this->pdo->prepare("INSERT INTO caja_chica (nombre, saldo_inicial, fecha_apertura, estado, usuario_apertura) VALUES (?, ?, CURDATE(), 'abierta', ?)");
         $stmt->execute([$nombre, $saldoInicial, $usuarioId]);
-        return (int)$this->pdo->lastInsertId();
+        $id = (int)$this->pdo->lastInsertId();
+
+        // SINCRONIZACIÓN: La apertura de caja chica es un EGRESO del flujo principal
+        $this->finanzas->registrarMovimientoAutomatico([
+            'usuario_id'  => $usuarioId,
+            'categoria'   => 'Reposición Caja Chica',
+            'tipo'        => 'Egreso',
+            'monto'       => $saldoInicial,
+            'moneda'      => 'PEN',
+            'medio_pago'  => 'EFECTIVO',
+            'observacion' => "Apertura Ciclo #$id: $nombre"
+        ]);
+
+        return $id;
     }
 
     public function registrarGasto(array $data): int {

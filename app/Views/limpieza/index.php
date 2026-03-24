@@ -20,7 +20,7 @@ include $base . 'includes/sidebar.php';
             <button v-if="!yaGenerado" class="btn btn-primary shadow-sm" @click="generarLista()" :disabled="loading">
                 <i class="bi bi-magic me-1"></i> Generar Lista de Hoy
             </button>
-            <a href="app/Views/limpieza/historial.php" class="btn btn-outline-secondary shadow-sm">
+            <a href="<?= route('limpieza/historial.php', $base) ?>" class="btn btn-outline-secondary shadow-sm">
                 <i class="bi bi-clock-history me-1"></i> Ver Historial
             </a>
         </div>

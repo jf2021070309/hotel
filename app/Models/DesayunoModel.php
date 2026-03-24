@@ -20,10 +20,6 @@ class DesayunoModel {
         }
 
         $sqlWhere = implode(" AND ", $where);
-        return $this->pdo->prepare("SELECT * FROM desayunos WHERE $sqlWhere ORDER BY fecha DESC")
-                         ->execute($params) ? $this->pdo->prepare("SELECT * FROM desayunos WHERE $sqlWhere ORDER BY fecha DESC")->fetchAll(PDO::FETCH_ASSOC) : [];
-        
-        // Fix execution:
         $stmt = $this->pdo->prepare("SELECT * FROM desayunos WHERE $sqlWhere ORDER BY fecha DESC");
         $stmt->execute($params);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -43,16 +39,16 @@ class DesayunoModel {
 
     public function getOcupacionActual(string $fecha): array {
         // Consultar rooming_stays activos para la fecha calculada
-        $sql = "SELECT s.id as checkin_id, h.numero as habitacion, 
+        $sql = "SELECT s.id as checkin_id, h.numero as habitacion, h.id as habitacion_id,
                        (SELECT nombre_completo FROM rooming_pax WHERE stay_id = s.id AND es_titular = 1 LIMIT 1) as titular,
                        s.pax_total as pax
                 FROM rooming_stays s
                 JOIN habitaciones h ON s.habitacion_id = h.id
                 WHERE s.estado IN ('activo', 'late_checkout')
-                  AND s.fecha_registro <= :fecha
-                  AND s.fecha_checkout > :fecha";
+                  AND s.fecha_registro <= :f1
+                  AND s.fecha_checkout > :f2";
         $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([':fecha' => $fecha]);
+        $stmt->execute([':f1' => $fecha, ':f2' => $fecha]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
@@ -74,11 +70,11 @@ class DesayunoModel {
             }
 
             // Insertar detalles
-            $stmtDet = $this->pdo->prepare("INSERT INTO desayunos_detalle (desayuno_id, checkin_id, habitacion, titular, pax, incluye_desayuno) VALUES (?, ?, ?, ?, ?, ?)");
+            $stmtDet = $this->pdo->prepare("INSERT INTO desayunos_detalle (desayuno_id, habitacion_id, habitacion, titular, pax, incluye_desayuno) VALUES (?, ?, ?, ?, ?, ?)");
             foreach ($detalles as $det) {
                 $stmtDet->execute([
                     $id,
-                    $det['checkin_id'],
+                    $det['habitacion_id'],
                     $det['habitacion'],
                     $det['titular'] ?? '---',
                     $det['pax'],

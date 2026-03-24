@@ -18,7 +18,7 @@ const __appHabs = Vue.createApp({
     methods: {
         async cargar() {
             this.loading = true;
-            const res = await fetch('../../../api/habitaciones.php');
+            const res = await fetch('../../../api/habitaciones.php?action=todos');
             const json = await res.json();
             this.habitaciones = json.data ?? [];
             this.loading = false;

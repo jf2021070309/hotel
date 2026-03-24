@@ -61,6 +61,19 @@ class LimpiezaController {
 
         try {
             $this->model->actualizar($id, $data);
+            
+            // [NUEVO] Si la limpieza terminó, liberar la habitación
+            if ($estado === 'lista') {
+                $stmt = $this->pdo->prepare("SELECT habitacion_id FROM limpieza_registros WHERE id = ?");
+                $stmt->execute([$id]);
+                $hab_id = $stmt->fetchColumn();
+                
+                if ($hab_id) {
+                    $stmt = $this->pdo->prepare("UPDATE habitaciones SET estado = 'libre' WHERE id = ?");
+                    $stmt->execute([$hab_id]);
+                }
+            }
+            
             return ['ok' => true, 'msg' => 'Registro actualizado.', 'data' => $data];
         } catch (Exception $e) {
             return ['ok' => false, 'msg' => $e->getMessage()];

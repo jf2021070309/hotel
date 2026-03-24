@@ -27,4 +27,20 @@ class HabitacionModel {
         $stmt = $this->pdo->prepare("UPDATE habitaciones SET estado = ? WHERE id = ?");
         return $stmt->execute([$estado, $id]);
     }
+
+    public function crear(array $data): bool {
+        $sql = "INSERT INTO habitaciones (numero, tipo, piso, precio_base, estado, activa) VALUES (?, ?, ?, ?, 'libre', 1)";
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute([
+            $data['numero'], $data['tipo'], $data['piso'], $data['precio_base']
+        ]);
+    }
+
+    public function actualizar(int $id, array $data): bool {
+        $sql = "UPDATE habitaciones SET numero = ?, tipo = ?, piso = ?, precio_base = ? WHERE id = ?";
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute([
+            $data['numero'], $data['tipo'], $data['piso'], $data['precio_base'], $id
+        ]);
+    }
 }

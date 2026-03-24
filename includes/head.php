@@ -23,6 +23,8 @@ $chartjs_enabled = $chartjs_enabled ?? false;
   <link rel="stylesheet" href="<?= $base ?>style.css">
   <!-- Vue 3 CDN (Global Build) -->
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <!-- Axios CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <?php if ($export_enabled): ?>
   <!-- Exportación PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>

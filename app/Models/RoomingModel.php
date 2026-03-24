@@ -1,12 +1,13 @@
 <?php
-/**
- * app/Models/RoomingModel.php
- */
+require_once __DIR__ . '/../Helpers/FinanzasHelper.php';
+
 class RoomingModel {
     private PDO $pdo;
+    private FinanzasHelper $finanzas;
 
     public function __construct(PDO $pdo) {
         $this->pdo = $pdo;
+        $this->finanzas = new FinanzasHelper($pdo);
     }
 
     public function getStaysActivos(): array {
@@ -39,7 +40,7 @@ class RoomingModel {
     public function registrarStay(array $data, array $paxList): int {
         // Regla de Negocio: Bloqueo de check-in si limpieza no está 'lista'
         $fechaHoy = date('Y-m-d');
-        $habId = $data['habitacion_id'];
+        $habId = $data['hab_id'];
         $stmtClean = $this->pdo->prepare("SELECT estado FROM limpieza_registros WHERE fecha = ? AND habitacion_id = ?");
         $stmtClean->execute([$fechaHoy, $habId]);
         $limpieza = $stmtClean->fetchColumn();
@@ -90,6 +91,18 @@ class RoomingModel {
             $stmtHab = $this->pdo->prepare("UPDATE habitaciones SET estado = 'ocupado' WHERE id = ?");
             $stmtHab->execute([$data['hab_id']]);
 
+            // SINCRONIZACIÓN: Si hay un pago inicial (total_cobrado), registrar en Flujo
+            if ((float)$data['cobrado'] > 0) {
+                $this->finanzas->registrarMovimientoAutomatico([
+                    'usuario_id'  => $data['uid'],
+                    'categoria'   => 'Alojamiento / Rooming',
+                    'monto'       => $data['cobrado'],
+                    'moneda'      => $data['moneda'] ?? 'PEN',
+                    'medio_pago'  => $data['metodo'] ?? 'EFECTIVO',
+                    'observacion' => "Check-in HAB " . $data['hab_id'] . " (Stay #$stay_id)"
+                ]);
+            }
+
             $this->pdo->commit();
             return $stay_id;
         } catch (Exception $e) {
@@ -107,6 +120,16 @@ class RoomingModel {
         if ($res) {
             // Actualizar total_cobrado y estado_pago del stay
             $this->actualizarResumenPagos($pago['stay_id']);
+
+            // SINCRONIZACIÓN: Registrar el ingreso en el Flujo de Caja
+            $this->finanzas->registrarMovimientoAutomatico([
+                'usuario_id'  => $pago['uid'],
+                'categoria'   => 'Alojamiento / Pago extra',
+                'monto'       => $pago['monto_pen'], // Usamos monto_pen para la caja principal
+                'moneda'      => $pago['moneda'] ?? 'PEN',
+                'medio_pago'  => $pago['tipo_pago'] ?? 'EFECTIVO',
+                'observacion' => "Añadir Pago Stay #" . $pago['stay_id'] . " (Recibo: " . $pago['recibo'] . ")"
+            ]);
         }
         return $res;
     }
@@ -124,6 +147,15 @@ class RoomingModel {
 
             $stmt = $this->pdo->prepare("UPDATE habitaciones SET estado = 'limpieza' WHERE id = ?");
             $stmt->execute([$hab_id]);
+
+            // [NUEVO] Registrar tarea de limpieza automática tipo SALIDA
+            // Obtener número de habitación para el registro
+            $stmtHab = $this->pdo->prepare("SELECT numero FROM habitaciones WHERE id = ?");
+            $stmtHab->execute([$hab_id]);
+            $numHab = $stmtHab->fetchColumn();
+
+            $stmtLimpieza = $this->pdo->prepare("INSERT IGNORE INTO limpieza_registros (fecha, habitacion_id, habitacion, tipo_limpieza, prioridad, estado, usuario_id) VALUES (?, ?, ?, 'salida', 'alta', 'pendiente', ?)");
+            $stmtLimpieza->execute([date('Y-m-d'), $hab_id, $numHab, $_SESSION['auth_id'] ?? 1]);
 
             $this->pdo->commit();
             return true;

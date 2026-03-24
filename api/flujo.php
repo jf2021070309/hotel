@@ -22,10 +22,14 @@ switch ($action) {
         break;
 
     case 'detalle':
-        if ($method !== 'GET') json_response(false, null, 405, 'Método no permitido');
-        $id = (int)($_GET['id'] ?? 0);
-        $res = $controller->detalle($id);
-        json_response($res['ok'], $res['data'] ?? null, $res['ok'] ? 200 : 404, $res['msg']);
+        try {
+            if ($method !== 'GET') json_response(false, null, 405, 'Método no permitido');
+            $id = (int)($_GET['id'] ?? 0);
+            $res = $controller->detalle($id);
+            json_response($res['ok'], $res['data'] ?? null, $res['ok'] ? 200 : 404, $res['msg'] ?? '');
+        } catch (Exception $e) {
+            json_response(false, null, 500, 'Error interno: ' . $e->getMessage());
+        }
         break;
 
     case 'guardar':

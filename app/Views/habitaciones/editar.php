@@ -44,7 +44,13 @@ include '../../../includes/sidebar.php';
         <div class="col-md-6">
           <label class="form-label">Tipo</label>
           <select v-model="form.tipo" class="form-select">
-            <option>Simple</option><option>Doble</option><option>Suite</option>
+            <option>SIMPLE</option>
+            <option>DOBLE</option>
+            <option>TRIPLE</option>
+            <option>TRIPLE FAMILIAR</option>
+            <option>MATRIMONIAL SUPERIOR</option>
+            <option>EJECUTIVA SUPERIOR</option>
+            <option>PLATINIUM SUITE</option>
           </select>
         </div>
         <div class="col-md-6">
@@ -68,10 +74,5 @@ include '../../../includes/sidebar.php';
 </div>
 
 <script>const HAB_ID = <?= $id_php ?>;</script>
-<script src="editar.js"></script>
+<script src="editar.js?v=<?= time() ?>"></script>
 </body></html>
-
-
-
-
-

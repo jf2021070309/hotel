@@ -35,7 +35,7 @@ const appConfig = {
         const fetchHoy = async () => {
             loading.value = true;
             try {
-                const res = await axios.get('api/limpieza.php?action=hoy');
+                const res = await axios.get('/hotel/api/limpieza.php?action=hoy');
                 if (res.data.ok) {
                     lista.value = res.data.data;
                     yaGenerado.value = res.data.ya_generado;
@@ -47,7 +47,7 @@ const appConfig = {
         const generarLista = async () => {
             loading.value = true;
             try {
-                const res = await axios.post('api/limpieza.php?action=generar');
+                const res = await axios.post('/hotel/api/limpieza.php?action=generar');
                 if (res.data.ok) {
                     Swal.fire('¡Listo!', res.data.msg, 'success');
                     fetchHoy();
@@ -63,7 +63,7 @@ const appConfig = {
             formData.append('id', h.id);
             formData.append('estado', nuevoEstado);
             try {
-                const res = await axios.post('api/limpieza.php?action=actualizar', formData);
+                const res = await axios.post('/hotel/api/limpieza.php?action=actualizar', formData);
                 if (res.data.ok) {
                    h.estado = nuevoEstado;
                    if (res.data.data.hora_inicio) h.hora_inicio = res.data.data.hora_inicio;
@@ -84,7 +84,7 @@ const appConfig = {
                 const formData = new FormData();
                 formData.append('id', h.id);
                 formData.append('responsable', nombre);
-                axios.post('api/limpieza.php?action=actualizar', formData).then(() => {
+                axios.post('/hotel/api/limpieza.php?action=actualizar', formData).then(() => {
                     h.responsable = nombre;
                 });
             }
@@ -113,7 +113,7 @@ const appConfig = {
                     const formData = new FormData();
                     formData.append('id', h.id);
                     formData.append('observacion', texto);
-                    axios.post('api/limpieza.php?action=observacion', formData).then(() => {
+                    axios.post('/hotel/api/limpieza.php?action=observacion', formData).then(() => {
                         h.observacion = texto;
                     });
                 }
@@ -136,7 +136,7 @@ const appConfig = {
         const fetchHistorial = async () => {
             loading.value = true;
             try {
-                const res = await axios.get(`api/limpieza.php?action=listar&mes=${filtroHist.value.mes}&anio=${filtroHist.value.anio}`);
+                const res = await axios.get(`/hotel/api/limpieza.php?action=listar&mes=${filtroHist.value.mes}&anio=${filtroHist.value.anio}`);
                 if (res.data.ok) listaHistorial.value = res.data.data;
             } catch (e) { console.error(e); }
             loading.value = false;
@@ -144,7 +144,7 @@ const appConfig = {
 
         const verDetalle = (fecha) => {
             fechaDetalle.value = fecha;
-            axios.get('api/limpieza.php?action=detalle&fecha=' + fecha).then(res => {
+            axios.get('/hotel/api/limpieza.php?action=detalle&fecha=' + fecha).then(res => {
                 if (res.data.ok) {
                     detalleDia.value = res.data.data;
                     new bootstrap.Modal(document.getElementById('modalDetalle')).show();

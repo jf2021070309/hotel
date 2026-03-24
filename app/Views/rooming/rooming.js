@@ -162,7 +162,10 @@ createApp({
           showToast(res.data.msg || 'Error al procesar check-in', 'error');
         }
       } catch (err) {
-        showToast('Error al procesar check-in', 'error');
+        const errorMsg = err.response && err.response.data && err.response.data.msg 
+                       ? err.response.data.msg 
+                       : 'Error al procesar check-in';
+        showToast(errorMsg, 'error');
       } finally {
         loading.value = false;
       }

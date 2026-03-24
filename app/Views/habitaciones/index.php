@@ -58,8 +58,8 @@ include '../../../includes/sidebar.php';
             <td>{{ h.tipo }}</td>
             <td>Piso {{ h.piso }}</td>
             <td>
-              <span class="px-badge" :class="h.estado === 'libre' ? 'badge-libre' : 'badge-ocupado'">
-                {{ h.estado === 'libre' ? 'Libre' : 'Ocupada' }}
+              <span class="px-badge" :class="h.estado === 'libre' ? 'badge-libre' : (h.estado === 'limpieza' ? 'badge-limpieza' : 'badge-ocupado')">
+                {{ h.estado.charAt(0).toUpperCase() + h.estado.slice(1) }}
               </span>
             </td>
             <td>S/ {{ parseFloat(h.precio_base).toFixed(2) }}</td>
@@ -97,7 +97,13 @@ include '../../../includes/sidebar.php';
           <div class="col-md-6">
             <label class="form-label">Tipo</label>
             <select v-model="modal.tipo" class="form-select">
-              <option>Simple</option><option>Doble</option><option>Suite</option>
+              <option>SIMPLE</option>
+              <option>DOBLE</option>
+              <option>TRIPLE</option>
+              <option>TRIPLE FAMILIAR</option>
+              <option>MATRIMONIAL SUPERIOR</option>
+              <option>EJECUTIVA SUPERIOR</option>
+              <option>PLATINIUM SUITE</option>
             </select>
           </div>
           <div class="col-md-6">
@@ -122,11 +128,7 @@ include '../../../includes/sidebar.php';
   position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;
   display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;
 }
+.badge-limpieza { background: #0dcaf0; color: white; }
 </style>
-<script src="index.js"></script>
+<script src="index.js?v=<?= time() ?>"></script>
 </body></html>
-
-
-
-
-

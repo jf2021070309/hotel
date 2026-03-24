@@ -74,17 +74,26 @@ class CajaChicaModel {
     }
 
     public function registrarGasto(array $data): int {
+        return $this->registrarMovimiento($data, 'egreso');
+    }
+
+    public function registrarIngreso(array $data): int {
+        return $this->registrarMovimiento($data, 'ingreso');
+    }
+
+    private function registrarMovimiento(array $data, string $tipo): int {
         $stmt = $this->pdo->prepare("
             INSERT INTO caja_chica_movimientos 
             (caja_id, tipo, monto, rubro, documento, fecha, observacion, usuario_id) 
-            VALUES (?, 'egreso', ?, ?, ?, CURDATE(), ?, ?)
+            VALUES (?, ?, ?, ?, ?, CURDATE(), ?, ?)
         ");
         $stmt->execute([
             $data['caja_id'],
+            $tipo,
             $data['monto'],
             $data['rubro'],
-            $data['documento'],
-            $data['observacion'],
+            $data['documento'] ?? '',
+            $data['observacion'] ?? '',
             $data['usuario_id']
         ]);
         return (int)$this->pdo->lastInsertId();

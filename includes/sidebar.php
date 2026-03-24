@@ -115,6 +115,18 @@ require_once $base . 'rutas.php';
     </div>
     <?php endif; ?>
 
+    <div class="nav-label mt-2">Reportes (Altogerencia)</div>
+    <div class="nav-item">
+      <a href="<?= route('app/Views/reportes/mendoza.php', $base) ?>" class="<?= isActive('mendoza.php','reportes') ?>" onclick="closeSidebarOnMobile()">
+        <i class="bi bi-file-earmark-bar-graph-fill text-success"></i> <span>Reporte Mendoza</span>
+      </a>
+    </div>
+    <div class="nav-item">
+      <a href="<?= route('app/Views/reportes/alex.php', $base) ?>" class="<?= isActive('alex.php','reportes') ?>" onclick="closeSidebarOnMobile()">
+        <i class="bi bi-person-badge-fill" style="color:#7b2cbf"></i> <span>Reporte Alex</span>
+      </a>
+    </div>
+
     <!-- Reportes removidos por ahora -->
   </nav>
 

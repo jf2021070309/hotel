@@ -82,8 +82,8 @@ class RoomingController {
         }
     }
 
-    public function checkout(int $id) {
-        if ($this->model->finalizarStay($id, date('Y-m-d'))) {
+    public function checkout(int $id, array $pago = []) {
+        if ($this->model->finalizarStay($id, date('Y-m-d'), $pago)) {
             $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'CHECKOUT_REALIZADO', 'ROOMING', "Check-out stay ID: $id");
             return ['ok' => true, 'msg' => "Check-out realizado"];
         }

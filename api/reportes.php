@@ -1,34 +1,30 @@
 <?php
-// ============================================================
-// api/reportes.php
-// GET /?tipo=diario&fecha=YYYY-MM-DD
-// GET /?tipo=mensual&year=YYYY&month=M
-// ============================================================
-require_once '../config/conexion.php';
+/**
+ * api/reportes.php
+ */
+require_once '../config/db.php';
+require_once '../auth/session.php';
 require_once '../app/Controllers/ReporteController.php';
 
+header('Content-Type: application/json; charset=utf-8');
 
-require_once __DIR__ . '/../auth/session.php';
-if (!estaAutenticado()) { json_response(false, null, 401, 'No autorizado'); }
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') json_response(true, null);
-if ($_SERVER['REQUEST_METHOD'] !== 'GET')
-    json_response(false, null, 405, 'Método no permitido');
+$action = $_GET['action'] ?? 'resumen';
+$controller = new ReporteController($pdo);
 
-$ctrl = new ReporteController($conn);
-$tipo = $_GET['tipo'] ?? 'diario';
+switch ($action) {
+    case 'mendoza':
+        echo json_encode($controller->mendoza());
+        break;
+    
+    case 'alex':
+        echo json_encode($controller->alex());
+        break;
 
-if ($tipo === 'diario') {
-    $fecha = $_GET['fecha'] ?? date('Y-m-d');
-    $ctrl->cuadreDiario($fecha);
-} elseif ($tipo === 'mensual') {
-    $year  = (int)($_GET['year']  ?? date('Y'));
-    $month = (int)($_GET['month'] ?? date('n'));
-    $ctrl->mensual($year, $month);
-} elseif ($tipo === 'graficos') {
-    $year  = (int)($_GET['year']  ?? date('Y'));
-    $month = (int)($_GET['month'] ?? date('n'));
-    $ctrl->graficos($year, $month);
-} else {
-    json_response(false, null, 400, 'Tipo de reporte inválido. Use: diario, mensual o graficos');
+    case 'resumen':
+        echo json_encode($controller->resumenPL());
+        break;
+
+    default:
+        echo json_encode(['ok' => false, 'msg' => 'Acción no reconocida']);
+        break;
 }
-

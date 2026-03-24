@@ -210,9 +210,9 @@ $turnoQuery = $_GET['turno'] ?? 'MAÑANA';
             </div>
             
             <div class="alert alert-success border-2 text-center py-3 mb-4">
-              <div class="small fw-bold text-success mb-1" style="letter-spacing:1px;">EFECTIVO EN SOBRE (S/)</div>
+              <div class="small fw-bold text-success mb-1" style="letter-spacing:1px;">SE ENTREGA A ALEX (S/ SOBRE)</div>
               <h2 class="mb-0 fw-bold">S/ {{ efectivoEnSobrePEN }}</h2>
-              <div class="small text-muted mt-1">(Solo efectivo SOLES)</div>
+              <div class="small text-muted mt-1">(Neto del sobre en soles)</div>
             </div>
 
             <div class="mb-4">

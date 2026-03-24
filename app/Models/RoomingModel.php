@@ -99,7 +99,7 @@ class RoomingModel {
                     'monto'       => $data['cobrado'],
                     'moneda'      => $data['moneda'] ?? 'PEN',
                     'medio_pago'  => $data['metodo'] ?? 'EFECTIVO',
-                    'observacion' => "Check-in HAB " . $data['hab_id'] . " (Stay #$stay_id)"
+                    'observacion' => "CHECK-IN HAB " . $data['hab_id'] . " (Stay #$stay_id). Comprobante: " . $data['comprobante'] . " " . $data['num_comp']
                 ]);
             }
 
@@ -125,37 +125,52 @@ class RoomingModel {
             $this->finanzas->registrarMovimientoAutomatico([
                 'usuario_id'  => $pago['uid'],
                 'categoria'   => 'Alojamiento / Pago extra',
-                'monto'       => $pago['monto_pen'], // Usamos monto_pen para la caja principal
+                'monto'       => $pago['monto_pen'], 
                 'moneda'      => $pago['moneda'] ?? 'PEN',
                 'medio_pago'  => $pago['tipo_pago'] ?? 'EFECTIVO',
-                'observacion' => "Añadir Pago Stay #" . $pago['stay_id'] . " (Recibo: " . $pago['recibo'] . ")"
+                'observacion' => "PAGO ADICIONAL Stay #" . $pago['stay_id'] . ". Recibo: " . $pago['recibo']
             ]);
         }
         return $res;
     }
 
-    public function finalizarStay(int $id, string $fechaOut): bool {
+    public function finalizarStay(int $id, string $fechaOut, array $pago = []): bool {
         $this->pdo->beginTransaction();
         try {
-            // Obtener hab ID
+            // 1. Registrar pago si se proporciona (Saldo pendiente)
+            if (!empty($pago) && (float)($pago['monto'] ?? 0) > 0) {
+                $pago['stay_id'] = $id;
+                $pago['fecha'] = $fechaOut;
+                $pago['uid'] = $_SESSION['auth_id'] ?? 1;
+                $pago['monto_pen'] = $pago['monto_pen'] ?? $pago['monto'];
+                $this->registrarPago($pago); // Esto ya sincroniza con Flujo de Caja
+            }
+
+            // 2. Obtener hab ID
             $stmt = $this->pdo->prepare("SELECT habitacion_id FROM rooming_stays WHERE id = ?");
             $stmt->execute([$id]);
             $hab_id = $stmt->fetchColumn();
 
+            // 3. Finalizar Stay
             $stmt = $this->pdo->prepare("UPDATE rooming_stays SET estado = 'finalizado', fecha_checkout = ? WHERE id = ?");
             $stmt->execute([$fechaOut, $id]);
 
+            // 4. Pasar habitación a estado 'Sucia' (DB: limpieza)
             $stmt = $this->pdo->prepare("UPDATE habitaciones SET estado = 'limpieza' WHERE id = ?");
             $stmt->execute([$hab_id]);
 
-            // [NUEVO] Registrar tarea de limpieza automática tipo SALIDA
-            // Obtener número de habitación para el registro
+            // 5. Automatizar tarea de LIMPIEZA TIPO SALIDA (Prioridad ALTA)
             $stmtHab = $this->pdo->prepare("SELECT numero FROM habitaciones WHERE id = ?");
             $stmtHab->execute([$hab_id]);
             $numHab = $stmtHab->fetchColumn();
 
-            $stmtLimpieza = $this->pdo->prepare("INSERT IGNORE INTO limpieza_registros (fecha, habitacion_id, habitacion, tipo_limpieza, prioridad, estado, usuario_id) VALUES (?, ?, ?, 'salida', 'alta', 'pendiente', ?)");
-            $stmtLimpieza->execute([date('Y-m-d'), $hab_id, $numHab, $_SESSION['auth_id'] ?? 1]);
+            $stmtLimpieza = $this->pdo->prepare("
+                INSERT INTO limpieza_registros 
+                (fecha, habitacion_id, habitacion, tipo_limpieza, prioridad, estado, usuario_id) 
+                VALUES (?, ?, ?, 'salida', 'alta', 'pendiente', ?)
+                ON DUPLICATE KEY UPDATE tipo_limpieza = 'salida', prioridad = 'alta', estado = 'pendiente'
+            ");
+            $stmtLimpieza->execute([$fechaOut, $hab_id, $numHab, $_SESSION['auth_id'] ?? 1]);
 
             $this->pdo->commit();
             return true;

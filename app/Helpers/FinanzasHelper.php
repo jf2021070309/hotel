@@ -30,14 +30,35 @@ class FinanzasHelper {
 
     /**
      * Registra un movimiento automático en el flujo de caja.
+     * $data incluye: usuario_id, monto, moneda, medio_pago, categoria (opcional), observacion
      */
     public function registrarMovimientoAutomatico(array $data): bool {
         $flujoId = $data['flujo_id'] ?? $this->getFlujoIdActivo($data['usuario_id']);
         
-        if (!$flujoId) return false; // No hay turno abierto para registrar
+        if (!$flujoId) return false; 
 
-        $medio = (strtoupper($data['medio_pago'] ?? '') === 'EFECTIVO') ? 'EFECTIVO' : 'NO EFECTIVO';
-        $tipo  = $data['tipo'] ?? 'Ingreso';
+        $tipo = $data['tipo'] ?? 'Ingreso';
+        $moneda = strtoupper($data['moneda'] ?? 'PEN');
+        $medioTxt = strtoupper($data['medio_pago'] ?? 'EFECTIVO');
+        
+        // Mapeo dinámico de Categoría según el requerimiento del usuario (Excel-style)
+        $categoria = $data['categoria'] ?? 'OTROS INGRESOS';
+        
+        if ($tipo === 'Ingreso') {
+            if ($medioTxt === 'YAPE' || $medioTxt === 'PLIN') {
+                $categoria = 'YAPE O PLIN';
+            } elseif ($medioTxt === 'POS') {
+                $categoria = ($moneda === 'USD') ? 'POS DÓLARES' : 'POS SOLES';
+            } elseif ($medioTxt === 'TRANSFERENCIA' || $medioTxt === 'DEPOSITO') {
+                $categoria = 'DEPÓSITO/TRANS.';
+            } elseif ($medioTxt === 'EFECTIVO') {
+                if ($moneda === 'USD') $categoria = 'DÓLARES EFECTIVO';
+                elseif ($moneda === 'CLP') $categoria = 'PESOS EFECTIVO';
+                else $categoria = 'SOLES EFECTIVO';
+            }
+        }
+
+        $medioFinal = ($medioTxt === 'EFECTIVO') ? 'EFECTIVO' : 'NO EFECTIVO';
 
         $sql = "INSERT INTO flujo_caja_movimientos 
                 (flujo_id, categoria, tipo, moneda, monto, medio_pago, observacion) 
@@ -46,11 +67,11 @@ class FinanzasHelper {
         $stmt = $this->pdo->prepare($sql);
         return $stmt->execute([
             ':flujo_id'  => $flujoId,
-            ':categoria' => $data['categoria'] ?? 'Operación Automática',
+            ':categoria' => $categoria,
             ':tipo'      => $tipo,
-            ':moneda'    => $data['moneda'] ?? 'PEN',
+            ':moneda'    => $moneda,
             ':monto'     => $data['monto'],
-            ':medio'     => $medio,
+            ':medio'     => $medioFinal,
             ':obs'       => $data['observacion'] ?? ''
         ]);
     }

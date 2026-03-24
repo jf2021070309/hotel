@@ -58,15 +58,21 @@ include '../../../includes/sidebar.php';
             <td>{{ h.tipo }}</td>
             <td>Piso {{ h.piso }}</td>
             <td>
-              <span class="px-badge" :class="h.estado === 'libre' ? 'badge-libre' : (h.estado === 'limpieza' ? 'badge-limpieza' : 'badge-ocupado')">
+              <span class="px-badge" :class="{
+                'badge-libre': h.estado === 'libre',
+                'badge-ocupado': h.estado === 'ocupado',
+                'badge-reservado': h.estado === 'reservado',
+                'badge-limpieza': h.estado === 'limpieza',
+                'badge-mantenimiento': h.estado === 'mantenimiento'
+              }">
                 {{ h.estado.charAt(0).toUpperCase() + h.estado.slice(1) }}
               </span>
             </td>
             <td>S/ {{ parseFloat(h.precio_base).toFixed(2) }}</td>
             <td class="text-end">
-              <a :href="'editar.php?id=' + h.id" class="btn-outline-custom btn-sm">
+              <button @click="abrirModal(h)" class="btn-outline-custom btn-sm me-1">
                 <i class="bi bi-pencil-fill"></i> Editar
-              </a>
+              </button>
             </td>
           </tr>
           <tr v-if="habitaciones.length === 0">
@@ -97,18 +103,33 @@ include '../../../includes/sidebar.php';
           <div class="col-md-6">
             <label class="form-label">Tipo</label>
             <select v-model="modal.tipo" class="form-select">
-              <option>SIMPLE</option>
-              <option>DOBLE</option>
-              <option>TRIPLE</option>
-              <option>TRIPLE FAMILIAR</option>
-              <option>MATRIMONIAL SUPERIOR</option>
-              <option>EJECUTIVA SUPERIOR</option>
-              <option>PLATINIUM SUITE</option>
+              <optgroup label="Tipos Estándar">
+                <option>SIMPLE</option>
+                <option>DOBLE</option>
+                <option>TRIPLE</option>
+                <option>TRIPLE FAMILIAR</option>
+              </optgroup>
+              <optgroup label="Tipos Premier">
+                <option>MATRIMONIAL SUPERIOR</option>
+                <option>EJECUTIVA SUPERIOR</option>
+                <option>PLATINIUM SUITE</option>
+              </optgroup>
             </select>
           </div>
           <div class="col-md-6">
             <label class="form-label">Precio Base (S/)</label>
             <input v-model="modal.precio_base" type="number" step="0.01" class="form-control" placeholder="0.00">
+          </div>
+          <!-- NUEVO: Cambio de Estado Manual -->
+          <div class="col-md-12" v-if="modal.id">
+            <label class="form-label text-primary fw-bold">Estado Actual (Semáforo)</label>
+            <select v-model="modal.estado" class="form-select border-primary">
+              <option value="libre">🟢 LIBRE Y LIMPIA</option>
+              <option value="ocupado">🔴 OCUPADA</option>
+              <option value="reservado">🟡 RESERVADA</option>
+              <option value="limpieza">🔵 SUCIA / PENDIENTE</option>
+              <option value="mantenimiento">⚫ BLOQUEADA / MANTENIMIENTO</option>
+            </select>
           </div>
         </div>
         <div class="mt-4 d-flex gap-2">
@@ -128,7 +149,11 @@ include '../../../includes/sidebar.php';
   position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;
   display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;
 }
+.badge-libre { background: #198754; color: white; }
+.badge-ocupado { background: #dc3545; color: white; }
+.badge-reservado { background: #ffc107; color: #000; }
 .badge-limpieza { background: #0dcaf0; color: white; }
+.badge-mantenimiento { background: #212529; color: white; }
 </style>
 <script src="index.js?v=<?= time() ?>"></script>
 </body></html>

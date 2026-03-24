@@ -128,6 +128,35 @@ class FlujoModel {
                     $mov['medio_pago'], 
                     $mov['observacion'] ?? ''
                 ]);
+
+                $movId = (int)$this->pdo->lastInsertId();
+
+                // SINCRONIZACIÓN CAJA CHICA: RECEPCIÓN C.CH. (EGRESO DEL Turno -> INGRESO DE CAJA CHICA)
+                if ($mov['tipo'] === 'Egreso' && $mov['categoria'] === 'RECEPCIÓN C.CH.') {
+                    // Buscar ciclo activo de Caja Chica
+                    $stmtCC = $this->pdo->prepare("SELECT id FROM caja_chica WHERE estado = 'abierta' ORDER BY id DESC LIMIT 1");
+                    $stmtCC->execute();
+                    $cajaId = $stmtCC->fetchColumn();
+
+                    if ($cajaId) {
+                        // Primero borrar duplicados previos de este mismo movimiento del flujo
+                        $this->pdo->prepare("DELETE FROM caja_chica_movimientos WHERE flujo_movimiento_id = ?")->execute([$movId]);
+                        
+                        // Insertar ingreso en Caja Chica
+                        $stmtCCMov = $this->pdo->prepare("
+                            INSERT INTO caja_chica_movimientos 
+                            (caja_id, tipo, monto, rubro, documento, fecha, observacion, usuario_id, flujo_movimiento_id) 
+                            VALUES (?, 'ingreso', ?, 'REPOSICIÓN DESDE FLUJO', 'FLUJO-#$id', CURDATE(), ?, ?, ?)
+                        ");
+                        $stmtCCMov->execute([
+                            $cajaId, 
+                            $mov['monto'], 
+                            $mov['observacion'] ?? '', 
+                            $data['usuario_id'],
+                            $movId
+                        ]);
+                    }
+                }
             }
 
             $this->pdo->commit();

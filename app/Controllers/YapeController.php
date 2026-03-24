@@ -133,9 +133,10 @@ class YapeController {
                      $stmtF = $pdo->prepare("
                         INSERT INTO flujo_caja_movimientos 
                         (flujo_id, tipo, monto, categoria, moneda, medio_pago, observacion) 
-                        VALUES (?, 'Ingreso', ?, 'VUELTO YAPE', 'PEN', 'EFECTIVO', 'Vuelto Yape de Alex (Registro #$id)')
+                        VALUES (?, 'Ingreso', ?, 'YAPE O PLIN', 'PEN', 'NO EFECTIVO', ?)
                     ");
-                    $stmtF->execute([$flujoTarget['id'], $vuelto]);
+                    $obsF = "SALDO NETO YAPE (Turno {$registro['turno']}). Registro #$id. Detalle: Recibido S/ {$registro['yape_recibido']} - Gastos S/ {$registro['total_gastado']}";
+                    $stmtF->execute([$flujoTarget['id'], $vuelto, $obsF]);
                 }
 
                 return ['ok' => true, 'msg' => $vuelto > 0 ? 'Registro cerrado. El vuelto ha sido transferido automáticamente a la caja de este turno.' : 'Registro cerrado con éxito. (Vuelto 0)'];

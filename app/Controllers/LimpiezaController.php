@@ -18,8 +18,12 @@ class LimpiezaController {
             if (!empty($detalle)) {
                 return ['ok' => true, 'data' => $detalle, 'ya_generado' => true];
             }
-            // Si no existe, proponer
-            return ['ok' => true, 'data' => $this->model->getCalculoPropuesta($fecha), 'ya_generado' => false];
+            
+            // AUTOMATICO: Si no hay nada, generamos de una vez (Pilar 9)
+            $this->generar();
+            $detalle = $this->model->getDetalleDia($fecha);
+            
+            return ['ok' => true, 'data' => $detalle, 'ya_generado' => true];
         } catch (Exception $e) {
             return ['ok' => false, 'msg' => $e->getMessage()];
         }
@@ -62,14 +66,16 @@ class LimpiezaController {
         try {
             $this->model->actualizar($id, $data);
             
-            // [NUEVO] Si la limpieza terminó, liberar la habitación
+            // [NUEVO] Si la limpieza terminó, liberar la habitación (si no está en mantenimiento)
             if ($estado === 'lista') {
                 $stmt = $this->pdo->prepare("SELECT habitacion_id FROM limpieza_registros WHERE id = ?");
                 $stmt->execute([$id]);
                 $hab_id = $stmt->fetchColumn();
                 
                 if ($hab_id) {
-                    $stmt = $this->pdo->prepare("UPDATE habitaciones SET estado = 'libre' WHERE id = ?");
+                    // Solo liberamos si el estado actual es 'limpieza' (sucia). 
+                    // Si está en 'mantenimiento', se queda ahí.
+                    $stmt = $this->pdo->prepare("UPDATE habitaciones SET estado = 'libre' WHERE id = ? AND estado = 'limpieza'");
                     $stmt->execute([$hab_id]);
                 }
             }

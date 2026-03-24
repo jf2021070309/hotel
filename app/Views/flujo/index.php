@@ -63,7 +63,7 @@ include $base . 'includes/sidebar.php';
               <th>Operador</th>
               <th class="text-end">Ingresos</th>
               <th class="text-end">Egresos</th>
-              <th class="text-end text-success">Efectivo Sobre</th>
+              <th class="text-end text-success">SE ENTREGA A ALEX</th>
               <th>Estado</th>
               <th class="text-end">Acciones</th>
             </tr>

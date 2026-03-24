@@ -30,10 +30,11 @@ const __appHabs = Vue.createApp({
             if (hab) {
                 Object.assign(this.modal, {
                     id: hab.id, numero: hab.numero, tipo: hab.tipo,
-                    piso: parseInt(hab.piso), precio_base: hab.precio_base
+                    piso: parseInt(hab.piso), precio_base: hab.precio_base,
+                    estado: hab.estado
                 });
             } else {
-                Object.assign(this.modal, { id: null, numero: '', tipo: 'Simple', piso: 1, precio_base: '' });
+                Object.assign(this.modal, { id: null, numero: '', tipo: 'SIMPLE', piso: 1, precio_base: '', estado: 'libre' });
             }
             this.modal.visible = true;
         },
@@ -57,7 +58,8 @@ const __appHabs = Vue.createApp({
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         numero: this.modal.numero, tipo: this.modal.tipo,
-                        piso: this.modal.piso, precio_base: parseFloat(this.modal.precio_base)
+                        piso: this.modal.piso, precio_base: parseFloat(this.modal.precio_base),
+                        estado: this.modal.estado
                     })
                 });
                 const json = await res.json();

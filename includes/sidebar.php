@@ -66,8 +66,13 @@ require_once $base . 'rutas.php';
       </a>
     </div>
     <div class="nav-item">
-      <a href="<?= route('cuadro_reservas/index.php', $base) ?>" class="<?= isActive('index.php','cuadro_reservas') ?>" onclick="closeSidebarOnMobile()">
+      <a href="<?= route('reservas/index.php', $base) ?>" class="<?= isActive('index.php','reservas') ?>" onclick="closeSidebarOnMobile()">
         <i class="bi bi-grid-3x3-gap-fill text-warning"></i> <span>Cuadro de Reservas</span>
+      </a>
+    </div>
+    <div class="nav-item">
+      <a href="<?= route('flujo/index.php', $base) ?>" class="<?= isActive('index.php','flujo') ?>" onclick="closeSidebarOnMobile()">
+        <i class="bi bi-cash-stack text-success"></i> <span>Flujo de Caja</span>
       </a>
     </div>
     <div class="nav-item">

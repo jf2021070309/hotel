@@ -6,7 +6,7 @@ const { createApp, ref, reactive, computed, onMounted, onUnmounted } = Vue;
 
 createApp({
   setup() {
-    const BASE = '../../../api/cuadro.php?action=';
+    const BASE = '../../../api/reservas.php?action=';
     const ROOMING_API = '../../../api/rooming.php?action=';
 
     // ─── State ─────────────────────────────────────────────────────────
@@ -188,7 +188,7 @@ createApp({
       pagoRapido.monto  = 0;
       pagoRapido.moneda = stay.moneda_pago || 'PEN';
       pagoRapido.metodo = 'efectivo';
-      const modal = new bootstrap.Modal(document.getElementById('modalDetalleCuadro'));
+      const modal = new bootstrap.Modal(document.getElementById('modalDetalleReservas'));
       modal.show();
     };
 
@@ -273,7 +273,7 @@ createApp({
       if (!confirm.isConfirmed) return;
       try {
         await axios.post(`${ROOMING_API}checkout`, { id: stay.id });
-        bootstrap.Modal.getInstance(document.getElementById('modalDetalleCuadro'))?.hide();
+        bootstrap.Modal.getInstance(document.getElementById('modalDetalleReservas'))?.hide();
         await cargarDatos();
         Swal.fire({ icon: 'success', title: 'Checkout realizado', timer: 1500, showConfirmButton: false });
       } catch (e) {
@@ -284,7 +284,7 @@ createApp({
     const lateCheckout = async (stay) => {
       try {
         await axios.post(`${BASE}late_checkout`, { id: stay.id });
-        bootstrap.Modal.getInstance(document.getElementById('modalDetalleCuadro'))?.hide();
+        bootstrap.Modal.getInstance(document.getElementById('modalDetalleReservas'))?.hide();
         Swal.fire({ icon: 'info', title: 'Late Checkout aplicado', timer: 1500, showConfirmButton: false });
         await cargarDatos();
       } catch (e) {
@@ -351,4 +351,4 @@ createApp({
       viewMode, colWidth, rowHeight,
     };
   }
-}).mount('#app-cuadro');
+}).mount('#app-reservas');

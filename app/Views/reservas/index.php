@@ -13,7 +13,7 @@ include $base . 'includes/sidebar.php';
 
 <style>
   /* ── Layout ────────────────────────────────────────────── */
-  #app-cuadro .page-body {
+  #app-reservas .page-body {
     padding: 12px 16px;
     display: flex;
     flex-direction: column;
@@ -218,7 +218,7 @@ include $base . 'includes/sidebar.php';
   .context-menu .cm-item i { margin-right: 8px; opacity: 0.7; }
 </style>
 
-<div class="main-content" id="app-cuadro">
+<div class="main-content" id="app-reservas">
   <div class="topbar">
     <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list"></i></button>
     <div>
@@ -379,7 +379,7 @@ include $base . 'includes/sidebar.php';
   </div><!-- /.page-body -->
 
   <!-- ─── MODAL DETALLE ───────────────────────────────────── -->
-  <div class="modal fade" id="modalDetalleCuadro" tabindex="-1">
+  <div class="modal fade" id="modalDetalleReservas" tabindex="-1">
     <div class="modal-dialog modal-lg">
       <div class="modal-content" v-if="staySeleccionado">
         <div class="modal-header">
@@ -476,9 +476,9 @@ include $base . 'includes/sidebar.php';
     <div class="cm-item" @click="handleCtxAction('checkout')"><i class="bi bi-door-open text-danger"></i>Hacer Check Out</div>
   </div>
 
-</div><!-- /#app-cuadro -->
+</div><!-- /#app-reservas -->
 
 <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="<?= $base ?>app/Views/cuadro_reservas/cuadro.js"></script>
+<script src="<?= $base ?>app/Views/reservas/reservas.js"></script>

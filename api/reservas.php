@@ -1,11 +1,11 @@
 <?php
 /**
- * api/cuadro.php — Thin router for Cuadro de Reservas
+ * api/reservas.php — Thin router for Reservas
  */
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../auth/session.php';
 require_once __DIR__ . '/../auth/middleware.php';
-require_once __DIR__ . '/../app/Controllers/CuadroController.php';
+require_once __DIR__ . '/../app/Controllers/ReservasController.php';
 
 protegerPorRol('cajera');
 
@@ -13,7 +13,7 @@ $action = $_GET['action'] ?? '';
 $method = $_SERVER['REQUEST_METHOD'];
 $input  = json_decode(file_get_contents('php://input'), true) ?? [];
 
-$controller = new CuadroController($pdo);
+$controller = new ReservasController($pdo);
 
 switch ($action) {
     case 'datos':

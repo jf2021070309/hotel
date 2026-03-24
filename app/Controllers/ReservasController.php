@@ -1,13 +1,13 @@
 <?php
 /**
- * app/Controllers/CuadroController.php
+ * app/Controllers/ReservasController.php
  */
-class CuadroController {
-    private CuadroModel $model;
+class ReservasController {
+    private ReservasModel $model;
 
     public function __construct(PDO $pdo) {
-        require_once __DIR__ . '/../Models/CuadroModel.php';
-        $this->model = new CuadroModel($pdo);
+        require_once __DIR__ . '/../Models/ReservasModel.php';
+        $this->model = new ReservasModel($pdo);
     }
 
     /**

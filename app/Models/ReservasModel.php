@@ -1,8 +1,8 @@
 <?php
 /**
- * app/Models/CuadroModel.php
+ * app/Models/ReservasModel.php
  */
-class CuadroModel {
+class ReservasModel {
     private PDO $pdo;
 
     public function __construct(PDO $pdo) {

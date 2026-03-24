@@ -51,7 +51,7 @@ class ReporteModel {
             FROM gastos_yape y
             JOIN gastos_yape_detalle d ON y.id = d.gasto_yape_id
             LEFT JOIN usuarios u ON y.usuario_id = u.id
-            WHERE MONTH(y.fecha) = :mes AND YEAR(y.fecha) = :anio AND y.estado = 'cerrado'
+            WHERE MONTH(y.fecha) = :mes AND YEAR(y.fecha) = :anio
             ORDER BY y.fecha DESC, y.turno ASC
         ";
         $stmt = $this->pdo->prepare($sql);
@@ -81,8 +81,11 @@ class ReporteModel {
         $stmt->execute([':mes' => $mes, ':anio' => $anio]);
         $egresosOp = (float)$stmt->fetchColumn();
 
-        // 4. Gastos Yape (Reporte Alex)
-        $sqlYape = "SELECT SUM(total_gastado) FROM gastos_yape WHERE MONTH(fecha) = :mes AND YEAR(fecha) = :anio AND estado='cerrado'";
+        // 4. Gastos Yape (Reporte Alex) - Sumamos todos los detalles del mes para tiempo real
+        $sqlYape = "SELECT SUM(d.monto) 
+                    FROM gastos_yape_detalle d
+                    JOIN gastos_yape y ON d.gasto_yape_id = y.id
+                    WHERE MONTH(y.fecha) = :mes AND YEAR(y.fecha) = :anio";
         $stmt = $this->pdo->prepare($sqlYape);
         $stmt->execute([':mes' => $mes, ':anio' => $anio]);
         $gastosYape = (float)$stmt->fetchColumn();

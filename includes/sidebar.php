@@ -188,6 +188,30 @@ function toggleSidebar() {
   icon.className = isCollapsed ? 'bi bi-chevron-right' : 'bi bi-chevron-left';
 }
 
+// --- SIDEBAR SCROLL PERSISTENCE ---
+(function() {
+  const sidebarNav = document.querySelector('.sidebar-nav');
+  if (!sidebarNav) return;
+
+  // Restore scroll position
+  const savedScroll = sessionStorage.getItem('sidebar_scroll');
+  if (savedScroll) {
+    sidebarNav.scrollTop = parseInt(savedScroll, 10);
+  }
+
+  // Save scroll position on any click in the nav
+  sidebarNav.addEventListener('click', (e) => {
+    if (e.target.closest('a')) {
+      sessionStorage.setItem('sidebar_scroll', sidebarNav.scrollTop);
+    }
+  });
+
+  // Also save periodically or on scroll if needed, but click is most important for navigation
+  sidebarNav.addEventListener('scroll', () => {
+    sessionStorage.setItem('sidebar_scroll', sidebarNav.scrollTop);
+  }, { passive: true });
+})();
+
 // Restore state on load
 (function() {
   const isCollapsed = localStorage.getItem('sidebar_collapsed') === 'true';

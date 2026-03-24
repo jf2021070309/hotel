@@ -76,6 +76,11 @@ require_once $base . 'rutas.php';
       </a>
     </div>
     <div class="nav-item">
+      <a href="<?= route('caja_chica/index.php', $base) ?>" class="<?= isActive('index.php','caja_chica') ?>" onclick="closeSidebarOnMobile()">
+        <i class="bi bi-box2-heart text-danger"></i> <span>Caja Chica</span>
+      </a>
+    </div>
+    <div class="nav-item">
       <a href="<?= route('clientes/index.php', $base) ?>" class="<?= isActive('index.php','clientes') ?>" onclick="closeSidebarOnMobile()">
         <i class="bi bi-people-fill"></i> <span>Clientes</span>
       </a>

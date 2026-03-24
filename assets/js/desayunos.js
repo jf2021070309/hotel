@@ -36,7 +36,7 @@ createApp({
         const fetchLista = async () => {
             loading.value = true;
             try {
-                const res = await axios.get(`api/desayunos/listar.php?mes=${filtro.value.mes}&anio=${filtro.value.anio}`);
+                const res = await axios.get(`api/desayunos.php?action=listar&mes=${filtro.value.mes}&anio=${filtro.value.anio}`);
                 if (res.data.ok) lista.value = res.data.data;
             } catch (e) { console.error(e); }
             loading.value = false;
@@ -45,7 +45,7 @@ createApp({
         const nuevoRegistro = async () => {
             loading.value = true;
             try {
-                const res = await axios.get('api/desayunos/hoy.php');
+                const res = await axios.get('api/desayunos.php?action=hoy');
                 if (res.data.ok) {
                     actual.value = res.data.data;
                     tab.value = 'detalle';
@@ -58,14 +58,8 @@ createApp({
         };
 
         const verDetalle = (item) => {
-            // we need to fetch the full detail with sub-rows
-            // ... for now, if the item passed is the header, we'll fetch its details
-            // I'll simulate or add an endpoint for details if needed
-            // Actually, my Controllers getHoy handled header + detail if existing.
-            // Let's create a dedicated detail fetch or reuse hoy.php by passing date
-            // I'll just fetch by date since it's UNIQUE
             loading.value = true;
-            axios.get(`api/desayunos/hoy.php?fecha=${item.fecha}`)
+            axios.get(`api/desayunos.php?action=hoy&fecha=${item.fecha}`)
                 .then(res => {
                     if (res.data.ok) {
                         actual.value = res.data.data;
@@ -97,7 +91,7 @@ createApp({
                 pax_ajustado: totalFinal.value
             };
             try {
-                const res = await axios.post('api/desayunos/guardar.php', payload);
+                const res = await axios.post('api/desayunos.php?action=guardar', payload);
                 if (res.data.ok) {
                     Swal.fire({
                         title: '¡Guardado!',

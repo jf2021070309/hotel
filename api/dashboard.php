@@ -1,17 +1,19 @@
 <?php
-// ============================================================
-// api/dashboard.php — GET stats + habitaciones
-// ============================================================
-require_once '../config/conexion.php';
-require_once '../app/Controllers/ReporteController.php';
+/**
+ * api/dashboard.php
+ * Entry point for all dashboard-related data requests.
+ */
+require_once '../config/db.php';
+require_once '../auth/session.php';
+require_once '../app/Controllers/DashboardController.php';
 
+header('Content-Type: application/json; charset=utf-8');
 
-require_once __DIR__ . '/../auth/session.php';
-if (!estaAutenticado()) { json_response(false, null, 401, 'No autorizado'); }
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    json_response(true, null);
+$rol = $_SESSION['auth_rol'] ?? 'cajera';
+$controller = new DashboardController($pdo);
+
+if ($rol === 'admin') {
+    echo json_encode($controller->getAdminData());
+} else {
+    echo json_encode($controller->getCajeraData());
 }
-
-$ctrl = new ReporteController($conn);
-$ctrl->dashboard();
-

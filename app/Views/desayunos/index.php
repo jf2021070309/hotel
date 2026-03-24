@@ -2,7 +2,8 @@
 /**
  * app/Views/desayunos/index.php
  */
-$base = '../../';
+$base = '../../../';
+require_once $base . 'auth/session.php';
 $page_title = 'Control de Desayunos — Hotel Manager';
 include $base . 'includes/head.php';
 include $base . 'includes/sidebar.php';

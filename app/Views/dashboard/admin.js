@@ -78,7 +78,7 @@ createApp({
     const fetchData = async () => {
       isRefreshing.value = true;
       try {
-        const res = await axios.get('api/dashboard/admin.php');
+        const res = await axios.get('api/dashboard.php');
         if (res.data.ok) {
           const d = res.data.data;
           kpi.value = d.kpi;

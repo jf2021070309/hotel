@@ -23,7 +23,7 @@ createApp({
 
     const fetchData = async () => {
       try {
-        const res = await axios.get('api/dashboard/cajera.php');
+        const res = await axios.get('api/dashboard.php');
         if (res.data.ok) {
           const d = res.data.data;
           usuario.value = d.usuario;

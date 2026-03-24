@@ -37,6 +37,17 @@ class RoomingModel {
     }
 
     public function registrarStay(array $data, array $paxList): int {
+        // Regla de Negocio: Bloqueo de check-in si limpieza no está 'lista'
+        $fechaHoy = date('Y-m-d');
+        $habId = $data['habitacion_id'];
+        $stmtClean = $this->pdo->prepare("SELECT estado FROM limpieza_registros WHERE fecha = ? AND habitacion_id = ?");
+        $stmtClean->execute([$fechaHoy, $habId]);
+        $limpieza = $stmtClean->fetchColumn();
+
+        if ($limpieza && $limpieza !== 'lista') {
+            throw new Exception("La habitación {$data['hab_id']} aún no ha sido marcada como 'LISTA' por el personal de limpieza.");
+        }
+
         $this->pdo->beginTransaction();
         try {
             $sql = "INSERT INTO rooming_stays (

@@ -5,6 +5,7 @@
  */
 require_once '../config/db.php';
 require_once '../auth/session.php';
+require_once '../app/Models/LimpiezaModel.php';
 require_once '../app/Controllers/LimpiezaController.php';
 
 header('Content-Type: application/json; charset=utf-8');
@@ -35,6 +36,13 @@ switch ($action) {
 
     case 'detalle':
         echo json_encode($controller->getDetalleDia());
+        break;
+
+    case 'detalle_fecha':
+        $fecha = $_GET['fecha'] ?? date('Y-m-d');
+        $model = new LimpiezaModel($pdo);
+        $data = $model->getDetalleDia($fecha);
+        echo json_encode(['ok' => true, 'data' => $data]);
         break;
 
     default:

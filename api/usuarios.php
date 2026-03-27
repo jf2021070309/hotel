@@ -19,6 +19,12 @@ switch ($action) {
         protegerPorRol('cajera');
         json_response(true, $controller->index());
         break;
+    
+    case 'personal_limpieza':
+        $stmt = $pdo->prepare("SELECT id, nombre FROM usuarios WHERE rol = 'limpieza' AND estado = 1 ORDER BY nombre");
+        $stmt->execute();
+        json_response(true, $stmt->fetchAll());
+        break;
 
     case 'crear':
         if ($method !== 'POST') json_response(false, null, 405, "Método no permitido");

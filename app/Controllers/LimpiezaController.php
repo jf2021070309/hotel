@@ -6,9 +6,11 @@ require_once __DIR__ . '/../Models/LimpiezaModel.php';
 
 class LimpiezaController {
     private LimpiezaModel $model;
+    private PDO $pdo;
 
     public function __construct(PDO $pdo) {
         $this->model = new LimpiezaModel($pdo);
+        $this->pdo   = $pdo;
     }
 
     public function getHoy(): array {
@@ -66,17 +68,13 @@ class LimpiezaController {
         try {
             $this->model->actualizar($id, $data);
             
-            // [NUEVO] Si la limpieza terminó, liberar la habitación (si no está en mantenimiento)
+            // Si la limpieza terminó, liberar la habitación
             if ($estado === 'lista') {
                 $stmt = $this->pdo->prepare("SELECT habitacion_id FROM limpieza_registros WHERE id = ?");
                 $stmt->execute([$id]);
                 $hab_id = $stmt->fetchColumn();
-                
                 if ($hab_id) {
-                    // Solo liberamos si el estado actual es 'limpieza' (sucia). 
-                    // Si está en 'mantenimiento', se queda ahí.
-                    $stmt = $this->pdo->prepare("UPDATE habitaciones SET estado = 'libre' WHERE id = ? AND estado = 'limpieza'");
-                    $stmt->execute([$hab_id]);
+                    $this->pdo->prepare("UPDATE habitaciones SET estado = 'libre' WHERE id = ? AND estado = 'limpieza'")->execute([$hab_id]);
                 }
             }
             

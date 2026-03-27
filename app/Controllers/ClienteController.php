@@ -1,30 +1,21 @@
 <?php
-// ============================================================
-// app/Controllers/ClienteController.php
-// ============================================================
+/**
+ * app/Controllers/ClienteController.php
+ */
 require_once __DIR__ . '/../Models/ClienteModel.php';
 
 class ClienteController {
     private ClienteModel $model;
 
-    public function __construct(mysqli $db) {
-        $this->model = new ClienteModel($db);
+    public function __construct(PDO $pdo) {
+        $this->model = new ClienteModel($pdo);
     }
 
-    public function index(string $buscar = ''): void {
-        json_response(true, $this->model->getAll($buscar));
+    public function index(string $buscar = ''): array {
+        return $this->model->getAll($buscar);
     }
 
-    public function store(array $body): void {
-        $nombre   = trim($body['nombre']   ?? '');
-        $dni      = trim($body['dni']      ?? '');
-        $telefono = trim($body['telefono'] ?? '');
-
-        if ($nombre === '') json_response(false, null, 422, 'El nombre es obligatorio');
-        if ($dni    === '') json_response(false, null, 422, 'El DNI es obligatorio');
-
-        $result = $this->model->create(compact('nombre','dni','telefono'));
-        $msg = $result['duplicado'] ? 'Cliente ya existía, reutilizado' : 'Cliente creado';
-        json_response(true, ['id' => $result['id'], 'duplicado' => $result['duplicado']], 201, $msg);
+    public function historial(string $dni): array {
+        return $this->model->historialPorDni($dni);
     }
 }

@@ -198,18 +198,36 @@ include $base . 'includes/head.php';
                   <div class="mb-2">
                     <input type="text" v-model="pax.nombre_completo" class="form-control-sm form-control" placeholder="Nombre completo" required>
                   </div>
-                  <div class="row g-2">
-                    <div class="col-4">
-                      <select v-model="pax.documento_tipo" class="form-select form-select-sm">
-                        <option value="DNI">DNI</option>
-                        <option value="CE">CE</option>
-                        <option value="PASA">PASAPORTE</option>
-                      </select>
+                    <div class="row g-2">
+                      <div class="col-4">
+                        <select v-model="pax.documento_tipo" class="form-select form-select-sm">
+                          <option value="DNI">DNI</option>
+                          <option value="CE">CE</option>
+                          <option value="PASA">PASAPORTE</option>
+                        </select>
+                      </div>
+                      <div class="col-8 position-relative">
+                        <input type="text" v-model="pax.documento_num"
+                               class="form-control form-control-sm"
+                               placeholder="Num. documento" required
+                               @input="buscarPax(pax, idx)"
+                               @blur="ocultarSugerencias(idx)"
+                               autocomplete="off">
+                        <!-- Dropdown sugerencias -->
+                        <div v-if="sugerencias[idx] && sugerencias[idx].length"
+                             class="position-absolute bg-white border rounded shadow-sm w-100 z-3"
+                             style="top:100%; left:0; max-height:200px; overflow-y:auto;">
+                          <div v-for="s in sugerencias[idx]" :key="s.documento_num"
+                               class="px-3 py-2 cursor-pointer border-bottom d-flex align-items-center gap-2"
+                               style="cursor:pointer; font-size:12px;"
+                               @mousedown.prevent="aplicarSugerencia(pax, idx, s)">
+                            <span class="badge bg-secondary" style="font-size:9px;">{{ s.documento_tipo }}</span>
+                            <span class="fw-bold text-primary">{{ s.documento_num }}</span>
+                            <span class="text-muted">{{ s.nombre_completo }}</span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <div class="col-8">
-                      <input type="text" v-model="pax.documento_num" class="form-control form-control-sm" placeholder="Num. documento" required>
-                    </div>
-                  </div>
                   <div class="row g-2 mt-1">
                     <div class="col-6">
                       <input type="text" v-model="pax.nacionalidad" class="form-control form-control-sm" placeholder="Nacionalidad">

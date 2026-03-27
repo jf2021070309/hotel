@@ -325,26 +325,19 @@ CREATE TABLE IF NOT EXISTS `habitaciones` (
 -- La exportación de datos fue deseleccionada.
 -- Volcando estructura para tabla hotel_db.inventario_movimientos
 CREATE TABLE IF NOT EXISTS `inventario_movimientos` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `producto_id` int(10) unsigned NOT NULL,
-  `fecha` date NOT NULL,
-  `tipo` enum('ingreso','venta','ajuste') NOT NULL,
-  `cantidad` int(11) NOT NULL,
-  `stock_queda` int(11) NOT NULL,
-  `stay_id` int(10) unsigned DEFAULT NULL,
-  `habitacion` varchar(10) DEFAULT NULL,
-  `observacion` text DEFAULT NULL,
-  `usuario_id` int(10) unsigned NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `id`           INT(11)       NOT NULL AUTO_INCREMENT,
+  `producto_id`  INT(11)       NOT NULL,
+  `tipo`         ENUM('VENTA','RECARGA','CONSUMO_INTERNO','AJUSTE') NOT NULL,
+  `cantidad`     INT(11)       NOT NULL,
+  `stock_antes`  INT(11)       NOT NULL DEFAULT 0,
+  `stock_despues`INT(11)       NOT NULL DEFAULT 0,
+  `referencia`   VARCHAR(150)  NULL DEFAULT NULL COMMENT 'Ej: HAB 201 - Juanpa / Dueño Mendoza',
+  `usuario_id`   INT(11)       NOT NULL DEFAULT 1,
+  `created_at`   TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  KEY `idx_producto` (`producto_id`),
-  KEY `idx_fecha` (`fecha`),
-  KEY `idx_stay` (`stay_id`),
-  KEY `usuario_id` (`usuario_id`),
-  CONSTRAINT `inventario_movimientos_ibfk_1` FOREIGN KEY (`producto_id`) REFERENCES `inventario_productos` (`id`),
-  CONSTRAINT `inventario_movimientos_ibfk_2` FOREIGN KEY (`stay_id`) REFERENCES `rooming_stays` (`id`) ON DELETE SET NULL,
-  CONSTRAINT `inventario_movimientos_ibfk_3` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  INDEX `idx_producto` (`producto_id`),
+  INDEX `idx_fecha` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- La exportación de datos fue deseleccionada.
 
@@ -614,13 +607,13 @@ INSERT INTO `habitaciones` (`numero`, `tipo`, `piso`, `estado`, `precio_base`) V
 ('301', 'TRIPLE',               3, 'libre', 0.00),
 ('302', 'EJECUTIVA SUPERIOR',   3, 'libre', 0.00),
 ('303', 'DOBLE',                3, 'libre', 0.00),
-('304', 'MATRIMONIAL SUPERIOR', 3, 'libre', 0.00),  -- corregido
+('304', 'MATRIMONIAL SUPERIOR', 3, 'libre', 0.00),  
 ('305', 'PLATINIUM SUITE',      3, 'libre', 0.00),
 
 ('401', 'TRIPLE',               4, 'libre', 0.00),
 ('402', 'EJECUTIVA SUPERIOR',   4, 'libre', 0.00),
 ('403', 'DOBLE',                4, 'libre', 0.00),
-('404', 'MATRIMONIAL SUPERIOR', 4, 'libre', 0.00),  -- corregido
+('404', 'MATRIMONIAL SUPERIOR', 4, 'libre', 0.00),  
 ('405', 'PLATINIUM SUITE',      4, 'libre', 0.00),
 
 ('501', 'TRIPLE',               5, 'libre', 0.00),
@@ -632,7 +625,7 @@ INSERT INTO `habitaciones` (`numero`, `tipo`, `piso`, `estado`, `precio_base`) V
 ('601', 'TRIPLE',               6, 'libre', 0.00),
 ('602', 'EJECUTIVA SUPERIOR',   6, 'libre', 0.00),
 ('603', 'DOBLE',                6, 'libre', 0.00),
-('604', 'MATRIMONIAL SUPERIOR', 6, 'libre', 0.00),  -- corregido
+('604', 'MATRIMONIAL SUPERIOR', 6, 'libre', 0.00),  
 ('605', 'PLATINIUM SUITE',      6, 'libre', 0.00);
 
 

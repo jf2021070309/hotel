@@ -191,6 +191,37 @@ createApp({
       form.pax.forEach((p, i) => p.es_titular = (i === idx));
     };
 
+    // ─── AUTOCOMPLETE DOCUMENTO ──────────────────────────────
+    const sugerencias = ref({});   // { [idx]: [] }
+    let acTimer = null;
+
+    const buscarPax = (pax, idx) => {
+      const q = pax.documento_num.trim();
+      sugerencias.value[idx] = [];
+      if (q.length < 3) return;
+      clearTimeout(acTimer);
+      acTimer = setTimeout(async () => {
+        try {
+          const res = await axios.get(`../../../api/clientes.php?action=buscar_pax&q=${encodeURIComponent(q)}`);
+          sugerencias.value[idx] = res.data.data || [];
+        } catch (e) { /* silencio */ }
+      }, 280);
+    };
+
+    const aplicarSugerencia = (pax, idx, s) => {
+      pax.documento_num   = s.documento_num;
+      pax.documento_tipo  = s.documento_tipo;
+      pax.nombre_completo = s.nombre_completo;
+      pax.nacionalidad    = s.nacionalidad || pax.nacionalidad;
+      pax.ciudad          = s.ciudad       || pax.ciudad;
+      sugerencias.value[idx] = [];
+    };
+
+    const ocultarSugerencias = (idx) => {
+      setTimeout(() => { sugerencias.value[idx] = []; }, 200);
+    };
+    // ────────────────────────────────────────────────────────
+
     const guardarCheckin = async () => {
       loading.value = true;
       try {
@@ -356,9 +387,11 @@ createApp({
       abrirCheckin, onHabChange, calcularNoches, onNochesChange, recalcularMoneda, 
       onAdelantoChange, agregarPax, setTitular, guardarCheckin, verDetalle, cargarDatos,
       fmtFecha, getPagoClass, procederCheckout, abrirPago, recalcularPago, guardarPago,
-      // CONSUOMOS
+      // CONSUMOS
       inventario, inventarioAgrupado, stayParaConsumo, consumosStay, consumoForm,
-      abrirConsumo, onProductoChange, calcularTotalConsumo, guardarConsumo
+      abrirConsumo, onProductoChange, calcularTotalConsumo, guardarConsumo,
+      // AUTOCOMPLETE PAX
+      sugerencias, buscarPax, aplicarSugerencia, ocultarSugerencias
     };
   }
 }).mount('#app-rooming');

@@ -20,6 +20,9 @@ include $base . 'includes/sidebar.php';
             <button v-if="!yaGenerado" class="btn btn-primary shadow-sm" @click="generarLista()" :disabled="loading">
                 <i class="bi bi-magic me-1"></i> Generar Lista de Hoy
             </button>
+            <a href="<?= route('limpieza/reporte.php', $base) ?>" class="btn btn-outline-danger shadow-sm">
+                <i class="bi bi-clipboard2-check me-1"></i> Reporte / Checklist
+            </a>
             <a href="<?= route('limpieza/historial.php', $base) ?>" class="btn btn-outline-secondary shadow-sm">
                 <i class="bi bi-clock-history me-1"></i> Ver Historial
             </a>
@@ -157,8 +160,13 @@ include $base . 'includes/sidebar.php';
                                 </button>
                             </td>
                             <td class="text-center small">
-                                <div v-if="h.hora_inicio"><span class="text-muted">In:</span> {{ h.hora_inicio }}</div>
-                                <div v-if="h.hora_fin"><span class="text-muted">Out:</span> {{ h.hora_fin }}</div>
+                                <div v-if="fmtHora(h.hora_inicio)">
+                                    <span class="text-muted">Inicio:</span> <b>{{ fmtHora(h.hora_inicio) }}</b>
+                                </div>
+                                <div v-if="fmtHora(h.hora_fin)">
+                                    <span class="text-muted">Fin:</span> <b class="text-success">{{ fmtHora(h.hora_fin) }}</b>
+                                </div>
+                                <span v-if="!fmtHora(h.hora_inicio)" class="text-muted mini">—</span>
                             </td>
                             <td class="text-end pe-3">
                                 <div class="btn-group shadow-sm">
@@ -182,5 +190,5 @@ include $base . 'includes/sidebar.php';
     </div>
 </div>
 
-<script src="<?= $base ?>assets/js/limpieza.js"></script>
 <?php include $base . 'includes/footer.php'; ?>
+<script src="<?= $base ?>assets/js/limpieza.js?v=<?= time() ?>"></script>

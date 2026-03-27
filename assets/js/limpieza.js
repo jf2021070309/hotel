@@ -9,28 +9,42 @@ const appConfig = {
         const yaGenerado = ref(false);
         const lista = ref([]);
         const filtro = ref({ estado: 'todos', tipo: 'todos' });
+        const personalLimpieza = ref([]);
 
         // Historial
         const listaHistorial = ref([]);
-        const filtroHist = ref({ mes: new Date().getMonth() + 1, anio: 2026 });
+        const filtroHist = ref({ mes: new Date().getMonth() + 1, anio: new Date().getFullYear() });
         const detalleDia = ref([]);
         const fechaDetalle = ref('');
 
-        const stats = computed(() => {
-            return {
-                salida: lista.value.filter(h => h.tipo_limpieza === 'salida').length,
-                estadia: lista.value.filter(h => h.tipo_limpieza === 'estadía').length,
-                programada: lista.value.filter(h => h.tipo_limpieza === 'programada').length
-            };
-        });
+        const stats = computed(() => ({
+            salida:     lista.value.filter(h => h.tipo_limpieza === 'salida').length,
+            estadia:    lista.value.filter(h => h.tipo_limpieza === 'estadía').length,
+            programada: lista.value.filter(h => h.tipo_limpieza === 'programada').length
+        }));
 
         const listaFiltrada = computed(() => {
             return lista.value.filter(h => {
                 const condEstado = filtro.value.estado === 'todos' || h.estado === filtro.value.estado;
-                const condTipo = filtro.value.tipo === 'todos' || h.tipo_limpieza === filtro.value.tipo;
+                const condTipo   = filtro.value.tipo === 'todos' || h.tipo_limpieza === filtro.value.tipo;
                 return condEstado && condTipo;
             });
         });
+
+        /** Extrae sólo HH:MM de un string que puede ser "HH:MM:SS" o "0000-00-00 HH:MM:SS" */
+        const fmtHora = (val) => {
+            if (!val || val.startsWith('00:00') || val.startsWith('0000')) return '';
+            // Si viene como "2026-03-27 14:30:00" extraemos la parte de tiempo
+            const match = val.match(/(\d{2}:\d{2})/);
+            return match ? match[1] : val;
+        };
+
+        const fetchPersonal = async () => {
+            try {
+                const res = await axios.get('/hotel/api/usuarios.php?action=personal_limpieza');
+                personalLimpieza.value = res.data.data || [];
+            } catch (e) { /* silencio si no hay usuario limpieza aún */ }
+        };
 
         const fetchHoy = async () => {
             loading.value = true;
@@ -65,43 +79,71 @@ const appConfig = {
             try {
                 const res = await axios.post('/hotel/api/limpieza.php?action=actualizar', formData);
                 if (res.data.ok) {
-                   h.estado = nuevoEstado;
-                   if (res.data.data.hora_inicio) h.hora_inicio = res.data.data.hora_inicio;
-                   if (res.data.data.hora_fin) h.hora_fin = res.data.data.hora_fin;
+                    h.estado = nuevoEstado;
+                    if (res.data.data.hora_inicio) h.hora_inicio = res.data.data.hora_inicio;
+                    if (res.data.data.hora_fin)    h.hora_fin    = res.data.data.hora_fin;
                 }
             } catch (e) { console.error(e); }
         };
 
         const asignarResponsable = async (h) => {
-            const { value: nombre } = await Swal.fire({
-                title: 'Asignar Personal',
-                input: 'text',
-                inputLabel: 'Nombre del responsable para la HAB ' + h.habitacion,
-                inputPlaceholder: 'Ej: Maria Lopez',
-                showCancelButton: true
-            });
-            if (nombre) {
-                const formData = new FormData();
-                formData.append('id', h.id);
-                formData.append('responsable', nombre);
-                axios.post('/hotel/api/limpieza.php?action=actualizar', formData).then(() => {
-                    h.responsable = nombre;
+            // Construir opciones: personal de limpieza + opción manual
+            const opciones = {};
+            personalLimpieza.value.forEach(p => { opciones[p.nombre] = p.nombre; });
+            opciones['__otro__'] = '✏️ Escribir nombre manualmente...';
+
+            if (Object.keys(opciones).length === 1) {
+                // No hay personal de limpieza registrado, usar texto libre
+                const { value: nombre } = await Swal.fire({
+                    title: 'Asignar Personal — HAB ' + h.habitacion,
+                    input: 'text',
+                    inputLabel: 'Nombre del responsable',
+                    inputPlaceholder: 'Ej: Maria López',
+                    showCancelButton: true
                 });
+                if (nombre) guardarResponsable(h, nombre);
+                return;
             }
+
+            const { value: sel } = await Swal.fire({
+                title: 'Asignar Personal — HAB ' + h.habitacion,
+                input: 'select',
+                inputOptions: opciones,
+                inputPlaceholder: 'Selecciona la camarera',
+                showCancelButton: true,
+                confirmButtonText: 'Asignar',
+            });
+
+            if (!sel) return;
+            if (sel === '__otro__') {
+                const { value: nombre } = await Swal.fire({
+                    title: 'Nombre del responsable',
+                    input: 'text',
+                    showCancelButton: true
+                });
+                if (nombre) guardarResponsable(h, nombre);
+            } else {
+                guardarResponsable(h, sel);
+            }
+        };
+
+        const guardarResponsable = (h, nombre) => {
+            const formData = new FormData();
+            formData.append('id', h.id);
+            formData.append('responsable', nombre);
+            axios.post('/hotel/api/limpieza.php?action=actualizar', formData).then(() => {
+                h.responsable = nombre;
+            });
         };
 
         const mostrarMenu = async (h) => {
             const { value: action } = await Swal.fire({
                 title: 'Opciones HAB ' + h.habitacion,
                 input: 'select',
-                inputOptions: {
-                    'obs': 'Agregar Observación',
-                    'reset': 'Resetear Tiempos (Admin)'
-                },
+                inputOptions: { 'obs': 'Agregar / Editar Observación' },
                 inputPlaceholder: 'Seleccioná una acción',
                 showCancelButton: true
             });
-
             if (action === 'obs') {
                 const { value: texto } = await Swal.fire({
                     title: 'Observación',
@@ -121,18 +163,18 @@ const appConfig = {
         };
 
         const getTipoClass = (t) => {
-            if (t === 'salida') return 'bg-danger';
-            if (t === 'estadía') return 'bg-warning text-dark';
-            return 'bg-info';
+            if (t === 'salida')    return 'bg-danger';
+            if (t === 'estadía')   return 'bg-warning text-dark';
+            return 'bg-info text-dark';
         };
 
         const getEstadoClass = (e) => {
-            if (e === 'pendiente') return 'bg-light text-dark border';
+            if (e === 'pendiente')  return 'bg-light text-dark border';
             if (e === 'en_proceso') return 'bg-warning text-dark';
             return 'bg-success';
         };
 
-        // HISTORIAL FUNCTIONS
+        // HISTORIAL
         const fetchHistorial = async () => {
             loading.value = true;
             try {
@@ -159,19 +201,21 @@ const appConfig = {
         };
 
         onMounted(() => {
-            if (document.getElementById('app-limpieza')) fetchHoy();
-            if (document.getElementById('app-limpieza-historial')) fetchHistorial();
+            fetchPersonal();
+            if (document.getElementById('app-limpieza'))           fetchHoy();
+            if (document.getElementById('app-limpieza-historial'))  fetchHistorial();
         });
 
         return {
-            loading, yaGenerado, lista, filtro, stats, listaFiltrada,
-            generarLista, cambiarEstado, asignarResponsable, mostrarMenu,
+            loading, yaGenerado, lista, filtro, stats, listaFiltrada, personalLimpieza,
+            generarLista, cambiarEstado, asignarResponsable, mostrarMenu, fmtHora,
             getTipoClass, getEstadoClass,
-            // Historial
-            listaHistorial, filtro: (document.getElementById('app-limpieza-historial') ? filtroHist : filtro),
+            listaHistorial, filtroHist,
             detalleDia, fechaDetalle, fetchHistorial, verDetalle, formatFecha
         };
     }
 };
 
-createApp(appConfig).mount(document.getElementById('app-limpieza') ? '#app-limpieza' : '#app-limpieza-historial');
+createApp(appConfig).mount(
+    document.getElementById('app-limpieza') ? '#app-limpieza' : '#app-limpieza-historial'
+);

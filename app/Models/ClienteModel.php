@@ -1,71 +1,95 @@
 <?php
-// ============================================================
-// app/Models/ClienteModel.php
-// ============================================================
+/**
+ * app/Models/ClienteModel.php
+ * Clientes = titulares de rooming_pax (es_titular = 1), sin duplicados por documento
+ */
 class ClienteModel {
-    private mysqli $db;
+    private PDO $pdo;
 
-    public function __construct(mysqli $db) {
-        $this->db = $db;
-    }
-
-    /** Lista todos (o filtra por nombre/DNI) */
-    public function getAll(string $buscar = ''): array {
-        if ($buscar !== '') {
-            $like = '%' . $buscar . '%';
-            $stmt = $this->db->prepare(
-                "SELECT * FROM clientes WHERE nombre LIKE ? OR dni LIKE ? ORDER BY nombre"
-            );
-            $stmt->bind_param('ss', $like, $like);
-            $stmt->execute();
-            $rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-            $stmt->close();
-            return $rows;
-        }
-        return $this->db->query(
-            "SELECT * FROM clientes ORDER BY nombre"
-        )->fetch_all(MYSQLI_ASSOC);
-    }
-
-    /** Por ID */
-    public function getById(int $id): ?array {
-        $stmt = $this->db->prepare("SELECT * FROM clientes WHERE id = ?");
-        $stmt->bind_param('i', $id);
-        $stmt->execute();
-        $row = $stmt->get_result()->fetch_assoc();
-        $stmt->close();
-        return $row ?: null;
+    public function __construct(PDO $pdo) {
+        $this->pdo = $pdo;
     }
 
     /**
-     * Crear cliente. Retorna el ID o, si DNI ya existe, el ID del existente.
+     * Lista únicos titulares (agrupa por documento_num para evitar duplicados)
+     * Muestra el último nombre registrado y cuenta cuántas estadías tiene.
      */
-    public function create(array $d): array {
-        $stmt = $this->db->prepare(
-            "INSERT INTO clientes (nombre, dni, telefono) VALUES (?,?,?)"
-        );
-        $stmt->bind_param('sss', $d['nombre'], $d['dni'], $d['telefono']);
-        $ok = $stmt->execute();
+    public function getAll(string $buscar = ''): array {
+        $sql = "SELECT 
+                    p.documento_num                         AS dni,
+                    p.documento_tipo                        AS tipo_doc,
+                    p.nombre_completo                       AS nombre,
+                    p.nacionalidad,
+                    p.ciudad,
+                    COUNT(DISTINCT p.stay_id)               AS total_estadias,
+                    MAX(p.created_at)                       AS ultima_visita
+                FROM rooming_pax p
+                WHERE p.es_titular = 1";
 
-        if ($ok) {
-            $id = $this->db->insert_id;
-            $stmt->close();
-            return ['id' => $id, 'duplicado' => false];
+        $params = [];
+        if ($buscar !== '') {
+            $like = '%' . $buscar . '%';
+            $sql .= " AND (p.nombre_completo LIKE ? OR p.documento_num LIKE ?)";
+            $params = [$like, $like];
         }
 
-        // DNI duplicado (errno 1062) → buscar id existente
-        if ($this->db->errno === 1062) {
-            $stmt->close();
-            $st2 = $this->db->prepare("SELECT id FROM clientes WHERE dni = ?");
-            $st2->bind_param('s', $d['dni']);
-            $st2->execute();
-            $st2->bind_result($existingId);
-            $st2->fetch();
-            $st2->close();
-            return ['id' => $existingId, 'duplicado' => true];
-        }
+        $sql .= " GROUP BY p.documento_num, p.documento_tipo, p.nombre_completo, p.nacionalidad, p.ciudad
+                  ORDER BY p.nombre_completo ASC";
 
-        $stmt->close();
-        throw new RuntimeException('Error al crear cliente: ' . $this->db->error);
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Historial de estadías de un titular por su documento_num
+     */
+    public function historialPorDni(string $dni): array {
+        try {
+            // 1. Estadías donde este DNI es titular
+            $sqlStays = "SELECT 
+                            s.id,
+                            s.fecha_registro    AS check_in,
+                            s.fecha_checkout    AS check_out,
+                            s.estado,
+                            COALESCE(s.total_pago, 0)    AS total_pago,
+                            COALESCE(s.total_cobrado, 0) AS total_cobrado,
+                            s.estado_pago,
+                            h.numero  AS habitacion,
+                            h.tipo    AS tipo_hab
+                         FROM rooming_pax p
+                         JOIN rooming_stays s ON s.id = p.stay_id
+                         JOIN habitaciones  h ON h.id = s.habitacion_id
+                         WHERE p.es_titular = 1
+                           AND p.documento_num = ?
+                         ORDER BY s.id DESC
+                         LIMIT 50";
+
+            $stmt = $this->pdo->prepare($sqlStays);
+            $stmt->execute([$dni]);
+            $stays = $stmt->fetchAll();
+
+            if (empty($stays)) return [];
+
+            // 2. Para cada estadía cargar TODOS los pax (titular + acompañantes)
+            $sqlPax = "SELECT nombre_completo, documento_tipo, documento_num,
+                              nacionalidad, es_titular
+                       FROM rooming_pax
+                       WHERE stay_id = ?
+                       ORDER BY es_titular DESC, nombre_completo ASC";
+            $stmtPax = $this->pdo->prepare($sqlPax);
+
+            foreach ($stays as &$stay) {
+                $stmtPax->execute([$stay['id']]);
+                $stay['pax'] = $stmtPax->fetchAll();
+            }
+            unset($stay);
+
+            return $stays;
+
+        } catch (PDOException $e) {
+            error_log('ClienteModel::historialPorDni error: ' . $e->getMessage());
+            return [];
+        }
     }
 }

@@ -154,6 +154,12 @@ include $base . 'includes/sidebar.php';
     color: #333;
   }
   .est-late_checkout { background: #CE93D8; color: #4A148C; }
+  
+  /* Colores por Canal */
+  .canal-booking { background: #FF9800 !important; color: #fff !important; }
+  .canal-llamada { background: #4CAF50 !important; color: #fff !important; }
+  .canal-booking .titular, .canal-llamada .titular { color: #fff !important; }
+  .canal-booking .badge-pax, .canal-llamada .badge-pax { background: rgba(255,255,255,0.3); color: #fff; }
 
   /* ── Summary pills ─────────────────────────────────────── */
   .summary-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
@@ -286,6 +292,12 @@ include $base . 'includes/sidebar.php';
       </button>
 
       <div class="divider"></div>
+      
+      <span class="small ms-2 fw-bold">CANALES:</span>
+      <span class="small"><span class="legend-dot canal-booking"></span>Booking (Naranja)</span>
+      <span class="small"><span class="legend-dot canal-llamada"></span>Llamada (Verde)</span>
+
+      <div class="divider"></div>
 
       <!-- Leyenda inline -->
       <span class="small"><span class="legend-dot est-pendiente"></span>Pendiente</span>
@@ -340,7 +352,7 @@ include $base . 'includes/sidebar.php';
                 <!-- Stay block: only render on first day of stay -->
                 <div v-if="esInicioStay(hab, d)"
                      class="stay-block"
-                     :class="'est-' + getCeldaStay(hab, d).estado_pago"
+                     :class="['est-' + getCeldaStay(hab, d).estado_pago, 'canal-' + (getCeldaStay(hab, d).canal || '').toLowerCase()]"
                      :style="{ width: (getCeldaStay(hab, d).cols * colWidth - 3) + 'px' }"
                      @click.stop="openContextMenu($event, getCeldaStay(hab, d))">
                   <span class="titular">{{ getCeldaStay(hab, d).titular }}</span>

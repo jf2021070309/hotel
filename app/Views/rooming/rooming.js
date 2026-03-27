@@ -14,6 +14,7 @@ createApp({
     const filtroPiso = ref('');
     const filtroPago = ref('');
     const selectedStay = ref(null);
+    const mediosPago = ref([]);
 
     const form = reactive({
       stay: {
@@ -29,6 +30,8 @@ createApp({
         tc_aplicado: 1,
         metodo_pago: 'EFECTIVO',
         tipo_comprobante: 'RECIBO',
+        num_comprobante: '',
+        carro: 'NO',
         total_cobrado: 0,
         estado_pago: 'pendiente',
         procedencia: '',
@@ -68,14 +71,16 @@ createApp({
     const cargarDatos = async () => {
       loading.value = true;
       try {
-        const [resStays, resHabs, resTC] = await Promise.all([
+        const [resStays, resHabs, resTC, resMedios] = await Promise.all([
           axios.get('../../../api/rooming.php?action=listar'),
           axios.get('../../../api/habitaciones.php?action=libres'),
-          axios.get('../../../api/tipos_cambio.php')
+          axios.get('../../../api/tipos_cambio.php'),
+          axios.get('../../../api/medios_pago.php?action=listar')
         ]);
         stays.value = resStays.data.data || [];
         habitacionesLibres.value = resHabs.data.data || [];
         tcs.value = resTC.data.data;
+        mediosPago.value = resMedios.data.data || [];
       } catch (err) {
         showToast('Error al cargar datos', 'error');
       } finally {
@@ -103,6 +108,8 @@ createApp({
         tc_aplicado: 1,
         metodo_pago: 'EFECTIVO',
         tipo_comprobante: 'RECIBO',
+        num_comprobante: '',
+        carro: 'NO',
         total_cobrado: 0,
         estado_pago: 'pendiente'
       });
@@ -217,7 +224,7 @@ createApp({
 
     return {
       stays, habitacionesLibres, loading, busqueda, filtroPiso, filtroPago, form, 
-      staysFiltrados, selectedStay,
+      staysFiltrados, selectedStay, mediosPago,
       abrirCheckin, onHabChange, calcularNoches, onNochesChange, recalcularMoneda, 
       onAdelantoChange, agregarPax, setTitular, guardarCheckin, verDetalle, cargarDatos,
       fmtFecha, getPagoClass, procederCheckout

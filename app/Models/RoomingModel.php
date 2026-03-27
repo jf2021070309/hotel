@@ -56,13 +56,13 @@ class RoomingModel {
                 habitacion_id, tipo_hab_declarado, noches, pax_total, total_pago, 
                 moneda_pago, monto_original, tc_aplicado, recargo_tarjeta, metodo_pago, 
                 tipo_comprobante, num_comprobante, ruc_factura, cobrador, procedencia, 
-                observaciones, usuario_id, checkin_realizado, total_cobrado, estado_pago
+                carro, observaciones, usuario_id, checkin_realizado, total_cobrado, estado_pago
             ) VALUES (
                 :operador, :fecha_reg, :fecha_out, :hora_in, :medio, 
                 :hab_id, :tipo_hab, :noches, :pax_total, :total, 
                 :moneda, :monto_orig, :tc, :recargo, :metodo, 
                 :comprobante, :num_comp, :ruc, :cobrador, :procedencia, 
-                :obs, :uid, 1, :cobrado, :est_pago
+                :carro, :obs, :uid, 1, :cobrado, :est_pago
             )";
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute($data);

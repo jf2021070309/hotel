@@ -109,6 +109,11 @@ require_once $base . 'rutas.php';
       </a>
     </div>
     <div class="nav-item">
+      <a href="<?= route('admin/medios_pago.php', $base) ?>" class="<?= isActive('medios_pago.php','admin') ?>" onclick="closeSidebarOnMobile()">
+        <i class="bi bi-credit-card-2-back-fill text-primary"></i> <span>Medios de Pago</span>
+      </a>
+    </div>
+    <div class="nav-item">
       <a href="<?= route('admin/auditoria.php', $base) ?>" class="<?= isActive('auditoria.php','admin') ?>" onclick="closeSidebarOnMobile()">
         <i class="bi bi-journal-text text-warning"></i> <span>Auditoría</span>
       </a>

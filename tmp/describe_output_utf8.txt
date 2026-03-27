@@ -1,0 +1,123 @@
+﻿Array
+(
+    [0] => Array
+        (
+            [Field] => id
+            [Type] => int(10) unsigned
+            [Null] => NO
+            [Key] => PRI
+            [Default] => 
+            [Extra] => auto_increment
+        )
+
+    [1] => Array
+        (
+            [Field] => fecha
+            [Type] => date
+            [Null] => NO
+            [Key] => MUL
+            [Default] => 
+            [Extra] => 
+        )
+
+    [2] => Array
+        (
+            [Field] => habitacion_id
+            [Type] => int(10) unsigned
+            [Null] => NO
+            [Key] => MUL
+            [Default] => 
+            [Extra] => 
+        )
+
+    [3] => Array
+        (
+            [Field] => habitacion
+            [Type] => varchar(10)
+            [Null] => NO
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+    [4] => Array
+        (
+            [Field] => tipo_limpieza
+            [Type] => enum('estimacion','estad├¡a','salida','programada')
+            [Null] => NO
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+    [5] => Array
+        (
+            [Field] => prioridad
+            [Type] => enum('baja','normal','alta')
+            [Null] => YES
+            [Key] => 
+            [Default] => normal
+            [Extra] => 
+        )
+
+    [6] => Array
+        (
+            [Field] => estado
+            [Type] => enum('pendiente','en proceso','lista')
+            [Null] => YES
+            [Key] => 
+            [Default] => pendiente
+            [Extra] => 
+        )
+
+    [7] => Array
+        (
+            [Field] => hora_inicio
+            [Type] => datetime
+            [Null] => YES
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+    [8] => Array
+        (
+            [Field] => hora_fin
+            [Type] => datetime
+            [Null] => YES
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+    [9] => Array
+        (
+            [Field] => observacion
+            [Type] => text
+            [Null] => YES
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+    [10] => Array
+        (
+            [Field] => usuario_id
+            [Type] => int(10) unsigned
+            [Null] => NO
+            [Key] => MUL
+            [Default] => 
+            [Extra] => 
+        )
+
+    [11] => Array
+        (
+            [Field] => created_at
+            [Type] => timestamp
+            [Null] => NO
+            [Key] => 
+            [Default] => current_timestamp()
+            [Extra] => 
+        )
+
+)

@@ -49,6 +49,7 @@ class RoomingController {
             'ruc'          => $stayData['ruc_factura'] ?? '',
             'cobrador'     => $_SESSION['auth_nombre'],
             'procedencia'  => $stayData['procedencia'] ?? '',
+            'carro'        => $stayData['carro'] ?? 'NO',
             'obs'          => $stayData['observaciones'] ?? '',
             'uid'          => $_SESSION['auth_id'],
             'cobrado'      => $stayData['total_cobrado'] ?? 0,
@@ -56,6 +57,7 @@ class RoomingController {
         ];
         
         try {
+            file_put_contents(__DIR__ . '/../../tmp/debug_checkin.log', "Mapped: " . json_encode($mapped) . "\n", FILE_APPEND);
             $stay_id = $this->model->registrarStay($mapped, $paxList);
             
             // Si hay pago inicial, registrarlo como anticipo
@@ -78,6 +80,7 @@ class RoomingController {
             
             return ['ok' => true, 'id' => $stay_id, 'msg' => "Check-in realizado correctamente"];
         } catch (Exception $e) {
+            file_put_contents(__DIR__ . '/../../tmp/debug_checkin.log', "Error: " . $e->getMessage() . "\n", FILE_APPEND);
             return ['ok' => false, 'msg' => "Error: " . $e->getMessage()];
         }
     }

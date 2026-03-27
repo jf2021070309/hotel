@@ -46,6 +46,7 @@
                 <label class="form-label small fw-bold">Canal de Reserva</label>
                 <select v-model="form.stay.medio_reserva" class="form-select" required>
                   <option value="DIRECTO">DIRECTO</option>
+                  <option value="LLAMADA">LLAMADA</option>
                   <option value="WHATSAPP">WHATSAPP</option>
                   <option value="BOOKING">BOOKING</option>
                   <option value="EXPEDIA">EXPEDIA</option>
@@ -91,6 +92,14 @@
                   </div>
                 </div>
               </div>
+
+              <div class="p-3 bg-white rounded-3 border">
+                 <label class="form-label small fw-bold">Trae vehiculo</label>
+                 <select v-model="form.stay.carro" class="form-select form-select-sm">
+                   <option value="NO">NO</option>
+                   <option value="SI">SI</option>
+                 </select>
+              </div>
             </div>
 
             <!-- SECCIÓN 3: PAGO Y REGISTRO -->
@@ -124,21 +133,27 @@
 
               <div class="mb-3">
                 <label class="form-label small fw-bold">Método de pago</label>
-                <select v-model="form.stay.metodo_pago" class="form-select">
-                  <option value="EFECTIVO">EFECTIVO</option>
-                  <option value="POS SOLES">POS SOLES</option>
-                  <option value="TRANSF">TRANSFERENCIA</option>
-                  <option value="YAPE/PLIN">YAPE/PLIN</option>
+                <select v-model="form.stay.metodo_pago" class="form-select" required>
+                  <option value="">Seleccione...</option>
+                  <option v-for="m in mediosPago" :key="m.id" :value="m.nombre" :disabled="m.activo != 1">
+                    {{ m.nombre }}
+                  </option>
                 </select>
               </div>
 
-              <div class="mb-3">
-                <label class="form-label small fw-bold">Comprobante</label>
-                <select v-model="form.stay.tipo_comprobante" class="form-select">
-                  <option value="RECIBO">RECIBO SIMPLE</option>
-                  <option value="BOLETA">BOLETA</option>
-                  <option value="FACTURA">FACTURA</option>
-                </select>
+              <div class="row g-2 mb-3">
+                <div class="col-7">
+                  <label class="form-label small fw-bold">Comprobante</label>
+                  <select v-model="form.stay.tipo_comprobante" class="form-select">
+                    <option value="RECIBO">RECIBO SIMPLE</option>
+                    <option value="BOLETA">BOLETA</option>
+                    <option value="FACTURA">FACTURA</option>
+                  </select>
+                </div>
+                <div class="col-5">
+                  <label class="form-label small fw-bold">N° comprob.</label>
+                  <input type="text" v-model="form.stay.num_comprobante" class="form-control" placeholder="1372">
+                </div>
               </div>
 
             </div>

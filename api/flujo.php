@@ -56,6 +56,14 @@ switch ($action) {
         json_response($res['ok'], null, $res['ok'] ? 200 : 422, $res['msg']);
         break;
 
+    case 'reabrir':
+        if ($method !== 'POST') json_response(false, null, 405, 'Método no permitido');
+        protegerPorRol('admin'); 
+        $id = (int)($input['id'] ?? 0);
+        $res = $controller->reabrir($id);
+        json_response($res['ok'], null, $res['ok'] ? 200 : 422, $res['msg']);
+        break;
+
     case 'resumen_dia':
         if ($method !== 'GET') json_response(false, null, 405, 'Método no permitido');
         $fecha = $_GET['fecha'] ?? date('Y-m-d');

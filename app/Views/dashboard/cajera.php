@@ -152,9 +152,21 @@ include 'includes/sidebar.php';
 
         </div>
 
-        <!-- COLUMNA DERECHA: MI TURNO Y ACCESOS RÁPIDOS -->
         <div class="col-lg-4">
           
+          <!-- ALERTAS DE INVENTARIO -->
+          <div v-if="alertasInventario.length > 0" class="card shadow-sm border-0 mb-4 animate__animated animate__shakeX">
+             <div class="card-header bg-warning text-dark py-2 fw-bold small">
+                <i class="bi bi-exclamation-triangle-fill me-1"></i> ALERTAS DE INVENTARIO
+             </div>
+             <div class="card-body p-2">
+                <div v-for="a in alertasInventario" :key="a.id" class="d-flex justify-content-between align-items-center mb-1 p-2 bg-light rounded">
+                   <span class="small fw-bold">{{ a.nombre }}</span>
+                   <span class="badge bg-danger">Quedan {{ a.stock_actual }}</span>
+                </div>
+             </div>
+          </div>
+
           <!-- MI TURNO -->
           <div class="card shadow-sm border-0 mb-4 bg-white">
             <div class="card-header bg-primary text-white py-3">

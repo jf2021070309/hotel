@@ -80,7 +80,11 @@ createApp({
     };
 
     // ─── COMPUTADOS REALTIME ──────────────────────────────────────────
-    const esEditable = computed(() => cabecera.estado === 'borrador');
+    const esEditable = computed(() => {
+      if (cabecera.estado === 'borrador') return true;
+      if (cabecera.estado === 'cerrado' && SERVER_DATA.canEditClosed) return true;
+      return false;
+    });
 
     // PEN Totals using generic TC (approx for viewing, backend handles exact TC)
     const toSoles = (mov) => {
@@ -218,6 +222,31 @@ createApp({
       }
     };
 
+    const reabrirTurno = async () => {
+      const confirm = await Swal.fire({
+        title: '¿Reabrir Turno?',
+        text: "Esto permitirá editar movimientos y añadir nuevas filas.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, reabrir',
+      });
+      if (!confirm.isConfirmed) return;
+
+      isSaving.value = true;
+      try {
+        const res = await axios.post(`${BASE}reabrir`, { id: id.value });
+        if (res.data.ok) {
+          Swal.fire('Reabierto', res.data.msg, 'success').then(() => window.location.reload());
+        } else {
+          Swal.fire('Error', res.data.msg, 'error');
+        }
+      } catch (e) {
+        Swal.fire('Error', 'Error de red', 'error');
+      } finally {
+        isSaving.value = false;
+      }
+    };
+
     onMounted(() => {
       loadData();
     });
@@ -226,7 +255,8 @@ createApp({
       loading, isSaving, esNuevo, esEditable,
       cabecera, ingresos, egresos, categorias,
       totalesDia, efectivoEnSobrePEN, efectivoEnSobreUSD, efectivoEnSobreCLP,
-      agregarMovimiento, eliminarMovimiento, guardarTurno, marcarDepositado
+      agregarMovimiento, eliminarMovimiento, guardarTurno, marcarDepositado, reabrirTurno,
+      SERVER_DATA
     };
   }
 }).mount('#app-flujo-form');

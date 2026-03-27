@@ -3,6 +3,7 @@
  * config/db.php
  * Conexión centralizada usando PDO para mayor seguridad y prepared statements.
  */
+date_default_timezone_set('America/Lima');
 
 $host    = 'localhost';
 $db      = 'hotel_db';

@@ -21,10 +21,12 @@ class ReporteController {
         try {
             $data = $this->model->getVentaHospedaje($mes, $anio);
             $resumen = $this->model->getResumenP_L($mes, $anio);
+            $resumenDesglosado = $this->model->getResumenDesglosado($mes, $anio);
             return [
                 'ok' => true,
                 'data' => $data,
                 'resumen' => $resumen,
+                'resumen_desglosado' => $resumenDesglosado,
                 'filtros' => ['mes' => $mes, 'anio' => $anio]
             ];
         } catch (Exception $e) {

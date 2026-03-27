@@ -1,3 +1,4 @@
+<?php
 require_once __DIR__ . '/../Helpers/FinanzasHelper.php';
 
 class CajaChicaModel {

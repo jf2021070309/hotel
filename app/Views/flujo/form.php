@@ -237,9 +237,16 @@ $turnoQuery = $_GET['turno'] ?? 'MAÑANA';
               </button>
             </div>
             
+            <!-- Reabrir si está cerrado o depositado (ADMIN ONLY) -->
+            <div class="d-grid gap-2 mt-2" v-if="cabecera.estado !== 'borrador' && SERVER_DATA.canEditClosed">
+              <button class="btn btn-outline-danger py-2 fw-bold" @click="reabrirTurno" :disabled="isSaving">
+                <i class="bi bi-unlock-fill me-1"></i>Habilitar Edición / Reabrir
+              </button>
+            </div>
+
             <!-- ADMIN ONLY: Depositar si está cerrado -->
-            <div class="d-grid gap-2 mt-2" v-if="!esEditable && cabecera.estado === 'cerrado' && <?= in_array($_SESSION['auth_rol'], ['admin','supervisor']) ? 'true' : 'false' ?>">
-              <button class="btn btn-success py-2 fw-bold" @click="marcarDepositado">
+            <div class="d-grid gap-2 mt-2" v-if="cabecera.estado === 'cerrado' && SERVER_DATA.canEditClosed">
+              <button class="btn btn-success py-2 fw-bold" @click="marcarDepositado" :disabled="isSaving">
                 <i class="bi bi-bank me-1"></i>Marcar como Depositado
               </button>
             </div>
@@ -256,7 +263,9 @@ $turnoQuery = $_GET['turno'] ?? 'MAÑANA';
   const SERVER_DATA = {
     id: <?= $id ?>,
     nuevo: <?= $nuevo ?>,
-    turnoDefault: '<?= $turnoQuery ?>'
+    turnoDefault: '<?= $turnoQuery ?>',
+    userRol: '<?= $_SESSION['auth_rol'] ?? 'cajera' ?>',
+    canEditClosed: <?= in_array($_SESSION['auth_rol'] ?? '', ['admin', 'supervisor']) ? 'true' : 'false' ?>
   };
 </script>
 <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>

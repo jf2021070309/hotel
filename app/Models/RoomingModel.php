@@ -91,15 +91,18 @@ class RoomingModel {
             $stmtHab = $this->pdo->prepare("UPDATE habitaciones SET estado = 'ocupado' WHERE id = ?");
             $stmtHab->execute([$data['hab_id']]);
 
-            // SINCRONIZACIÓN: Si hay un pago inicial (total_cobrado), registrar en Flujo
+            // SINCRONIZACIÓN: Si hay un pago inicial (total_cobrado), registrar en Anticipos + Flujo
             if ((float)$data['cobrado'] > 0) {
-                $this->finanzas->registrarMovimientoAutomatico([
-                    'usuario_id'  => $data['uid'],
-                    'categoria'   => 'Alojamiento / Rooming',
-                    'monto'       => $data['cobrado'],
-                    'moneda'      => $data['moneda'] ?? 'PEN',
-                    'medio_pago'  => $data['metodo'] ?? 'EFECTIVO',
-                    'observacion' => "CHECK-IN HAB " . $data['hab_id'] . " (Stay #$stay_id). Comprobante: " . $data['comprobante'] . " " . $data['num_comp']
+                $this->registrarPago([
+                    'stay_id'   => $stay_id,
+                    'monto'     => $data['monto_original'],
+                    'moneda'    => $data['moneda'] ?? 'PEN',
+                    'monto_pen' => $data['cobrado'],
+                    'tc'        => $data['tc_aplicado'] ?? 1.0,
+                    'tipo'      => $data['metodo'] ?? 'EFECTIVO',
+                    'recibo'    => $data['num_comp'] ?? '',
+                    'fecha'     => $data['fecha_reg'],
+                    'uid'       => $data['uid']
                 ]);
             }
 
@@ -125,10 +128,10 @@ class RoomingModel {
             $this->finanzas->registrarMovimientoAutomatico([
                 'usuario_id'  => $pago['uid'],
                 'categoria'   => 'Alojamiento / Pago extra',
-                'monto'       => $pago['monto_pen'], 
+                'monto'       => $pago['monto'], // FIX: Usar monto original con la moneda original
                 'moneda'      => $pago['moneda'] ?? 'PEN',
                 'medio_pago'  => $pago['tipo_pago'] ?? 'EFECTIVO',
-                'observacion' => "PAGO ADICIONAL Stay #" . $pago['stay_id'] . ". Recibo: " . $pago['recibo']
+                'observacion' => "PAGO Stay #" . $pago['stay_id'] . ". Recibo: " . ($pago['recibo'] ?? 'N/A')
             ]);
         }
         return $res;
@@ -199,5 +202,14 @@ class RoomingModel {
 
         $stmt = $this->pdo->prepare("UPDATE rooming_stays SET total_cobrado = ?, estado_pago = ? WHERE id = ?");
         $stmt->execute([$totalCobrado, $estadoPago, $stay_id]);
+    }
+
+    public function incrementarTotal(int $stayId, float $monto): bool {
+        $stmt = $this->pdo->prepare("UPDATE rooming_stays SET total_pago = total_pago + ? WHERE id = ?");
+        $res = $stmt->execute([$monto, $stayId]);
+        if ($res) {
+            $this->actualizarResumenPagos($stayId);
+        }
+        return $res;
     }
 }

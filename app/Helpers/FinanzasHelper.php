@@ -41,27 +41,33 @@ class FinanzasHelper {
         $moneda = strtoupper($data['moneda'] ?? 'PEN');
         $medioTxt = strtoupper($data['medio_pago'] ?? 'EFECTIVO');
         
+        $categoria = $data['categoria'] ?? '';
+
         // Mapeo dinámico: Intentar buscar si el medio_pago ya coincide con una categoría activa
-        $stmtCat = $this->pdo->prepare("SELECT nombre FROM finanzas_categorias WHERE modulo = 'Flujo' AND tipo = 'Ingreso' AND nombre = ? AND activo = 1 LIMIT 1");
-        $stmtCat->execute([$medioTxt]);
+        $stmtCat = $this->pdo->prepare("SELECT nombre FROM finanzas_categorias WHERE modulo = 'Flujo' AND tipo = ? AND nombre = ? AND activo = 1 LIMIT 1");
+        $stmtCat->execute([$tipo, $medioTxt]);
         $categoriaBD = $stmtCat->fetchColumn();
 
         if ($categoriaBD) {
             $categoria = $categoriaBD;
-        } else if ($tipo === 'Ingreso') {
-            // Legacy / Fallback mapping
-            if ($medioTxt === 'YAPE' || $medioTxt === 'PLIN' || strpos($medioTxt, 'YAPE') !== false) {
-                $categoria = 'YAPE O PLIN';
-            } elseif ($medioTxt === 'POS' || strpos($medioTxt, 'POS') !== false) {
-                $categoria = ($moneda === 'USD') ? 'POS DOLARES' : 'POS SOLES';
-            } elseif ($medioTxt === 'TRANSFERENCIA' || $medioTxt === 'DEPOSITO' || $medioTxt === 'TRANSF') {
-                $categoria = 'DEPOS/TRANS.'; // Nombre exacto en SQL original
-            } elseif ($medioTxt === 'EFECTIVO') {
-                if ($moneda === 'USD') $categoria = 'DOLARES EFECTIVO';
-                elseif ($moneda === 'CLP') $categoria = 'PESOS EFECTIVO';
-                else $categoria = 'SOLES EFECTIVO';
+        } else if (empty($categoria)) {
+            if ($tipo === 'Ingreso') {
+                // Legacy / Fallback mapping
+                if ($medioTxt === 'YAPE' || $medioTxt === 'PLIN' || strpos($medioTxt, 'YAPE') !== false) {
+                    $categoria = 'YAPE O PLIN';
+                } elseif ($medioTxt === 'POS' || strpos($medioTxt, 'POS') !== false) {
+                    $categoria = ($moneda === 'USD') ? 'POS DOLARES' : 'POS SOLES';
+                } elseif ($medioTxt === 'TRANSFERENCIA' || $medioTxt === 'DEPOSITO' || $medioTxt === 'TRANSF') {
+                    $categoria = 'DEPOS/TRANS.'; // Nombre exacto en SQL original
+                } elseif ($medioTxt === 'EFECTIVO') {
+                    if ($moneda === 'USD') $categoria = 'DOLARES EFECTIVO';
+                    elseif ($moneda === 'CLP') $categoria = 'PESOS EFECTIVO';
+                    else $categoria = 'SOLES EFECTIVO';
+                } else {
+                    $categoria = 'OTROS INGRESOS';
+                }
             } else {
-                $categoria = 'OTROS INGRESOS';
+                $categoria = 'OTROS EGRESOS';
             }
         }
 

@@ -49,11 +49,14 @@ class FlujoController {
             return ['ok' => false, 'msg' => "Ya existe un flujo para el turno $turno del $fecha"];
         }
 
-        // Si es edición, evaluar si está cerrado
+        // Si es edición, evaluar si está cerrado/depositado
         if ($id > 0) {
             $actual = $this->model->getDetalle($id);
             if ($actual && $actual['estado'] !== 'borrador') {
-                return ['ok' => false, 'msg' => 'No se puede editar un turno cerrado o depositado'];
+                // EXCEPCIÓN: Admin/Supervisor sí pueden editar aunque esté cerrado
+                if (!in_array($_SESSION['auth_rol'] ?? '', ['admin', 'supervisor'])) {
+                    return ['ok' => false, 'msg' => 'No tienes permisos para editar un turno cerrado o depositado'];
+                }
             }
         }
 
@@ -99,6 +102,21 @@ class FlujoController {
             return ['ok' => true, 'msg' => 'Dinero del turno depositado correctamente'];
         }
         return ['ok' => false, 'msg' => 'No se pudo depositar el turno'];
+    }
+
+    public function reabrir(int $id): array {
+        if ($id <= 0) return ['ok' => false, 'msg' => 'ID de flujo inválido'];
+        
+        // Solo Admin/Supervisor pueden reabrir
+        if (!in_array($_SESSION['auth_rol'] ?? '', ['admin', 'supervisor'])) {
+            return ['ok' => false, 'msg' => 'No tienes permisos para reabrir turnos'];
+        }
+
+        if ($this->model->cambiarEstado($id, 'borrador')) {
+            $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'FLUJO_REABIERTO', 'FINANZAS', "Flujo ID $id reabierto a borrador.");
+            return ['ok' => true, 'msg' => 'Turno reabierto correctamente (ahora es editable)'];
+        }
+        return ['ok' => false, 'msg' => 'No se pudo reabrir el turno'];
     }
 
     public function resumenDia(string $fecha): array {

@@ -14,7 +14,21 @@ createApp({
     const filtroPiso = ref('');
     const filtroPago = ref('');
     const selectedStay = ref(null);
+    const stayParaPago = ref(null);
     const mediosPago = ref([]);
+    
+    // CONSUMOS
+    const inventario = ref([]);
+    const stayParaConsumo = ref(null);
+    const consumosStay = ref([]);
+    const consumoForm = reactive({
+      stay_id: '',
+      producto_id: '',
+      cantidad: 1,
+      total: 0,
+      pago_inmediato: false,
+      metodo_pago: null
+    });
 
     const form = reactive({
       stay: {
@@ -48,6 +62,17 @@ createApp({
       adelanto: 0
     });
 
+    const pagoForm = reactive({
+      stay_id: '',
+      monto: 0,
+      moneda: 'PEN',
+      monto_pen: 0,
+      tc: 1,
+      tipo: 'EFECTIVO',
+      recibo: '',
+      fecha: new Date().toISOString().split('T')[0]
+    });
+
     // COMPUTED
     const staysFiltrados = computed(() => {
       let data = stays.value;
@@ -65,6 +90,15 @@ createApp({
         data = data.filter(s => s.estado_pago === filtroPago.value);
       }
       return data;
+    });
+
+    const inventarioAgrupado = computed(() => {
+      const groups = {};
+      inventario.value.forEach(p => {
+        if (!groups[p.categoria]) groups[p.categoria] = [];
+        groups[p.categoria].push(p);
+      });
+      return groups;
     });
 
     // MÉTODOS
@@ -181,11 +215,105 @@ createApp({
     const verDetalle = async (s) => {
       loading.value = true;
       try {
-        const res = await axios.get(`../../../api/rooming.php?action=detalle&id=${s.id}`);
-        selectedStay.value = res.data.data;
+        const [resDet, resCons] = await Promise.all([
+          axios.get(`../../../api/rooming.php?action=detalle&id=${s.id}`),
+          axios.get(`../../../api/consumos.php?action=listar&stay_id=${s.id}`)
+        ]);
+        selectedStay.value = resDet.data.data;
+        consumosStay.value = resCons.data.data || [];
         new bootstrap.Modal('#modalDetalle').show();
       } catch (err) {
         showToast('Error al cargar detalle', 'error');
+      } finally {
+        loading.value = false;
+      }
+    };
+
+    const abrirConsumo = async (s) => {
+      stayParaConsumo.value = s;
+      Object.assign(consumoForm, {
+        stay_id: s.id,
+        producto_id: '',
+        cantidad: 1,
+        total: 0,
+        pago_inmediato: false,
+        metodo_pago: null
+      });
+      // Recargar inventario para tener stock fresco
+      const resInv = await axios.get('../../../api/inventario.php?action=listar');
+      inventario.value = resInv.data.data || [];
+      new bootstrap.Modal('#modalConsumo').show();
+    };
+
+    const onProductoChange = () => {
+      const p = inventario.value.find(x => x.id == consumoForm.producto_id);
+      if (p) {
+        calcularTotalConsumo();
+      }
+    };
+
+    const calcularTotalConsumo = () => {
+      const p = inventario.value.find(x => x.id == consumoForm.producto_id);
+      if (p) {
+        consumoForm.total = (p.precio_venta * consumoForm.cantidad).toFixed(2);
+      }
+    };
+
+    const guardarConsumo = async () => {
+      if (!consumoForm.producto_id || consumoForm.cantidad <= 0) return;
+      loading.value = true;
+      try {
+        const res = await axios.post('../../../api/consumos.php?action=registrar', consumoForm);
+        if (res.data.ok) {
+          showToast(res.data.msg, 'success');
+          bootstrap.Modal.getInstance('#modalConsumo').hide();
+          cargarDatos();
+        } else {
+          showToast(res.data.msg, 'error');
+        }
+      } catch (err) {
+        showToast('Error al registrar consumo', 'error');
+      } finally {
+        loading.value = false;
+      }
+    };
+
+    const abrirPago = (s) => {
+      stayParaPago.value = s;
+      const saldo = s.total_pago - s.total_cobrado;
+      Object.assign(pagoForm, {
+        stay_id: s.id,
+        monto: saldo > 0 ? saldo.toFixed(2) : 0,
+        moneda: 'PEN',
+        monto_pen: saldo > 0 ? saldo.toFixed(2) : 0,
+        tc: 1,
+        tipo: 'EFECTIVO',
+        recibo: '',
+        fecha: new Date().toISOString().split('T')[0]
+      });
+      new bootstrap.Modal('#modalPago').show();
+    };
+
+    const recalcularPago = () => {
+      const tc = pagoForm.moneda === 'PEN' ? 1 : tcs.value[pagoForm.moneda];
+      pagoForm.tc = tc;
+      pagoForm.monto_pen = (pagoForm.monto * tc).toFixed(2);
+    };
+
+    const guardarPago = async () => {
+      if (pagoForm.monto <= 0) return showToast('Monto inválido', 'warning');
+      loading.value = true;
+      try {
+        const res = await axios.post('../../../api/rooming.php?action=pago', pagoForm);
+        if (res.data.ok) {
+          showToast(res.data.msg, 'success');
+          bootstrap.Modal.getInstance('#modalPago').hide();
+          cargarDatos();
+        } else {
+          showToast(res.data.msg, 'error');
+        }
+      } catch (err) {
+        showToast('Error al procesar pago', 'error');
       } finally {
         loading.value = false;
       }
@@ -224,10 +352,13 @@ createApp({
 
     return {
       stays, habitacionesLibres, loading, busqueda, filtroPiso, filtroPago, form, 
-      staysFiltrados, selectedStay, mediosPago,
+      staysFiltrados, selectedStay, stayParaPago, mediosPago, pagoForm,
       abrirCheckin, onHabChange, calcularNoches, onNochesChange, recalcularMoneda, 
       onAdelantoChange, agregarPax, setTitular, guardarCheckin, verDetalle, cargarDatos,
-      fmtFecha, getPagoClass, procederCheckout
+      fmtFecha, getPagoClass, procederCheckout, abrirPago, recalcularPago, guardarPago,
+      // CONSUOMOS
+      inventario, inventarioAgrupado, stayParaConsumo, consumosStay, consumoForm,
+      abrirConsumo, onProductoChange, calcularTotalConsumo, guardarConsumo
     };
   }
 }).mount('#app-rooming');

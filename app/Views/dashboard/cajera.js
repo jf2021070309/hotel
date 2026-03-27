@@ -20,6 +20,7 @@ createApp({
       efectivo_sobre: 0,
       estado: 'inexistente'
     });
+    const alertasInventario = ref([]);
 
     const fetchData = async () => {
       try {
@@ -31,6 +32,10 @@ createApp({
           checkouts_hoy.value = d.checkouts_hoy;
           checkins_esperados.value = d.checkins_esperados;
           mi_turno.value = d.mi_turno;
+          
+          // Cargar alertas de inventario desde su propia API para mantener dashboard.php limpio
+          const resInv = await axios.get('api/inventario.php?action=alertas');
+          alertasInventario.value = resInv.data.data || [];
           
           segundosDesdeUpdate.value = 0;
         }
@@ -53,8 +58,7 @@ createApp({
     });
 
     return {
-      loadingInicial, segundosDesdeUpdate,
-      usuario, urgentes, checkouts_hoy, checkins_esperados, mi_turno
+      usuario, urgentes, checkouts_hoy, checkins_esperados, mi_turno, alertasInventario
     };
   }
 }).mount('#app-dash-cajera');

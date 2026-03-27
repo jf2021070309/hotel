@@ -1,16 +1,17 @@
 <?php
 require_once '../../../auth/middleware.php';
+require_once '../../includes/head.php';
+require_once '../../includes/sidebar.php'; 
 // ============================================================
 // reportes/graficos.php — Dashboard de gráficos
 // ============================================================
 $page_title      = 'Gráficos — Hotel Manager';
-$base           $base = '../../../';
+$base            = '../../../';
 $chartjs_enabled = true;
-require_once '../../includes/head.php';
+
 ?>
-<div class="wrapper">
 <?php
-require_once '../../../auth/middleware.php'; require_once '../../includes/sidebar.php'; ?>
+
 
 <div class="main-content">
   <div class="topbar">

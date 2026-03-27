@@ -32,63 +32,161 @@ include $base . 'includes/sidebar.php';
     </div>
 
     <div class="page-body">
-        <!-- Resumen Regla de Oro -->
+        <!-- Resumen Regla de Oro (Compacto) -->
         <div class="row g-3 mb-4">
-            <div class="col-md-3">
-                <div class="card h-100 border-0 shadow-sm text-center py-3" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white;">
-                    <div class="small fw-bold opacity-75">VENTA HOSPEDAJE</div>
-                    <div class="h3 mb-0 fw-bold">S/ {{ parseFloat(resumen.ingresos_hospedaje).toFixed(2) }}</div>
+            <div class="col-md-2">
+                <div class="card h-100 border-0 shadow-sm text-center py-2" style="background: #10b981; color: white;">
+                    <div class="small fw-bold opacity-75">HOSPEDAJE</div>
+                    <div class="h5 mb-0 fw-bold">S/ {{ parseFloat(resumen.ingresos_hospedaje).toFixed(2) }}</div>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="card h-100 border-0 shadow-sm text-center py-3 bg-white">
-                    <div class="small fw-bold text-muted">OTROS INGRESOS</div>
-                    <div class="h3 mb-0 fw-bold text-dark">S/ {{ parseFloat(resumen.otros_ingresos).toFixed(2) }}</div>
+            <div class="col-md-2">
+                <div class="card h-100 border-0 shadow-sm text-center py-2 bg-white">
+                    <div class="small fw-bold text-muted">OTROS ING.</div>
+                    <div class="h5 mb-0 fw-bold text-dark">S/ {{ parseFloat(resumen.otros_ingresos).toFixed(2) }}</div>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="card h-100 border-0 shadow-sm text-center py-3 bg-white">
-                    <div class="small fw-bold text-muted text-danger">EGRESOS (FLUJO)</div>
-                    <div class="h3 mb-0 fw-bold text-danger">S/ {{ parseFloat(resumen.egresos_operativos).toFixed(2) }}</div>
+            <div class="col-md-2">
+                <div class="card h-100 border-0 shadow-sm text-center py-2 bg-white text-danger">
+                    <div class="small fw-bold opacity-75">EGR. FLUJO</div>
+                    <div class="h5 mb-0 fw-bold">S/ {{ parseFloat(resumen.egresos_operativos).toFixed(2) }}</div>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="card h-100 border-0 shadow-sm text-center py-3" style="background: #fbbf24; color: #78350f;">
-                    <div class="small fw-bold opacity-75">UTILIDAD NETA</div>
-                    <div class="h3 mb-0 fw-bold">S/ {{ parseFloat(resumen.utilidad_neta).toFixed(2) }}</div>
+            <div class="col-md-2">
+                <div class="card h-100 border-0 shadow-sm text-center py-2 bg-white text-danger border-start border-warning border-4">
+                    <div class="small fw-bold opacity-75">C. CHICA</div>
+                    <div class="h5 mb-0 fw-bold">S/ {{ parseFloat(resumen.gastos_caja_chica).toFixed(2) }}</div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card h-100 border-0 shadow-sm text-center py-2 bg-white text-danger border-start border-primary border-4">
+                    <div class="small fw-bold opacity-75">G. YAPE</div>
+                    <div class="h5 mb-0 fw-bold">S/ {{ parseFloat(resumen.gastos_yape).toFixed(2) }}</div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card h-100 border-0 shadow-sm text-center py-2" style="background: #fbbf24; color: #78350f;">
+                    <div class="small fw-bold opacity-75">UTILIDAD</div>
+                    <div class="h5 mb-0 fw-bold">S/ {{ parseFloat(resumen.utilidad_neta).toFixed(2) }}</div>
                 </div>
             </div>
         </div>
 
-        <div class="card border-0 shadow-sm" style="border-radius: 12px; overflow: hidden;">
+        <!-- Agrupación por Día -->
+        <div v-for="(turnos, fecha) in groupedData" :key="fecha" class="mb-4">
+            <div class="d-flex justify-content-between align-items-center bg-dark text-white p-2 px-4 shadow-sm" style="border-radius: 8px; cursor: pointer" @click="toggleDia(fecha)">
+                <h6 class="mb-0"><i class="bi bi-calendar3 me-2"></i> {{ fecha }}</h6>
+                <span class="small">{{ colapsados[fecha] ? 'EXPANDIR ▼' : 'COLAPSAR ▲' }}</span>
+            </div>
+
+            <div v-show="!colapsados[fecha]" class="mt-2">
+                <!-- Por cada Turno -->
+                <div v-for="(items, turno) in turnos" :key="turno" v-show="items.length > 0" class="mb-3">
+                    <div class="p-2 px-4 bg-secondary bg-opacity-10 fw-bold border-start border-4 border-secondary small text-uppercase">
+                        TURNO {{ turno }}
+                    </div>
+                    <div class="table-responsive bg-white shadow-sm" style="border-radius: 0 0 8px 8px;">
+                        <table class="table table-sm table-hover align-middle mb-0" style="font-size: 0.85rem;">
+                            <thead class="bg-light text-muted" style="font-size: 0.7rem;">
+                                <tr>
+                                    <th class="ps-4">HAB</th>
+                                    <th>TIPO</th>
+                                    <th class="text-center">PAX</th>
+                                    <th class="text-center">CHECK IN</th>
+                                    <th class="text-center">CHECK OUT</th>
+                                    <th class="text-center">N</th>
+                                    <th class="text-center">CANAL</th>
+                                    <th class="text-end text-success">EFECTIVO</th>
+                                    <th class="text-end text-primary">POS</th>
+                                    <th class="text-end text-warning">YAPE</th>
+                                    <th class="text-end fw-bold">TOTAL</th>
+                                    <th class="pe-4">COMPROBANTE</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="i in items" :key="i.pago_id">
+                                    <td class="ps-4"><strong>{{ i.habitacion }}</strong></td>
+                                    <td><span class="text-muted small">{{ i.tipo_hab }}</span></td>
+                                    <td class="text-center">{{ i.pax }}</td>
+                                    <td class="text-center">{{ i.check_in }}</td>
+                                    <td class="text-center">{{ i.check_out }}</td>
+                                    <td class="text-center">{{ i.noches }}</td>
+                                    <td class="text-center"><span class="badge bg-light text-dark border">{{ i.canal }}</span></td>
+                                    <td class="text-end">{{ formatCurrency(i.cobrado_efectivo, getSym(i.moneda)) }}</td>
+                                    <td class="text-end">{{ formatCurrency(i.cobrado_pos, getSym(i.moneda)) }}</td>
+                                    <td class="text-end">{{ formatCurrency(i.cobrado_yape, getSym(i.moneda)) }}</td>
+                                    <td class="text-end fw-bold">{{ getSym(i.moneda) }} {{ i.total_fila }}</td>
+                                    <td class="pe-4 small">{{ i.comprobante }}</td>
+                                </tr>
+                            </tbody>
+                            <tfoot class="bg-light fw-bold">
+                                <tr>
+                                    <td colspan="7" class="ps-4 text-end">Subtotal {{ turno }}:</td>
+                                    <td class="text-end text-success">S/ {{ getSubtotalTurno(items.filter(x => x.moneda === 'PEN'), 'cobrado_efectivo') }}</td>
+                                    <td class="text-end text-primary">S/ {{ getSubtotalTurno(items.filter(x => x.moneda === 'PEN'), 'cobrado_pos') }}</td>
+                                    <td class="text-end text-warning">S/ {{ getSubtotalTurno(items.filter(x => x.moneda === 'PEN'), 'cobrado_yape') }}</td>
+                                    <td colspan="2"></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Desglosado por Moneda -->
+        <div class="card border-0 shadow-sm mt-5 mb-4 overflow-hidden" style="border-radius: 12px; border: 2px solid #e2e8f0 !important;">
+            <div class="card-header bg-white py-3 border-0">
+                <h6 class="mb-0 fw-bold text-uppercase text-muted" style="letter-spacing: 1px;">
+                    <i class="bi bi-cash-stack me-2"></i> Resumen del Mes — {{ getMesNombre(filtro.mes) }} {{ filtro.anio }}
+                </h6>
+            </div>
             <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="bg-light">
-                            <tr>
-                                <th class="ps-4">HAB.</th>
-                                <th>TIPO</th>
-                                <th class="text-center">ESTADÍAS</th>
-                                <th class="text-end">VENTA TEÓRICA</th>
-                                <th class="text-end text-success">EFECTIVO</th>
-                                <th class="text-end text-primary">POS</th>
-                                <th class="text-end text-warning">YAPE</th>
-                                <th class="text-end fw-bold pe-4">TOTAL COBRADO</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="h in data" :key="h.habitacion">
-                                <td class="ps-4"><strong>{{ h.habitacion }}</strong></td>
-                                <td><span class="small text-muted">{{ h.tipo_hab }}</span></td>
-                                <td class="text-center">{{ h.num_estadias }}</td>
-                                <td class="text-end text-muted small">S/ {{ parseFloat(h.venta_teorica || 0).toFixed(2) }}</td>
-                                <td class="text-end">S/ {{ parseFloat(h.cobrado_efectivo || 0).toFixed(2) }}</td>
-                                <td class="text-end">S/ {{ parseFloat(h.cobrado_pos || 0).toFixed(2) }}</td>
-                                <td class="text-end">S/ {{ parseFloat(h.cobrado_yape || 0).toFixed(2) }}</td>
-                                <td class="text-end fw-bold pe-4 text-success">S/ {{ parseFloat(h.cobrado_total || 0).toFixed(2) }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div class="row g-0">
+                    <div class="col-md-6 border-end">
+                        <table class="table table-sm mb-0">
+                            <tbody>
+                                <tr>
+                                    <td class="ps-4 py-3 text-muted">POS Soles:</td>
+                                    <td class="pe-4 py-3 text-end fw-bold">S/ {{ resumenDesglosado.POS?.PEN.toFixed(2) }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="ps-4 py-3 text-muted">POS Dólares:</td>
+                                    <td class="pe-4 py-3 text-end fw-bold">USD {{ resumenDesglosado.POS?.USD.toFixed(2) }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="ps-4 py-3 text-muted">POS Pesos:</td>
+                                    <td class="pe-4 py-3 text-end fw-bold">CLP {{ Math.round(resumenDesglosado.POS?.CLP) }}</td>
+                                </tr>
+                                <tr class="bg-light">
+                                    <td class="ps-4 py-3 text-muted">Yape / Plin:</td>
+                                    <td class="pe-4 py-3 text-end fw-bold text-primary">S/ {{ resumenDesglosado.YAPE?.toFixed(2) }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-sm mb-0">
+                            <tbody>
+                                <tr>
+                                    <td class="ps-4 py-3 text-muted">Efectivo Soles:</td>
+                                    <td class="pe-4 py-3 text-end fw-bold">S/ {{ resumenDesglosado.EFECTIVO?.PEN.toFixed(2) }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="ps-4 py-3 text-muted">Efectivo Dólares:</td>
+                                    <td class="pe-4 py-3 text-end fw-bold">USD {{ resumenDesglosado.EFECTIVO?.USD.toFixed(2) }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="ps-4 py-3 text-muted">Efectivo Pesos:</td>
+                                    <td class="pe-4 py-3 text-end fw-bold">CLP {{ Math.round(resumenDesglosado.EFECTIVO?.CLP) }}</td>
+                                </tr>
+                                <tr class="bg-light">
+                                    <td class="ps-4 py-3 text-muted">Transferencia / Depósito:</td>
+                                    <td class="pe-4 py-3 text-end fw-bold text-success">S/ {{ resumenDesglosado.TRANSFERENCIA?.toFixed(2) }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>

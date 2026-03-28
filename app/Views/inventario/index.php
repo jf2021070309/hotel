@@ -12,18 +12,20 @@ include $base . 'includes/sidebar.php';
 ?>
 
 <div class="main-content" id="app-inventario" v-cloak>
-    <div class="topbar">
-        <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list"></i></button>
+    <div class="topbar border-bottom-0 shadow-sm" style="background: linear-gradient(to right, #ffffff, #f8f9fa);">
+        <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list fs-4"></i></button>
         <div>
-            <h1 class="h4 mb-0">Gestión de Inventario</h1>
-            <p class="text-muted mb-0 small">Administración de bebidas, vinos y otros consumibles</p>
+            <h4 class="fw-bold mb-0" style="color: #111; letter-spacing: -0.5px;">
+                <i class="bi bi-box-seam-fill me-2" style="color: #d4af37;"></i>Gestión de Inventario
+            </h4>
+            <p class="mb-0 small text-muted fw-semibold">Administración de bebidas, vinos y otros consumibles</p>
         </div>
         <div class="ms-auto d-flex gap-2">
-            <a href="historial.php" class="btn btn-outline-secondary d-flex align-items-center gap-2">
+            <a href="historial.php" class="btn btn-outline-secondary shadow-sm d-flex align-items-center gap-2">
                 <i class="bi bi-journal-text"></i> Kardex / Historial
             </a>
-            <button @click="abrirNuevo" class="btn btn-primary d-flex align-items-center gap-2">
-                <i class="bi bi-plus-lg"></i> Agregar Producto
+            <button @click="abrirNuevo" class="btn-primary-custom shadow-sm d-flex align-items-center gap-2" style="border: 1px solid #111;">
+                <i class="bi bi-plus-lg text-warning"></i> Agregar Producto
             </button>
         </div>
     </div>

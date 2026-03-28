@@ -17,7 +17,12 @@ Vue.createApp({
         estado: 1
       },
       newPassword: '',
-      authUser: window.authUser || {} // Pasado desde PHP
+      authUser: window.authUser || {},
+      // Permisos de módulos
+      usuarioPermisos: null,
+      permisosModulos: [],
+      loadingPermisos: false,
+      guardandoPermisos: false
     };
   },
 
@@ -139,6 +144,41 @@ Vue.createApp({
       if (elLogin) elLogin.textContent = this.current.usuario;
       if (elRole) elRole.textContent = this.current.rol.charAt(0).toUpperCase() + this.current.rol.slice(1);
       if (elAvatar) elAvatar.textContent = this.current.nombre.charAt(0).toUpperCase();
+    },
+
+    async abrirPermisos(u) {
+      this.usuarioPermisos  = u;
+      this.permisosModulos  = [];
+      this.loadingPermisos  = true;
+      new bootstrap.Modal(document.getElementById('modalPermisos')).show();
+      try {
+        const res = await axios.get(`../../../api/permisos.php?action=listar&usuario_id=${u.id}`);
+        this.permisosModulos = res.data.data || [];
+      } catch (e) {
+        this.showToast('Error al cargar permisos', 'error');
+      } finally {
+        this.loadingPermisos = false;
+      }
+    },
+
+    async guardarPermisos() {
+      this.guardandoPermisos = true;
+      try {
+        const res = await axios.post('../../../api/permisos.php?action=guardar', {
+          usuario_id: this.usuarioPermisos.id,
+          permisos: this.permisosModulos.map(p => ({ modulo: p.modulo, activo: p.activo }))
+        });
+        if (res.data.ok) {
+          bootstrap.Modal.getInstance(document.getElementById('modalPermisos')).hide();
+          this.showToast('Permisos guardados correctamente', 'success');
+        } else {
+          this.showToast(res.data.message || 'Error al guardar', 'error');
+        }
+      } catch (e) {
+        this.showToast('Error de red', 'error');
+      } finally {
+        this.guardandoPermisos = false;
+      }
     },
 
     showToast(msg, icon) {

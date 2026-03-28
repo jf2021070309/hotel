@@ -12,13 +12,15 @@ include $base . 'includes/sidebar.php';
 ?>
 
 <div class="main-content" id="app-flujo-index">
-  <div class="topbar">
-    <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list"></i></button>
+  <div class="topbar border-bottom-0 shadow-sm" style="background: linear-gradient(to right, #ffffff, #f8f9fa);">
+    <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list fs-4"></i></button>
     <div>
-      <h4><i class="bi bi-cash-stack me-2 text-success"></i>Flujo de Caja</h4>
-      <p class="mb-0 small text-muted">Control de ingresos, egresos y efectivo por turnos</p>
+      <h4 class="fw-bold" style="color: #111; letter-spacing: -0.5px;">
+        <i class="bi bi-cash-stack me-2" style="color: #d4af37;"></i>Flujo de Caja
+      </h4>
+      <p class="mb-0 small text-muted fw-semibold">Control de ingresos, egresos y efectivo por turnos</p>
     </div>
-    <div class="ms-auto d-flex gap-2">
+    <div class="ms-auto d-flex align-items-center gap-2">
       <!-- Mismos botones globales de filtro -->
       <select class="form-select form-select-sm" v-model="filtros.mes" @change="listar" style="width:120px;">
         <option v-for="(m, i) in meses" :key="i" :value="i+1">{{ m }}</option>
@@ -30,9 +32,9 @@ include $base . 'includes/sidebar.php';
   <div class="page-body">
     <!-- BARRA DE ACCIONES SUPERIOR -->
     <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
-      <button class="btn btn-primary" @click="nuevoTurno" :disabled="loadingCheck">
+      <button class="btn-primary-custom shadow-sm" @click="nuevoTurno" :disabled="loadingCheck" style="border: 1px solid #111;">
         <span v-if="loadingCheck" class="spinner-border spinner-border-sm me-1"></span>
-        <i v-else class="bi bi-plus-lg me-1"></i>Nuevo Turno (Hoy)
+        <i v-else class="bi bi-plus-lg me-1 text-warning"></i>Nuevo Turno (Hoy)
       </button>
       <select class="form-select form-select-sm" v-model="filtros.estado" @change="listar" style="width:160px;">
         <option value="todos">Todos los Estados</option>

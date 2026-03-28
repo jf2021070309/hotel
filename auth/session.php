@@ -21,6 +21,33 @@ function iniciarSesion(array $usuario): void {
     $_SESSION['auth_rol']     = $usuario['rol'];
     $_SESSION['auth_usuario'] = $usuario['usuario'];
     $_SESSION['last_activity'] = time();
+    // Cargar permisos de módulos desde la BD
+    cargarPermisosEnSesion($usuario['id']);
+}
+
+/**
+ * Lee los permisos del usuario desde usuario_permisos y los guarda en sesión.
+ * Admin siempre tiene acceso total.
+ */
+function cargarPermisosEnSesion(int $uid): void {
+    if (($_SESSION['auth_rol'] ?? '') === 'admin') {
+        $_SESSION['auth_permisos'] = null; // null = acceso total
+        return;
+    }
+    try {
+        // Necesitamos PDO — incluirlo si no está disponible
+        if (!isset($GLOBALS['pdo'])) {
+            $base = dirname(__DIR__) . '/';
+            require_once $base . 'config/db.php';
+        }
+        $pdo  = $GLOBALS['pdo'];
+        $stmt = $pdo->prepare("SELECT modulo, activo FROM usuario_permisos WHERE usuario_id = ?");
+        $stmt->execute([$uid]);
+        $rows = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+        $_SESSION['auth_permisos'] = $rows; // ['rooming' => 1, 'flujo' => 0, ...]
+    } catch (Exception $e) {
+        $_SESSION['auth_permisos'] = null; // Si falla, acceso total por seguridad
+    }
 }
 
 /**
@@ -66,13 +93,54 @@ function obtenerUsuarioActual(): array {
  * Orden de jerarquía: admin > supervisor > cajera > limpieza
  */
 function tienePermiso(string $rol_minimo): bool {
-    // Escala para el futuro: Aquí se podrán definir permisos granulares.
-    // Por ahora, todos tienen acceso a sus niveles según la jerarquía.
     $roles = ['limpieza', 'cajera', 'supervisor', 'admin'];
     $user_rol = $_SESSION['auth_rol'] ?? 'limpieza';
-    
     $idx_user = array_search($user_rol, $roles);
     $idx_min  = array_search($rol_minimo, $roles);
-    
     return $idx_user >= $idx_min;
+}
+
+/**
+ * Verifica si el usuario tiene acceso a un módulo específico.
+ * Lee directo de la BD (cache por request) — los cambios aplican de inmediato.
+ */
+function tieneAccesoModulo(string $modulo): bool {
+    // Admin siempre tiene todo
+    if (($_SESSION['auth_rol'] ?? '') === 'admin') return true;
+
+    $uid = $_SESSION['auth_id'] ?? null;
+    if (!$uid) return false;
+
+    // Cache estático por request (solo 1 query por página, sin importar cuántos módulos)
+    static $cache = null;
+    if ($cache === null) {
+        try {
+            // Conexión propia — no depende de que otra página haya incluido db.php
+            static $db = null;
+            if ($db === null) {
+                // Reutilizar $pdo global si ya existe, si no crear uno nuevo
+                if (isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof PDO) {
+                    $db = $GLOBALS['pdo'];
+                } else {
+                    $db = new PDO(
+                        'mysql:host=localhost;dbname=hotel_db;charset=utf8mb4',
+                        'root', '',
+                        [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC]
+                    );
+                }
+            }
+            $stmt = $db->prepare(
+                "SELECT modulo, activo FROM usuario_permisos WHERE usuario_id = ?"
+            );
+            $stmt->execute([$uid]);
+            $cache = $stmt->fetchAll(PDO::FETCH_KEY_PAIR); // ['rooming' => 0, ...]
+        } catch (Exception $e) {
+            $cache = []; // Si falla → acceso total por seguridad
+        }
+    }
+
+    // Sin registro = activo por defecto (open by default)
+    if (!array_key_exists($modulo, $cache)) return true;
+    return (bool)$cache[$modulo];
 }

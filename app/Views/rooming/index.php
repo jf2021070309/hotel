@@ -13,15 +13,19 @@ include $base . 'includes/head.php';
 <div id="app-rooming">
 <?php include $base . 'includes/sidebar.php'; ?>
 <div class="main-content">
-  <div class="topbar">
-    <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list"></i></button>
+  <div class="topbar border-bottom-0 shadow-sm" style="background: linear-gradient(to right, #ffffff, #f8f9fa);">
+    <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list fs-4"></i></button>
     <div>
-      <h4><i class="bi bi-calendar-check-fill me-2 text-primary"></i>Rooming / Check-in</h4>
-      <p>Gestión de estadías activas y registro de ingresos</p>
+      <h4 class="fw-bold" style="color: #111; letter-spacing: -0.5px;">
+        <i class="bi bi-calendar-check-fill me-2" style="color: #d4af37;"></i>Rooming / Check-in
+      </h4>
+      <p class="mb-0 small text-muted fw-semibold">Gestión de estadías activas y registro de ingresos</p>
     </div>
-    <button class="btn btn-primary d-flex align-items-center gap-2" @click="abrirCheckin">
-      <i class="bi bi-plus-lg"></i> Nuevo Check-in
-    </button>
+    <div class="ms-auto">
+      <button class="btn-primary-custom shadow-sm" @click="abrirCheckin" style="border: 1px solid #111;">
+        <i class="bi bi-plus-lg text-warning"></i> Nuevo Check-in
+      </button>
+    </div>
   </div>
 
   <div class="page-body">
@@ -77,8 +81,8 @@ include $base . 'includes/head.php';
             <tr v-if="loading" ><td colspan="7" class="text-center py-5"><div class="spinner-border text-primary"></div></td></tr>
             <tr v-else v-for="s in staysFiltrados" :key="s.id">
               <td class="ps-4">
-                <div class="fw-bold fs-5 text-primary">#{{ s.hab_numero }}</div>
-                <div class="text-muted small">{{ s.hab_tipo }}</div>
+                <div class="fw-bold fs-5" style="color: #111;">#{{ s.hab_numero }}</div>
+                <div class="text-muted small fw-semibold" style="letter-spacing: 0.5px;">{{ s.hab_tipo }}</div>
               </td>
               <td>
                 <div class="fw-bold">{{ s.titular_nombre || '---' }}</div>

@@ -2,7 +2,8 @@
 /**
  * app/Views/errors/403.php
  */
-require_once __DIR__ . '/../../../rutas.php';
+// Calcular la ruta al index desde esta ubicación (3 niveles arriba = raíz hotel)
+$dashUrl = str_repeat('../', 3) . 'index.php';
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -21,7 +22,7 @@ require_once __DIR__ . '/../../../rutas.php';
         <div class="error-code">403</div>
         <h2 class="fw-bold">Acceso Denegado</h2>
         <p class="text-muted mb-4">Lo sentimos, no tienes los permisos suficientes para acceder a este módulo. Si crees que esto es un error, contacta al administrador.</p>
-        <a href="<?= route('index.php') ?>" class="btn btn-primary px-4 py-2 fw-bold">Volver al Dashboard</a>
+        <a href="<?= $dashUrl ?>" class="btn btn-primary px-4 py-2 fw-bold">Volver al Dashboard</a>
     </div>
 </body>
 </html>

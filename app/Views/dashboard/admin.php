@@ -11,18 +11,20 @@ include 'includes/sidebar.php';
 ?>
 
 <div class="main-content" id="app-dash-admin" v-cloak>
-  <div class="topbar">
-    <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list"></i></button>
+  <div class="topbar border-bottom-0 shadow-sm" style="background: linear-gradient(to right, #ffffff, #f8f9fa);">
+    <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list fs-4"></i></button>
     <div>
-      <h4><i class="bi bi-grid-1x2-fill me-2 text-primary"></i>Dashboard Ejecutivo</h4>
-      <p class="mb-0 small text-muted">Centro de control y KPI Financiero — <?= date('d/m/Y') ?></p>
+      <h4 class="fw-bold" style="color: #111; letter-spacing: -0.5px;">
+        <i class="bi bi-grid-1x2-fill me-2" style="color: #d4af37;"></i>Dashboard Ejecutivo
+      </h4>
+      <p class="mb-0 small text-muted fw-semibold">Centro de control y KPI Financiero — <?= date('d/m/Y') ?></p>
     </div>
     <div class="ms-auto d-flex align-items-center gap-3">
-       <span class="badge bg-light text-dark shadow-sm border px-3 py-2">
+       <span class="badge bg-white text-dark shadow-sm border px-3 py-2 rounded-pill">
            <i class="bi bi-arrow-repeat me-1" :class="{'fa-spin': isRefreshing}"></i>
            Actualizado hace {{ segundosDesdeUpdate }}s
        </span>
-       <span class="badge bg-primary px-3 py-2 fs-6" id="reloj"></span>
+       <span class="badge px-3 py-2 fs-6 rounded-pill" id="reloj" style="background: #111; color: #d4af37; border: 1px solid #d4af37;"></span>
     </div>
   </div>
 
@@ -38,18 +40,19 @@ include 'includes/sidebar.php';
       
       <!-- FILA 1: TARJETAS KPI -->
       <div class="row g-3 mb-4">
+        <!-- Ocupación -->
         <div class="col-sm-6 col-lg-3">
-          <div class="card shadow-sm border-0 border-start border-primary border-4 h-100">
+          <div class="card shadow-sm border-0 border-top border-4 h-100" style="border-top-color: #111 !important; border-radius: 12px;">
             <div class="card-body">
               <div class="row no-gutters align-items-center">
                 <div class="col mr-2">
-                  <div class="text-xs fw-bold text-primary text-uppercase mb-1">🛏️ Ocupación Hoy</div>
-                  <div class="h4 mb-0 fw-bold text-gray-800">{{ kpi.ocupacion.ocupadas }} <span class="fs-6 text-muted">/ {{ kpi.ocupacion.total }}</span></div>
+                  <div class="text-xs fw-bold text-uppercase mb-1" style="color: #64748b; letter-spacing: 1px;">🛏️ Ocupación Hoy</div>
+                  <div class="h4 mb-0 fw-bold" style="color: #111;">{{ kpi.ocupacion.ocupadas }} <span class="fs-6 text-muted">/ {{ kpi.ocupacion.total }}</span></div>
                 </div>
                 <!-- Mini Progress Bar -->
                 <div class="col-auto mt-2 w-100">
-                  <div class="progress" style="height: 6px;">
-                    <div class="progress-bar bg-primary" :style="{width: (kpi.ocupacion.ocupadas * 100 / (kpi.ocupacion.total || 1)) + '%'}"></div>
+                  <div class="progress" style="height: 6px; background-color: #f1f5f9;">
+                    <div class="progress-bar" style="background-color: #d4af37;" :style="{width: (kpi.ocupacion.ocupadas * 100 / (kpi.ocupacion.total || 1)) + '%'}"></div>
                   </div>
                 </div>
               </div>
@@ -57,43 +60,46 @@ include 'includes/sidebar.php';
           </div>
         </div>
 
+        <!-- PAX en Hotel -->
         <div class="col-sm-6 col-lg-3">
-          <div class="card shadow-sm border-0 border-start border-info border-4 h-100">
+          <div class="card shadow-sm border-0 border-top border-4 h-100" style="border-top-color: #475569 !important; border-radius: 12px;">
             <div class="card-body">
               <div class="d-flex align-items-center justify-content-between">
                 <div>
-                  <div class="text-xs fw-bold text-info text-uppercase mb-1">👥 PAX en Hotel</div>
-                  <div class="h3 mb-0 fw-bold text-gray-800">{{ kpi.pax_hoy }} <span class="fs-6 text-muted">personas</span></div>
+                  <div class="text-xs fw-bold text-uppercase mb-1" style="color: #64748b; letter-spacing: 1px;">👥 PAX en Hotel</div>
+                  <div class="h3 mb-0 fw-bold" style="color: #111;">{{ kpi.pax_hoy }} <span class="fs-6 text-muted">personas</span></div>
                 </div>
-                <i class="bi bi-people-fill text-info opacity-50" style="font-size: 2.5rem;"></i>
+                <i class="bi bi-people-fill opacity-25" style="font-size: 2.5rem; color: #111;"></i>
               </div>
             </div>
           </div>
         </div>
 
+        <!-- Ingresos Hoy -->
         <div class="col-sm-6 col-lg-3">
-          <div class="card shadow-sm border-0 border-start border-success border-4 h-100">
+          <div class="card shadow-sm border-0 border-top border-4 h-100" style="border-top-color: #16a34a !important; border-radius: 12px;">
             <div class="card-body">
               <div class="d-flex align-items-center justify-content-between">
                 <div>
-                  <div class="text-xs fw-bold text-success text-uppercase mb-1">💰 Ingresos Hoy</div>
-                  <div class="h4 mb-0 fw-bold text-gray-800">S/ {{ kpi.ingresos_hoy.toFixed(2) }}</div>
+                  <div class="text-xs fw-bold text-uppercase mb-1" style="color: #16a34a; letter-spacing: 1px;">💰 Ingresos Hoy</div>
+                  <div class="h4 mb-0 fw-bold" style="color: #111;">S/ {{ kpi.ingresos_hoy.toFixed(2) }}</div>
                 </div>
-                <i class="bi bi-cash-stack text-success opacity-50" style="font-size: 2.5rem;"></i>
+                <i class="bi bi-cash-stack text-success opacity-25" style="font-size: 2.5rem;"></i>
               </div>
             </div>
           </div>
         </div>
 
+        <!-- Egresos Hoy -->
         <div class="col-sm-6 col-lg-3">
-          <div class="card shadow-sm border-0 border-start border-danger border-4 h-100">
+          <div class="card shadow-sm border-0 border-top border-4 h-100" style="border-top-color: #dc2626 !important; border-radius: 12px;">
             <div class="card-body">
               <div class="d-flex align-items-center justify-content-between">
                 <div>
-                  <div class="text-xs fw-bold text-danger text-uppercase mb-1">📤 Egresos Hoy</div>
-                  <div class="h4 mb-0 fw-bold text-gray-800">S/ {{ kpi.egresos_hoy.toFixed(2) }}</div>
+                  <div class="text-xs fw-bold text-uppercase mb-1" style="color: #dc2626; letter-spacing: 1px;">📤 Egresos Hoy</div>
+                  <div class="h4 mb-0 fw-bold" style="color: #111;">S/ {{ kpi.egresos_hoy.toFixed(2) }}</div>
                 </div>
-                <i class="bi bi-box-arrow-right text-danger opacity-50" style="font-size: 2.5rem;"></i>
+                <i class="bi bi-box-arrow-right text-danger opacity-25" style="font-size: 2.5rem;"></i>
               </div>
             </div>
           </div>
@@ -124,11 +130,11 @@ include 'includes/sidebar.php';
         </div>
 
         <div class="col-md-4">
-          <div class="card shadow text-white h-100" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);">
+          <div class="card shadow text-white h-100 border-0" style="background: linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 100%);">
             <div class="card-body d-flex flex-column align-items-center justify-content-center text-center py-5">
-              <h5 class="text-uppercase mb-3" style="letter-spacing: 2px; opacity: 0.9;">INGRESO NETO</h5>
-              <h1 class="display-4 fw-bold mb-0">S/ {{ kpi.neto_hoy.toFixed(2) }}</h1>
-              <div class="mt-3 opacity-75 small">
+              <h5 class="text-uppercase mb-4 fw-bold" style="letter-spacing: 3px; color: #d4af37;"><i class="bi bi-star-fill me-2 fs-6"></i>INGRESO NETO</h5>
+              <h1 class="display-4 fw-bold mb-0" style="text-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);">S/ {{ kpi.neto_hoy.toFixed(2) }}</h1>
+              <div class="mt-4 opacity-75 small px-3" style="color: #e2e8f0; font-weight: 300;">
                 El flujo líquido calculado al instante cerrando saldos e inyecciones Yape.
               </div>
             </div>

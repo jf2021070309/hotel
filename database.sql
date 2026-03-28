@@ -588,6 +588,17 @@ CREATE TABLE IF NOT EXISTS `rooming_consumos` (
   INDEX `idx_producto` (`producto_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE IF NOT EXISTS `usuario_permisos` (
+  `id`          INT(11)     NOT NULL AUTO_INCREMENT,
+  `usuario_id`  INT(11)     NOT NULL,
+  `modulo`      VARCHAR(50) NOT NULL,
+  `activo`      TINYINT(1)  NOT NULL DEFAULT 1,
+  `updated_at`  TIMESTAMP   DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_usuario_modulo` (`usuario_id`, `modulo`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
 -- Registros
 
 INSERT IGNORE INTO `usuarios` (`usuario`, `password`, `rol`, `nombre`) VALUES

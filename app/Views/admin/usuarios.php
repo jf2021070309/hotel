@@ -58,16 +58,19 @@ include $base . 'includes/sidebar.php';
               </td>
               <td class="text-end pe-4">
                 <div class="btn-group shadow-sm" style="border-radius:8px; overflow:hidden;">
-                  <button class="btn btn-white btn-sm border" title="Editar" @click="abrirModalEditar(u)">
-                    <i class="bi bi-pencil-square text-primary"></i>
-                  </button>
-                  <button class="btn btn-white btn-sm border" title="Cambiar Contraseña" @click="abrirModalPass(u)">
-                    <i class="bi bi-key text-warning"></i>
-                  </button>
-                  <button class="btn btn-white btn-sm border" :title="u.estado == 1 ? 'Desactivar' : 'Activar'" @click="toggleEstado(u)">
-                    <i class="bi" :class="u.estado == 1 ? 'bi-person-x text-danger' : 'bi-person-check text-success'"></i>
-                  </button>
-                </div>
+                <button class="btn btn-white btn-sm border" title="Editar" @click="abrirModalEditar(u)">
+                  <i class="bi bi-pencil-square text-primary"></i>
+                </button>
+                <button class="btn btn-white btn-sm border" title="Cambiar Contraseña" @click="abrirModalPass(u)">
+                  <i class="bi bi-key text-warning"></i>
+                </button>
+                <button class="btn btn-white btn-sm border" :title="u.estado == 1 ? 'Desactivar' : 'Activar'" @click="toggleEstado(u)">
+                  <i class="bi" :class="u.estado == 1 ? 'bi-person-x text-danger' : 'bi-person-check text-success'"></i>
+                </button>
+                <button v-if="u.rol !== 'admin'" class="btn btn-white btn-sm border" title="Gestionar Módulos" @click="abrirPermisos(u)">
+                  <i class="bi bi-toggles text-info"></i>
+                </button>
+              </div>
               </td>
             </tr>
           </tbody>
@@ -150,6 +153,59 @@ include $base . 'includes/sidebar.php';
               <button type="submit" class="btn btn-warning w-100 fw-bold" :disabled="loading">Actualizar</button>
             </div>
           </form>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+    <!-- MODAL: PERMISOS DE MÓDULOS -->
+    <div class="modal fade" id="modalPermisos" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow" style="border-radius:16px;">
+          <div class="modal-header border-0 p-4 pb-0">
+            <div>
+              <h5 class="fw-bold mb-0"><i class="bi bi-toggles text-info me-2"></i>Acceso a Módulos</h5>
+              <p class="text-muted small mb-0" v-if="usuarioPermisos">{{ usuarioPermisos.nombre }} — {{ usuarioPermisos.rol.toUpperCase() }}</p>
+            </div>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body p-4">
+            <div v-if="loadingPermisos" class="text-center py-4">
+              <div class="spinner-border text-primary"></div>
+            </div>
+            <div v-else>
+              <p class="text-muted small mb-3">
+                <i class="bi bi-info-circle me-1"></i>
+                Activa o desactiva los módulos que verá este usuario en el menú lateral.
+              </p>
+              <div class="row g-3">
+                <div class="col-md-6" v-for="p in permisosModulos" :key="p.modulo">
+                  <div class="d-flex align-items-center justify-content-between p-3 rounded-3 border"
+                       :class="p.activo ? 'border-primary bg-primary bg-opacity-5' : 'border-secondary bg-light'">
+                    <div class="d-flex align-items-center gap-2">
+                      <i class="bi fs-5" :class="[p.icon, p.activo ? 'text-primary' : 'text-muted']"></i>
+                      <span class="small fw-bold" :class="p.activo ? 'text-dark' : 'text-muted'">{{ p.label }}</span>
+                    </div>
+                    <div class="form-check form-switch mb-0">
+                      <input class="form-check-input" type="checkbox"
+                             :id="'perm_' + p.modulo"
+                             v-model="p.activo"
+                             :true-value="1" :false-value="0"
+                             style="cursor:pointer; width:2.5em; height:1.3em;">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer border-0 p-4 pt-0">
+            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+            <button class="btn btn-primary px-5" @click="guardarPermisos" :disabled="loadingPermisos || guardandoPermisos">
+              <span v-if="guardandoPermisos" class="spinner-border spinner-border-sm me-1"></span>
+              {{ guardandoPermisos ? 'Guardando...' : 'Guardar Permisos' }}
+            </button>
+          </div>
         </div>
       </div>
     </div>

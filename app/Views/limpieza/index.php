@@ -10,15 +10,15 @@ include $base . 'includes/sidebar.php';
 ?>
 
 <div class="main-content" id="app-limpieza" v-cloak>
-    <div class="topbar">
-        <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list"></i></button>
+    <div class="topbar border-bottom-0 shadow-sm" style="background: linear-gradient(to right, #ffffff, #f8f9fa);">
+        <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list fs-4"></i></button>
         <div>
-            <h4><i class="bi bi-stars me-2 text-info"></i>Panel de Limpieza Diario</h4>
-            <p class="mb-0 text-muted">Gestión de estados y prioridades por habitación</p>
+            <h4 class="fw-bold" style="color: #111; letter-spacing: -0.5px;"><i class="bi bi-stars me-2" style="color: #d4af37;"></i>Panel de Limpieza Diario</h4>
+            <p class="mb-0 small text-muted fw-semibold">Gestión de estados y prioridades por habitación</p>
         </div>
-        <div class="ms-auto d-flex gap-2">
-            <button v-if="!yaGenerado" class="btn btn-primary shadow-sm" @click="generarLista()" :disabled="loading">
-                <i class="bi bi-magic me-1"></i> Generar Lista de Hoy
+        <div class="ms-auto d-flex align-items-center gap-2">
+            <button v-if="!yaGenerado" class="btn-primary-custom shadow-sm" @click="generarLista()" :disabled="loading" style="border: 1px solid #111;">
+                <i class="bi bi-magic me-1 text-warning"></i> Generar Lista de Hoy
             </button>
             <a href="<?= route('limpieza/reporte.php', $base) ?>" class="btn btn-outline-danger shadow-sm">
                 <i class="bi bi-clipboard2-check me-1"></i> Reporte / Checklist

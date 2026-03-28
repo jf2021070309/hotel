@@ -12,19 +12,21 @@ include $base . 'includes/sidebar.php';
 ?>
 
 <div class="main-content" id="app-cchica-index">
-  <div class="topbar">
-    <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list"></i></button>
+  <div class="topbar border-bottom-0 shadow-sm" style="background: linear-gradient(to right, #ffffff, #f8f9fa);">
+    <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list fs-4"></i></button>
     <div>
-      <h4><i class="bi bi-box2-heart me-2 text-primary"></i>Historial de Caja Chica</h4>
-      <p class="mb-0 small text-muted">Registro de ciclos terminados y vigentes</p>
+      <h4 class="fw-bold" style="color: #111; letter-spacing: -0.5px;">
+        <i class="bi bi-box2-heart me-2" style="color: #d4af37;"></i>Historial de Caja Chica
+      </h4>
+      <p class="mb-0 small text-muted fw-semibold">Registro de ciclos terminados y vigentes</p>
     </div>
   </div>
 
   <div class="page-body">
     <!-- PANEL PRINCIPAL ACTUAl -->
     <div class="d-flex flex-wrap gap-2 mb-4 align-items-center">
-      <a href="detalle.php" class="btn btn-primary fw-bold shadow-sm px-4">
-        <i class="bi bi-box-arrow-in-right me-2"></i> IR AL CICLO ACTIVO ACTUAL
+      <a href="detalle.php" class="btn-primary-custom fw-bold shadow-sm px-4" style="border: 1px solid #111;">
+        <i class="bi bi-box-arrow-in-right me-2 text-warning"></i> IR AL CICLO ACTIVO ACTUAL
       </a>
       <!-- Este botón solo debe mostrarse/habilitarse si no hay ciclo activo, lo controlamos con js -->
       <button class="btn btn-success ms-auto" @click="abrirNuevoCiclo" v-if="!hayCicloActivo">

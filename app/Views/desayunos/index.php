@@ -10,23 +10,23 @@ include $base . 'includes/sidebar.php';
 ?>
 
 <div class="main-content" id="app-desayunos" v-cloak>
-    <div class="topbar">
-        <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list"></i></button>
+    <div class="topbar border-bottom-0 shadow-sm" style="background: linear-gradient(to right, #ffffff, #f8f9fa);">
+        <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list fs-4"></i></button>
         <div>
-            <h4><i class="bi bi-egg-fried me-2 text-warning"></i>Gestión de Desayunos</h4>
-            <p class="mb-0 text-muted">Planificación diaria según ocupación real</p>
+            <h4 class="fw-bold" style="color: #111; letter-spacing: -0.5px;"><i class="bi bi-egg-fried me-2" style="color: #d4af37;"></i>Gestión de Desayunos</h4>
+            <p class="mb-0 small text-muted fw-semibold">Planificación diaria según ocupación real</p>
         </div>
         <div class="ms-auto" v-if="tab === 'lista'">
-            <button class="btn btn-primary shadow-sm" @click="nuevoRegistro()">
-                <i class="bi bi-plus-circle me-1"></i> Generar Desayuno de Hoy
+            <button class="btn-primary-custom shadow-sm" @click="nuevoRegistro()" style="border: 1px solid #111;">
+                <i class="bi bi-plus-circle me-1 text-warning"></i> Generar Desayuno de Hoy
             </button>
         </div>
         <div class="ms-auto" v-else>
-            <button class="btn btn-light border shadow-sm me-2" @click="tab = 'lista'">
+            <button class="btn btn-light border shadow-sm me-2 fw-bold" @click="tab = 'lista'">
                 <i class="bi bi-arrow-left me-1"></i> Volver a la Lista
             </button>
-            <button v-if="!soloLectura" class="btn btn-success shadow-sm" @click="guardar()" :disabled="guardando">
-                <i class="bi bi-save me-1"></i> {{ guardando ? 'Guardando...' : 'Guardar Registro' }}
+            <button v-if="!soloLectura" class="btn-primary-custom shadow-sm" @click="guardar()" :disabled="guardando" style="border: 1px solid #111;">
+                <i class="bi bi-save me-1 text-warning"></i> {{ guardando ? 'Guardando...' : 'Guardar Registro' }}
             </button>
         </div>
     </div>

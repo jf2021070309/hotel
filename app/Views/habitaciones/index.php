@@ -8,22 +8,24 @@ include '../../../includes/sidebar.php';
 ?>
 <div id="app-habitaciones" style="display:contents">
 <div class="main-content">
-  <div class="topbar">
-    <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list"></i></button>
+  <div class="topbar border-bottom-0 shadow-sm" style="background: linear-gradient(to right, #ffffff, #f8f9fa);">
+    <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list fs-4"></i></button>
     <div>
-      <h4><i class="bi bi-building me-2 text-primary"></i>Habitaciones</h4>
-      <p>Gestión de habitaciones del hotel</p>
+      <h4 class="fw-bold" style="color: #111; letter-spacing: -0.5px;">
+        <i class="bi bi-building me-2" style="color: #d4af37;"></i>Habitaciones
+      </h4>
+      <p class="mb-0 small text-muted fw-semibold">Gestión de habitaciones del hotel</p>
     </div>
-    <div class="d-flex gap-2 align-items-center">
-      <button class="btn-primary-custom" @click="abrirModal(null)" title="Nueva Habitación">
-        <i class="bi bi-plus-circle-fill"></i>
+    <div class="d-flex gap-2 align-items-center ms-auto">
+      <button class="btn-primary-custom shadow-sm" @click="abrirModal(null)" title="Nueva Habitación" style="border: 1px solid #111;">
+        <i class="bi bi-plus-circle-fill text-warning"></i>
         <span class="d-none d-sm-inline"> Nueva Habitación</span>
       </button>
-      <button class="btn-outline-custom" @click="exportarPDF" title="Exportar PDF">
+      <button class="btn-outline-custom shadow-sm" @click="exportarPDF" title="Exportar PDF">
         <i class="bi bi-file-earmark-pdf-fill text-danger"></i>
         <span class="d-none d-md-inline"> PDF</span>
       </button>
-      <button class="btn-outline-custom" @click="exportarExcel" title="Exportar Excel">
+      <button class="btn-outline-custom shadow-sm" @click="exportarExcel" title="Exportar Excel">
         <i class="bi bi-file-earmark-excel-fill text-success"></i>
         <span class="d-none d-md-inline"> Excel</span>
       </button>
@@ -84,11 +86,14 @@ include '../../../includes/sidebar.php';
 
     <!-- Modal Crear/Editar -->
     <div v-if="modal.visible" class="modal-overlay" @click.self="cerrarModal">
-      <div class="form-card" style="position:relative;max-width:500px;margin:auto;margin-top:60px">
-        <h5 class="fw-bold mb-4">{{ modal.id ? 'Editar Habitación' : 'Nueva Habitación' }}</h5>
-        <div v-if="modal.error" class="alert-custom alert-error mb-3">
-          <i class="bi bi-exclamation-triangle-fill"></i> {{ modal.error }}
+      <div class="form-card" style="position:relative;max-width:550px;margin:auto;margin-top:60px; border-top: 4px solid #111; border-radius: 12px; padding: 0; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+        <div style="background: linear-gradient(135deg, #0d0d0d, #1a1a1a); color: #fff; padding: 20px 32px; border-radius: 12px 12px 0 0; display: flex; align-items: center;">
+          <h5 class="fw-bold mb-0" style="letter-spacing: 1px; color: #d4af37;"><i class="bi bi-door-open-fill me-2"></i>{{ modal.id ? 'Editar Habitación' : 'Nueva Habitación' }}</h5>
         </div>
+        <div style="padding: 32px;">
+          <div v-if="modal.error" class="alert-custom alert-error mb-3">
+            <i class="bi bi-exclamation-triangle-fill"></i> {{ modal.error }}
+          </div>
         <div class="row g-3">
           <div class="col-md-6">
             <label class="form-label">Número</label>
@@ -138,6 +143,7 @@ include '../../../includes/sidebar.php';
           </button>
           <button class="btn-outline-custom" @click="cerrarModal">Cancelar</button>
         </div>
+        </div> <!-- end padding div -->
       </div>
     </div>
   </div>

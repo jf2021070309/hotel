@@ -44,7 +44,7 @@ include $base . 'includes/sidebar.php';
 
   /* ── Header row ────────────────────────────────────────── */
   .cuadro-table thead th {
-    background: #1a1a2e;
+    background: #111111;
     color: #fff;
     text-align: center;
     font-weight: 700;
@@ -59,7 +59,7 @@ include $base . 'includes/sidebar.php';
     position: sticky;
     left: 0;
     z-index: 30;
-    background: #1a1a2e;
+    background: #111111;
     min-width: 160px;
     width: 160px;
   }
@@ -180,7 +180,7 @@ include $base . 'includes/sidebar.php';
 
   /* ── View-mode toggle ──────────────────────────────────── */
   .vm-btn { padding: 3px 10px; font-size: 11px; border-radius: 4px; cursor: pointer; border: 1px solid #ccc; background: #f5f5f5; transition: background .15s; }
-  .vm-btn.active { background: #1a1a2e; color: #fff; border-color: #1a1a2e; }
+  .vm-btn.active { background: #111111; color: #d4af37; border-color: #111111; }
 
   /* ── Controls bar ──────────────────────────────────────── */
   .controls-bar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 8px; }
@@ -225,15 +225,19 @@ include $base . 'includes/sidebar.php';
 </style>
 
 <div class="main-content" id="app-reservas">
-  <div class="topbar">
-    <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list"></i></button>
+  <div class="topbar border-bottom-0 shadow-sm" style="background: linear-gradient(to right, #ffffff, #f8f9fa);">
+    <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list fs-4"></i></button>
     <div>
-      <h4><i class="bi bi-calendar3 me-2 text-warning"></i>Cuadro de Reservas</h4>
-      <p style="margin:0; font-size:11px; color:#999;">Vista mensual — Tiempo real</p>
+      <h4 class="fw-bold" style="color: #111; letter-spacing: -0.5px;">
+        <i class="bi bi-calendar3 me-2" style="color: #d4af37;"></i>Cuadro de Reservas
+      </h4>
+      <p class="mb-0 small text-muted fw-semibold" style="letter-spacing: 0.5px;">Vista mensual — Tiempo real</p>
     </div>
-    <div class="d-flex align-items-center gap-2">
-      <span class="badge bg-secondary" style="font-size:9px;">🕐 Actualizado hace {{ segsActualizado }}s</span>
-      <button class="btn btn-sm btn-outline-secondary" @click="cargarDatos" title="Recargar"><i class="bi bi-arrow-clockwise"></i></button>
+    <div class="d-flex align-items-center gap-2 ms-auto">
+      <span class="badge" style="background: #111; color: #d4af37; font-size:10px; border: 1px solid #d4af37;">
+        <i class="bi bi-arrow-repeat me-1"></i> Actualizado hace {{ segsActualizado }}s
+      </span>
+      <button class="btn btn-sm btn-outline-dark" @click="cargarDatos" title="Recargar"><i class="bi bi-arrow-clockwise"></i></button>
     </div>
   </div>
 
@@ -241,7 +245,7 @@ include $base . 'includes/sidebar.php';
 
     <!-- RESUMEN -->
     <div class="summary-pills">
-      <div class="s-pill"><span class="cnt text-primary">{{ resumen.ocupadas }}<small style="font-size:12px; color:#aaa;">/{{ resumen.total }}</small></span><span class="lbl">🏠 Ocupadas</span></div>
+      <div class="s-pill"><span class="cnt" style="color: #111;">{{ resumen.ocupadas }}<small style="font-size:12px; color:#aaa;">/{{ resumen.total }}</small></span><span class="lbl">🏠 Ocupadas</span></div>
       <div class="s-pill"><span class="cnt">{{ resumen.pax_total }}</span><span class="lbl">👥 PAX Hoy</span></div>
       <div class="s-pill"><span class="cnt text-success">S/{{ ingresos }}</span><span class="lbl">💰 Ingresos</span></div>
       <div class="s-pill"><span class="cnt text-danger">{{ resumen.pendientes }}</span><span class="lbl">⏳ Pendientes</span></div>

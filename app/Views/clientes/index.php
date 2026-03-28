@@ -11,14 +11,16 @@ include $base . 'includes/sidebar.php';
 ?>
 
 <div class="main-content" id="app-clientes" v-cloak>
-  <div class="topbar">
-    <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list"></i></button>
+  <div class="topbar border-bottom-0 shadow-sm" style="background: linear-gradient(to right, #ffffff, #f8f9fa);">
+    <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list fs-4"></i></button>
     <div>
-      <h1 class="h4 mb-0"><i class="bi bi-people-fill me-2 text-primary"></i>Clientes</h1>
-      <p class="text-muted mb-0 small">Huéspedes titulares registrados en el sistema</p>
+      <h4 class="fw-bold mb-0" style="color: #111; letter-spacing: -0.5px;">
+        <i class="bi bi-people-fill me-2" style="color: #d4af37;"></i>Clientes
+      </h4>
+      <p class="mb-0 small text-muted fw-semibold">Huéspedes titulares registrados en el sistema</p>
     </div>
     <div class="ms-auto d-flex align-items-center gap-2">
-      <span class="badge bg-primary px-3 py-2 rounded-pill">{{ clientes.length }} huéspedes</span>
+      <span class="badge px-3 py-2 rounded-pill" style="background: #111; color: #d4af37; border: 1px solid #d4af37;">{{ clientes.length }} huéspedes</span>
     </div>
   </div>
 

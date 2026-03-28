@@ -18,13 +18,15 @@ include $base . 'includes/sidebar.php';
 ?>
 
 <div class="main-content" id="app-yape-index" v-cloak>
-  <div class="topbar">
-    <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list"></i></button>
+  <div class="topbar border-bottom-0 shadow-sm" style="background: linear-gradient(to right, #ffffff, #f8f9fa);">
+    <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list fs-4"></i></button>
     <div>
-      <h4><i class="bi bi-wallet2 me-2" style="color:#7b2cbf"></i> Gastos Yape</h4>
-      <p class="mb-0 small text-muted">Gestión de compras con dinero enviado mediante Yape</p>
+      <h4 class="fw-bold" style="color: #111; letter-spacing: -0.5px;">
+        <i class="bi bi-wallet2 me-2" style="color: #d4af37;"></i>Gastos Yape
+      </h4>
+      <p class="mb-0 small text-muted fw-semibold">Gestión de compras con dinero enviado mediante Yape</p>
     </div>
-    <div class="ms-auto d-flex gap-2">
+    <div class="ms-auto d-flex align-items-center gap-2">
       <!-- Filtro Mes -->
       <select v-model="filtros.mes" class="form-select form-select-sm" style="width:120px" @change="listar()">
         <option value="1">Enero</option>
@@ -46,8 +48,8 @@ include $base . 'includes/sidebar.php';
 
   <div class="page-body">
     <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
-      <button class="btn btn-primary fw-bold px-4 shadow-sm" @click="nuevoRegistro()">
-        <i class="bi bi-plus-lg"></i> Nuevo Registro Yape (Hoy)
+      <button class="btn-primary-custom shadow-sm" @click="nuevoRegistro()" style="border: 1px solid #111;">
+        <i class="bi bi-plus-lg text-warning"></i> Nuevo Registro Yape (Hoy)
       </button>
       <button class="btn btn-outline-secondary btn-sm ms-auto" @click="listar()">
         <i class="bi bi-arrow-clockwise"></i>

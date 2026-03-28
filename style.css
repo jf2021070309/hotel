@@ -5,15 +5,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-  --primary: #2563eb;
-  --primary-dark: #1d4ed8;
+  --primary: #1a1a1a;
+  --primary-dark: #000000;
+  --gold: #d4af37;
   --success: #16a34a;
   --danger: #dc2626;
   --warning: #d97706;
   --info: #0891b2;
-  --body-bg: #f1f5f9;
-  --sidebar-bg: #0f172a;
-  --sidebar-w: 240px;
+  --body-bg: #f8fafc;
+  --sidebar-bg: #0d0d0d; /* Premium deep black/charcoal */
+  --sidebar-w: 260px;
   --sidebar-collapsed-w: 74px;
   --card-radius: 12px;
   --shadow: 0 2px 12px rgba(0, 0, 0, .08);
@@ -141,8 +142,8 @@ body {
 }
 
 .btn-toggle-sidebar:hover {
-  background: var(--primary);
-  color: #fff;
+  background: rgba(212, 175, 55, 0.2);
+  color: #d4af37;
 }
 
 .sidebar.collapsed .btn-toggle-sidebar {
@@ -161,12 +162,12 @@ body {
 }
 
 .nav-label {
-  padding: 8px 20px 4px;
+  padding: 12px 20px 4px;
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  color: #475569;
+  letter-spacing: 1.5px;
+  color: #64748b;
 }
 
 .nav-item a {
@@ -187,16 +188,30 @@ body {
   width: 18px;
   text-align: center;
   font-size: 15px;
+  color: #94a3b8 !important; /* Force uniform premium icon colors */
+  transition: all 0.2s;
 }
 
-.nav-item a:hover,
-.nav-item a.active {
-  background: rgba(37, 99, 235, .15);
-  color: #93c5fd;
+.nav-item a:hover i {
+  color: #fff !important;
+}
+
+.nav-item a:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
 }
 
 .nav-item a.active {
-  color: #60a5fa;
+  background: linear-gradient(90deg, rgba(212,175,55,0.15) 0%, rgba(212,175,55,0) 100%);
+  border-left: 3px solid #d4af37;
+  color: #fff;
+  border-radius: 0 8px 8px 0;
+  margin-left: 0;
+  padding-left: 25px; /* adjust padding due to no margin left and border */
+}
+
+.nav-item a.active i {
+  color: #d4af37 !important; /* Force icons to be gold when active */
 }
 
 .sidebar-footer {
@@ -220,6 +235,28 @@ body {
 .sidebar-footer a:hover {
   background: rgba(220, 38, 38, .15);
   color: #f87171;
+}
+
+/* ─── SCROLLBAR ELEGANTE PARA SIDEBAR ─── */
+.sidebar::-webkit-scrollbar,
+.sidebar-nav::-webkit-scrollbar {
+  width: 5px;
+}
+
+.sidebar::-webkit-scrollbar-track,
+.sidebar-nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb,
+.sidebar-nav::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover,
+.sidebar-nav::-webkit-scrollbar-thumb:hover {
+  background: rgba(212, 175, 55, 0.5); /* Gold handle on hover */
 }
 
 /* ─── WRAPPER ─── */

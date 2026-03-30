@@ -32,6 +32,12 @@ switch ($action) {
         $res = $controller->lateCheckout($input);
         json_response($res['ok'], null, $res['ok'] ? 200 : 422, $res['msg']);
         break;
+    
+    case 'quick_reserva':
+        if ($method !== 'POST') json_response(false, null, 405, 'Método no permitido');
+        $res = $controller->quickReserva($input);
+        json_response($res['ok'], $res['id'] ?? null, $res['ok'] ? 200 : 422, $res['msg']);
+        break;
 
     default:
         json_response(false, null, 400, 'Acción no válida');

@@ -95,6 +95,24 @@ include $base . 'includes/sidebar.php';
     background: #FFFDE7 !important;
   }
 
+  /* ── Hover Highlighting ─────────────────────────────────── */
+  .cuadro-table tbody tr:hover td.col-hab {
+    background-color: #f0f0f0 !important;
+  }
+  .cuadro-table tbody tr:hover td.col-day {
+    background-color: rgba(212, 175, 55, 0.04);
+  }
+  .cuadro-table td.col-day:hover {
+    background-color: rgba(212, 175, 55, 0.2) !important;
+    outline: 1.5px solid #d4af37;
+    outline-offset: -1.5px;
+    z-index: 20;
+    cursor: cell;
+  }
+  .cuadro-table td.col-day.today-col:hover {
+    background-color: #FFF9C4 !important;
+  }
+
   /* ── Stay block ────────────────────────────────────────── */
   .stay-block {
     border-radius: 3px;
@@ -140,12 +158,27 @@ include $base . 'includes/sidebar.php';
   .vm-normal  tbody tr  { height: 36px; }
   .vm-ampliado tbody tr { height: 50px; }
 
-  /* ── Colors ────────────────────────────────────────────── */
-  .est-pendiente  { background: #FFCCCC; color: #7A0000; }
+  /* ── Room Categories ─────────────────────────────────── */
+  .cat-triple      { border-left: 5px solid #3F51B5 !important; background: #E8EAF6 !important; }
+  .cat-ejecutiva   { border-left: 5px solid #FFA000 !important; background: #FFF8E1 !important; }
+  .cat-doble       { border-left: 5px solid #43A047 !important; background: #E8F5E9 !important; }
+  .cat-matrimonial { border-left: 5px solid #E91E63 !important; background: #FCE4EC !important; }
+  .cat-platinium   { border-left: 5px solid #455A64 !important; background: #ECEFF1 !important; }
+  .cat-generic     { border-left: 5px solid #9E9E9E !important; background: #F5F5F5 !important; }
+
+  /* ── Booking Channels Borders ────────────────────────── */
+  .canal-directo  { border-left: 3px solid #2E7D32 !important; }
+  .canal-booking  { border-left: 3px solid #003580 !important; }
+  .canal-whatsapp { border-left: 3px solid #25D366 !important; }
+  .canal-llamada  { border-left: 3px solid #0288D1 !important; }
+
+  /* ── States ─────────────────────────────────────────── */
+  .est-pendiente  { background: #FFE0B2; color: #E65100; }
   .est-adelanto   { background: #FFF176; color: #5D4000; }
   .est-parcial    { background: #FFB74D; color: #4E2200; }
   .est-pagado     { background: #A5D6A7; color: #1B5E20; }
-  .est-limpieza   { background: #9E9E9E; color: #fff; }
+  .est-limpieza   { background: #9E9E9E; color: #fff; box-shadow: inset 0 0 10px rgba(0,0,0,0.1); }
+  .est-reservado  { background: #E1BEE7; color: #4A148C; border: 1px dashed #7B1FA2 !important; box-shadow: 0 2px 4px rgba(123,31,162,0.2) !important; }
   .est-bloqueado  { background: #BDBDBD; color: #333; }
   .est-mantenimiento {
     background: repeating-linear-gradient(
@@ -343,9 +376,9 @@ include $base . 'includes/sidebar.php';
           </thead>
           <tbody>
             <tr v-for="hab in habitacionesFiltradas" :key="hab.id" :style="{ height: rowHeight + 'px' }">
-              <td class="col-hab">
-                <span style="font-size:12px; font-weight:700;">#{{ hab.numero }}</span>
-                <span class="text-muted ms-1" style="font-size:9px;">{{ hab.tipo }}</span>
+              <td class="col-hab fw-bold" :class="getTipoClass(hab.tipo)">
+                <div class="hab-num">#{{ hab.numero }}</div>
+                <div class="hab-tipo text-muted mini">{{ hab.tipo }}</div>
               </td>
               <td v-for="d in diasEnMes" :key="d"
                   class="col-day"
@@ -355,16 +388,16 @@ include $base . 'includes/sidebar.php';
 
                 <!-- Stay block: only render on first day of stay -->
                 <div v-if="esInicioStay(hab, d)"
-                     class="stay-block"
+                     class="stay-block animate__animated animate__fadeIn"
                      :class="['est-' + getCeldaStay(hab, d).estado_pago, 'canal-' + (getCeldaStay(hab, d).canal || '').toLowerCase()]"
-                     :style="{ width: (getCeldaStay(hab, d).cols * colWidth - 3) + 'px' }"
-                     @click.stop="openContextMenu($event, getCeldaStay(hab, d))">
+                     :style="{ width: (calcCols(getCeldaStay(hab, d)) * colWidth - 5) + 'px' }"
+                     @click="abrirDetalle(getCeldaStay(hab, d))">
                   <span class="titular">{{ getCeldaStay(hab, d).titular }}</span>
                   <span v-if="viewMode !== 'compacto'" class="badge-pax">{{ getCeldaStay(hab, d).pax }} PAX</span>
                 </div>
 
-                <!-- Estado especial sin huésped -->
-                <div v-else-if="!getCeldaStay(hab,d) && esDiaEstadoEspecial(hab)"
+                <!-- Estado especial sin huésped (Solo hoy) -->
+                <div v-else-if="!getCeldaStay(hab,d) && esDiaEstadoEspecial(hab, d)"
                      class="stay-block"
                      :class="'est-' + hab.estado"
                      :style="{ width: (colWidth - 3) + 'px' }">
@@ -393,6 +426,56 @@ include $base . 'includes/sidebar.php';
     </div>
 
   </div><!-- /.page-body -->
+
+  <!-- ─── MODAL RESERVA RÁPIDA ─────────────────────────── -->
+  <div class="modal fade" id="modalQuickReserva" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg" style="border-radius:16px;">
+        <div class="modal-header bg-dark text-white border-0 py-3" style="border-radius:16px 16px 0 0;">
+          <h5 class="modal-title d-flex align-items-center gap-2">
+            <i class="bi bi-pencil-square text-warning"></i> Reserva Rápida
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div v-if="formQuick.hab" class="alert alert-secondary py-2 small mb-3">
+            <i class="bi bi-door-open me-1"></i> Habitación <strong>#{{ formQuick.hab.numero }}</strong> — {{ formQuick.hab.tipo }}
+            <br>
+            <i class="bi bi-calendar-event me-1"></i> Inicio: <strong>{{ formQuick.fecha }}</strong>
+          </div>
+          
+          <form @submit.prevent="guardarQuickReserva">
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-muted">NOMBRE DEL HUÉSPED / EMPRESA</label>
+              <input type="text" class="form-control" v-model="formQuick.titular" placeholder="Ej: Juan Pérez" required>
+            </div>
+            
+            <div class="row g-3 mb-3">
+              <div class="col-6">
+                <label class="form-label small fw-bold text-muted">NOCHES</label>
+                <input type="number" class="form-control" v-model.number="formQuick.noches" min="1" max="60" required>
+              </div>
+              <div class="col-6">
+                <!-- Espacio para otros campos breves si se requiere -->
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-muted">OBSERVACIONES / TELÉFONO</label>
+              <textarea class="form-control" v-model="formQuick.observaciones" rows="2" placeholder="Notas breves..."></textarea>
+            </div>
+            
+            <div class="mt-4 d-grid">
+              <button type="submit" class="btn btn-dark py-2 fw-bold" :disabled="loading">
+                <span v-if="loading" class="spinner-border spinner-border-sm me-1"></span>
+                Confirmar Reserva
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- ─── MODAL DETALLE ───────────────────────────────────── -->
   <div class="modal fade" id="modalDetalleReservas" tabindex="-1">
@@ -496,5 +579,6 @@ include $base . 'includes/sidebar.php';
 
 <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="<?= $base ?>app/Views/reservas/reservas.js"></script>

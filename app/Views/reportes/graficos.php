@@ -8,11 +8,7 @@ require_once '../../includes/sidebar.php';
 $page_title      = 'Gráficos — Hotel Manager';
 $base            = '../../../';
 $chartjs_enabled = true;
-
 ?>
-<?php
-
-
 <div class="main-content">
   <div class="topbar">
     <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list"></i></button>

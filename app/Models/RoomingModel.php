@@ -15,7 +15,7 @@ class RoomingModel {
                 (SELECT nombre_completo FROM rooming_pax WHERE stay_id = s.id AND es_titular = 1 LIMIT 1) as titular_nombre
                 FROM rooming_stays s 
                 JOIN habitaciones h ON s.habitacion_id = h.id 
-                WHERE s.estado = 'activo' 
+                WHERE s.estado IN ('activo', 'reservado', 'late_checkout') 
                 ORDER BY s.id DESC";
         return $this->pdo->query($sql)->fetchAll();
     }
@@ -108,6 +108,84 @@ class RoomingModel {
 
             $this->pdo->commit();
             return $stay_id;
+        } catch (Exception $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
+    }
+
+    public function activarReserva(int $id, int $hab_id): bool {
+        $this->pdo->beginTransaction();
+        try {
+            $stmt = $this->pdo->prepare("UPDATE rooming_stays SET estado = 'activo', habitacion_id = ? WHERE id = ?");
+            $stmt->execute([$hab_id, $id]);
+            $stmtHab = $this->pdo->prepare("UPDATE habitaciones SET estado = 'ocupado' WHERE id = ?");
+            $stmtHab->execute([$hab_id]);
+            $this->pdo->commit();
+            return true;
+        } catch (Exception $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
+    }
+
+    public function actualizarStay(int $id, array $data, array $paxList): bool {
+        $this->pdo->beginTransaction();
+        try {
+            // Update stay info
+            $sql = "UPDATE rooming_stays SET 
+                fecha_registro = :fecha_reg, fecha_checkout = :fecha_out, 
+                hora_checkin = :hora_in, medio_reserva = :medio, 
+                habitacion_id = :hab_id, tipo_hab_declarado = :tipo_hab, 
+                noches = :noches, pax_total = :pax_total, total_pago = :total, 
+                moneda_pago = :moneda, monto_original = :monto_orig, 
+                tc_aplicado = :tc, metodo_pago = :metodo, 
+                tipo_comprobante = :comprobante, num_comprobante = :num_comp, 
+                ruc_factura = :ruc, observaciones = :obs, 
+                total_cobrado = :cobrado, estado_pago = :est_pago,
+                estado = 'activo'
+                WHERE id = :id";
+            
+            $stmt = $this->pdo->prepare($sql);
+            $data['id'] = $id;
+            // Remove operator/uid from update or keep them? Keep them as provided in $data.
+            // For simplicity, I'll pass the whole mapped array.
+            $stmt->execute([
+                'fecha_reg'   => $data['fecha_reg'],
+                'fecha_out'   => $data['fecha_out'],
+                'hora_in'     => $data['hora_in'],
+                'medio'       => $data['medio'],
+                'hab_id'      => $data['hab_id'],
+                'tipo_hab'    => $data['tipo_hab'],
+                'noches'      => $data['noches'],
+                'pax_total'   => $data['pax_total'],
+                'total'       => $data['total'],
+                'moneda'      => $data['moneda'],
+                'monto_orig'  => $data['monto_orig'],
+                'tc'          => $data['tc'],
+                'metodo'      => $data['metodo'],
+                'comprobante' => $data['comprobante'],
+                'num_comp'    => $data['num_comp'],
+                'ruc'         => $data['ruc'],
+                'obs'         => $data['obs'],
+                'cobrado'     => $data['cobrado'],
+                'est_pago'    => $data['est_pago'],
+                'id'          => $id
+            ]);
+
+            // Update room to 'ocupado'
+            $stmtHab = $this->pdo->prepare("UPDATE habitaciones SET estado = 'ocupado' WHERE id = ?");
+            $stmtHab->execute([$data['hab_id']]);
+
+            // Replace PAX
+            $this->pdo->prepare("DELETE FROM rooming_pax WHERE stay_id = ?")->execute([$id]);
+            $stmtPax = $this->pdo->prepare("INSERT INTO rooming_pax (stay_id, nombre_completo, documento_tipo, documento_num, es_titular) VALUES (?, ?, ?, ?, ?)");
+            foreach ($paxList as $p) {
+                $stmtPax->execute([$id, $p['nombre_completo'], $p['documento_tipo'], $p['documento_num'], $p['es_titular'] ? 1 : 0]);
+            }
+
+            $this->pdo->commit();
+            return true;
         } catch (Exception $e) {
             $this->pdo->rollBack();
             throw $e;

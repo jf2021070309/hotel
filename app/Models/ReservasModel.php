@@ -47,7 +47,7 @@ class ReservasModel {
                  p.nombre_completo AS titular
              FROM rooming_stays s
              LEFT JOIN rooming_pax p ON p.stay_id = s.id AND p.es_titular = 1
-             WHERE s.estado IN ('activo','late_checkout')
+             WHERE s.estado IN ('activo','late_checkout','reservado')
                AND s.fecha_registro <= :ultimo
                AND s.fecha_checkout  > :primero"
         );
@@ -57,9 +57,18 @@ class ReservasModel {
         // 3. Index by room id
         $staysByRoom = [];
         foreach ($staysRaw as $s) {
-            $diaIni = (int)date('j', strtotime(max($s['fecha_registro'], $primerDia)));
-            $diaFin = (int)date('j', strtotime(min($s['fecha_checkout'],  $ultimoDia)));
-            $cols   = max(1, $diaFin - $diaIni);
+            $diaIni  = (int)date('j', strtotime(max($s['fecha_registro'], $primerDia)));
+            
+            $dtFin   = strtotime($s['fecha_checkout']);
+            $dtLimit = strtotime($ultimoDia);
+
+            if ($dtFin > $dtLimit) {
+                $diaFin = $diasEnMes + 1;
+            } else {
+                $diaFin = (int)date('j', $dtFin);
+            }
+
+            $cols = max(1, $diaFin - $diaIni);
 
             $staysByRoom[$s['habitacion_id']][] = [
                 'id'            => (int)$s['id'],
@@ -183,5 +192,51 @@ class ReservasModel {
             "UPDATE rooming_stays SET estado = 'late_checkout' WHERE id = ?"
         );
         return $stmt->execute([$id]);
+    }
+
+    /**
+     * Create a brief reservation (Quick Reservation).
+     */
+    public function registrarReservaRapida(array $data): int {
+        $fecha_fin = date('Y-m-d', strtotime($data['fecha_inicio'] . " + {$data['noches']} days"));
+        
+        $this->pdo->beginTransaction();
+        try {
+            $sql = "INSERT INTO rooming_stays (
+                operador, fecha_registro, fecha_checkout, medio_reserva, 
+                habitacion_id, tipo_hab_declarado, noches, pax_total, total_pago, 
+                moneda_pago, metodo_pago, tipo_comprobante, cobrador, 
+                observaciones, usuario_id, estado, estado_pago
+            ) VALUES (
+                :operador, :fecha_reg, :fecha_out, 'DIRECTO', 
+                :hab_id, 'RESERVA', :noches, 1, 0, 
+                'PEN', 'EFECTIVO', 'RECIBO', :cobrador, 
+                :obs, :uid, 'reservado', 'pendiente'
+            )";
+            
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([
+                'operador' => $_SESSION['auth_nombre'] ?? 'Admin',
+                'fecha_reg' => $data['fecha_inicio'],
+                'fecha_out' => $fecha_fin,
+                'hab_id'    => $data['hab_id'],
+                'noches'    => $data['noches'],
+                'cobrador'  => $_SESSION['auth_nombre'] ?? 'Admin',
+                'obs'       => $data['observaciones'] ?? '',
+                'uid'       => $data['usuario_id']
+            ]);
+            
+            $stay_id = (int)$this->pdo->lastInsertId();
+            
+            // Insert Pax placeholder
+            $stmtPax = $this->pdo->prepare("INSERT INTO rooming_pax (stay_id, nombre_completo, documento_num, es_titular) VALUES (?, ?, '---', 1)");
+            $stmtPax->execute([$stay_id, $data['titular']]);
+            
+            $this->pdo->commit();
+            return $stay_id;
+        } catch (Exception $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
     }
 }

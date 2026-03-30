@@ -57,8 +57,14 @@ class RoomingController {
         ];
         
         try {
-            file_put_contents(__DIR__ . '/../../tmp/debug_checkin.log', "Mapped: " . json_encode($mapped) . "\n", FILE_APPEND);
-            $stay_id = $this->model->registrarStay($mapped, $paxList);
+            if (!empty($stayData['id'])) {
+                $stay_id = (int)$stayData['id'];
+                $this->model->actualizarStay($stay_id, $mapped, $paxList);
+                $msg = "Reserva activada correctamente";
+            } else {
+                $stay_id = $this->model->registrarStay($mapped, $paxList);
+                $msg = "Check-in realizado correctamente";
+            }
             
             // Si hay pago inicial, registrarlo como anticipo
             if ($mapped['cobrado'] > 0) {
@@ -78,7 +84,7 @@ class RoomingController {
 
             $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'CHECKIN_REGISTRADO', 'ROOMING', "Check-in hab #{$mapped['hab_id']}, ID Stay: $stay_id");
             
-            return ['ok' => true, 'id' => $stay_id, 'msg' => "Check-in realizado correctamente"];
+            return ['ok' => true, 'id' => $stay_id, 'msg' => $msg];
         } catch (Exception $e) {
             file_put_contents(__DIR__ . '/../../tmp/debug_checkin.log', "Error: " . $e->getMessage() . "\n", FILE_APPEND);
             return ['ok' => false, 'msg' => "Error: " . $e->getMessage()];

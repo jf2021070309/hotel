@@ -33,6 +33,7 @@ createApp({
     const staySeleccionado = ref(null);
     const segsActualizado  = ref(0);
     const ctxMenu = reactive({ visible: false, x: 0, y: 0, stay: null });
+    const formQuick = reactive({ hab: null, fecha: '', titular: '', noches: 1, observaciones: '' });
 
     const pagoRapido = reactive({ monto: 0, moneda: 'PEN', metodo: 'efectivo' });
 
@@ -118,9 +119,20 @@ createApp({
       return s && s.dia_inicio === dia;
     };
 
-    const esDiaEstadoEspecial = (hab) => {
-      return ['limpieza', 'bloqueado', 'mantenimiento', 'late_checkout'].includes(hab.estado)
-          && hab.stays.length === 0;
+    const esDiaEstadoEspecial = (hab, dia) => {
+      const esHoy = dia === hoyDia.value && mesActual.value === mesHoy.value && anioActual.value === anioHoy.value;
+      return esHoy && ['limpieza', 'bloqueado', 'mantenimiento', 'late_checkout'].includes(hab.estado);
+    };
+
+    const getTipoClass = (tipo) => {
+      if (!tipo) return 'cat-generic';
+      const t = tipo.toUpperCase();
+      if (t.includes('TRIPLE')) return 'cat-triple';
+      if (t.includes('EJECUTIVA')) return 'cat-ejecutiva';
+      if (t.includes('DOBLE')) return 'cat-doble';
+      if (t.includes('MATRIMONIAL')) return 'cat-matrimonial';
+      if (t.includes('PLATINIUM') || t.includes('SUITE')) return 'cat-platinium';
+      return 'cat-generic';
     };
 
     // Cuántas columnas abarca el stay (clamp al fin del mes)
@@ -179,8 +191,44 @@ createApp({
       const stay = getCeldaStay(hab, dia);
       if (stay) {
         abrirDetalle(stay);
+      } else {
+        abrirQuickReserva(hab, dia);
       }
-      // Free cell: redirect to check-in with pre-loaded data
+    };
+
+    const abrirQuickReserva = (hab, dia) => {
+      formQuick.hab     = hab;
+      formQuick.fecha   = `${anioActual.value}-${String(mesActual.value).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
+      formQuick.titular = '';
+      formQuick.noches  = 1;
+      formQuick.observaciones = '';
+      bootstrap.Modal.getOrCreateInstance(document.getElementById('modalQuickReserva')).show();
+    };
+
+    const guardarQuickReserva = async () => {
+      if (!formQuick.titular) return;
+      loading.value = true;
+      try {
+        const res = await axios.post(`${BASE}quick_reserva`, {
+          hab_id:  formQuick.hab.id,
+          fecha:   formQuick.fecha,
+          titular: formQuick.titular,
+          noches:  formQuick.noches,
+          observaciones: formQuick.observaciones
+        });
+        if (res.data.ok) {
+          bootstrap.Modal.getInstance(document.getElementById('modalQuickReserva'))?.hide();
+          Swal.fire({ icon: 'success', title: 'Reserva registrada', timer: 1500, showConfirmButton: false });
+          await cargarDatos();
+          habitaciones.value = enrichHabs(habitaciones.value);
+        } else {
+          Swal.fire('Error', res.data.msg, 'error');
+        }
+      } catch (e) {
+        Swal.fire('Error', 'No se pudo registrar la reserva', 'error');
+      } finally {
+        loading.value = false;
+      }
     };
 
     const abrirDetalle = (stay) => {
@@ -188,8 +236,7 @@ createApp({
       pagoRapido.monto  = 0;
       pagoRapido.moneda = stay.moneda_pago || 'PEN';
       pagoRapido.metodo = 'efectivo';
-      const modal = new bootstrap.Modal(document.getElementById('modalDetalleReservas'));
-      modal.show();
+      bootstrap.Modal.getOrCreateInstance(document.getElementById('modalDetalleReservas')).show();
     };
 
     // ─── Context Menu ─────────────────────────────────────────────────
@@ -347,6 +394,8 @@ createApp({
       getDiaSemana, onCeldaClick, abrirDetalle,
       openContextMenu, handleCtxAction, ctxMenu,
       guardarPagoRapido, checkout, lateCheckout,
+      formQuick, abrirQuickReserva, guardarQuickReserva,
+      getTipoClass,
       badgeClass, barClass, porcentajePago,
       viewMode, colWidth, rowHeight,
     };

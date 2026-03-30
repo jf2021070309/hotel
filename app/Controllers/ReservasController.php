@@ -66,4 +66,29 @@ class ReservasController {
         }
         return ['ok' => false, 'msg' => 'No se pudo aplicar late checkout'];
     }
+
+    /**
+     * Create a brief reservation.
+     */
+    public function quickReserva(array $input): array {
+        $data = [
+            'hab_id'        => (int)($input['hab_id'] ?? 0),
+            'fecha_inicio'  => $input['fecha'] ?? date('Y-m-d'),
+            'noches'        => (int)($input['noches'] ?? 1),
+            'titular'       => $input['titular'] ?? 'RESERVADO',
+            'observaciones' => $input['observaciones'] ?? '',
+            'usuario_id'    => (int)($_SESSION['auth_id'] ?? 1)
+        ];
+
+        if (!$data['hab_id'] || empty($data['titular'])) {
+            return ['ok' => false, 'msg' => 'Datos incompletos'];
+        }
+
+        try {
+            $id = $this->model->registrarReservaRapida($data);
+            return ['ok' => true, 'msg' => 'Reserva registrada', 'id' => $id];
+        } catch (Exception $e) {
+            return ['ok' => false, 'msg' => 'Error: ' . $e->getMessage()];
+        }
+    }
 }

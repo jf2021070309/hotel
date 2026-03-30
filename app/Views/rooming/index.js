@@ -154,17 +154,71 @@ createApp({
     const onHabChange = () => {
       const h = habitacionesLibres.value.find(x => x.id == form.stay.habitacion_id);
       if (h) {
-        form.stay.monto_original = h.precio_base * form.stay.noches;
+        form.stay.monto_original = h.precio_base * (form.stay.noches || 1);
         form.stay.tipo_hab_declarado = h.tipo;
         recalcularMoneda();
       }
     };
 
+    const activarReserva = async (s) => {
+      loading.value = true;
+      try {
+        const res = await axios.get(`../../../api/rooming.php?action=detalle&id=${s.id}`);
+        const data = res.data.data;
+        resetForm();
+        
+        // Cargar datos de la reserva al formulario
+        form.stay.id = data.id;
+        form.stay.habitacion_id = data.habitacion_id;
+        form.stay.fecha_registro = data.fecha_registro;
+        form.stay.noches = data.noches || 1;
+        form.stay.medio_reserva = data.medio_reserva || 'DIRECTO';
+        form.stay.observaciones = data.observaciones;
+        
+        // Mapeo de precios y estados
+        form.stay.monto_original = data.monto_original || 0;
+        form.stay.total_pago = data.total_pago || 0;
+        form.stay.moneda_pago = data.moneda_pago || 'PEN';
+        form.stay.estado_pago = data.estado_pago || 'pendiente';
+        form.stay.tipo_hab_declarado = data.hab_tipo || 'ESTANDAR';
+
+        // Cargar PAX (Huéspedes)
+        if (data.pax && data.pax.length > 0) {
+            form.pax = data.pax.map(p => ({
+                nombre_completo: p.nombre_completo,
+                documento_tipo:  p.documento_tipo || 'DNI',
+                documento_num:   p.documento_num,
+                nacionalidad:    p.nacionalidad || 'Peruana',
+                ciudad:          p.ciudad || '',
+                es_titular:      p.es_titular == 1
+            }));
+        }
+
+        calcularNoches();
+        recalcularMoneda();
+        
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('modalCheckin')).show();
+      } catch (e) {
+        showToast('Error al cargar reserva', 'error');
+      } finally {
+        loading.value = false;
+      }
+    };
+
     const calcularNoches = () => {
-      const d = new Date(form.stay.fecha_registro);
-      d.setDate(d.getDate() + parseInt(form.stay.noches));
-      form.stay.fecha_checkout = d.toISOString().split('T')[0];
-      onHabChange();
+      if (!form.stay.fecha_registro) return;
+      
+      // Ensure nights is a valid number, default to 1 if empty/invalid
+      const n = parseInt(form.stay.noches) || 0;
+      
+      // Create date at noon to avoid timezone issues with date-only strings
+      const d = new Date(form.stay.fecha_registro + 'T12:00:00');
+      
+      if (!isNaN(d.getTime())) {
+        d.setDate(d.getDate() + n);
+        form.stay.fecha_checkout = d.toISOString().split('T')[0];
+        onHabChange();
+      }
     };
 
     const onNochesChange = () => {
@@ -375,6 +429,11 @@ createApp({
        if (p === 'parcial') return 'bg-warning text-dark';
        return 'bg-danger';
     };
+    const getEstadBadge = (e) => {
+       if (e === 'reservado') return 'bg-info text-dark fw-bold';
+       if (e === 'late_checkout') return 'bg-dark text-white';
+       return 'bg-success text-white';
+    };
     const showToast = (msg, icon) => {
       Swal.fire({ toast: true, position: 'top-end', icon, title: msg, showConfirmButton: false, timer: 3000 });
     };
@@ -386,7 +445,8 @@ createApp({
       staysFiltrados, selectedStay, stayParaPago, mediosPago, pagoForm,
       abrirCheckin, onHabChange, calcularNoches, onNochesChange, recalcularMoneda, 
       onAdelantoChange, agregarPax, setTitular, guardarCheckin, verDetalle, cargarDatos,
-      fmtFecha, getPagoClass, procederCheckout, abrirPago, recalcularPago, guardarPago,
+      fmtFecha, getPagoClass, getEstadBadge, procederCheckout, abrirPago, recalcularPago, guardarPago,
+      activarReserva,
       // CONSUMOS
       inventario, inventarioAgrupado, stayParaConsumo, consumosStay, consumoForm,
       abrirConsumo, onProductoChange, calcularTotalConsumo, guardarConsumo,

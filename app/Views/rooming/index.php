@@ -82,6 +82,7 @@ include $base . 'includes/head.php';
             <tr v-else v-for="s in staysFiltrados" :key="s.id">
               <td class="ps-4">
                 <div class="fw-bold fs-5" style="color: #111;">#{{ s.hab_numero }}</div>
+                <span class="badge" :class="getEstadBadge(s.estado)" style="font-size: 8px; padding: 4px 8px;">{{ s.estado.toUpperCase() }}</span>
                 <div class="text-muted small fw-semibold" style="letter-spacing: 0.5px;">{{ s.hab_tipo }}</div>
               </td>
               <td>
@@ -108,16 +109,19 @@ include $base . 'includes/head.php';
               </td>
               <td class="text-end pe-4">
                 <div class="btn-group shadow-sm" style="border-radius:8px; overflow:hidden;">
+                  <button v-if="s.estado === 'reservado'" class="btn btn-success btn-sm border" title="Activar Check-in" @click="activarReserva(s)">
+                    <i class="bi bi-person-check-fill"></i>
+                  </button>
                   <button class="btn btn-white btn-sm border" title="Detalle" @click="verDetalle(s)">
                     <i class="bi bi-eye text-primary"></i>
                   </button>
-                  <button class="btn btn-white btn-sm border" title="Registrar Consumo" @click="abrirConsumo(s)">
+                  <button v-if="s.estado !== 'reservado'" class="btn btn-white btn-sm border" title="Registrar Consumo" @click="abrirConsumo(s)">
                     <i class="bi bi-cup-straw text-warning"></i>
                   </button>
-                  <button class="btn btn-white btn-sm border" title="Registrar Pago" @click="abrirPago(s)">
+                  <button v-if="s.estado !== 'reservado'" class="btn btn-white btn-sm border" title="Registrar Pago" @click="abrirPago(s)">
                     <i class="bi bi-wallet2 text-success"></i>
                   </button>
-                  <button class="btn btn-white btn-sm border" title="Checkout" @click="procederCheckout(s)">
+                  <button v-if="s.estado !== 'reservado'" class="btn btn-white btn-sm border" title="Checkout" @click="procederCheckout(s)">
                     <i class="bi bi-door-closed text-danger"></i>
                   </button>
                 </div>

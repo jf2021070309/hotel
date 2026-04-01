@@ -609,13 +609,13 @@ INSERT IGNORE INTO `usuarios` (`usuario`, `password`, `rol`, `nombre`) VALUES
 ('cajera4', '$2y$10$Y/GanjL/y/VpLwNpr2gNgua41aXNlmDuTxeScRsvw9Vh8zIHIt0uS', 'supervisor', 'Alex');
 
 INSERT INTO `habitaciones` (`numero`, `tipo`, `piso`, `estado`, `precio_base`) VALUES
-('201', 'TRIPLE FAMILIAR',      2, 'libre', 0.00),
-('202', 'EJECUTIVA SUPERIOR',   2, 'libre', 0.00),
-('203', 'DOBLE',                2, 'libre', 0.00),
-('204', 'EJECUTIVA SUPERIOR',   2, 'libre', 0.00),
-('205', 'PLATINIUM SUITE',      2, 'libre', 0.00),
+('201', 'TRIPLE FAMILIAR',      2, 'libre', 100.00),
+('202', 'EJECUTIVA SUPERIOR',   2, 'libre', 150.00),
+('203', 'DOBLE',                2, 'libre', 200.00),
+('204', 'EJECUTIVA SUPERIOR',   2, 'libre', 250.00),
+('205', 'PLATINIUM SUITE',      2, 'libre', 300.00),
 
-('301', 'TRIPLE',               3, 'libre', 0.00),
+('301', 'TRIPLE',               3, 'libre', 500.00),
 ('302', 'EJECUTIVA SUPERIOR',   3, 'libre', 0.00),
 ('303', 'DOBLE',                3, 'libre', 0.00),
 ('304', 'MATRIMONIAL SUPERIOR', 3, 'libre', 0.00),  
@@ -675,16 +675,16 @@ INSERT INTO `finanzas_categorias` (`modulo`, `tipo`, `nombre`, `orden`) VALUES
 -- =======================
 
 
-INSERT INTO `inventario_productos` (`nombre`, `categoria`, `refrigeradora`, `precio_venta`) VALUES
-('COCA COLA',    'BEBIDA', 1, 7.00),
-('INCA COLA',    'BEBIDA', 1, 7.00),
-('AGUA SAN MATEO','BEBIDA',1, 5.00),
-('AGUA SAN LUIS','BEBIDA', 1, 5.00),
-('CERV. CORONA', 'BEBIDA', 1, 10.00),
-('CERV. CUZQUEÑA','BEBIDA',1, 10.00),
-('VINO ROJO',    'VINO',   2, 35.00),
-('VINO MORADO',  'VINO',   2, 35.00),
-('VINO AZUL',    'VINO',   2, 35.00);
+INSERT INTO `inventario_productos` (`nombre`, `categoria`, `refrigeradora`, `precio_venta`, `stock_actual`) VALUES
+('COCA COLA',    'BEBIDA', 1, 7.00,10),
+('INCA COLA',    'BEBIDA', 1, 7.00,10),
+('AGUA SAN MATEO','BEBIDA',1, 5.00,10),
+('AGUA SAN LUIS','BEBIDA', 1, 5.00,10),
+('CERV. CORONA', 'BEBIDA', 1, 10.00,10),
+('CERV. CUZQUEÑA','BEBIDA',1, 10.00,10),
+('VINO ROJO',    'VINO',   2, 35.00,10),
+('VINO MORADO',  'VINO',   2, 35.00,10),
+('VINO AZUL',    'VINO',   2, 35.00,10);
 
 
 -- La exportación de datos fue deseleccionada.

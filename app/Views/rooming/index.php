@@ -518,6 +518,81 @@ include $base . 'includes/head.php';
     </div>
   </div>
 
+  <!-- MODAL REGISTRAR PAGO -->
+  <div class="modal fade" id="modalPago" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg" style="border-radius:16px;">
+        <div class="modal-header bg-success text-white border-0 py-3" style="border-radius:16px 16px 0 0;">
+          <h5 class="modal-title d-flex align-items-center gap-2">
+            <i class="bi bi-wallet2"></i> Registrar Pago / Abono
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div v-if="stayParaPago" class="mb-4 p-3 bg-light rounded border shadow-sm">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div class="small text-muted fw-bold text-uppercase">Habitación</div>
+                <div class="fw-bold">#{{ stayParaPago.hab_numero }} — {{ stayParaPago.titular_nombre }}</div>
+              </div>
+              <div class="text-end">
+                <div class="small text-muted fw-bold text-uppercase">Saldo Pendiente</div>
+                <div class="fw-bold text-danger fs-5">PEN {{ (stayParaPago.total_pago - stayParaPago.total_cobrado).toFixed(2) }}</div>
+              </div>
+            </div>
+          </div>
+
+          <form @submit.prevent="guardarPago">
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">Monto a Pagar</label>
+                <div class="input-group input-group-sm">
+                  <select v-model="pagoForm.moneda" class="form-select border-primary" @change="recalcularPago" style="max-width: 80px;">
+                    <option value="PEN">S/</option>
+                    <option value="USD">$</option>
+                  </select>
+                  <input type="number" class="form-control border-primary" v-model="pagoForm.monto" step="0.01" required @input="recalcularPago">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">Equivalente PEN</label>
+                <input type="number" class="form-control form-control-sm bg-light fw-bold text-secondary" v-model="pagoForm.monto_pen" readonly>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label small fw-bold">Método de Pago</label>
+              <select class="form-select form-select-sm" v-model="pagoForm.tipo" required>
+                <option value="">Seleccione...</option>
+                <option v-for="m in mediosPago" :key="m.id" :value="m.nombre" :disabled="m.activo != 1">
+                  {{ m.nombre }}
+                </option>
+              </select>
+            </div>
+
+            <div class="row g-3 mb-4">
+              <div class="col-6">
+                <label class="form-label small fw-bold">Fecha</label>
+                <input type="date" class="form-control form-control-sm" v-model="pagoForm.fecha" required>
+              </div>
+              <div class="col-6">
+                <label class="form-label small fw-bold">N° Recibo / Ref.</label>
+                <input type="text" class="form-control form-control-sm" v-model="pagoForm.recibo" placeholder="Ref. opcional">
+              </div>
+            </div>
+
+            <div class="mt-2 d-grid">
+               <button type="submit" class="btn btn-success py-2 fw-bold shadow-sm" :disabled="loading">
+                  <span v-if="loading" class="spinner-border spinner-border-sm me-1"></span>
+                  Confirmar Registro de Pago
+               </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- Scripts -->

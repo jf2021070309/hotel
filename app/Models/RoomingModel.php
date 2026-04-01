@@ -106,6 +106,8 @@ class RoomingModel {
                 ]);
             }
 
+            $this->upsertLimpiezaCheckout((int)$data['hab_id'], $data['fecha_out']);
+
             $this->pdo->commit();
             return $stay_id;
         } catch (Exception $e) {
@@ -184,6 +186,8 @@ class RoomingModel {
                 $stmtPax->execute([$id, $p['nombre_completo'], $p['documento_tipo'], $p['documento_num'], $p['es_titular'] ? 1 : 0]);
             }
 
+            $this->upsertLimpiezaCheckout((int)$data['hab_id'], $data['fecha_out']);
+
             $this->pdo->commit();
             return true;
         } catch (Exception $e) {
@@ -208,7 +212,7 @@ class RoomingModel {
                 'categoria'   => 'Alojamiento / Pago extra',
                 'monto'       => $pago['monto'], // FIX: Usar monto original con la moneda original
                 'moneda'      => $pago['moneda'] ?? 'PEN',
-                'medio_pago'  => $pago['tipo_pago'] ?? 'EFECTIVO',
+                'medio_pago'  => $pago['tipo'] ?? 'EFECTIVO',
                 'observacion' => "PAGO Stay #" . $pago['stay_id'] . ". Recibo: " . ($pago['recibo'] ?? 'N/A')
             ]);
         }
@@ -289,5 +293,18 @@ class RoomingModel {
             $this->actualizarResumenPagos($stayId);
         }
         return $res;
+    }
+
+    private function upsertLimpiezaCheckout(int $hab_id, string $fecha_out): void {
+        $stmtHab = $this->pdo->prepare("SELECT numero FROM habitaciones WHERE id = ?");
+        $stmtHab->execute([$hab_id]);
+        $numHab = $stmtHab->fetchColumn();
+
+        $sql = "INSERT INTO limpieza_registros 
+                (fecha, habitacion_id, habitacion, tipo_limpieza, prioridad, estado, usuario_id) 
+                VALUES (?, ?, ?, 'salida', 'alta', 'pendiente', ?)
+                ON DUPLICATE KEY UPDATE tipo_limpieza = 'salida', prioridad = 'alta'";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$fecha_out, $hab_id, $numHab, $_SESSION['auth_id'] ?? 1]);
     }
 }

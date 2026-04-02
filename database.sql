@@ -603,15 +603,15 @@ CREATE TABLE IF NOT EXISTS `usuario_permisos` (
 
 INSERT IGNORE INTO `usuarios` (`usuario`, `password`, `rol`, `nombre`) VALUES
 ('admin',   '$2y$10$Y/GanjL/y/VpLwNpr2gNgua41aXNlmDuTxeScRsvw9Vh8zIHIt0uS', 'admin',      'Administrador'),
-('cajera1', '$2y$10$Y/GanjL/y/VpLwNpr2gNgua41aXNlmDuTxeScRsvw9Vh8zIHIt0uS', 'cajera',     'Kari'),
+('kari', '$2y$10$Y/GanjL/y/VpLwNpr2gNgua41aXNlmDuTxeScRsvw9Vh8zIHIt0uS', 'limpieza',     'Kari'),
 ('cajera2', '$2y$10$Y/GanjL/y/VpLwNpr2gNgua41aXNlmDuTxeScRsvw9Vh8zIHIt0uS', 'cajera',     'Jessica'),
 ('cajera3', '$2y$10$Y/GanjL/y/VpLwNpr2gNgua41aXNlmDuTxeScRsvw9Vh8zIHIt0uS', 'cajera',     'Roy'),
 ('cajera4', '$2y$10$Y/GanjL/y/VpLwNpr2gNgua41aXNlmDuTxeScRsvw9Vh8zIHIt0uS', 'supervisor', 'Alex');
 
 INSERT INTO `habitaciones` (`numero`, `tipo`, `piso`, `estado`, `precio_base`) VALUES
-('201', 'TRIPLE FAMILIAR',      2, 'libre', 100.00),
+('201', 'TRIPLE FAMILIAR',      2, 'libre', 200.00),
 ('202', 'EJECUTIVA SUPERIOR',   2, 'libre', 150.00),
-('203', 'DOBLE',                2, 'libre', 200.00),
+('203', 'DOBLE',                2, 'libre', 180.00),
 ('204', 'EJECUTIVA SUPERIOR',   2, 'libre', 250.00),
 ('205', 'PLATINIUM SUITE',      2, 'libre', 300.00),
 

@@ -184,7 +184,8 @@ include 'includes/sidebar.php';
                <hr>
                <div class="mb-4 d-flex justify-content-between align-items-center">
                  <span class="fw-bold h6 mb-0 text-dark">EFECTIVO EN SOBRE:</span>
-                 <span class="h4 mb-0 fw-bold text-primary">S/ {{ mi_turno.efectivo_sobre.toFixed(2) }}</span>
+                 <span v-if="mi_turno.efectivo_sobre >= 0" class="h4 mb-0 fw-bold text-primary">S/ {{ mi_turno.efectivo_sobre.toFixed(2) }}</span>
+                 <span v-else class="h4 mb-0 fw-bold text-danger" title="El cajón está en negativo por falta de saldo inicial.">S/ {{ mi_turno.efectivo_sobre.toFixed(2) }} <small class="fs-6">(Faltante)</small></span>
                </div>
                
                <div v-if="mi_turno.estado === 'inexistente'" class="alert alert-warning border-0 small mb-0">

@@ -4,7 +4,8 @@
  */
 $base = '../../../';
 require_once $base . 'auth/middleware.php';
-protegerPorRol('admin'); // Auditoría es solo para admin real
+protegerPorRol('cajera', 'auditoria');
+ // Auditoría es solo para admin real
 
 $page_title = 'Auditoría del Sistema — Hotel Manager';
 include $base . 'includes/head.php';

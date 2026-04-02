@@ -16,7 +16,7 @@ $controller = new UsuarioController($pdo);
 
 switch ($action) {
     case 'listar':
-        protegerPorRol('cajera');
+        protegerPorRol('cajera', 'gestion_usuarios');
         json_response(true, $controller->index());
         break;
     
@@ -28,14 +28,14 @@ switch ($action) {
 
     case 'crear':
         if ($method !== 'POST') json_response(false, null, 405, "Método no permitido");
-        protegerPorRol('cajera');
+        protegerPorRol('cajera', 'gestion_usuarios');
         $res = $controller->create($input);
         json_response($res['ok'], null, $res['code'] ?? 200, $res['msg']);
         break;
 
     case 'editar':
         if ($method !== 'POST') json_response(false, null, 405, "Método no permitido");
-        protegerPorRol('cajera');
+        protegerPorRol('cajera', 'gestion_usuarios');
         $id = (int)($input['id'] ?? 0);
         $res = $controller->update($id, $input);
         json_response($res['ok'], null, $res['code'] ?? 200, $res['msg']);
@@ -43,7 +43,7 @@ switch ($action) {
 
     case 'cambiar_pass':
         if ($method !== 'POST') json_response(false, null, 405, "Método no permitido");
-        protegerPorRol('cajera');
+        protegerPorRol('cajera', 'gestion_usuarios');
         $id   = (int)($input['id'] ?? 0);
         $pass = $input['password'] ?? '';
         $res  = $controller->updatePassword($id, $pass);

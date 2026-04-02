@@ -8,7 +8,7 @@ require_once __DIR__ . '/../auth/middleware.php';
 require_once __DIR__ . '/../app/Controllers/CajaChicaController.php';
 
 // Caja Chica es accesible probablemente por cajeras/supervisores igual
-protegerPorRol('cajera'); 
+protegerPorRol('cajera', 'caja_chica');
 
 $action = $_GET['action'] ?? '';
 $method = $_SERVER['REQUEST_METHOD'];

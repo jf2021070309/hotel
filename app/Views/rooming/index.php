@@ -4,7 +4,7 @@
  */
 $base = '../../../';
 require_once $base . 'auth/middleware.php';
-protegerPorRol('cajera');
+protegerPorRol('cajera', 'rooming');
 
 $page_title = 'Rooming & Check-in — Hotel Manager';
 include $base . 'includes/head.php';
@@ -284,7 +284,7 @@ include $base . 'includes/head.php';
                 </div>
                 <div class="mb-3">
                   <label class="form-label small fw-bold">Método de pago</label>
-                  <select v-model="form.stay.metodo_pago" class="form-select" required>
+                  <select v-model="form.stay.metodo_pago" class="form-select" :required="form.adelanto > 0">
                     <option value="">Seleccione...</option>
                     <option v-for="m in mediosPago" :key="m.id" :value="m.nombre" :disabled="m.activo != 1">
                       {{ m.nombre }}

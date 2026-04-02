@@ -83,6 +83,9 @@ include 'includes/sidebar.php';
                 <div>
                   <div class="text-xs fw-bold text-uppercase mb-1" style="color: #16a34a; letter-spacing: 1px;">💰 Ingresos Hoy</div>
                   <div class="h4 mb-0 fw-bold" style="color: #111;">S/ {{ kpi.ingresos_hoy.toFixed(2) }}</div>
+                  <div v-if="kpi.pendientes_hoy > 0" class="text-muted small mt-1">
+                    <i class="bi bi-clock-history"></i> + S/ {{ kpi.pendientes_hoy.toFixed(2) }} (Pendientes)
+                  </div>
                 </div>
                 <i class="bi bi-cash-stack text-success opacity-25" style="font-size: 2.5rem;"></i>
               </div>

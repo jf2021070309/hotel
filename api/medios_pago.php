@@ -13,7 +13,7 @@ $action = $_GET['action'] ?? 'listar';
 
 // Acciones que requieren rol ADMIN
 if (in_array($action, ['guardar', 'toggle', 'eliminar'])) {
-    protegerPorRol('admin');
+    protegerPorRol('cajera', 'medios_pago');
 }
 $input = json_decode(file_get_contents('php://input'), true);
 $controller = new MedioPagoController($pdo);

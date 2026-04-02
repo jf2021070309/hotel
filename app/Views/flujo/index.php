@@ -4,7 +4,7 @@
  */
 $base = '../../../';
 require_once $base . 'auth/middleware.php';
-protegerPorRol('cajera'); 
+protegerPorRol('cajera', 'flujo');
 
 $page_title = 'Flujo de Caja — Hotel Manager';
 include $base . 'includes/head.php';

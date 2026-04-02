@@ -4,7 +4,7 @@
  */
 $base = '../../../';
 require_once $base . 'auth/middleware.php';
-protegerPorRol('cajera');
+protegerPorRol('cajera', 'reservas');
 
 $page_title = 'Cuadro de Reservas — Hotel Manager';
 include $base . 'includes/head.php';

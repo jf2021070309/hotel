@@ -94,9 +94,12 @@ function obtenerUsuarioActual(): array {
  */
 function tienePermiso(string $rol_minimo): bool {
     $roles = ['limpieza', 'cajera', 'supervisor', 'admin'];
-    $user_rol = $_SESSION['auth_rol'] ?? 'limpieza';
+    $user_rol = strtolower($_SESSION['auth_rol'] ?? 'limpieza');
     $idx_user = array_search($user_rol, $roles);
-    $idx_min  = array_search($rol_minimo, $roles);
+    $idx_min  = array_search(strtolower($rol_minimo), $roles);
+    
+    // Si el rol no existe en la lista, por seguridad denegamos a menos que sea admin
+    if ($idx_user === false) return false;
     return $idx_user >= $idx_min;
 }
 

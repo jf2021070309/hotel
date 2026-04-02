@@ -16,6 +16,7 @@ createApp({
       ocupacion: { ocupadas: 0, total: 0 },
       pax_hoy: 0,
       ingresos_hoy: 0,
+      pendientes_hoy: 0,
       egresos_hoy: 0,
       neto_hoy: 0
     });

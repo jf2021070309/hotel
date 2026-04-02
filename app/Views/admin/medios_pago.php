@@ -4,7 +4,7 @@
  */
 $base = '../../../';
 require_once $base . 'auth/middleware.php';
-protegerPorRol('admin');
+protegerPorRol('admin', 'medios_pago');
 
 $page_title = 'Medios de Pago — Hotel Manager';
 include $base . 'includes/head.php';

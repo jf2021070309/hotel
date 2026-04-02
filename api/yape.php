@@ -7,7 +7,7 @@ require_once __DIR__ . '/../auth/session.php';
 require_once __DIR__ . '/../auth/middleware.php';
 require_once __DIR__ . '/../app/Controllers/YapeController.php';
 
-protegerPorRol('cajera'); 
+protegerPorRol('cajera', 'yape');
 
 $action = $_GET['action'] ?? '';
 $method = $_SERVER['REQUEST_METHOD'];

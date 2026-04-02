@@ -4,7 +4,7 @@ require_once $base . 'config/db.php';
 require_once $base . 'auth/session.php';
 require_once $base . 'auth/middleware.php';
 
-protegerPorRol('cajera');
+protegerPorRol('cajera', 'yape');
 
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 $esNuevo = isset($_GET['nuevo']) && $_GET['nuevo'] == 1;

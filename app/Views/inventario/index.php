@@ -4,7 +4,7 @@
  */
 $base = '../../../';
 require_once $base . 'auth/middleware.php';
-protegerPorRol('admin');
+protegerPorRol('cajera', 'inventario');
 
 $page_title = 'Gestión de Inventario — Hotel Manager';
 include $base . 'includes/head.php';

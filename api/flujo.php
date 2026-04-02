@@ -7,7 +7,8 @@ require_once __DIR__ . '/../auth/session.php';
 require_once __DIR__ . '/../auth/middleware.php';
 require_once __DIR__ . '/../app/Controllers/FlujoController.php';
 
-protegerPorRol('cajera'); // Cajeras, Supervisores, Admin
+protegerPorRol('cajera', 'flujo');
+ // Cajeras, Supervisores, Admin
 
 $action = $_GET['action'] ?? '';
 $method = $_SERVER['REQUEST_METHOD'];

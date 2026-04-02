@@ -4,7 +4,7 @@ require_once $base . 'config/db.php';
 require_once $base . 'auth/session.php';
 require_once $base . 'auth/middleware.php';
 
-protegerPorRol('cajera');
+protegerPorRol('cajera', 'yape');
 
 // Detectar turno aproximado por default
 $horaActual = (int)date('H');

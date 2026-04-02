@@ -7,7 +7,7 @@ require_once '../auth/session.php';
 require_once '../auth/middleware.php';
 require_once '../app/Controllers/RoomingController.php';
 
-protegerPorRol('cajera');
+protegerPorRol('cajera', 'rooming');
 
 $action = $_GET['action'] ?? 'listar';
 $input = json_decode(file_get_contents('php://input'), true);

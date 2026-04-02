@@ -80,13 +80,22 @@ class DashboardModel {
                 h.numero AS hab, 
                 COALESCE((SELECT nombre_completo FROM rooming_pax p WHERE p.stay_id = s.id AND es_titular=1 LIMIT 1), 'Huésped no asignado') AS huesped, 
                 (s.total_pago - COALESCE(s.total_cobrado, 0)) AS debe, 
-                s.estado_pago AS estado
+                s.estado_pago AS estado,
+                s.moneda_pago
             FROM rooming_stays s
             JOIN habitaciones h ON s.habitacion_id = h.id
             WHERE s.estado_pago != 'pagado' AND s.estado IN ('activo', 'late_checkout')
             ORDER BY debe DESC;
         ";
         $cobros_pendientes = $this->pdo->query($sqlCobros)->fetchAll(PDO::FETCH_ASSOC);
+
+        $pendientes_hoy = 0;
+        foreach ($cobros_pendientes as $c) {
+            $monto_pen = (float)$c['debe'];
+            if ($c['moneda_pago'] === 'USD') $monto_pen *= $tc['USD'];
+            if ($c['moneda_pago'] === 'CLP') $monto_pen *= $tc['CLP'];
+            $pendientes_hoy += $monto_pen;
+        }
 
         // 6. Sobres del día
         $stmtSobres = $this->pdo->prepare("
@@ -128,6 +137,7 @@ class DashboardModel {
                 'ocupacion' => ['ocupadas' => (int)$ocupacion['ocupadas'], 'total' => (int)$ocupacion['total']],
                 'pax_hoy' => $pax_hoy,
                 'ingresos_hoy' => round($ingresos_hoy, 2),
+                'pendientes_hoy' => round($pendientes_hoy, 2),
                 'egresos_hoy' => round($egresos_hoy, 2),
                 'neto_hoy' => round($ingresos_hoy - $egresos_hoy, 2)
             ],

@@ -7,7 +7,7 @@ require_once '../auth/session.php';
 require_once '../auth/middleware.php';
 require_once '../app/Models/HabitacionModel.php';
 
-protegerPorRol('cajera');
+protegerPorRol('cajera', 'habitaciones');
 
 $model = new HabitacionModel($pdo);
 $method = $_SERVER['REQUEST_METHOD'];

@@ -8,7 +8,7 @@ require_once '../auth/middleware.php';
 require_once '../app/Controllers/AuditoriaController.php';
 
 // Solo admin puede ver la auditoría
-protegerPorRol('admin');
+protegerPorRol('cajera', 'auditoria');
 
 $action = $_GET['action'] ?? 'listar';
 $controller = new AuditoriaController($pdo);

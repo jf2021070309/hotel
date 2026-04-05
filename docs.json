@@ -1,0 +1,48 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "Hotel Platinium",
+  "colors": {
+    "primary": "#D4AF37",
+    "light": "#F5F5F5",
+    "dark": "#1A1A1B"
+  },
+  "favicon": "/favicon.ico",
+  "navigation": {
+    "groups": [
+      {
+        "group": "Guía de Inicio",
+        "pages": [
+          "mint-docs/introduction"
+        ]
+      },
+      {
+        "group": "Módulos Core",
+        "pages": [
+          "mint-docs/users",
+          "mint-docs/dashboard",
+          "mint-docs/rooming"
+        ]
+      },
+      {
+        "group": "API Reference",
+        "pages": [
+          "mint-docs/api-reference/openapi"
+        ]
+      }
+    ]
+  },
+  "logo": {
+    "light": "/assets/logo-light.png",
+    "dark": "/assets/logo-dark.png"
+  },
+  "api": {
+    "mdx": {
+      "server": "https://api.tu-hotel.com",
+      "auth": {
+        "method": "key",
+        "name": "PHPSESSID"
+      }
+    }
+  }
+}

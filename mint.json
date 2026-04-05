@@ -1,21 +1,14 @@
 {
   "name": "Hotel Platinium",
-  "logo": {
-    "light": "/assets/logo-light.png",
-    "dark": "/assets/logo-dark.png"
-  },
-  "favicon": "/favicon.ico",
   "colors": {
-    "primary": "#D4AF37",
-    "light": "#F5F5F5",
-    "dark": "#1A1A1B"
+    "primary": "#d4af37",
+    "light": "#f5f5f5",
+    "dark": "#1a1a1b"
   },
   "navigation": [
     {
       "group": "Guía de Inicio",
-      "pages": [
-        "mint-docs/introduction"
-      ]
+      "pages": ["mint-docs/introduction"]
     },
     {
       "group": "Módulos Core",
@@ -27,16 +20,10 @@
     },
     {
       "group": "API Reference",
-      "pages": [
-        "mint-docs/api-reference/openapi"
-      ]
+      "pages": ["mint-docs/api-reference/openapi"]
     }
   ],
-  "api": {
-    "baseUrl": "https://api.tu-hotel.com",
-    "auth": {
-      "method": "key",
-      "name": "PHPSESSID"
-    }
+  "footerSocials": {
+    "github": "https://github.com/jf2021070309/hotel"
   }
 }

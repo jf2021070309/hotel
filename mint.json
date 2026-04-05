@@ -22,6 +22,19 @@
     {
       "group": "API Reference",
       "pages": ["mint-docs/api-reference/openapi"]
+    },
+    {
+      "group": "Doc. Técnica (Auto-generada)",
+      "pages": [
+        {
+          "name": "Backend Reference (PHPDoc)",
+          "url": "https://jf2021070309.github.io/hotel/php-api/"
+        },
+        {
+          "name": "Frontend Logic (JSDoc)",
+          "url": "https://jf2021070309.github.io/hotel/js-api/"
+        }
+      ]
     }
   ],
   "footerSocials": {

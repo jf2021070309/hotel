@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Configurar PHP
       uses: shivammathur/setup-php@v2
@@ -20,7 +20,7 @@ jobs:
         extensions: pdo, pdo_mysql, zip, gd
 
     - name: Configurar Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: '18'
 
@@ -45,7 +45,7 @@ jobs:
         fi
 
     - name: Subir Documentación Generada (Artifacts)
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: technical-documentation
         path: |

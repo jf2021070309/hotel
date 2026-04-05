@@ -1,6 +1,11 @@
 <?php
 /**
- * api/rooming.php
+ * Endpoints del Módulo de Rooming (FrontDesk).
+ * 
+ * Gestiona el ciclo de vida del huésped: listar ocupación, detalles de estadía,
+ * procesos de check-in, check-out, registro de pagos y late checkouts.
+ * 
+ * @package API\Rooming
  */
 require_once '../config/db.php';
 require_once '../auth/session.php';

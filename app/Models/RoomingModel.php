@@ -1,6 +1,14 @@
-<?php
 require_once __DIR__ . '/../Helpers/FinanzasHelper.php';
 
+/**
+ * Modelo de Rooming (Hospedajes).
+ * 
+ * Gestiona la persistencia de datos relacionados con estadías (stays),
+ * pasajeros (pax) y pagos anticipados. Implementa reglas de negocio como
+ * el bloqueo de habitaciones sucias y la automatización de tareas de limpieza.
+ * 
+ * @package App\Models
+ */
 class RoomingModel {
     private PDO $pdo;
     private FinanzasHelper $finanzas;
@@ -10,6 +18,12 @@ class RoomingModel {
         $this->finanzas = new FinanzasHelper($pdo);
     }
 
+    /**
+     * Obtiene todas las estadías activas (Ocupado, Reservado, Late Checkout).
+     * Incluye datos de habitación y el nombre del titular.
+     * 
+     * @return array Lista de registros activos.
+     */
     public function getStaysActivos(): array {
         $sql = "SELECT s.*, h.numero as hab_numero, h.tipo as hab_tipo,
                 (SELECT nombre_completo FROM rooming_pax WHERE stay_id = s.id AND es_titular = 1 LIMIT 1) as titular_nombre
@@ -37,6 +51,14 @@ class RoomingModel {
         return $stay;
     }
 
+    /**
+     * Registra un nuevo hospedaje (Check-in).
+     * 
+     * @param array $data Mapeo de campos para rooming_stays.
+     * @param array $paxList Lista de objetos pasajero.
+     * @throws Exception Si la habitación no está marcada como 'lista' por el personal de limpieza.
+     * @return int ID de la estadía generada.
+     */
     public function registrarStay(array $data, array $paxList): int {
         // Regla de Negocio: Bloqueo de check-in si limpieza no está 'lista'
         $fechaHoy = date('Y-m-d');

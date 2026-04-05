@@ -21,7 +21,8 @@
       "group": "Módulos Core",
       "pages": [
         "mint-docs/users",
-        "mint-docs/dashboard"
+        "mint-docs/dashboard",
+        "mint-docs/rooming"
       ]
     },
     {

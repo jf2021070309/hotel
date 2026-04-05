@@ -3,10 +3,22 @@
  * app/Controllers/RoomingController.php
  */
 class RoomingController {
+    /**
+     * @var PDO Conexión a la base de datos
+     */
     private PDO $pdo;
     private RoomingModel $model;
     private AuditoriaModel $audit;
+    
+    /**
+     * @var FinanzasHelper Helper para registro automático en flujo de caja
+     */
+    private FinanzasHelper $finanzas;
 
+    /**
+     * Constructor del modelo.
+     * @param PDO $pdo Conexión activa.
+     */
     public function __construct(PDO $pdo) {
         $this->pdo = $pdo;
         require_once __DIR__ . '/../Models/RoomingModel.php';
@@ -15,14 +27,30 @@ class RoomingController {
         $this->audit = new AuditoriaModel($pdo);
     }
 
+    /**
+     * Obtiene la lista de estadías actualmente activas en el hotel.
+     * @return array Resumen de huéspedes hospedados.
+     */
     public function listarActivos() {
         return $this->model->getStaysActivos();
     }
 
+    /**
+     * Obtiene el detalle completo de una estadía (datos, pasajeros y pagos).
+     * @param int $id ID de la estadía.
+     * @return array|null Información detallada o null si no existe.
+     */
     public function detalle(int $id) {
         return $this->model->getStayDetail($id);
     }
 
+    /**
+     * Procesa el proceso de Check-in o Activación de Reserva.
+     * Valida datos, registra pasajeros y procesa el pago inicial si existe.
+     * 
+     * @param array $input Datos de la estadía y lista de pasajeros.
+     * @return array Respuesta de éxito o error con mensaje descriptivo.
+     */
     public function checkin(array $input) {
         $stayData = $input['stay'];
         $paxList = $input['pax'];

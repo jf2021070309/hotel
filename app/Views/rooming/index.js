@@ -1,6 +1,10 @@
 /**
- * admin/rooming/rooming.js
- * Vue 3 Composition API
+ * Módulo Frontend: Gestión de Rooming (FrontDesk).
+ * 
+ * Componente interactivo (Vue 3) que maneja el rack de habitaciones,
+ * formularios de check-in dinámicos, gestión de pasajeros y estados de pago.
+ * 
+ * @module Rooming/FrontDeskJS
  */
 const { createApp, ref, reactive, computed, onMounted } = Vue;
 

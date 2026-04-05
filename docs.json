@@ -25,9 +25,28 @@
         ]
       },
       {
+        "group": "Finanzas y Contabilidad",
+        "pages": [
+          "mint-docs/financials"
+        ]
+      },
+      {
         "group": "API Reference",
         "pages": [
           "mint-docs/api-reference/openapi"
+        ]
+      },
+      {
+        "group": "Doc. Técnica (Auto-generada)",
+        "pages": [
+          {
+            "group": "Backend Reference (PHPDoc)",
+            "href": "https://jf2021070309.github.io/hotel/php-api/index.html"
+          },
+          {
+            "group": "Frontend Logic (JSDoc)",
+            "href": "https://jf2021070309.github.io/hotel/js-api/index.html"
+          }
         ]
       }
     ]

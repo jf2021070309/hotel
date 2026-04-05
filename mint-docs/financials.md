@@ -5,13 +5,35 @@ description: "Gestión de turnos diarios, ingresos, egresos y auditoría financi
 
 El módulo de **Flujo de Caja** es el componente central para el control del efectivo y movimientos bancarios diarios. Permite a las cajeras registrar operaciones y a los administradores supervisar el cuadre de caja.
 
-## El Ciclo de Vida de un Turno
+## ¿Por dónde empiezo?
+
+Si eres una **Cajera**, lo primero que debes revisar es el **Efectivo en Sobre** al final de tu turno. Si eres el **Administrador**, tu prioridad es validar los turnos en estado **Cerrado** para proceder al **Depósito**.
+
+### Ciclo de Vida del Turno (Flujo Visual)
+
+```mermaid
+graph LR
+    A[Apertura: Borrador] --> B{Registro de Movimientos}
+    B --> C[Cierre: Bloqueado]
+    C --> D[Auditoría: Admin]
+    D --> E[Depósito: Finalizado]
+    E -.->|Error| A
+```
 
 Un turno de caja atraviesa tres estados principales:
 
 1.  **Borrador**: El turno está abierto. La cajera puede agregar, editar o eliminar movimientos.
 2.  **Cerrado**: La cajera ha finalizado su arqueo. El turno se bloquea y solo el Administrador puede reabrirlo si detecta errores.
 3.  **Depositado**: El Administrador confirma que el dinero físico ha sido entregado o depositado en el banco.
+
+---
+
+## Flujo de Trabajo Típico
+
+1.  **Inicio de Turno**: Verificar el saldo inicial (si aplica).
+2.  **Durante el Día**: Registrar ingresos de ventas y egresos de gastos operativos.
+3.  **Cierre**: Validar que el efectivo físico coincida con el reporte del sistema.
+4.  **Entrega**: El Administrador revisa el arqueo y marca como "Depositado".
 
 ---
 

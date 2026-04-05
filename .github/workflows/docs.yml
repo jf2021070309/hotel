@@ -1,0 +1,54 @@
+name: Generar Documentación Técnica
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-docs:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Configurar PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.1'
+        extensions: pdo, pdo_mysql, zip, gd
+
+    - name: Configurar Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Descargar phpDocumentor
+      run: |
+        curl -L https://phpdoc.org/phpDocumentor.phar -o phpDocumentor.phar
+
+    - name: Instalar JSDoc
+      run: npm install -g jsdoc
+
+    - name: Generar Documentación Backend (PHP)
+      run: php phpDocumentor.phar -d app/ -d api/ -t docs/php-api --title "Hotel Manager Backend"
+
+    - name: Generar Documentación Frontend (JS)
+      run: jsdoc app/Views/ -r -d docs/js-api
+
+    - name: Verificar Estructura Mintlify
+      run: |
+        if [ ! -f "mint.json" ]; then
+          echo "ERROR: mint.json no encontrado"
+          exit 1
+        fi
+
+    - name: Subir Documentación Generada (Artifacts)
+      uses: actions/upload-artifact@v3
+      with:
+        name: technical-documentation
+        path: |
+          docs/php-api
+          docs/js-api
+          api/docs/openapi.yaml

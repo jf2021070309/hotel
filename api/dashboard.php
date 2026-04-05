@@ -1,7 +1,11 @@
 <?php
 /**
- * api/dashboard.php
- * Entry point for all dashboard-related data requests.
+ * Endpoints del Módulo de Dashboard.
+ *
+ * Punto de entrada único para las solicitudes de datos de los paneles
+ * de administración y operación (cajera).
+ *
+ * @package API\Dashboard
  */
 require_once '../config/db.php';
 require_once '../auth/session.php';

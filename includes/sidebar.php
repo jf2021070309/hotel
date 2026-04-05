@@ -149,7 +149,7 @@ require_once $base . 'rutas.php';
     </div>
     <?php endif; ?>
 
-    <?php if (tienePermiso('cajera')): ?>
+
       <?php if (tieneAccesoModulo('gestion_usuarios') || tieneAccesoModulo('medios_pago') || tieneAccesoModulo('auditoria')): ?>
       <div class="nav-label mt-2">Configuración</div>
       <?php endif; ?>
@@ -177,7 +177,7 @@ require_once $base . 'rutas.php';
         </a>
       </div>
       <?php endif; ?>
-    <?php endif; ?>
+
 
     <?php if (tieneAccesoModulo('reporte_mendoza') || tieneAccesoModulo('reporte_alex')): ?>
     <div class="nav-label mt-2">Reportes (Altogerencia)</div>

@@ -1,6 +1,11 @@
 <?php
 /**
- * api/usuarios.php - Puerta de enlace única para el módulo de usuarios
+ * Endpoints del Módulo de Usuarios.
+ *
+ * Archivo de enrutamiento principal (API) para el manejo de peticiones
+ * relacionadas a usuarios. Protege rutas y delega la ejecución al Controlador.
+ *
+ * @package API\Usuarios
  */
 require_once '../config/db.php';
 require_once '../auth/session.php';

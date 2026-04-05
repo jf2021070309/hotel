@@ -1,5 +1,10 @@
 /**
- * app/Views/dashboard/admin.js
+ * Módulo Frontend: Dashboard de Administrador.
+ * 
+ * Gestiona la visualización reactiva de KPIs financieros, gráficos de Chart.js
+ * y el monitoreo en tiempo real del estado del hotel.
+ * 
+ * @module Dashboard/AdminJS
  */
 const { createApp, ref, onMounted, onUnmounted } = Vue;
 
@@ -33,6 +38,13 @@ createApp({
 
     let myChart = null;
 
+    /**
+     * Inicializa o actualiza el gráfico de barras comparativo de Ingresos vs Egresos.
+     * 
+     * @function initChart
+     * @param {Array} datos Array de objetos con día, ingresos y egresos.
+     * @returns {void}
+     */
     const initChart = (datos) => {
       const ctx = document.getElementById('graficoMes');
       if (!ctx) return;
@@ -76,6 +88,14 @@ createApp({
       });
     };
 
+    /**
+     * Solicita los datos actualizados del dashboard a la API.
+     * Actualiza los estados reactivos de KPIs, desgloses y el gráfico.
+     * 
+     * @async
+     * @function fetchData
+     * @returns {Promise<void>}
+     */
     const fetchData = async () => {
       isRefreshing.value = true;
       try {

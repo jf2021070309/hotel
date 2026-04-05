@@ -1,5 +1,10 @@
 /**
- * app/Views/dashboard/cajera.js
+ * Módulo Frontend: Dashboard de Operaciones (Cajera).
+ * 
+ * Presenta una vista simplificada enfocada en la operatividad diaria:
+ * check-ins esperados, check-outs, deudas de huéspedes y estado de su turno actual.
+ * 
+ * @module Dashboard/CajeraJS
  */
 const { createApp, ref, onMounted, onUnmounted } = Vue;
 
@@ -20,8 +25,23 @@ createApp({
       efectivo_sobre: 0,
       estado: 'inexistente'
     });
+    const kpi = ref({
+      ocupacion: { ocupadas: 0, total: 0 },
+      pax_hoy: 0,
+      ingresos_hoy: { PEN: 0, USD: 0, CLP: 0 },
+      pendientes_hoy: { PEN: 0, USD: 0, CLP: 0 },
+      egresos_hoy: { PEN: 0, USD: 0, CLP: 0 },
+    });
     const alertasInventario = ref([]);
 
+    /**
+     * Obtiene la data operativa del día invocando al endpoint de dashboard.
+     * También integra alertas de inventario críticas para la operación.
+     * 
+     * @async
+     * @function fetchData
+     * @returns {Promise<void>}
+     */
     const fetchData = async () => {
       try {
         const res = await axios.get('api/dashboard.php');
@@ -32,6 +52,7 @@ createApp({
           checkouts_hoy.value = d.checkouts_hoy;
           checkins_esperados.value = d.checkins_esperados;
           mi_turno.value = d.mi_turno;
+          if (d.kpi) kpi.value = d.kpi;
           
           // Cargar alertas de inventario desde su propia API para mantener dashboard.php limpio
           const resInv = await axios.get('api/inventario.php?action=alertas');
@@ -58,7 +79,7 @@ createApp({
     });
 
     return {
-      usuario, urgentes, checkouts_hoy, checkins_esperados, mi_turno, alertasInventario
+      usuario, urgentes, checkouts_hoy, checkins_esperados, mi_turno, kpi, alertasInventario
     };
   }
 }).mount('#app-dash-cajera');

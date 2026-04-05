@@ -7,7 +7,8 @@ require_once '../auth/session.php';
 require_once '../auth/middleware.php';
 require_once '../app/Models/TiposCambioModel.php';
 
-protegerPorRol('cajera');
+// tipos_cambio es recurso de soporte: accesible si tiene rol cajera o módulo rooming
+protegerPorRol('cajera', 'rooming');
 $model = new TiposCambioModel($pdo);
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {

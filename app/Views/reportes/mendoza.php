@@ -4,7 +4,7 @@
  */
 $base = '../../../';
 require_once $base . 'auth/middleware.php';
-protegerPorRol('admin');
+protegerPorRol('admin', 'reporte_mendoza');
 
 $page_title = 'Reporte Sr. Mendoza — Hotel Manager';
 include $base . 'includes/head.php';

@@ -68,12 +68,12 @@ include $base . 'includes/head.php';
         <table class="table table-hover align-middle mb-0">
           <thead class="bg-light">
             <tr>
-              <th class="ps-4" style="width: 125px;">HAB.</th>
-              <th>HUÉSPED TITULAR</th>
-              <th style="width: 280px; white-space: nowrap;">INGRESO / SALIDA</th>
-              <th style="width: 180px;">MONTO / PAGADO</th>
+              <th class="ps-4" style="width: 100px;">HAB.</th>
+              <th style="min-width: 220px;">HUÉSPED TITULAR</th>
+              <th>INGRESO / SALIDA</th>
+              <th>MONTO / PAGADO</th>
               <th style="width: 120px;">ESTADO PAGO</th>
-              <th style="width: 115px;">CANAL</th>
+              <th style="width: 100px;">CANAL</th>
               <th class="text-end pe-4" style="width: 120px;">ACCIONES</th>
             </tr>
           </thead>
@@ -88,14 +88,20 @@ include $base . 'includes/head.php';
               <td>
                 <div class="fw-bold">{{ s.titular_nombre || '---' }}</div>
                 <div class="text-muted small">ID Stay: {{ s.id }} | Pax: {{ s.pax_total }}</div>
+                <div class="mt-1">
+                  <span style="font-size:10px; background:#f0f9ff; color:#0369a1; padding:2px 8px; border-radius:20px; font-weight:600; letter-spacing:.3px; border:1px solid #bae6fd;">
+                    <i class="bi bi-person-fill-check me-1"></i>{{ s.operador || s.cobrador || '—' }}
+                  </span>
+                </div>
               </td>
               <td class="small text-nowrap">
-                <div class="d-flex align-items-center gap-3">
-                  <span><i class="bi bi-box-arrow-in-right text-success me-1"></i> {{ fmtFecha(s.fecha_registro) }}</span>
-                  <span class="text-muted opacity-50">|</span>
-                  <span><i class="bi bi-box-arrow-out-right text-danger me-1"></i> {{ fmtFecha(s.fecha_checkout) }}</span>
+                <div class="mb-1">
+                  <span><i class="bi bi-box-arrow-in-right text-success me-1"></i> In: <span class="fw-bold">{{ fmtFecha(s.fecha_registro) }}</span></span>
                 </div>
-                <div class="text-muted mt-1">{{ s.noches }} noches</div>
+                <div>
+                  <span><i class="bi bi-box-arrow-out-right text-danger me-1"></i> Out: <span class="fw-bold">{{ fmtFecha(s.fecha_checkout) }}</span></span>
+                </div>
+                <div class="text-muted mt-1" style="font-size: 11px;">🛏️ {{ s.noches }} noches</div>
               </td>
               <td>
                 <div class="fw-bold">{{ s.moneda_pago }} {{ s.total_pago }}</div>

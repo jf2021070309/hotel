@@ -226,15 +226,35 @@ createApp({
     };
 
     const recalcularMoneda = () => {
-      const tc = form.stay.moneda_pago === 'PEN' ? 1 : tcs.value[form.stay.moneda_pago];
+      const tc = form.stay.moneda_pago === 'PEN' ? 1 : parseFloat(tcs.value[form.stay.moneda_pago]) || 1;
       form.stay.tc_aplicado = tc;
-      form.stay.total_pago = (form.stay.monto_original * tc).toFixed(2);
+      
+      let total = parseFloat(form.stay.monto_original) || 0;
+      if (form.stay.moneda_pago === 'USD') {
+         total = total / tc;
+      } else if (form.stay.moneda_pago === 'CLP') {
+         total = total * tc;
+      }
+      form.stay.total_pago = total.toFixed(2);
       onAdelantoChange();
     };
 
     const onAdelantoChange = () => {
-      form.stay.total_cobrado = (form.adelanto * form.stay.tc_aplicado).toFixed(2);
-      form.stay.estado_pago = form.stay.total_cobrado >= form.stay.total_pago ? 'pagado' : (form.stay.total_cobrado > 0 ? 'parcial' : 'pendiente');
+      const adelanto = parseFloat(form.adelanto) || 0;
+      const tc = parseFloat(form.stay.tc_aplicado) || 1;
+      let cobradoPen = adelanto;
+
+      if (form.stay.moneda_pago === 'USD') {
+        cobradoPen = adelanto * tc;
+      } else if (form.stay.moneda_pago === 'CLP') {
+        cobradoPen = tc > 0 ? (adelanto / tc) : 0;
+      }
+      
+      form.stay.total_cobrado = cobradoPen.toFixed(2);
+      
+      // Calculate state based on original currency amounts
+      const totalPendiente = parseFloat(form.stay.total_pago) - adelanto;
+      form.stay.estado_pago = totalPendiente <= 0.01 ? 'pagado' : (adelanto > 0 ? 'parcial' : 'pendiente');
     };
 
     const agregarPax = () => {
@@ -380,9 +400,12 @@ createApp({
     };
 
     const recalcularPago = () => {
-      const tc = pagoForm.moneda === 'PEN' ? 1 : tcs.value[pagoForm.moneda];
+      const tc = pagoForm.moneda === 'PEN' ? 1 : parseFloat(tcs.value[pagoForm.moneda]) || 1;
       pagoForm.tc = tc;
-      pagoForm.monto_pen = (pagoForm.monto * tc).toFixed(2);
+      let montoPen = parseFloat(pagoForm.monto) || 0;
+      if (pagoForm.moneda === 'USD') montoPen *= tc;
+      if (pagoForm.moneda === 'CLP') montoPen = tc > 0 ? (montoPen / tc) : 0;
+      pagoForm.monto_pen = montoPen.toFixed(2);
     };
 
     const guardarPago = async () => {

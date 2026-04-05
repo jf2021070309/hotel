@@ -1,0 +1,944 @@
+openapi: 3.0.0
+info:
+  title: Hotel Manager API
+  description: |
+    Documentación centralizada de la API Restful del sistema Hotel Manager.
+    La arquitectura actual funciona con el patrón Thin-Router definiendo la acción por URL para un punto de anclaje.
+  version: 1.0.0
+servers:
+  - url: http://localhost/hotel/api
+    description: Servidor de Desarrollo Local
+
+components:
+  schemas:
+    GenericResponse:
+      type: object
+      properties:
+        ok: 
+          type: boolean
+          example: true
+        msg:
+          type: string
+          example: "Operación exitosa"
+        data:
+          type: array
+          items:
+            type: object
+            
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: PHPSESSID
+
+security:
+  - cookieAuth: []
+
+paths:
+  # ----------------------------------------------------
+  # 1. AUDITORÍA
+  # ----------------------------------------------------
+  "/auditoria.php?action=listar":
+    get:
+      tags:
+        - "Auditoría"
+      summary: Historial de Trazabilidad
+      parameters:
+        - in: query
+          name: action
+          schema:
+            type: string
+            enum: [listar]
+      responses:
+        '200':
+          description: Retorna logs de auditoría
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+
+  # ----------------------------------------------------
+  # 2. CAJA CHICA
+  # ----------------------------------------------------
+  "/caja_chica.php?action=listar":
+    get:
+      tags:
+        - "Caja Chica"
+      summary: Lista y obtiene datos de la Caja Chica
+      parameters:
+        - in: query
+          name: action
+          schema:
+            type: string
+            enum: [listar, ciclo_activo, categorias]
+      responses:
+        '200':
+          description: Operación procesada con éxito
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+
+  "/caja_chica.php?action=gasto":
+    post:
+      tags:
+        - "Caja Chica"
+      summary: Registrar nuevo Gasto
+      parameters:
+        - in: query
+          name: action
+          schema:
+            type: string
+            enum: [gasto]
+      requestBody:
+        description: Objeto de gasto a crear
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                caja_id:
+                  type: integer
+                  example: 1
+                rubro:
+                  type: string
+                  example: "ALIMENTACIÓN"
+                monto:
+                  type: number
+                  example: 50.00
+                documento:
+                  type: string
+                  example: "BOLETA 123"
+                observacion:
+                  type: string
+                  example: "Almuerzo de personal"
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+
+  "/caja_chica.php?action=abrir":
+    post:
+      tags:
+        - "Caja Chica"
+      summary: Abrir, Anular o Cerrar Caja Chica
+      parameters:
+        - in: query
+          name: action
+          schema:
+            type: string
+            enum: [abrir, anular, cerrar]
+      requestBody:
+        description: Parámetros del ciclo
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  example: 1
+                nombre:
+                  type: string
+                  example: "CAJA TURNO TARDE"
+                saldo_inicial:
+                  type: number
+                  example: 100.00
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+
+  # ----------------------------------------------------
+  # 3. CALCULADORA
+  # ----------------------------------------------------
+  "/calculadora.php?action=calcular":
+    post:
+      tags:
+        - "Calculadora de Divisas"
+      summary: Realizar Cálculo de Tipo de Cambio
+      parameters:
+        - in: query
+          name: action
+          schema:
+            type: string
+            enum: [calcular]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                monto:
+                  type: number
+                  example: 100.00
+                moneda_origen:
+                  type: string
+                  example: "USD"
+                moneda_destino:
+                  type: string
+                  example: "PEN"
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+
+  # ----------------------------------------------------
+  # 4. CLIENTES
+  # ----------------------------------------------------
+  "/clientes.php?action=listar":
+    get:
+      tags:
+        - "Clientes"
+      summary: Directorio de Clientes
+      parameters:
+        - in: query
+          name: action
+          schema:
+            type: string
+            enum: [listar, detalle]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+
+  "/clientes.php?action=guardar":
+    post:
+      tags:
+        - "Clientes"
+      summary: Guardar Cliente
+      parameters:
+        - in: query
+          name: action
+          schema:
+            type: string
+            enum: [guardar]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  example: 0
+                documento:
+                  type: string
+                  example: "70123456"
+                nombre:
+                  type: string
+                  example: "Juan Manuel Perez"
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+
+  # ----------------------------------------------------
+  # 5. CONSUMOS
+  # ----------------------------------------------------
+  "/consumos.php?action=listar":
+    post:
+      tags:
+        - "Consumos de Habitación"
+      summary: Procesar consumos
+      parameters:
+        - in: query
+          name: action
+          schema:
+            type: string
+            enum: [listar, facturar]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reserva_id:
+                  type: integer
+                  example: 125
+                productos:
+                  type: array
+                  items:
+                    type: object
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+
+  # ----------------------------------------------------
+  # 6. DASHBOARD
+  # ----------------------------------------------------
+  "/dashboard.php?action=cajera":
+    get:
+      tags:
+        - "Dashboard"
+      summary: Obtener Indicadores Clave del Tablero
+      parameters:
+        - in: query
+          name: action
+          schema:
+            type: string
+            enum: [cajera, admin]
+      responses:
+        '200':
+          description: JSON con saldos financieros
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+
+  # ----------------------------------------------------
+  # 7. DESAYUNOS
+  # ----------------------------------------------------
+  "/desayunos.php?action=listar":
+    post:
+      tags:
+        - "Desayunos"
+      summary: Mantenimiento de Desayunos
+      parameters:
+        - in: query
+          name: action
+          schema:
+            type: string
+            enum: [listar, guardar]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reserva_id:
+                  type: integer
+                  example: 125
+                cantidad:
+                  type: integer
+                  example: 2
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+
+  # ----------------------------------------------------
+  # 8. FLUJO DE CAJA
+  # ----------------------------------------------------
+  "/flujo.php?action=listar":
+    get:
+      tags:
+        - "Flujo de Caja"
+      summary: Flujo de Caja (Lectura)
+      parameters:
+        - in: query
+          name: action
+          schema:
+            type: string
+            enum: [listar, detalle, resumen_dia, categorias]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+
+  "/flujo.php?action=guardar":
+    post:
+      tags:
+        - "Flujo de Caja"
+      summary: Flujo de Caja (Escritura)
+      parameters:
+        - in: query
+          name: action
+          schema:
+            type: string
+            enum: [guardar, cerrar, depositar, reabrir]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  example: 0
+                fecha:
+                  type: string
+                  format: date
+                  example: "2026-04-05"
+                turno:
+                  type: string
+                  example: "Tarde"
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+
+  # ----------------------------------------------------
+  # 9. HABITACIONES
+  # ----------------------------------------------------
+  "/habitaciones.php?action=libres":
+    get:
+      tags:
+        - "Habitaciones"
+      summary: Control de Rack
+      parameters:
+        - in: query
+          name: action
+          schema:
+            type: string
+            enum: [libres, todos, detalle]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+
+  # ----------------------------------------------------
+  # 10. INVENTARIO
+  # ----------------------------------------------------
+  "/inventario.php?action=listar":
+    get:
+      tags:
+        - "Inventario"
+      summary: Control de Stock y Alertas
+      parameters:
+        - in: query
+          name: action
+          schema:
+            type: string
+            enum: [listar, alertas, historial]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+
+  "/inventario.php?action=crear":
+    post:
+      tags:
+        - "Inventario"
+      summary: Modificar Productos y Stock
+      parameters:
+        - in: query
+          name: action
+          schema:
+            type: string
+            enum: [crear, actualizar, recargar, eliminar, consumo_interno]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  example: 0
+                nombre:
+                  type: string
+                  example: "Botella de Agua 500ml"
+                stock:
+                  type: integer
+                  example: 24
+                precio:
+                  type: number
+                  example: 3.50
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+
+  # ----------------------------------------------------
+  # 11. LIMPIEZA
+  # ----------------------------------------------------
+  "/limpieza.php?action=hoy":
+    get:
+      tags:
+        - "Limpieza"
+      summary: Tareas y Estados
+      parameters:
+        - in: query
+          name: action
+          schema:
+            type: string
+            enum: [hoy, listar, detalle, detalle_fecha]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+
+  "/limpieza.php?action=generar":
+    post:
+      tags:
+        - "Limpieza"
+      summary: Ejecutar Mantenimiento de Limpieza
+      parameters:
+        - in: query
+          name: action
+          schema:
+            type: string
+            enum: [generar, actualizar, observacion]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  example: 10
+                estado:
+                  type: string
+                  example: "Limpiando"
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+
+  # ----------------------------------------------------
+  # 12. MEDIOS DE PAGO
+  # ----------------------------------------------------
+  "/medios_pago.php?action=listar":
+    post:
+      tags:
+        - "Medios de Pago"
+      summary: CRUD de Medios
+      parameters:
+        - in: query
+          name: action
+          schema:
+            type: string
+            enum: [listar, guardar, toggle, eliminar]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  example: 1
+                nombre:
+                  type: string
+                  example: "Yape Corporativo"
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+
+  # ----------------------------------------------------
+  # 13. PERMISOS
+  # ----------------------------------------------------
+  "/permisos.php?action=listar":
+    post:
+      tags:
+        - "Gestión de Módulos (Permisos)"
+      summary: Establecer Modulos por Usuario
+      parameters:
+        - in: query
+          name: action
+          schema:
+            type: string
+            enum: [listar, guardar]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                usuario_id:
+                  type: integer
+                  example: 5
+                modulos:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+
+  # ----------------------------------------------------
+  # 14. REPORTES
+  # ----------------------------------------------------
+  "/reportes.php?action=mendoza":
+    get:
+      tags:
+        - "Reportes Gerenciales"
+      summary: Rendiciones para Dirección
+      parameters:
+        - in: query
+          name: action
+          schema:
+            type: string
+            enum: [mendoza, alex, resumen]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+
+  # ----------------------------------------------------
+  # 15. RESERVAS
+  # ----------------------------------------------------
+  "/reservas.php?action=datos":
+    post:
+      tags:
+        - "Reservas"
+      summary: Operaciones Integrales de Cuadro de Reservas
+      parameters:
+        - in: query
+          name: action
+          schema:
+            type: string
+            enum: [datos, pago_rapido, late_checkout, quick_reserva]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reserva_id:
+                  type: integer
+                  example: 405
+                monto:
+                  type: number
+                  example: 150.00
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+
+  # ----------------------------------------------------
+  # 16. ROOMING
+  # ----------------------------------------------------
+  "/rooming.php?action=listar":
+    get:
+      tags:
+        - "Rooming / FrontDesk"
+      summary: Info de Huéspedes Activos
+      parameters:
+        - in: query
+          name: action
+          schema:
+            type: string
+            enum: [listar, detalle]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+
+  "/rooming.php?action=checkin":
+    post:
+      tags:
+        - "Rooming / FrontDesk"
+      summary: Modificar estatus de habitaciones
+      parameters:
+        - in: query
+          name: action
+          schema:
+            type: string
+            enum: [checkin, checkout, pago, late_checkout]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reserva_id:
+                  type: integer
+                  example: 220
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+
+  # ----------------------------------------------------
+  # 17. TIPOS DE CAMBIO
+  # ----------------------------------------------------
+  "/tipos_cambio.php?action=hoy":
+    post:
+      tags:
+        - "Configuraciones"
+      summary: Control Financiero de Divisas
+      parameters:
+        - in: query
+          name: action
+          schema:
+            type: string
+            enum: [hoy, guardar]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                usd_compra:
+                  type: number
+                  example: 3.75
+                usd_venta:
+                  type: number
+                  example: 3.80
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+
+  # ----------------------------------------------------
+  # 18. GESTIÓN DE USUARIOS
+  # ----------------------------------------------------
+  "/usuarios.php?action=listar":
+    get:
+      tags:
+        - "Gestión de Usuarios"
+      summary: Obtener Lista de Usuarios
+      parameters:
+        - in: query
+          name: action
+          schema:
+            type: string
+            enum: [listar]
+      responses:
+        '200':
+          description: Retorna usuarios registrados
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+
+  "/usuarios.php?action=crear":
+    post:
+      tags:
+        - "Gestión de Usuarios"
+      summary: Crear nuevo Usuario
+      parameters:
+        - in: query
+          name: action
+          schema:
+            type: string
+            enum: [crear]
+      requestBody:
+        description: Objeto de usuario a crear
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                usuario:
+                  type: string
+                  example: "juanperez"
+                nombre:
+                  type: string
+                  example: "Juan Perez"
+                rol:
+                  type: string
+                  enum: [admin, supervisor, cajera, limpieza]
+                  example: "cajera"
+                password:
+                  type: string
+                  example: "123456"
+                estado:
+                  type: integer
+                  example: 1
+      responses:
+        '200':
+          description: Éxito
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+
+  "/usuarios.php?action=editar":
+    post:
+      tags:
+        - "Gestión de Usuarios"
+      summary: Editar Usuario / Cambiar Estado
+      parameters:
+        - in: query
+          name: action
+          schema:
+            type: string
+            enum: [editar]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  example: 5
+                usuario:
+                  type: string
+                  example: "juanperez_edit"
+                nombre:
+                  type: string
+                rol:
+                  type: string
+                  enum: [admin, supervisor, cajera, limpieza]
+                estado:
+                  type: integer
+      responses:
+        '200':
+          description: Éxito
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+
+  "/usuarios.php?action=cambiar_pass":
+    post:
+      tags:
+        - "Gestión de Usuarios"
+      summary: Cambiar Contraseña de Usuario
+      parameters:
+        - in: query
+          name: action
+          schema:
+            type: string
+            enum: [cambiar_pass]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  example: 5
+                password:
+                  type: string
+                  example: "P@ssw0rd123"
+      responses:
+        '200':
+          description: Éxito
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+
+  # ----------------------------------------------------
+  # 19. GASTOS YAPE
+  # ----------------------------------------------------
+  "/yape.php?action=listar":
+    get:
+      tags:
+        - "Gastos Yape"
+      summary: Egresos y Reintegros Plin/Yape
+      parameters:
+        - in: query
+          name: action
+          schema:
+            type: string
+            enum: [listar, detalle]
+      responses:
+        '200':
+          description: Consultado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+          
+  "/yape.php?action=guardar":
+    post:
+      tags:
+        - "Gastos Yape"
+      summary: Validaciones y Ejecuciones
+      parameters:
+        - in: query
+          name: action
+          schema:
+            type: string
+            enum: [guardar, cerrar]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                monto:
+                  type: number
+                  example: 25.50
+                numero_operacion:
+                  type: string
+                  example: "091283"
+      responses:
+        '200':
+          description: Guardado OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'

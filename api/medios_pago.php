@@ -7,14 +7,16 @@ require_once '../auth/session.php';
 require_once '../auth/middleware.php';
 require_once '../app/Controllers/MedioPagoController.php';
 
-protegerPorRol('cajera');
+// Acceso base: rol cajera O módulo rooming habilitado (necesario para check-in)
+protegerPorRol('cajera', 'rooming');
 
 $action = $_GET['action'] ?? 'listar';
 
-// Acciones que requieren rol ADMIN
+// Acciones administrativas requieren además el módulo medios_pago habilitado
 if (in_array($action, ['guardar', 'toggle', 'eliminar'])) {
-    protegerPorRol('cajera', 'medios_pago');
+    protegerPorRol('supervisor', 'medios_pago');
 }
+
 $input = json_decode(file_get_contents('php://input'), true);
 $controller = new MedioPagoController($pdo);
 

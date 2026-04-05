@@ -1,6 +1,11 @@
 /**
- * admin/usuarios.js
- * Vue 3 Options API
+ * Módulo Frontend de Gestión de Usuarios.
+ *
+ * Implementa la lógica reactiva en Vue 3 para administrar los usuarios del sistema,
+ * gestionar sus estados, credenciales y asignar permisos modulares.
+ * Compatible con TypeDoc y Mintlify.
+ *
+ * @module Admin/UsuariosJS
  */
 Vue.createApp({
   data() {
@@ -27,6 +32,14 @@ Vue.createApp({
   },
 
   methods: {
+    /**
+     * Obtiene y actualiza la lista de usuarios invocando a la API.
+     * Maneja el estado de carga y muestra alertas en caso de error.
+     * 
+     * @async
+     * @function fetchUsuarios
+     * @returns {Promise<void>} Resolucion de la carga
+     */
     async fetchUsuarios() {
       this.loading = true;
       try {
@@ -39,6 +52,13 @@ Vue.createApp({
       }
     },
 
+    /**
+     * Prepara el formulario reactivo para registrar un nuevo usuario.
+     * Limpia el estado actual y despliega el componente modal.
+     * 
+     * @function nuevaUsuario
+     * @returns {void}
+     */
     nuevaUsuario() {
       this.editMode = false;
       this.current = { id: null, usuario: '', nombre: '', rol: 'cajera', password: '', estado: 1 };
@@ -46,6 +66,13 @@ Vue.createApp({
       modal.show();
     },
 
+    /**
+     * Prepara el formulario para modificar los datos de un usuario previamente registrado.
+     * 
+     * @function abrirModalEditar
+     * @param {Object} u Mapa de propiedades del usuario a editar
+     * @returns {void}
+     */
     abrirModalEditar(u) {
       this.editMode = true;
       this.current = { ...u, password: '' };
@@ -60,6 +87,14 @@ Vue.createApp({
       modal.show();
     },
 
+    /**
+     * Dispara la petición POST para registrar o editar un usuario.
+     * Valida campos obligatorios de forma asíncrona ante la API y refresca la UI si es necesario.
+     * 
+     * @async
+     * @function guardarUsuario
+     * @returns {Promise<void>}
+     */
     async guardarUsuario() {
       if (!this.current.usuario || !this.current.nombre) {
         return this.showToast('Completa los campos obligatorios', 'error');
@@ -146,6 +181,15 @@ Vue.createApp({
       if (elAvatar) elAvatar.textContent = this.current.nombre.charAt(0).toUpperCase();
     },
 
+    /**
+     * Abre la interfaz de gestión de permisos modulares para un usuario específico,
+     * obteniendo previamente su configuración desde la base de datos vía API.
+     * 
+     * @async
+     * @function abrirPermisos
+     * @param {Object} u El usuario seleccionado para asignar permisos
+     * @returns {Promise<void>}
+     */
     async abrirPermisos(u) {
       this.usuarioPermisos  = u;
       this.permisosModulos  = [];
@@ -161,6 +205,14 @@ Vue.createApp({
       }
     },
 
+    /**
+     * Consolida y transfiere los permisos configurados hacia el backend
+     * para su persistencia en el control de acceso ACL.
+     * 
+     * @async
+     * @function guardarPermisos
+     * @returns {Promise<void>}
+     */
     async guardarPermisos() {
       this.guardandoPermisos = true;
       try {

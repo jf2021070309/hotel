@@ -82,9 +82,13 @@ include 'includes/sidebar.php';
               <div class="d-flex align-items-center justify-content-between">
                 <div>
                   <div class="text-xs fw-bold text-uppercase mb-1" style="color: #16a34a; letter-spacing: 1px;">💰 Ingresos Hoy</div>
-                  <div class="h4 mb-0 fw-bold" style="color: #111;">S/ {{ kpi.ingresos_hoy.toFixed(2) }}</div>
-                  <div v-if="kpi.pendientes_hoy > 0" class="text-muted small mt-1">
-                    <i class="bi bi-clock-history"></i> + S/ {{ kpi.pendientes_hoy.toFixed(2) }} (Pendientes)
+                  <div class="h4 mb-0 fw-bold" style="color: #111;">S/ {{ kpi.ingresos_hoy.PEN !== undefined ? kpi.ingresos_hoy.PEN.toFixed(2) : '0.00' }}</div>
+                  
+                  <div v-if="kpi.pendientes_hoy.PEN > 0 || kpi.pendientes_hoy.CLP > 0 || kpi.pendientes_hoy.USD > 0" class="text-muted small mt-2">
+                    <i class="bi bi-clock-history"></i> Pendientes:<br>
+                    <span v-if="kpi.pendientes_hoy.PEN > 0" class="ms-1 fw-bold">S/ {{ kpi.pendientes_hoy.PEN.toFixed(2) }}</span>
+                    <span v-if="kpi.pendientes_hoy.CLP > 0" class="ms-1 fw-bold text-secondary">CLP {{ kpi.pendientes_hoy.CLP.toFixed(2) }}</span>
+                    <span v-if="kpi.pendientes_hoy.USD > 0" class="ms-1 fw-bold text-secondary">USD {{ kpi.pendientes_hoy.USD.toFixed(2) }}</span>
                   </div>
                 </div>
                 <i class="bi bi-cash-stack text-success opacity-25" style="font-size: 2.5rem;"></i>
@@ -100,7 +104,7 @@ include 'includes/sidebar.php';
               <div class="d-flex align-items-center justify-content-between">
                 <div>
                   <div class="text-xs fw-bold text-uppercase mb-1" style="color: #dc2626; letter-spacing: 1px;">📤 Egresos Hoy</div>
-                  <div class="h4 mb-0 fw-bold" style="color: #111;">S/ {{ kpi.egresos_hoy.toFixed(2) }}</div>
+                  <div class="h4 mb-0 fw-bold" style="color: #111;">S/ {{ kpi.egresos_hoy.PEN !== undefined ? kpi.egresos_hoy.PEN.toFixed(2) : '0.00' }}</div>
                 </div>
                 <i class="bi bi-box-arrow-right text-danger opacity-25" style="font-size: 2.5rem;"></i>
               </div>
@@ -114,31 +118,31 @@ include 'includes/sidebar.php';
         <div class="col-md-4">
           <div class="card shadow-sm border-0 h-100">
             <div class="card-header bg-white fw-bold text-success border-bottom-0 pt-3">
-              <i class="bi bi-arrow-down-left-circle-fill me-1"></i> Desglose de Ingresos
+              <i class="bi bi-arrow-down-left-circle-fill me-1"></i> Desglose Físico (Ingresos)
             </div>
             <div class="card-body pt-0">
               <ul class="list-group list-group-flush mb-3">
                 <li class="list-group-item d-flex justify-content-between px-0 py-2 border-dashed" v-for="ing in ingresos_desglose">
                   <span class="text-muted"><i class="bi bi-dot"></i> {{ ing.categoria }}</span>
-                  <span class="fw-bold">S/ {{ parseFloat(ing.monto).toFixed(2) }}</span>
+                  <span class="fw-bold">{{ ing.moneda === 'PEN' ? 'S/' : ing.moneda }} {{ parseFloat(ing.monto).toFixed(2) }}</span>
                 </li>
                 <li v-if="ingresos_desglose.length === 0" class="list-group-item px-0 text-muted fst-italic py-2 border-0">Aún no hay ingresos.</li>
               </ul>
-              <div class="d-flex justify-content-between pt-2 border-top">
-                <span class="fw-bold fs-6">TOTAL:</span>
-                <span class="fw-bold fs-6 text-success">S/ {{ kpi.ingresos_hoy.toFixed(2) }}</span>
-              </div>
             </div>
           </div>
         </div>
 
         <div class="col-md-4">
           <div class="card shadow text-white h-100 border-0" style="background: linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 100%);">
-            <div class="card-body d-flex flex-column align-items-center justify-content-center text-center py-5">
-              <h5 class="text-uppercase mb-4 fw-bold" style="letter-spacing: 3px; color: #d4af37;"><i class="bi bi-star-fill me-2 fs-6"></i>INGRESO NETO</h5>
-              <h1 class="display-4 fw-bold mb-0" style="text-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);">S/ {{ kpi.neto_hoy.toFixed(2) }}</h1>
-              <div class="mt-4 opacity-75 small px-3" style="color: #e2e8f0; font-weight: 300;">
-                El flujo líquido calculado al instante cerrando saldos e inyecciones Yape.
+            <div class="card-body d-flex flex-column align-items-center justify-content-center text-center py-4">
+              <h5 class="text-uppercase mb-3 fw-bold" style="letter-spacing: 3px; color: #d4af37;"><i class="bi bi-star-fill me-2 fs-6"></i>CAJA REAL LÍQUIDA</h5>
+              
+              <h1 class="display-4 fw-bold mb-1" style="text-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);">
+                S/ {{ kpi.neto_hoy.PEN !== undefined ? kpi.neto_hoy.PEN.toFixed(2) : '0.00' }}
+              </h1>
+              
+              <div class="mt-4 opacity-75 px-3" style="color: #e2e8f0; font-weight: 300; font-size:12px;">
+                Monto exclusivamente en Soles generado hoy.
               </div>
             </div>
           </div>
@@ -153,14 +157,10 @@ include 'includes/sidebar.php';
               <ul class="list-group list-group-flush mb-3">
                 <li class="list-group-item d-flex justify-content-between px-0 py-2 border-dashed" v-for="egr in egresos_desglose">
                   <span class="text-muted"><i class="bi bi-dot"></i> {{ egr.categoria }}</span>
-                  <span class="fw-bold">S/ {{ parseFloat(egr.monto).toFixed(2) }}</span>
+                  <span class="fw-bold">{{ egr.moneda === 'PEN' ? 'S/' : egr.moneda }} {{ parseFloat(egr.monto).toFixed(2) }}</span>
                 </li>
                 <li v-if="egresos_desglose.length === 0" class="list-group-item px-0 text-muted fst-italic py-2 border-0">Sin egresos registrados.</li>
               </ul>
-              <div class="d-flex justify-content-between pt-2 border-top">
-                <span class="fw-bold fs-6">TOTAL:</span>
-                <span class="fw-bold fs-6 text-danger">S/ {{ kpi.egresos_hoy.toFixed(2) }}</span>
-              </div>
             </div>
           </div>
         </div>

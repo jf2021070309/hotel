@@ -1,16 +1,32 @@
 <?php
 /**
- * app/Controllers/DashboardController.php
+ * Controlador del Módulo de Dashboard.
+ *
+ * Orquesta la recopilación de métricas y datos operativos para los
+ * diferentes roles del sistema (Administrador y Cajera).
+ *
+ * @package App\Controllers
  */
 require_once __DIR__ . '/../Models/DashboardModel.php';
 
 class DashboardController {
     private DashboardModel $model;
 
+    /**
+     * Constructor del controlador.
+     *
+     * @param PDO $pdo Conexión a la base de datos.
+     */
     public function __construct(PDO $pdo) {
         $this->model = new DashboardModel($pdo);
     }
 
+    /**
+     * Obtiene el conjunto de datos completo para el Dashboard de Administrador.
+     * Incluye KPIs de ingresos, ocupación, cobros pendientes y gráficos mensuales.
+     *
+     * @return array Respuesta estructurada con 'ok', 'data' (métricas) y 'msg'.
+     */
     public function getAdminData(): array {
         $fecha = date('Y-m-d');
         try {
@@ -28,6 +44,13 @@ class DashboardController {
         }
     }
 
+    /**
+     * Obtiene los datos operativos para el Dashboard de Cajera.
+     * Filtra información relevante al turno actual, check-ins/outs del día
+     * y el estado del flujo de caja del usuario.
+     *
+     * @return array Respuesta estructurada con 'ok', 'data' y 'msg'.
+     */
     public function getCajeraData(): array {
         $fecha = date('Y-m-d');
         $usuarioId = $_SESSION['auth_id'] ?? 0;

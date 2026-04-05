@@ -43,14 +43,15 @@ class FinanzasHelper {
         
         $categoria = $data['categoria'] ?? '';
 
-        // Mapeo dinámico: Intentar buscar si el medio_pago ya coincide con una categoría activa
-        $stmtCat = $this->pdo->prepare("SELECT nombre FROM finanzas_categorias WHERE modulo = 'Flujo' AND tipo = ? AND nombre = ? AND activo = 1 LIMIT 1");
-        $stmtCat->execute([$tipo, $medioTxt]);
-        $categoriaBD = $stmtCat->fetchColumn();
+        // Solo buscar mapeo si la categoría NO fue especificada manualmente
+        if (empty($categoria)) {
+            $stmtCat = $this->pdo->prepare("SELECT nombre FROM finanzas_categorias WHERE modulo = 'Flujo' AND tipo = ? AND nombre = ? AND activo = 1 LIMIT 1");
+            $stmtCat->execute([$tipo, $medioTxt]);
+            $categoriaBD = $stmtCat->fetchColumn();
 
-        if ($categoriaBD) {
-            $categoria = $categoriaBD;
-        } else if (empty($categoria)) {
+            if ($categoriaBD) {
+                $categoria = $categoriaBD;
+            } else {
             if ($tipo === 'Ingreso') {
                 // Legacy / Fallback mapping
                 if ($medioTxt === 'YAPE' || $medioTxt === 'PLIN' || strpos($medioTxt, 'YAPE') !== false) {
@@ -70,8 +71,9 @@ class FinanzasHelper {
                 $categoria = 'OTROS EGRESOS';
             }
         }
+        }
 
-        $medioFinal = ($medioTxt === 'EFECTIVO') ? 'EFECTIVO' : 'NO EFECTIVO';
+        $medioFinal = (strpos($medioTxt, 'EFECTIVO') !== false) ? 'EFECTIVO' : 'NO EFECTIVO';
 
         $sql = "INSERT INTO flujo_caja_movimientos 
                 (flujo_id, categoria, tipo, moneda, monto, medio_pago, observacion) 

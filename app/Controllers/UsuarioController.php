@@ -1,12 +1,35 @@
 <?php
 /**
- * app/Controllers/UsuarioController.php
+ * Controlador del Módulo de Usuarios.
+ *
+ * Contiene la lógica de negocio para la gestión de usuarios, incluyendo
+ * creación, actualización, listado y cambios de contraseña.
+ * Actúa de intermediario entre las rutas de la API y el modelo de BD.
+ *
+ * @package App\Controllers
  */
 class UsuarioController {
+    /**
+     * @var PDO Conexión a la base de datos
+     */
     private PDO $pdo;
+    
+    /**
+     * @var UsuarioModel Instancia del modelo de usuarios
+     */
     private UsuarioModel $model;
+    
+    /**
+     * @var AuditoriaModel Instancia del modelo de auditoría para registro de acciones
+     */
     private AuditoriaModel $audit;
 
+    /**
+     * Constructor del controlador.
+     * Importa e inicializa los modelos requeridos para las operaciones.
+     *
+     * @param PDO $pdo Instancia activa de conexión a la base de datos
+     */
     public function __construct(PDO $pdo) {
         $this->pdo = $pdo;
         require_once __DIR__ . '/../Models/UsuarioModel.php';
@@ -16,14 +39,23 @@ class UsuarioController {
     }
 
     /**
-     * Listar todos los usuarios
+     * Obtiene el listado completo de usuarios registrados.
+     *
+     * @return array Lista de usuarios obtenida desde el modelo
      */
     public function index() {
         return $this->model->getAll();
     }
 
     /**
-     * Crear un nuevo usuario
+     * Procesa la creación de un nuevo usuario en el sistema.
+     * 
+     * Valida la presencia de campos obligatorios, verifica si el
+     * nombre de usuario ya está registrado, y si tiene éxito, interacciona
+     * con Auditoria para registrar la acción.
+     *
+     * @param array $data Datos proporcionados por la solicitud POST
+     * @return array Respuesta estructurada con claves 'ok', 'msg', y opcionalmente 'code', 'id'
      */
     public function create(array $data) {
         if (empty($data['usuario']) || empty($data['nombre']) || empty($data['password'])) {
@@ -46,7 +78,16 @@ class UsuarioController {
     }
 
     /**
-     * Actualizar un usuario existente
+     * Actualiza la información de un usuario existente.
+     * 
+     * Aplica reglas de validación y de negocio, como impedir quitar
+     * privilegios de administrador al id=1, o que el usuario desactive su propia
+     * cuenta. También previene duplicidades del nombre de usuario.
+     * Actualiza la sesión actual si el usuario que llama se editó a un sí mismo.
+     *
+     * @param int $id Identificador del usuario a ser actualizado
+     * @param array $data Mapa con los valores actualizados
+     * @return array Respuesta estructurada con claves 'ok', 'msg' y 'code' opcional
      */
     public function update(int $id, array $data) {
         if (!$id) return ['ok' => false, 'msg' => "ID inválido", 'code' => 400];
@@ -88,7 +129,14 @@ class UsuarioController {
     }
 
     /**
-     * Cambiar contraseña
+     * Modifica la contraseña de un usuario determinado.
+     * 
+     * Procesa el cambio en el modelo y registra un log de auditoría
+     * documentando la acción bajo el usuario ejecutante.
+     *
+     * @param int $id Identificador del usuario a modificar
+     * @param string $password Nueva credencial de acceso
+     * @return array Respuesta estructurada con claves 'ok', 'msg' y 'code'
      */
     public function updatePassword(int $id, string $password) {
         if (!$id || empty($password)) return ['ok' => false, 'msg' => "Datos inválidos", 'code' => 400];

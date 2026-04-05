@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: usuarios.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: usuarios.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * Módulo Frontend de Gestión de Usuarios.
+ *
+ * Implementa la lógica reactiva en Vue 3 para administrar los usuarios del sistema,
+ * gestionar sus estados, credenciales y asignar permisos modulares.
+ * Compatible con TypeDoc y Mintlify.
+ *
+ * @module Admin/UsuariosJS
+ */
+Vue.createApp({
+  data() {
+    return {
+      usuarios: [],
+      loading: false,
+      editMode: false,
+      current: {
+        id: null,
+        usuario: '',
+        nombre: '',
+        rol: 'cajera',
+        password: '',
+        estado: 1
+      },
+      newPassword: '',
+      authUser: window.authUser || {},
+      // Permisos de módulos
+      usuarioPermisos: null,
+      permisosModulos: [],
+      loadingPermisos: false,
+      guardandoPermisos: false
+    };
+  },
+
+  methods: {
+    /**
+     * Obtiene y actualiza la lista de usuarios invocando a la API.
+     * Maneja el estado de carga y muestra alertas en caso de error.
+     * 
+     * @async
+     * @function fetchUsuarios
+     * @returns {Promise&lt;void>} Resolucion de la carga
+     */
+    async fetchUsuarios() {
+      this.loading = true;
+      try {
+        const res = await axios.get('../../../api/usuarios.php?action=listar');
+        this.usuarios = res.data.data || [];
+      } catch (err) {
+        this.showToast('Error al cargar usuarios', 'error');
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    /**
+     * Prepara el formulario reactivo para registrar un nuevo usuario.
+     * Limpia el estado actual y despliega el componente modal.
+     * 
+     * @function nuevaUsuario
+     * @returns {void}
+     */
+    nuevaUsuario() {
+      this.editMode = false;
+      this.current = { id: null, usuario: '', nombre: '', rol: 'cajera', password: '', estado: 1 };
+      const modal = new bootstrap.Modal(document.getElementById('modalUsuario'));
+      modal.show();
+    },
+
+    /**
+     * Prepara el formulario para modificar los datos de un usuario previamente registrado.
+     * 
+     * @function abrirModalEditar
+     * @param {Object} u Mapa de propiedades del usuario a editar
+     * @returns {void}
+     */
+    abrirModalEditar(u) {
+      this.editMode = true;
+      this.current = { ...u, password: '' };
+      const modal = new bootstrap.Modal(document.getElementById('modalUsuario'));
+      modal.show();
+    },
+
+    abrirModalPass(u) {
+      this.current = { ...u };
+      this.newPassword = '';
+      const modal = new bootstrap.Modal(document.getElementById('modalPass'));
+      modal.show();
+    },
+
+    /**
+     * Dispara la petición POST para registrar o editar un usuario.
+     * Valida campos obligatorios de forma asíncrona ante la API y refresca la UI si es necesario.
+     * 
+     * @async
+     * @function guardarUsuario
+     * @returns {Promise&lt;void>}
+     */
+    async guardarUsuario() {
+      if (!this.current.usuario || !this.current.nombre) {
+        return this.showToast('Completa los campos obligatorios', 'error');
+      }
+      
+      this.loading = true;
+      try {
+        const action = this.editMode ? 'editar' : 'crear';
+        const url = `../../../api/usuarios.php?action=${action}`;
+        const res = await axios.post(url, this.current);
+        
+        if (res.data.ok) {
+          this.showToast(res.data.msg, 'success');
+          bootstrap.Modal.getInstance(document.getElementById('modalUsuario')).hide();
+          this.fetchUsuarios();
+
+          // Sincronizar sidebar si es mi perfil
+          if (this.editMode &amp;&amp; this.current.id === this.authUser.id) {
+            this.syncSidebar();
+          }
+        }
+      } catch (err) {
+        this.showToast(err.response?.data?.msg || 'Error al guardar', 'error');
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async cambiarPass() {
+      if (!this.newPassword) return;
+      this.loading = true;
+      try {
+        const res = await axios.post('../../../api/usuarios.php?action=cambiar_pass', { 
+          id: this.current.id, 
+          password: this.newPassword 
+        });
+        if (res.data.ok) {
+          this.showToast('Contraseña actualizada', 'success');
+          bootstrap.Modal.getInstance(document.getElementById('modalPass')).hide();
+        }
+      } catch (err) {
+        this.showToast(err.response?.data?.msg || 'Error', 'error');
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async toggleEstado(u) {
+      if (u.id === this.authUser.id) {
+        return Swal.fire('Error', 'No puedes desactivar tu propia cuenta', 'error');
+      }
+
+      const accion = u.estado == 1 ? 'desactivar' : 'activar';
+      const result = await Swal.fire({
+        title: `¿${accion.charAt(0).toUpperCase() + accion.slice(1)} usuario?`,
+        text: `Vas a ${accion} a ${u.nombre}`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, continuar',
+        cancelButtonText: 'Cancelar'
+      });
+
+      if (result.isConfirmed) {
+        try {
+          const nuevoEstado = u.estado == 1 ? 0 : 1;
+          await axios.post('../../../api/usuarios.php?action=editar', { ...u, estado: nuevoEstado });
+          this.showToast('Estado actualizado', 'success');
+          this.fetchUsuarios();
+        } catch (err) {
+          this.showToast('Error al cambiar estado', 'error');
+        }
+      }
+    },
+
+    syncSidebar() {
+      const elName  = document.getElementById('sidebarUserName');
+      const elLogin = document.getElementById('sidebarUserLogin');
+      const elRole  = document.getElementById('sidebarUserRole');
+      const elAvatar= document.getElementById('sidebarAvatarLetter');
+
+      if (elName) elName.textContent = this.current.nombre;
+      if (elLogin) elLogin.textContent = this.current.usuario;
+      if (elRole) elRole.textContent = this.current.rol.charAt(0).toUpperCase() + this.current.rol.slice(1);
+      if (elAvatar) elAvatar.textContent = this.current.nombre.charAt(0).toUpperCase();
+    },
+
+    /**
+     * Abre la interfaz de gestión de permisos modulares para un usuario específico,
+     * obteniendo previamente su configuración desde la base de datos vía API.
+     * 
+     * @async
+     * @function abrirPermisos
+     * @param {Object} u El usuario seleccionado para asignar permisos
+     * @returns {Promise&lt;void>}
+     */
+    async abrirPermisos(u) {
+      this.usuarioPermisos  = u;
+      this.permisosModulos  = [];
+      this.loadingPermisos  = true;
+      new bootstrap.Modal(document.getElementById('modalPermisos')).show();
+      try {
+        const res = await axios.get(`../../../api/permisos.php?action=listar&amp;usuario_id=${u.id}`);
+        this.permisosModulos = res.data.data || [];
+      } catch (e) {
+        this.showToast('Error al cargar permisos', 'error');
+      } finally {
+        this.loadingPermisos = false;
+      }
+    },
+
+    /**
+     * Consolida y transfiere los permisos configurados hacia el backend
+     * para su persistencia en el control de acceso ACL.
+     * 
+     * @async
+     * @function guardarPermisos
+     * @returns {Promise&lt;void>}
+     */
+    async guardarPermisos() {
+      this.guardandoPermisos = true;
+      try {
+        const res = await axios.post('../../../api/permisos.php?action=guardar', {
+          usuario_id: this.usuarioPermisos.id,
+          permisos: this.permisosModulos.map(p => ({ modulo: p.modulo, activo: p.activo }))
+        });
+        if (res.data.ok) {
+          bootstrap.Modal.getInstance(document.getElementById('modalPermisos')).hide();
+          this.showToast('Permisos guardados correctamente', 'success');
+        } else {
+          this.showToast(res.data.message || 'Error al guardar', 'error');
+        }
+      } catch (e) {
+        this.showToast('Error de red', 'error');
+      } finally {
+        this.guardandoPermisos = false;
+      }
+    },
+
+    showToast(msg, icon) {
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: icon,
+        title: msg,
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true
+      });
+    },
+
+    getRolClass(rol) {
+      switch(rol) {
+        case 'admin': return 'bg-danger text-white';
+        case 'supervisor': return 'bg-warning text-dark';
+        case 'cajera': return 'bg-primary text-white';
+        case 'limpieza': return 'bg-success text-white';
+        default: return 'bg-secondary';
+      }
+    },
+
+    fmtFecha(fecha) {
+      return new Date(fecha).toLocaleDateString('es-PE', { 
+        day:'2-digit', month:'2-digit', year:'numeric', 
+        hour:'2-digit', minute:'2-digit' 
+      });
+    }
+  },
+
+  mounted() {
+    this.fetchUsuarios();
+  }
+}).mount('#app-usuarios');
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Admin_UsuariosJS.html">Admin/UsuariosJS</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sun Apr 05 2026 09:35:18 GMT-0500 (hora estándar de Perú)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

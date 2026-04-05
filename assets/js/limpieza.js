@@ -145,7 +145,7 @@ const appConfig = {
 
         const getEstadoClass = (e) => {
             if (e === 'pendiente')  return 'bg-light text-dark border';
-            if (e === 'en_proceso') return 'bg-warning text-dark';
+            if (e === 'en proceso') return 'bg-warning text-dark';
             return 'bg-success';
         };
 
@@ -175,6 +175,14 @@ const appConfig = {
             return `${d}/${m}/${y}`;
         };
 
+        const formatFechaHora = (fh, rowFecha) => {
+            if (!fh || fh.startsWith('0000')) return '';
+            let dtString = fh.includes(' ') || fh.includes('T') ? fh.replace(' ', 'T') : `${rowFecha}T${fh}`;
+            const dt = new Date(dtString);
+            if (isNaN(dt)) return fh;
+            return dt.toLocaleString('es-PE', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' }).replace(',', '');
+        };
+
         onMounted(() => {
             fetchPersonal();
             if (document.getElementById('app-limpieza'))           fetchHoy();
@@ -186,7 +194,7 @@ const appConfig = {
             generarLista, tareaEdit, abrirEdicion, guardarEdicion, fmtHora,
             getTipoClass, getEstadoClass,
             listaHistorial, filtroHist,
-            detalleDia, fechaDetalle, fetchHistorial, verDetalle, formatFecha
+            detalleDia, fechaDetalle, fetchHistorial, verDetalle, formatFecha, formatFechaHora
         };
     }
 };

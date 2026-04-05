@@ -59,8 +59,8 @@ class LimpiezaController {
         $data = [];
         if ($estado) {
             $data['estado'] = $estado;
-            if ($estado === 'en_proceso') $data['hora_inicio'] = date('H:i:s');
-            if ($estado === 'lista') $data['hora_fin'] = date('H:i:s');
+            if ($estado === 'en proceso') $data['hora_inicio'] = date('Y-m-d H:i:s');
+            if ($estado === 'lista') $data['hora_fin'] = date('Y-m-d H:i:s');
         }
         if ($responsable !== null) $data['responsable'] = $responsable;
         if ($observacion !== null) $data['observacion'] = $observacion;

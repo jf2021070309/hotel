@@ -75,7 +75,7 @@ include $base . 'includes/sidebar.php';
                     <select class="form-select form-select-sm" v-model="filtro.estado">
                         <option value="todos">Todos</option>
                         <option value="pendiente">Pendiente</option>
-                        <option value="en_proceso">En Proceso</option>
+                        <option value="en proceso">En Proceso</option>
                         <option value="lista">Lista</option>
                     </select>
                 </div>
@@ -150,7 +150,7 @@ include $base . 'includes/sidebar.php';
                             </td>
                             <td class="text-center">
                                 <span class="badge rounded-pill px-3 py-2 fs-6" :class="getEstadoClass(h.estado)">
-                                    {{ h.estado === 'pendiente' ? '⏳ PENDIENTE' : (h.estado === 'en_proceso' ? '🧹 EN PROCESO' : '✅ LISTA') }}
+                                    {{ h.estado === 'pendiente' ? 'PENDIENTE' : (h.estado === 'en proceso' ? 'EN PROCESO' : 'LISTA') }}
                                 </span>
                             </td>
                             <td>
@@ -160,13 +160,11 @@ include $base . 'includes/sidebar.php';
                                 </button>
                             </td>
                             <td class="text-center small">
-                                <div v-if="fmtHora(h.hora_inicio)">
-                                    <span class="text-muted">Inicio:</span> <b>{{ fmtHora(h.hora_inicio) }}</b>
+                                <div v-if="h.estado === 'lista' && h.hora_fin && !h.hora_fin.startsWith('0000')">
+                                    <span class="text-muted d-block" style="font-size: 0.70rem;">Completado el:</span>
+                                    <b class="text-success">{{ formatFechaHora(h.hora_fin, h.fecha) }}</b>
                                 </div>
-                                <div v-if="fmtHora(h.hora_fin)">
-                                    <span class="text-muted">Fin:</span> <b class="text-success">{{ fmtHora(h.hora_fin) }}</b>
-                                </div>
-                                <span v-if="!fmtHora(h.hora_inicio)" class="text-muted mini">—</span>
+                                <span v-else class="text-muted mini">—</span>
                             </td>
                             <td class="text-end pe-3">
                                 <button class="btn btn-sm btn-outline-primary shadow-sm" @click="abrirEdicion(h)">

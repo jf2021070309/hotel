@@ -27,5 +27,8 @@ Cada vez que se registra un pago en Rooming (Adelanto o Saldo), el sistema:
 2. Registra un ingreso en la tabla `anticipos`.
 3. Inserta un movimiento automático en el **Flujo de Caja** diario bajo la categoría "Alojamiento".
 
+> [!TIP]
+> Referencia técnica detallada: [RoomingController (PHP)](https://jf2021070309.github.io/hotel/php-api/classes/RoomingController.html) | [FrontDesk Logic (JS)](https://jf2021070309.github.io/hotel/js-api/index.html)
+
 > [!IMPORTANT]
 > Nunca registres pagos de alojamiento manualmente en el Flujo de Caja; el módulo de Rooming lo hace de forma automática para evitar duplicidades.

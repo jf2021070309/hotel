@@ -20,5 +20,5 @@ Optimizado para la operatividad del turno:
 
 ---
 
-### Monitoreo en Tiempo Real
-El panel se actualiza automáticamente cada 60 segundos para garantizar que los datos de ocupación y caja sean siempre precisos.
+> [!TIP]
+> Referencia técnica detallada: [DashboardController (PHP)](https://jf2021070309.github.io/hotel/php-api/classes/DashboardController.html)

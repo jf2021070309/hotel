@@ -21,4 +21,4 @@ El módulo de usuarios permite al administrador gestionar el personal autorizado
 ---
 
 > [!TIP]
-> Puedes consultar la referencia técnica detallada en la sección de [Código Fuente (PHP)](../docs/php-api/classes/UsuarioController.html).
+> Puedes consultar la referencia técnica detallada en la sección de [Código Fuente (PHP)](https://jf2021070309.github.io/hotel/php-api/classes/UsuarioController.html).

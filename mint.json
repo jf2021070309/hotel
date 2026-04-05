@@ -28,6 +28,12 @@
       ]
     },
     {
+      "group": "Arquitectura de Datos",
+      "pages": [
+        "mint-docs/database"
+      ]
+    },
+    {
       "group": "API Reference",
       "pages": [
         "api-reference/endpoint/get"

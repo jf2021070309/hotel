@@ -21,4 +21,4 @@ Optimizado para la operatividad del turno:
 ---
 
 > [!TIP]
-> Referencia técnica detallada: [DashboardController (PHP)](https://jf2021070309.github.io/hotel/php-api/classes/DashboardController.html)
+> Referencia técnica detallada: [DashboardController (PHP)](https://jf2021070309.github.io/hotel/php-api/classes/DashboardController.html) | [Real-Time Metrics (JS)](https://jf2021070309.github.io/hotel/js-api/index.html)

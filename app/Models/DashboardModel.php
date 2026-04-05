@@ -270,6 +270,7 @@ class DashboardModel {
         $flujoRow = $stmtF->fetch(PDO::FETCH_ASSOC);
 
         $mi_turno = [
+            'id' => $flujoRow ? $flujoRow['id'] : null,
             'ingresos' => 0,
             'egresos' => 0,
             'efectivo_sobre' => 0,

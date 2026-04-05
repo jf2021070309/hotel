@@ -18,4 +18,8 @@ class ClienteController {
     public function historial(string $dni): array {
         return $this->model->historialPorDni($dni);
     }
+
+    public function buscar_pax(string $q): array {
+        return $this->model->buscarPax($q);
+    }
 }

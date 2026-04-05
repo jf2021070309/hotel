@@ -291,6 +291,9 @@ include 'includes/sidebar.php';
                 <span class="badge" :class="mi_turno.estado === 'borrador' ? 'bg-warning text-dark' : 'bg-success'">
                   {{ mi_turno.estado.toUpperCase() }}
                 </span>
+                <button @click="abrirModalReporte(mi_turno.id)" class="btn btn-sm btn-outline-primary ms-auto" title="Imprimir Reporte">
+                  <i class="bi bi-file-earmark-pdf-fill me-1"></i> Ver Reporte
+                </button>
               </div>
             </div>
           </div>
@@ -331,6 +334,22 @@ include 'includes/sidebar.php';
     </div>
 
   </div>
+
+  <!-- MODAL REPORTE FLOTANTE -->
+  <div class="modal fade" id="modalReporte" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+      <div class="modal-content shadow-lg border-0" style="border-radius: 12px; overflow: hidden; background: #f8f9fa;">
+        <div class="modal-header bg-dark text-white border-0 py-2">
+          <h5 class="modal-title fs-6"><i class="bi bi-file-earmark-text me-2"></i>Vista de Reporte</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body p-0 text-center" style="height: 85vh;">
+          <iframe id="iframeReporte" src="" style="width: 100%; height: 100%; border: none; background: #e9ecef;"></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <script src="app/Views/dashboard/cajera.js"></script>
@@ -339,3 +358,5 @@ include 'includes/sidebar.php';
   function tick() { document.getElementById('reloj').textContent = new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }); }
   tick(); setInterval(tick, 1000);
 </script>
+
+<?php include 'includes/footer.php'; ?>

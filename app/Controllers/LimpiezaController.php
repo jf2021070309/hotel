@@ -54,6 +54,7 @@ class LimpiezaController {
         $id = $_POST['id'] ?? 0;
         $estado = $_POST['estado'] ?? null;
         $responsable = $_POST['responsable'] ?? null;
+        $observacion = $_POST['observacion'] ?? null;
         
         $data = [];
         if ($estado) {
@@ -62,6 +63,7 @@ class LimpiezaController {
             if ($estado === 'lista') $data['hora_fin'] = date('H:i:s');
         }
         if ($responsable !== null) $data['responsable'] = $responsable;
+        if ($observacion !== null) $data['observacion'] = $observacion;
 
         if (empty($data)) return ['ok' => false, 'msg' => 'No hay datos para actualizar.'];
 

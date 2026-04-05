@@ -78,8 +78,15 @@ createApp({
       clearInterval(pollingInterval);
     });
 
+    const abrirModalReporte = (id) => {
+      document.getElementById('iframeReporte').src = 'app/Views/flujo/reporte_sobre.php?id=' + id;
+      const modal = new bootstrap.Modal(document.getElementById('modalReporte'));
+      modal.show();
+    };
+
     return {
-      usuario, urgentes, checkouts_hoy, checkins_esperados, mi_turno, kpi, alertasInventario
+      loadingInicial, segundosDesdeUpdate, usuario, urgentes, checkouts_hoy, checkins_esperados, mi_turno, kpi, alertasInventario,
+      abrirModalReporte
     };
   }
 }).mount('#app-dash-cajera');

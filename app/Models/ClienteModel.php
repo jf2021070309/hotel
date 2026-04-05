@@ -41,6 +41,19 @@ class ClienteModel {
         return $stmt->fetchAll();
     }
 
+    public function buscarPax(string $q): array {
+        $like = '%' . $q . '%';
+        $sql = "SELECT documento_num, documento_tipo, nombre_completo, nacionalidad, ciudad
+                FROM rooming_pax
+                WHERE documento_num LIKE ? OR nombre_completo LIKE ?
+                GROUP BY documento_num, documento_tipo, nombre_completo, nacionalidad, ciudad
+                ORDER BY MAX(stay_id) DESC
+                LIMIT 10";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$like, $like]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     /**
      * Historial de estadías de un titular por su documento_num
      */

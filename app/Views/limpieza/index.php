@@ -155,7 +155,7 @@ include $base . 'includes/sidebar.php';
                             </td>
                             <td>
                                 <div v-if="h.responsable" class="fw-bold small">{{ h.responsable }}</div>
-                                <button v-else class="btn btn-sm btn-light border text-muted py-0 px-2" @click="asignarResponsable(h)">
+                                <button v-else class="btn btn-sm btn-light border text-muted py-0 px-2" @click="abrirEdicion(h)">
                                     Sin asignar
                                 </button>
                             </td>
@@ -169,24 +169,62 @@ include $base . 'includes/sidebar.php';
                                 <span v-if="!fmtHora(h.hora_inicio)" class="text-muted mini">—</span>
                             </td>
                             <td class="text-end pe-3">
-                                <div class="btn-group shadow-sm">
-                                    <button v-if="h.estado === 'pendiente'" class="btn btn-sm btn-warning" @click="cambiarEstado(h, 'en_proceso')">
-                                        INICIAR
-                                    </button>
-                                    <button v-if="h.estado === 'en_proceso'" class="btn btn-sm btn-success" @click="cambiarEstado(h, 'lista')">
-                                        FINALIZAR
-                                    </button>
-                                    <button class="btn btn-sm btn-light border" @click="mostrarMenu(h)" title="Más opciones">
-                                        <i class="bi bi-three-dots"></i>
-                                    </button>
-                                </div>
+                                <button class="btn btn-sm btn-outline-primary shadow-sm" @click="abrirEdicion(h)">
+                                    <i class="bi bi-pencil-square me-1"></i> Agregar / Editar
+                                </button>
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
-        </div>
+        <!-- Modal Édition Limpieza -->
+        <div class="modal fade" id="modalEdicionLimpieza" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header border-0 pb-0">
+                        <h5 class="modal-title fw-bold">
+                            <i class="bi bi-pencil-square text-primary me-2"></i>Editar Limpieza — HAB {{ tareaEdit.habitacion }}
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-muted small">Estado de Limpieza</label>
+                            <select class="form-select" v-model="tareaEdit.estado">
+                                <option value="pendiente">Pendiente</option>
+                                <option value="en_proceso">En Proceso</option>
+                                <option value="lista">Lista</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-muted small">Personal Responsable</label>
+                            <select class="form-select" v-model="tareaEdit.responsable">
+                                <option value="">-- Sin Asignar --</option>
+                                <option v-for="p in personalLimpieza" :value="p.nombre">{{ p.nombre }}</option>
+                                <option value="__otro__">Escribir manualmente...</option>
+                            </select>
+                        </div>
 
+                        <div class="mb-3" v-if="tareaEdit.responsable === '__otro__'">
+                            <label class="form-label fw-bold text-muted small">Nombre del Responsable</label>
+                            <input type="text" class="form-control" v-model="tareaEdit.responsable_manual" placeholder="Ej: Maria Lopez">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-muted small">Observación / Reporte (Opcional)</label>
+                            <textarea class="form-control" rows="3" v-model="tareaEdit.observacion" placeholder="Detalles o cosas olvidadas..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 pt-0">
+                        <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-primary shadow-sm" @click="guardarEdicion()">
+                            <i class="bi bi-check2-circle me-1"></i> Guardar Cambios
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 

@@ -251,6 +251,13 @@ $turnoQuery = $_GET['turno'] ?? 'MAÑANA';
               </button>
             </div>
 
+            <!-- IMPRIMIR REPORTE ALEX -->
+            <div class="d-grid gap-2 mt-3 pt-3 border-top" v-if="!esNuevo && cabecera.id">
+              <a :href="'reporte_sobre.php?id=' + cabecera.id" target="_blank" class="btn btn-dark py-2 fw-bold">
+                <i class="bi bi-printer-fill me-1"></i>Imprimir Reporte de Sobre (Alex)
+              </a>
+            </div>
+
           </div>
         </div>
       </div>

@@ -72,94 +72,69 @@ const appConfig = {
             loading.value = false;
         };
 
-        const cambiarEstado = async (h, nuevoEstado) => {
+        const tareaEdit = ref({});
+        let tareaTarget = null;
+
+        const abrirEdicion = (h) => {
+            tareaTarget = h;
+            // Clonemmos la data para editar:
+            // Si el responsable no está en la lista de limpiadoras, marcamos responsable_manual
+            let resp = h.responsable || '';
+            let manualResp = '';
+            
+            const noEsPersonal = resp !== '' && !personalLimpieza.value.some(p => p.nombre === resp);
+            if (noEsPersonal) {
+                manualResp = resp;
+                resp = '__otro__';
+            }
+
+            tareaEdit.value = {
+                id: h.id,
+                habitacion: h.habitacion,
+                estado: h.estado,
+                responsable: resp,
+                responsable_manual: manualResp,
+                observacion: h.observacion || ''
+            };
+            new bootstrap.Modal(document.getElementById('modalEdicionLimpieza')).show();
+        };
+
+        const guardarEdicion = async () => {
             const formData = new FormData();
-            formData.append('id', h.id);
-            formData.append('estado', nuevoEstado);
+            formData.append('id', tareaEdit.value.id);
+            formData.append('estado', tareaEdit.value.estado);
+            formData.append('observacion', tareaEdit.value.observacion);
+            
+            let responsableFinal = tareaEdit.value.responsable;
+            if (responsableFinal === '__otro__') {
+                responsableFinal = tareaEdit.value.responsable_manual;
+            }
+            formData.append('responsable', responsableFinal);
+
+            loading.value = true;
             try {
                 const res = await axios.post('/hotel/api/limpieza.php?action=actualizar', formData);
                 if (res.data.ok) {
-                    h.estado = nuevoEstado;
-                    if (res.data.data.hora_inicio) h.hora_inicio = res.data.data.hora_inicio;
-                    if (res.data.data.hora_fin)    h.hora_fin    = res.data.data.hora_fin;
+                    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Limpieza actualizada', showConfirmButton: false, timer: 3000 });
+                    bootstrap.Modal.getInstance(document.getElementById('modalEdicionLimpieza')).hide();
+                    
+                    // Actualizar UI
+                    if(tareaTarget) {
+                        tareaTarget.estado = tareaEdit.value.estado;
+                        tareaTarget.responsable = responsableFinal;
+                        tareaTarget.observacion = tareaEdit.value.observacion;
+                        
+                        // Actualizar horas internamente (simplificado - ideal recargar o inyectar del API)
+                        if (res.data.data.hora_inicio) tareaTarget.hora_inicio = res.data.data.hora_inicio;
+                        if (res.data.data.hora_fin)    tareaTarget.hora_fin    = res.data.data.hora_fin;
+                    }
+                } else {
+                    Swal.fire('Error', res.data.msg, 'error');
                 }
-            } catch (e) { console.error(e); }
-        };
-
-        const asignarResponsable = async (h) => {
-            // Construir opciones: personal de limpieza + opción manual
-            const opciones = {};
-            personalLimpieza.value.forEach(p => { opciones[p.nombre] = p.nombre; });
-            opciones['__otro__'] = '✏️ Escribir nombre manualmente...';
-
-            if (Object.keys(opciones).length === 1) {
-                // No hay personal de limpieza registrado, usar texto libre
-                const { value: nombre } = await Swal.fire({
-                    title: 'Asignar Personal — HAB ' + h.habitacion,
-                    input: 'text',
-                    inputLabel: 'Nombre del responsable',
-                    inputPlaceholder: 'Ej: Maria López',
-                    showCancelButton: true
-                });
-                if (nombre) guardarResponsable(h, nombre);
-                return;
+            } catch (e) { 
+                Swal.fire('Error', 'Hubo un problema de conexión', 'error');
             }
-
-            const { value: sel } = await Swal.fire({
-                title: 'Asignar Personal — HAB ' + h.habitacion,
-                input: 'select',
-                inputOptions: opciones,
-                inputPlaceholder: 'Selecciona la camarera',
-                showCancelButton: true,
-                confirmButtonText: 'Asignar',
-            });
-
-            if (!sel) return;
-            if (sel === '__otro__') {
-                const { value: nombre } = await Swal.fire({
-                    title: 'Nombre del responsable',
-                    input: 'text',
-                    showCancelButton: true
-                });
-                if (nombre) guardarResponsable(h, nombre);
-            } else {
-                guardarResponsable(h, sel);
-            }
-        };
-
-        const guardarResponsable = (h, nombre) => {
-            const formData = new FormData();
-            formData.append('id', h.id);
-            formData.append('responsable', nombre);
-            axios.post('/hotel/api/limpieza.php?action=actualizar', formData).then(() => {
-                h.responsable = nombre;
-            });
-        };
-
-        const mostrarMenu = async (h) => {
-            const { value: action } = await Swal.fire({
-                title: 'Opciones HAB ' + h.habitacion,
-                input: 'select',
-                inputOptions: { 'obs': 'Agregar / Editar Observación' },
-                inputPlaceholder: 'Seleccioná una acción',
-                showCancelButton: true
-            });
-            if (action === 'obs') {
-                const { value: texto } = await Swal.fire({
-                    title: 'Observación',
-                    input: 'textarea',
-                    inputValue: h.observacion,
-                    showCancelButton: true
-                });
-                if (texto !== undefined) {
-                    const formData = new FormData();
-                    formData.append('id', h.id);
-                    formData.append('observacion', texto);
-                    axios.post('/hotel/api/limpieza.php?action=observacion', formData).then(() => {
-                        h.observacion = texto;
-                    });
-                }
-            }
+            loading.value = false;
         };
 
         const getTipoClass = (t) => {
@@ -208,7 +183,7 @@ const appConfig = {
 
         return {
             loading, yaGenerado, lista, filtro, stats, listaFiltrada, personalLimpieza,
-            generarLista, cambiarEstado, asignarResponsable, mostrarMenu, fmtHora,
+            generarLista, tareaEdit, abrirEdicion, guardarEdicion, fmtHora,
             getTipoClass, getEstadoClass,
             listaHistorial, filtroHist,
             detalleDia, fechaDetalle, fetchHistorial, verDetalle, formatFecha

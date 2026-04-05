@@ -1,3 +1,4 @@
+<?php
 require_once __DIR__ . '/../Helpers/FinanzasHelper.php';
 
 /**
@@ -112,21 +113,6 @@ class RoomingModel {
             // Actualizar habitación a ocupado
             $stmtHab = $this->pdo->prepare("UPDATE habitaciones SET estado = 'ocupado' WHERE id = ?");
             $stmtHab->execute([$data['hab_id']]);
-
-            // SINCRONIZACIÓN: Si hay un pago inicial (total_cobrado), registrar en Anticipos + Flujo
-            if ((float)$data['cobrado'] > 0) {
-                $this->registrarPago([
-                    'stay_id'   => $stay_id,
-                    'monto'     => $data['monto_original'],
-                    'moneda'    => $data['moneda'] ?? 'PEN',
-                    'monto_pen' => $data['cobrado'],
-                    'tc'        => $data['tc_aplicado'] ?? 1.0,
-                    'tipo'      => $data['metodo'] ?? 'EFECTIVO',
-                    'recibo'    => $data['num_comp'] ?? '',
-                    'fecha'     => $data['fecha_reg'],
-                    'uid'       => $data['uid']
-                ]);
-            }
 
             $this->upsertLimpiezaCheckout((int)$data['hab_id'], $data['fecha_out']);
 

@@ -96,9 +96,12 @@ class RoomingController {
             
             // Si hay pago inicial, registrarlo como anticipo
             if ($mapped['cobrado'] > 0) {
+                $adelantoVal = isset($input['adelanto']) ? (float)$input['adelanto'] : 0;
+                $monto_pago = ($adelantoVal > 0) ? $adelantoVal : $mapped['monto_orig'];
+                
                 $pago = [
                     'stay_id'   => $stay_id,
-                    'monto'     => $input['adelanto'] ?? $mapped['cobrado'],
+                    'monto'     => $monto_pago,
                     'moneda'    => $mapped['moneda'],
                     'monto_pen' => $mapped['cobrado'],
                     'tc'        => $mapped['tc'],

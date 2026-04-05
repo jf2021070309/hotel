@@ -9,7 +9,9 @@
   "navigation": [
     {
       "group": "Guía de Inicio",
-      "pages": ["mint-docs/introduction"]
+      "pages": [
+        "introduction"
+      ]
     },
     {
       "group": "Módulos Core",
@@ -20,19 +22,27 @@
       ]
     },
     {
+      "group": "Finanzas y Contabilidad",
+      "pages": [
+        "mint-docs/financials"
+      ]
+    },
+    {
       "group": "API Reference",
-      "pages": ["mint-docs/api-reference/openapi"]
+      "pages": [
+        "api-reference/endpoint/get"
+      ]
     },
     {
       "group": "Doc. Técnica (Auto-generada)",
       "pages": [
         {
-          "name": "Backend Reference (PHPDoc)",
-          "url": "https://jf2021070309.github.io/hotel/php-api/"
+          "group": "Backend Reference (PHPDoc)",
+          "href": "https://jf2021070309.github.io/hotel/php-api/index.html"
         },
         {
-          "name": "Frontend Logic (JSDoc)",
-          "url": "https://jf2021070309.github.io/hotel/js-api/"
+          "group": "Frontend Logic (JSDoc)",
+          "href": "https://jf2021070309.github.io/hotel/js-api/index.html"
         }
       ]
     }

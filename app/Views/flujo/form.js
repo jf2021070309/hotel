@@ -1,11 +1,15 @@
 /**
  * app/Views/flujo/form.js
- * Vue 3 Composition API — Formulario de Flujo de Caja
+ * Vue 3 Composition API — Formulario de Flujo de Caja.
+ * 
+ * Este módulo gestiona la interfaz interactiva para el registro de movimientos 
+ * diarios de caja, cálculo de totales en tiempo real y flujo de estados (Borrador -> Cerrado).
  */
 const { createApp, ref, reactive, computed, onMounted } = Vue;
 
 createApp({
   setup() {
+    /** @type {string} Base URL para los endpoints del controlador de flujo. */
     const BASE = '../../../api/flujo.php?action=';
 
     const loading = ref(true);
@@ -15,16 +19,25 @@ createApp({
     const id = ref(SERVER_DATA.id);
     const esNuevo = ref(SERVER_DATA.nuevo === 1);
     
-    // Data structures
+    /** 
+     * @typedef {Object} Cabecera
+     * @property {string} fecha - Fecha del turno (YYYY-MM-DD).
+     * @property {string} turno - Nombre del turno.
+     * @property {string} estado - Estado actual (borrador, cerrado, depositado).
+     * @property {string} operador - Nombre del usuario que abrió el turno.
+     * @property {string} nota_entrega - Observaciones finales del turno.
+     */
     const cabecera = reactive({
       fecha: new Date().toISOString().split('T')[0],
       turno: SERVER_DATA.turnoDefault,
-      estado: 'borrador', // borrador | cerrado | depositado
+      estado: 'borrador', 
       operador: '',
       nota_entrega: ''
     });
 
+    /** @type {Ref<Array>} Lista de movimientos de ingreso. */
     const ingresos = ref([]);
+    /** @type {Ref<Array>} Lista de movimientos de egreso. */
     const egresos = ref([]);
 
     const categorias = reactive({
@@ -32,20 +45,22 @@ createApp({
       egreso: []
     });
 
-    const tc = reactive({ USD: 3.7, CLP: 0.0039 }); // Default, overriden if load existing
+    /** @type {Object} Tipos de cambio del día para visualización. */
+    const tc = reactive({ USD: 3.7, CLP: 0.0039 });
 
-    // ─── API FETCH ────────────────────────────────────────────────────
+    /**
+     * Carga inicial de datos: categorías y detalle del turno si es edición.
+     * @async
+     */
     const loadData = async () => {
       loading.value = true;
       try {
-        // Cargar Categorias
         const catRes = await axios.get(`${BASE}categorias`);
         if (catRes.data.ok) {
           categorias.ingreso = catRes.data.data.filter(c => c.tipo === 'Ingreso');
           categorias.egreso  = catRes.data.data.filter(c => c.tipo === 'Egreso');
         }
 
-        // Si es edición, cargar detalle
         if (!esNuevo.value && id.value !== null) {
           const detRes = await axios.get(`${BASE}detalle&id=${id.value}`);
           if (detRes.data.ok) {
@@ -67,7 +82,6 @@ createApp({
             Swal.fire('Error', 'Turno no encontrado', 'error').then(()=>window.location.href='index.php');
           }
         } else {
-          // Add first row empty if new
           agregarMovimiento('ingresos');
           agregarMovimiento('egresos');
         }
@@ -79,14 +93,21 @@ createApp({
       }
     };
 
-    // ─── COMPUTADOS REALTIME ──────────────────────────────────────────
+    /**
+     * Determina si el formulario permite edición basado en el estado y rol.
+     * @type {ComputedRef<boolean>}
+     */
     const esEditable = computed(() => {
       if (cabecera.estado === 'borrador') return true;
       if (cabecera.estado === 'cerrado' && SERVER_DATA.canEditClosed) return true;
       return false;
     });
 
-    // PEN Totals using generic TC (approx for viewing, backend handles exact TC)
+    /**
+     * Convierte un monto a moneda base (PEN) para fines de visualización.
+     * @param {Object} mov Movimiento a convertir.
+     * @returns {number}
+     */
     const toSoles = (mov) => {
       let m = parseFloat(mov.monto) || 0;
       if (mov.moneda === 'USD') m *= tc.USD;
@@ -94,6 +115,10 @@ createApp({
       return m;
     };
 
+    /**
+     * Totales acumulados del día en Soles (PEN).
+     * @type {ComputedRef<Object>}
+     */
     const totalesDia = computed(() => {
       let inPen = ingresos.value.reduce((acc, mov) => acc + toSoles(mov), 0);
       let egPen = egresos.value.reduce((acc, mov) => acc + toSoles(mov), 0);
@@ -103,6 +128,10 @@ createApp({
       };
     });
 
+    /**
+     * Saldo neto de Efectivo en Soles (PEN) que debe estar en el sobre físico.
+     * @type {ComputedRef<string>}
+     */
     const efectivoEnSobrePEN = computed(() => {
       let inEfectivoPEN = ingresos.value.filter(m => m.medio_pago === 'EFECTIVO' && m.moneda === 'PEN').reduce((acc, m) => acc + (parseFloat(m.monto)||0), 0);
       let egEfectivoPEN = egresos.value.filter(m => m.medio_pago === 'EFECTIVO' && m.moneda === 'PEN').reduce((acc, m) => acc + (parseFloat(m.monto)||0), 0);
@@ -121,7 +150,10 @@ createApp({
       return (inEfectivo - egEfectivo).toFixed(0);
     });
 
-    // ─── ACCIONES FILAS ───────────────────────────────────────────────
+    /**
+     * Añade una nueva fila de movimiento (ingreso o egreso) al arreglo correspondiente.
+     * @param {string} tipo - 'ingresos' o 'egresos'.
+     */
     const agregarMovimiento = (tipo) => {
       if (!esEditable.value) return;
       const t = tipo === 'ingresos' ? 'Ingreso' : 'Egreso';
@@ -137,13 +169,23 @@ createApp({
       });
     };
 
+    /**
+     * Elimina una fila de movimiento.
+     * @param {string} tipo - 'ingresos' o 'egresos'.
+     * @param {number} index - Índice en el arreglo.
+     */
     const eliminarMovimiento = (tipo, index) => {
       if (!esEditable.value) return;
       if (tipo === 'ingresos') ingresos.value.splice(index, 1);
       if (tipo === 'egresos')  egresos.value.splice(index, 1);
     };
 
-    // ─── GUARDADOS ────────────────────────────────────────────────────
+    /**
+     * Persiste los datos del turno en el servidor.
+     * Puede opcionalmente cerrar el turno permanentemente.
+     * @async
+     * @param {boolean} cerrarFinal - Si es true, invoca el proceso de cierre tras guardar.
+     */
     const guardarTurno = async (cerrarFinal = false) => {
       if (cerrarFinal) {
         const confirm = await Swal.fire({
@@ -170,11 +212,10 @@ createApp({
 
         const res = await axios.post(`${BASE}guardar`, data);
         if (res.data.ok) {
-          id.value = res.data.data.id; // Refresh ID in case it was new
+          id.value = res.data.data.id; 
           esNuevo.value = false;
           
           if (cerrarFinal) {
-            // Llama API cerrar
             const resCerrar = await axios.post(`${BASE}cerrar`, { id: id.value });
             if (resCerrar.data.ok) {
               Swal.fire('Cerrado', 'El turno ha sido cerrado', 'success').then(() => {
@@ -188,7 +229,6 @@ createApp({
               toast: true, position: 'top-end', showConfirmButton: false, timer: 3000
             });
             Toast.fire({ icon: 'success', title: 'Borrador Guardado' });
-            // Cargar datos denuevo pa refrescar DB keys
             loadData();
           }
         } else {
@@ -201,6 +241,10 @@ createApp({
       }
     };
 
+    /**
+     * Envía acción de "Depositado" al servidor (Solo Admin).
+     * @async
+     */
     const marcarDepositado = async () => {
       const confirm = await Swal.fire({
         title: '¿Marcar como Depositado?',
@@ -222,6 +266,10 @@ createApp({
       }
     };
 
+    /**
+     * Reabre un turno cerrado (Solo Admin).
+     * @async
+     */
     const reabrirTurno = async () => {
       const confirm = await Swal.fire({
         title: '¿Reabrir Turno?',

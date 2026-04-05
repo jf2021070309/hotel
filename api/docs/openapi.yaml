@@ -352,16 +352,45 @@ paths:
     get:
       tags:
         - "Flujo de Caja"
-      summary: Flujo de Caja (Lectura)
+      summary: Listar turnos de caja
       parameters:
         - in: query
-          name: action
+          name: mes
+          schema:
+            type: integer
+          description: Mes del año (1-12)
+        - in: query
+          name: anio
+          schema:
+            type: integer
+          description: Año (YYYY)
+        - in: query
+          name: estado
           schema:
             type: string
-            enum: [listar, detalle, resumen_dia, categorias]
+            enum: [borrador, cerrado, depositado, todos]
       responses:
         '200':
-          description: OK
+          description: Lista de turnos con totales calculados
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+
+  "/flujo.php?action=detalle":
+    get:
+      tags:
+        - "Flujo de Caja"
+      summary: Obtener detalle y movimientos de un turno
+      parameters:
+        - in: query
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Datos del turno y arreglos de ingresos/egresos
           content:
             application/json:
               schema:
@@ -371,13 +400,7 @@ paths:
     post:
       tags:
         - "Flujo de Caja"
-      summary: Flujo de Caja (Escritura)
-      parameters:
-        - in: query
-          name: action
-          schema:
-            type: string
-            enum: [guardar, cerrar, depositar, reabrir]
+      summary: Crear o actualizar turno y movimientos
       requestBody:
         required: true
         content:
@@ -387,21 +410,78 @@ paths:
               properties:
                 id:
                   type: integer
-                  example: 0
                 fecha:
                   type: string
                   format: date
-                  example: "2026-04-05"
                 turno:
                   type: string
-                  example: "Tarde"
+                nota_entrega:
+                  type: string
+                ingresos:
+                  type: array
+                  items:
+                    type: object
+                egresos:
+                  type: array
+                  items:
+                    type: object
       responses:
         '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericResponse'
+          description: ID del flujo guardado
+        '422':
+          description: Error de validación (ej. turno ya existe)
+
+  "/flujo.php?action=cerrar":
+    post:
+      tags:
+        - "Flujo de Caja"
+      summary: Cerrar arqueo de caja (Bloquea edición)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: integer
+      responses:
+        '200':
+          description: Turno cerrado exitosamente
+
+  "/flujo.php?action=depositar":
+    post:
+      tags:
+        - "Flujo de Caja"
+      summary: Confirmar depósito de efectivo (Solo Admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: integer
+      responses:
+        '200':
+          description: Turno marcado como depositado
+
+  "/flujo.php?action=resumen_dia":
+    get:
+      tags:
+        - "Flujo de Caja"
+      summary: Reporte consolidado de arqueo por fecha
+      parameters:
+        - in: query
+          name: fecha
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Totales por moneda y desglose de turnos
 
   # ----------------------------------------------------
   # 9. HABITACIONES

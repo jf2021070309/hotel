@@ -1,19 +1,41 @@
 <?php
 /**
  * app/Models/FlujoModel.php
+ * 
+ * Modelo encargado de la persistencia de datos del Flujo de Caja y sus movimientos.
+ * Maneja la lógica compleja de estados de turno, cálculos multidivisa y 
+ * disparadores de sincronización con el módulo de Caja Chica.
  */
 class FlujoModel {
+    /** @var PDO Conexión a la base de datos. */
     private PDO $pdo;
 
+    /**
+     * Constructor del modelo.
+     * 
+     * @param PDO $pdo Conexión a la base de datos.
+     */
     public function __construct(PDO $pdo) {
         $this->pdo = $pdo;
     }
 
+    /**
+     * Obtiene las categorías financieras activas asignadas al módulo de Flujo.
+     * 
+     * @return array Arreglo de categorías (id, tipo, nombre).
+     */
     public function getCategorias(): array {
         $stmt = $this->pdo->query("SELECT id, tipo, nombre FROM finanzas_categorias WHERE modulo='Flujo' AND activo=1 ORDER BY tipo, orden, nombre");
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    /**
+     * Recupera una lista de turnos de caja con totales consolidados y saldo de efectivo en sobre.
+     * Realiza conversiones de moneda en tiempo real basadas en el tipo de cambio del día o fallbacks.
+     * 
+     * @param array $filtros Filtros de 'mes', 'anio' y 'estado'.
+     * @return array Lista de turnos con métricas de ingresos, egresos y efectivo.
+     */
     public function listar(array $filtros): array {
         $where = ["1=1"];
         $params = [];
@@ -58,6 +80,12 @@ class FlujoModel {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    /**
+     * Obtiene la información detallada de un flujo de caja, incluyendo todos sus movimientos.
+     * 
+     * @param int $id ID del flujo.
+     * @return array|null Datos del flujo y sus movimientos (ingresos/egresos) o null si no existe.
+     */
     public function getDetalle(int $id): ?array {
         $stmt = $this->pdo->prepare("SELECT f.*, u.nombre AS operador FROM flujo_caja f LEFT JOIN usuarios u ON f.usuario_id = u.id WHERE f.id = ?");
         $stmt->execute([$id]);
@@ -82,12 +110,30 @@ class FlujoModel {
         return $flujo;
     }
 
+    /**
+     * Verifica si ya existe un registro de flujo para una fecha y turno específicos.
+     * 
+     * @param string $fecha Fecha del turno.
+     * @param string $turno Nombre/identificador del turno (ej. Mañana, Tarde).
+     * @param int $excludeId ID a excluir en la búsqueda (usado al editar).
+     * @return bool True si ya existe, false si está libre.
+     */
     public function checkExisteTurno(string $fecha, string $turno, int $excludeId = 0): bool {
         $stmt = $this->pdo->prepare("SELECT id FROM flujo_caja WHERE fecha = ? AND turno = ? AND id != ?");
         $stmt->execute([$fecha, $turno, $excludeId]);
         return (bool)$stmt->fetchColumn();
     }
 
+    /**
+     * Guarda el encabezado del turno y sincroniza sus movimientos.
+     * Incluye lógica de integración automática: movimientos de "RECEPCIÓN C.CH." generan ingresos en Caja Chica.
+     * 
+     * @param array $data Datos generales (id, fecha, turno, etc).
+     * @param array $ingresos Lista de movimientos de ingreso.
+     * @param array $egresos Lista de movimientos de egreso.
+     * @return int ID del flujo guardado.
+     * @throws Exception Si ocurre un error en la transacción.
+     */
     public function guardar(array $data, array $ingresos, array $egresos): int {
         $id = (int)($data['id'] ?? 0);
         
@@ -167,11 +213,25 @@ class FlujoModel {
         }
     }
 
+    /**
+     * Actualiza el estado de un turno (borrador, cerrado, depositado).
+     * 
+     * @param int $id ID del flujo.
+     * @param string $estado Nuevo estado.
+     * @return bool True si se actualizó correctamente.
+     */
     public function cambiarEstado(int $id, string $estado): bool {
         $stmt = $this->pdo->prepare("UPDATE flujo_caja SET estado = ? WHERE id = ?");
         return $stmt->execute([$estado, $id]);
     }
 
+    /**
+     * Genera un resumen financiero consolidado por moneda para una fecha dada.
+     * Incluye solo turnos que no están en estado 'borrador'.
+     * 
+     * @param string $fecha Fecha del arqueo.
+     * @return array Desglose de totales por turno y moneda.
+     */
     public function getResumenDia(string $fecha): array {
         $sql = "
             SELECT 

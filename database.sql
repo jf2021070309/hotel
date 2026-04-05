@@ -686,6 +686,10 @@ INSERT INTO `inventario_productos` (`nombre`, `categoria`, `refrigeradora`, `pre
 ('VINO MORADO',  'VINO',   2, 35.00,10),
 ('VINO AZUL',    'VINO',   2, 35.00,10);
 
+-- Tipos de cambio predeterminados (fecha de hoy: 2026-04-05)
+INSERT IGNORE INTO tipos_cambio (moneda_origen, moneda_destino, factor, fecha) VALUES
+  ('USD', 'PEN', 3.7500, CURDATE()),
+  ('CLP', 'PEN', 277.00, CURDATE());
 
 -- La exportación de datos fue deseleccionada.
 

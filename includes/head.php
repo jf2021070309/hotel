@@ -15,6 +15,10 @@ $chartjs_enabled = $chartjs_enabled ?? false;
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><?= htmlspecialchars($page_title, ENT_QUOTES, 'UTF-8') ?></title>
 
+  <!-- Favicon -->
+  <link rel="icon" type="image/jpeg" href="<?= $base ?>assets/img/logo.jpg">
+  <link rel="shortcut icon" type="image/jpeg" href="<?= $base ?>assets/img/logo.jpg">
+
   <!-- Bootstrap 5 CSS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
   <!-- Bootstrap Icons -->

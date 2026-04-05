@@ -101,6 +101,14 @@ require_once $base . 'rutas.php';
     </div>
     <?php endif; ?>
 
+    <?php if (tieneAccesoModulo('calculadora')): ?>
+    <div class="nav-item">
+      <a href="<?= route('calculadora/index.php', $base) ?>" class="<?= isActive('index.php','calculadora') ?>" onclick="closeSidebarOnMobile()">
+        <i class="bi bi-calculator-fill" style="color:#d4af37;"></i> <span>Calculadora</span>
+      </a>
+    </div>
+    <?php endif; ?>
+
     <?php if (tieneAccesoModulo('yape')): ?>
     <div class="nav-item">
       <a href="<?= route('yape/index.php', $base) ?>" class="<?= isActive('index.php','yape') ?>" onclick="closeSidebarOnMobile()">

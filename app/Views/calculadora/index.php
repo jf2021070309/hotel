@@ -1,0 +1,998 @@
+<?php
+/**
+ * app/Views/calculadora/index.php
+ * Módulo Calculadora — Hotel Platinium
+ */
+$base = '../../../';
+require_once $base . 'config/db.php';
+require_once $base . 'auth/middleware.php';
+protegerPorRol('cajera', 'calculadora');
+
+require_once $base . 'app/Controllers/CalculadoraController.php';
+$ctrl = new CalculadoraController($pdo);
+$data = $ctrl->index();
+
+$tc        = $data['tc'];
+$config    = $data['config'];
+$historial = $data['historial'];
+
+$page_title = 'Calculadora — Hotel Platinium';
+include $base . 'includes/head.php';
+?>
+
+<div id="app-calculadora">
+<?php include $base . 'includes/sidebar.php'; ?>
+<div class="main-content">
+
+  <!-- TOPBAR -->
+  <div class="topbar border-bottom-0 shadow-sm" style="background: linear-gradient(to right, #ffffff, #f8faff);">
+    <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list fs-4"></i></button>
+    <div>
+      <h4 class="fw-bold mb-0" style="color:#111; letter-spacing:-0.5px;">
+        <i class="bi bi-calculator-fill me-2" style="color:#d4af37;"></i>Calculadora de Tipos de Cambio
+      </h4>
+      <p class="mb-0 small text-muted fw-semibold">Conversión en tiempo real · PEN · USD · CLP</p>
+    </div>
+    <div class="ms-auto d-flex gap-2">
+      <span class="badge" style="background:#f0fdf4; color:#166534; font-size:11px; padding:6px 12px; border-radius:8px; border:1px solid #bbf7d0;">
+        <i class="bi bi-calendar3 me-1"></i><?= htmlspecialchars($tc['fecha']) ?>
+      </span>
+    </div>
+  </div>
+
+  <div class="page-body">
+
+    <!-- ==================== TABS ==================== -->
+    <ul class="nav calc-tabs mb-4" id="calcTabs">
+      <li class="nav-item">
+        <button class="calc-tab active" data-tab="calculadora" onclick="switchTab('calculadora', this)">
+          <i class="bi bi-calculator me-1"></i>Calculadora
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="calc-tab" data-tab="tipos_cambio" onclick="switchTab('tipos_cambio', this)">
+          <i class="bi bi-currency-exchange me-1"></i>Tipos de Cambio
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="calc-tab" data-tab="parametros" onclick="switchTab('parametros', this)">
+          <i class="bi bi-gear me-1"></i>Parámetros
+        </button>
+      </li>
+    </ul>
+
+    <!-- ==================== TAB 1: CALCULADORA ==================== -->
+    <div id="tab-calculadora" class="tab-content-pane">
+
+      <!-- Barra de Tipos de Cambio -->
+      <div class="tc-bar card border-0 shadow-sm mb-4">
+        <div class="card-body py-3 px-4">
+          <div class="row g-3 align-items-center">
+            <div class="col-auto">
+              <label class="tc-bar-label">FECHA TC</label>
+              <input type="date" id="barFecha" class="form-control form-control-sm tc-input"
+                     value="<?= htmlspecialchars($tc['fecha']) ?>" readonly>
+            </div>
+            <div class="col-auto">
+              <label class="tc-bar-label">TC USD → PEN</label>
+              <div class="input-group input-group-sm">
+                <span class="input-group-text tc-symbol">$</span>
+                <input type="number" id="barTcUsd" class="form-control tc-input" step="0.0001" min="0"
+                       value="<?= number_format($tc['tc_usd'], 4, '.', '') ?>"
+                       oninput="recalcularTodo()">
+              </div>
+            </div>
+            <div class="col-auto">
+              <label class="tc-bar-label">1 SOL = X PESOS (CLP)</label>
+              <div class="input-group input-group-sm">
+                <span class="input-group-text tc-symbol">CLP</span>
+                <input type="number" id="barTcClp" class="form-control tc-input" step="0.01" min="0"
+                       value="<?= number_format($tc['tc_clp'], 4, '.', '') ?>"
+                       oninput="recalcularTodo()">
+              </div>
+            </div>
+            <div class="col-auto ms-auto">
+              <button class="btn btn-outline-secondary btn-sm px-3 shadow-sm" onclick="recargarTC()" id="btnRecargar">
+                <i class="bi bi-arrow-clockwise me-1"></i>Recargar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paneles de Conversión -->
+      <div class="row g-4 panels-row">
+
+        <!-- PANEL 1: SOLES -->
+        <div class="col-12 col-md-4">
+          <div class="calc-panel panel-soles" id="panelSoles">
+            <div class="panel-header">
+              <span class="panel-icon">💵</span>
+              <div>
+                <div class="panel-title">SOLES</div>
+                <div class="panel-subtitle">PEN — Nuevos Soles</div>
+              </div>
+              <div class="ms-auto">
+                <div class="toggle-container" title="Aplicar recargo POS 5%">
+                  <span class="toggle-label">5% POS</span>
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="togglePosSoles" onchange="togglePosSolesChange()">
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel-body">
+              <label class="input-label">Monto en Dólares (USD)</label>
+              <div class="input-group mb-3">
+                <span class="input-group-text monto-symbol">$</span>
+                <input type="number" id="montoSoles" class="form-control monto-input"
+                       placeholder="0.00" step="0.01" min="0"
+                       oninput="calcularSoles()">
+              </div>
+
+              <div class="result-rows">
+                <div class="result-row">
+                  <span class="result-label">Neto Soles</span>
+                  <span class="result-value" id="solNeto">—</span>
+                </div>
+                <div class="result-row comision-row" id="rowComisionSoles" style="display:none;">
+                  <span class="result-label text-success">Comisión (5%)</span>
+                  <span class="result-value text-success" id="solComision">—</span>
+                </div>
+              </div>
+
+              <div class="result-total">
+                <span class="total-label">TOTAL</span>
+                <span class="total-value" id="solTotal">—</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PANEL 2: DÓLARES -->
+        <?php if ($config['mostrar_panel_usd']): ?>
+        <div class="col-12 col-md-4">
+          <div class="calc-panel panel-dolares" id="panelDolares">
+            <div class="panel-header">
+              <span class="panel-icon">💲</span>
+              <div>
+                <div class="panel-title">DÓLARES</div>
+                <div class="panel-subtitle">USD — Dólares Americanos</div>
+              </div>
+            </div>
+
+            <div class="panel-body">
+              <!-- Switch Efectivo / Tarjeta -->
+              <div class="mode-switch mb-3">
+                <button class="mode-btn active" id="btnEfectivo" onclick="setModoDolares('efectivo')">
+                  <i class="bi bi-cash-coin me-1"></i>Efectivo
+                </button>
+                <button class="mode-btn" id="btnTarjeta" onclick="setModoDolares('tarjeta')">
+                  <i class="bi bi-credit-card me-1"></i>Tarjeta
+                </button>
+              </div>
+
+              <label class="input-label">Monto en Dólares (USD)</label>
+              <div class="input-group mb-3">
+                <span class="input-group-text monto-symbol">$</span>
+                <input type="number" id="montoDolares" class="form-control monto-input"
+                       placeholder="0.00" step="0.01" min="0"
+                       oninput="calcularDolares()">
+              </div>
+
+              <div class="result-rows">
+                <div class="result-row">
+                  <span class="result-label">Base USD</span>
+                  <span class="result-value" id="usdBase">—</span>
+                </div>
+                <div class="result-row comision-row" id="rowComisionUsd" style="display:none;">
+                  <span class="result-label text-success">Comisión (5%)</span>
+                  <span class="result-value text-success" id="usdComision">—</span>
+                </div>
+                <div class="result-row" id="rowComisionSolesUsd" style="display:none;">
+                  <span class="result-label text-muted" style="font-size:11px;">(En Soles)</span>
+                  <span class="result-value text-muted" style="font-size:13px;" id="usdComisionSoles">—</span>
+                </div>
+                <div class="result-row">
+                  <span class="result-label text-muted" style="font-size:11px;">Equiv. en Soles</span>
+                  <span class="result-value" style="font-size:13px;" id="usdEnSoles">—</span>
+                </div>
+              </div>
+
+              <div class="result-total">
+                <span class="total-label">TOTAL USD</span>
+                <span class="total-value" id="usdTotal">—</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <?php endif; ?>
+
+        <!-- PANEL 3: PESOS CHILENOS -->
+        <?php if ($config['mostrar_panel_clp']): ?>
+        <div class="col-12 col-md-4">
+          <div class="calc-panel panel-pesos" id="panelPesos">
+            <div class="panel-header">
+              <span class="panel-icon">🇨🇱</span>
+              <div>
+                <div class="panel-title">PESOS CHILENOS</div>
+                <div class="panel-subtitle">CLP — Pesos Chile</div>
+              </div>
+            </div>
+
+            <div class="panel-body">
+              <label class="input-label">Base en Dólares (USD)</label>
+              <div class="input-group mb-3">
+                <span class="input-group-text monto-symbol">$</span>
+                <input type="number" id="montoPesos" class="form-control monto-input"
+                       placeholder="0.00" step="0.01" min="0"
+                       oninput="calcularPesos()">
+              </div>
+
+              <div class="result-rows">
+                <div class="result-row">
+                  <span class="result-label">Soles sin 5%</span>
+                  <span class="result-value" id="clpSolesSin">—</span>
+                </div>
+                <div class="result-row">
+                  <span class="result-label text-warning-emphasis">Soles con POS (+5%)</span>
+                  <span class="result-value text-success" id="clpSolesCon">—</span>
+                </div>
+                <hr class="my-2 opacity-25">
+                <div class="result-row">
+                  <span class="result-label">Efectivo (sin 5%)</span>
+                  <span class="result-value" id="clpEfectivo">—</span>
+                </div>
+                <div class="result-row">
+                  <span class="result-label text-warning-emphasis">POS Pesos (+5%)</span>
+                  <span class="result-value text-success" id="clpConPos">—</span>
+                </div>
+                <hr class="my-2 opacity-25">
+                <div class="result-row">
+                  <span class="result-label text-muted">Comisión POS</span>
+                  <span class="result-value" id="clpComision" style="font-size:12px; text-align:right;">—</span>
+                </div>
+              </div>
+
+              <div class="result-total" style="font-size:11px; text-align:center; background:#f1f5f9; color:#475569; border-top: 1px solid #e2e8f0;">
+                <span id="clpInfoTc">1 USD = <span class="fw-bold">—</span> PEN = <span class="fw-bold">—</span> CLP</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <?php endif; ?>
+
+      </div><!-- end panels-row -->
+    </div><!-- end tab-calculadora -->
+
+
+    <!-- ==================== TAB 2: TIPOS DE CAMBIO ==================== -->
+    <div id="tab-tipos_cambio" class="tab-content-pane" style="display:none;">
+
+      <div class="row g-4">
+        <!-- Formulario agregar TC -->
+        <div class="col-12 col-md-4">
+          <div class="card border-0 shadow-sm" style="border-radius:12px;">
+            <div class="card-header border-0 pt-4 px-4 pb-0">
+              <h6 class="fw-bold mb-0"><i class="bi bi-plus-circle-fill text-success me-2"></i>Registrar Tipo de Cambio</h6>
+              <p class="text-muted small mt-1 mb-0">Se insertan 2 registros: USD→PEN y CLP→PEN</p>
+            </div>
+            <div class="card-body p-4">
+              <div class="mb-3">
+                <label class="form-label small fw-bold">Fecha</label>
+                <input type="date" id="tcFecha" class="form-control"
+                       value="<?= date('Y-m-d') ?>" max="<?= date('Y-m-d') ?>">
+              </div>
+              <div class="mb-3">
+                <label class="form-label small fw-bold">TC USD → PEN <span class="text-muted">(1 dólar en soles)</span></label>
+                <div class="input-group">
+                  <span class="input-group-text">$</span>
+                  <input type="number" id="tcUsdInput" class="form-control" step="0.0001" min="0.01"
+                         placeholder="ej: 3.7500" value="<?= number_format($tc['tc_usd'], 4, '.', '') ?>">
+                  <span class="input-group-text">PEN</span>
+                </div>
+              </div>
+              <div class="mb-4">
+                <label class="form-label small fw-bold">TC CLP → PEN <span class="text-muted">(1 sol en pesos)</span></label>
+                <div class="input-group">
+                  <span class="input-group-text">S/</span>
+                  <input type="number" id="tcClpInput" class="form-control" step="0.01" min="1"
+                         placeholder="ej: 277.00" value="<?= number_format($tc['tc_clp'], 4, '.', '') ?>">
+                  <span class="input-group-text">CLP</span>
+                </div>
+              </div>
+              <button class="btn btn-success w-100 fw-bold shadow-sm" onclick="guardarTC()" id="btnGuardarTC">
+                <i class="bi bi-floppy-fill me-2"></i>Guardar Tipo de Cambio
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Historial de TC -->
+        <div class="col-12 col-md-8">
+          <div class="card border-0 shadow-sm" style="border-radius:12px;">
+            <div class="card-header border-0 pt-4 px-4 pb-3 d-flex align-items-center justify-content-between">
+              <div>
+                <h6 class="fw-bold mb-0"><i class="bi bi-clock-history text-primary me-2"></i>Historial de Tipos de Cambio</h6>
+                <p class="text-muted small mt-1 mb-0">Últimos 90 días registrados</p>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th class="ps-4" style="font-size:11px; color:#6c757d; letter-spacing:.5px;">FECHA</th>
+                    <th style="font-size:11px; color:#6c757d; letter-spacing:.5px;">TC USD → PEN</th>
+                    <th style="font-size:11px; color:#6c757d; letter-spacing:.5px;">1 SOL = X PESOS</th>
+                    <th style="font-size:11px; color:#6c757d; letter-spacing:.5px;">REGISTRADO</th>
+                  </tr>
+                </thead>
+                <tbody id="tbodyHistorial">
+                  <?php foreach ($historial as $row): ?>
+                  <tr>
+                    <td class="ps-4 fw-semibold"><?= htmlspecialchars($row['fecha']) ?></td>
+                    <td>
+                      <span class="badge" style="background:#eff6ff; color:#1e40af; font-size:12px; padding:5px 10px; border-radius:6px;">
+                        S/ <?= number_format((float)$row['tc_usd'], 4) ?>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="badge" style="background:#fff7ed; color:#9a3412; font-size:12px; padding:5px 10px; border-radius:6px;">
+                        <?= number_format((float)$row['tc_clp'], 2) ?> CLP
+                      </span>
+                    </td>
+                    <td class="text-muted small"><?= htmlspecialchars(substr($row['created_at'], 0, 16)) ?></td>
+                  </tr>
+                  <?php endforeach; ?>
+                  <?php if (empty($historial)): ?>
+                  <tr><td colspan="4" class="text-center py-5 text-muted">No hay registros aún.</td></tr>
+                  <?php endif; ?>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- end tab-tipos_cambio -->
+
+
+    <!-- ==================== TAB 3: PARÁMETROS ==================== -->
+    <div id="tab-parametros" class="tab-content-pane" style="display:none;">
+
+      <!-- Header bar con botón guardar a la derecha -->
+      <div class="d-flex align-items-center gap-3 mb-4 p-3 rounded-3"
+           style="background:white; border:1px solid #e9ecef; box-shadow:0 1px 6px rgba(0,0,0,.05);">
+        <div class="d-flex align-items-center justify-content-center rounded-3 flex-shrink-0"
+             style="width:42px; height:42px; background:linear-gradient(135deg,#eff6ff,#dbeafe);">
+          <i class="bi bi-sliders fs-5 text-primary"></i>
+        </div>
+        <div>
+          <div class="fw-bold" style="color:#1e293b; font-size:15px;">Parámetros de la Calculadora</div>
+          <div class="text-muted" style="font-size:12px;">Configuración guardada en base de datos</div>
+        </div>
+        <div class="ms-auto d-flex align-items-center gap-3">
+          <div id="paramsMsg" style="display:none;"></div>
+          <button class="btn btn-primary px-4 fw-bold shadow-sm" onclick="guardarParams()" id="btnGuardarParams">
+            <i class="bi bi-floppy-fill me-2"></i>Guardar Parámetros
+          </button>
+        </div>
+      </div>
+
+      <!-- 3 tarjetas horizontales -->
+      <div class="row g-3 align-items-stretch">
+
+        <!-- Card 1: Recargo POS -->
+        <div class="col-12 col-md-4">
+          <div class="param-card h-100">
+            <div class="param-card-icon" style="background:#f0fdf4; color:#16a34a;">
+              <i class="bi bi-percent fs-4"></i>
+            </div>
+            <div class="param-card-body">
+              <div class="param-card-title">Recargo POS</div>
+              <div class="param-card-desc">Porcentaje informativo de comisión POS. No afecta cobros reales.</div>
+              <div class="input-group input-group-sm mt-3" style="max-width:160px;">
+                <input type="number" id="pRecargoPOS" class="form-control fw-bold text-center"
+                       style="font-size:1.1rem;"
+                       step="0.01" min="0" max="1"
+                       value="<?= number_format($config['recargo_pos'], 2, '.', '') ?>">
+                <span class="input-group-text fw-bold">%</span>
+              </div>
+              <div class="mt-2" style="font-size:11px; color:#94a3b8;">0.05 = 5% &nbsp;·&nbsp; 0.10 = 10%</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2: Panel USD -->
+        <div class="col-12 col-md-4">
+          <div class="param-card h-100">
+            <div class="param-card-icon" style="background:#eff6ff; color:#2563eb;">
+              <i class="bi bi-currency-dollar fs-4"></i>
+            </div>
+            <div class="param-card-body">
+              <div class="param-card-title">Panel Dólares (USD)</div>
+              <div class="param-card-desc">Controla la visibilidad del panel de conversión a dólares en la calculadora.</div>
+              <div class="d-flex align-items-center gap-3 mt-3">
+                <label class="toggle-switch mb-0">
+                  <input type="checkbox" id="pMostrarUSD"
+                         <?= $config['mostrar_panel_usd'] ? 'checked' : '' ?>
+                         onchange="document.getElementById('lblUSD').textContent = this.checked ? 'Visible' : 'Oculto'">
+                  <span class="toggle-slider"></span>
+                </label>
+                <span id="lblUSD" class="fw-semibold" style="font-size:13px; color:#2563eb;">
+                  <?= $config['mostrar_panel_usd'] ? 'Visible' : 'Oculto' ?>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3: Panel CLP -->
+        <div class="col-12 col-md-4">
+          <div class="param-card h-100">
+            <div class="param-card-icon" style="background:#fff7ed; color:#ea580c;">
+              <i class="bi bi-cash-coin fs-4"></i>
+            </div>
+            <div class="param-card-body">
+              <div class="param-card-title">Panel Pesos Chilenos (CLP)</div>
+              <div class="param-card-desc">Controla la visibilidad del panel de conversión a pesos chilenos.</div>
+              <div class="d-flex align-items-center gap-3 mt-3">
+                <label class="toggle-switch mb-0">
+                  <input type="checkbox" id="pMostrarCLP"
+                         <?= $config['mostrar_panel_clp'] ? 'checked' : '' ?>
+                         onchange="document.getElementById('lblCLP').textContent = this.checked ? 'Visible' : 'Oculto'">
+                  <span class="toggle-slider"></span>
+                </label>
+                <span id="lblCLP" class="fw-semibold" style="font-size:13px; color:#ea580c;">
+                  <?= $config['mostrar_panel_clp'] ? 'Visible' : 'Oculto' ?>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- end row -->
+
+      <!-- Nota informativa -->
+      <div class="mt-4 p-3 rounded-3 d-flex align-items-start gap-2"
+           style="background:#f8faff; border:1px solid #dbeafe;">
+        <i class="bi bi-info-circle-fill text-primary flex-shrink-0 mt-1"></i>
+        <span class="small text-muted">
+          <strong class="text-dark">Nota:</strong> El recargo POS es solo informativo aquí.
+          El cargo real al pagar con tarjeta se aplica en <strong>Rooming</strong> usando
+          el campo <code>recargo_pos</code> de la tabla <code>configuracion</code>.
+        </span>
+      </div>
+
+    </div><!-- end tab-parametros -->
+
+  </div><!-- page-body -->
+</div><!-- main-content -->
+</div><!-- app-calculadora -->
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// ESTADO GLOBAL
+// ═══════════════════════════════════════════════════════════
+let modoDolares = 'efectivo'; // 'efectivo' | 'tarjeta'
+
+// ═══════════════════════════════════════════════════════════
+// UTILIDADES
+// ═══════════════════════════════════════════════════════════
+function formatNum(n) {
+    if (isNaN(n) || n === null) return '—';
+    return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function getTcUsd() { return parseFloat(document.getElementById('barTcUsd').value) || 0; }
+function getTcClp() { return parseFloat(document.getElementById('barTcClp').value) || 0; }
+
+// ═══════════════════════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════════════════════
+function switchTab(tab, btn) {
+    document.querySelectorAll('.tab-content-pane').forEach(p => p.style.display = 'none');
+    document.querySelectorAll('.calc-tab').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + tab).style.display = 'block';
+    if (btn) btn.classList.add('active');
+}
+
+// ═══════════════════════════════════════════════════════════
+// PANEL 1: SOLES
+// ═══════════════════════════════════════════════════════════
+function calcularSoles() {
+    const monto    = parseFloat(document.getElementById('montoSoles').value) || 0;
+    const tc_usd   = getTcUsd();
+    const posOn    = document.getElementById('togglePosSoles').checked;
+    const panel    = document.getElementById('panelSoles');
+
+    if (monto <= 0) {
+        document.getElementById('solNeto').textContent    = '—';
+        document.getElementById('solComision').textContent = '—';
+        document.getElementById('solTotal').textContent   = '—';
+        return;
+    }
+
+    const neto      = monto * tc_usd;
+    const comision  = posOn ? neto * 0.05 : 0;
+    const total     = neto + comision;
+
+    document.getElementById('solNeto').textContent    = 'S/ ' + formatNum(neto);
+    document.getElementById('solComision').textContent = '+S/ ' + formatNum(comision);
+    document.getElementById('solTotal').textContent   = 'S/ ' + formatNum(total);
+}
+
+function togglePosSolesChange() {
+    const posOn = document.getElementById('togglePosSoles').checked;
+    const panel  = document.getElementById('panelSoles');
+    const rowCom = document.getElementById('rowComisionSoles');
+
+    rowCom.style.display = posOn ? 'flex' : 'none';
+    panel.classList.toggle('panel-pos-activo', posOn);
+    calcularSoles();
+}
+
+// ═══════════════════════════════════════════════════════════
+// PANEL 2: DÓLARES
+// ═══════════════════════════════════════════════════════════
+function setModoDolares(modo) {
+    modoDolares = modo;
+    document.getElementById('btnEfectivo').classList.toggle('active', modo === 'efectivo');
+    document.getElementById('btnTarjeta').classList.toggle('active', modo === 'tarjeta');
+    calcularDolares();
+}
+
+function calcularDolares() {
+    const el = document.getElementById('montoDolares');
+    if (!el) return;
+    const monto  = parseFloat(el.value) || 0;
+    const tc_usd = getTcUsd();
+
+    const rowCom      = document.getElementById('rowComisionUsd');
+    const rowComSoles = document.getElementById('rowComisionSolesUsd');
+
+    if (monto <= 0) {
+        document.getElementById('usdBase').textContent       = '—';
+        document.getElementById('usdComision').textContent   = '—';
+        document.getElementById('usdComisionSoles').textContent = '—';
+        document.getElementById('usdEnSoles').textContent    = '—';
+        document.getElementById('usdTotal').textContent      = '—';
+        return;
+    }
+
+    if (modoDolares === 'efectivo') {
+        rowCom.style.display      = 'none';
+        rowComSoles.style.display = 'none';
+        const enSoles = monto * tc_usd;
+        document.getElementById('usdBase').textContent    = '$ ' + formatNum(monto);
+        document.getElementById('usdEnSoles').textContent = 'S/ ' + formatNum(enSoles);
+        document.getElementById('usdTotal').textContent   = '$ ' + formatNum(monto);
+    } else {
+        rowCom.style.display      = 'flex';
+        rowComSoles.style.display = 'flex';
+        const comision_usd   = monto * 0.05;
+        const total_usd      = monto + comision_usd;
+        const comision_soles = comision_usd * tc_usd;
+        const en_soles       = total_usd * tc_usd;
+        document.getElementById('usdBase').textContent          = '$ ' + formatNum(monto);
+        document.getElementById('usdComision').textContent      = '+$ ' + formatNum(comision_usd);
+        document.getElementById('usdComisionSoles').textContent = 'S/ ' + formatNum(comision_soles);
+        document.getElementById('usdEnSoles').textContent       = 'S/ ' + formatNum(en_soles);
+        document.getElementById('usdTotal').textContent         = '$ ' + formatNum(total_usd);
+    }
+}
+
+// ═══════════════════════════════════════════════════════════
+// PANEL 3: PESOS CHILENOS
+// ═══════════════════════════════════════════════════════════
+function calcularPesos() {
+    const el = document.getElementById('montoPesos');
+    if (!el) return;
+    const base_usd  = parseFloat(el.value) || 0;
+    const tc_usd    = getTcUsd();
+    const tc_clp    = getTcClp(); // 1 SOL = X PESOS
+
+    if (base_usd <= 0) {
+        document.getElementById('clpSolesSin').textContent = '—';
+        document.getElementById('clpSolesCon').textContent = '—';
+        document.getElementById('clpEfectivo').textContent = '—';
+        document.getElementById('clpConPos').textContent   = '—';
+        document.getElementById('clpComision').textContent = '—';
+        document.getElementById('clpInfoTc').innerHTML     =
+            '1 USD = <span class="fw-bold">—</span> PEN = <span class="fw-bold">—</span> CLP';
+        return;
+    }
+
+    const soles_sin = base_usd * tc_usd;
+    const soles_con = soles_sin * 1.05;
+    const clp_sin   = soles_sin * tc_clp;
+    const clp_con   = soles_con * tc_clp;
+    const com_clp   = clp_con - clp_sin;
+    const com_sol   = soles_con - soles_sin;
+
+    document.getElementById('clpSolesSin').textContent = 'S/ ' + formatNum(soles_sin);
+    document.getElementById('clpSolesCon').textContent = 'S/ ' + formatNum(soles_con);
+    document.getElementById('clpEfectivo').textContent = 'CLP ' + formatNum(clp_sin);
+    document.getElementById('clpConPos').textContent   = 'CLP ' + formatNum(clp_con);
+    document.getElementById('clpComision').textContent = 'CLP ' + formatNum(com_clp) + '  |  S/ ' + formatNum(com_sol);
+
+    const clp_por_usd = tc_usd * tc_clp;
+    document.getElementById('clpInfoTc').innerHTML =
+        '1 USD = <span class="fw-bold">'+formatNum(tc_usd)+'</span> PEN = <span class="fw-bold">'+formatNum(clp_por_usd)+'</span> CLP';
+}
+
+// ═══════════════════════════════════════════════════════════
+// RECALCULAR TODO (al cambiar TC en la barra)
+// ═══════════════════════════════════════════════════════════
+function recalcularTodo() {
+    calcularSoles();
+    calcularDolares();
+    calcularPesos();
+}
+
+// ═══════════════════════════════════════════════════════════
+// RECARGAR TC DESDE BD
+// ═══════════════════════════════════════════════════════════
+async function recargarTC() {
+    const btn = document.getElementById('btnRecargar');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Cargando...';
+
+    try {
+        const res = await fetch('<?= $base ?>api/calculadora.php?action=getTipoCambio');
+        const json = await res.json();
+        if (json.ok && json.data) {
+            document.getElementById('barTcUsd').value  = json.data.tc_usd;
+            document.getElementById('barTcClp').value  = json.data.tc_clp;
+            document.getElementById('barFecha').value  = json.data.fecha;
+            recalcularTodo();
+            // Actualizar también el formulario de TC
+            document.getElementById('tcUsdInput').value = json.data.tc_usd;
+            document.getElementById('tcClpInput').value = json.data.tc_clp;
+        }
+    } catch(e) {
+        console.error('Error al recargar TC:', e);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-arrow-clockwise me-1"></i>Recargar';
+    }
+}
+
+// ═══════════════════════════════════════════════════════════
+// GUARDAR TIPO DE CAMBIO
+// ═══════════════════════════════════════════════════════════
+async function guardarTC() {
+    const fecha   = document.getElementById('tcFecha').value;
+    const tc_usd  = parseFloat(document.getElementById('tcUsdInput').value);
+    const tc_clp  = parseFloat(document.getElementById('tcClpInput').value);
+
+    if (!fecha || isNaN(tc_usd) || tc_usd <= 0 || isNaN(tc_clp) || tc_clp <= 0) {
+        Swal.fire({ icon: 'warning', title: 'Datos incompletos', text: 'Completa todos los campos correctamente.', confirmButtonColor: '#22c55e' });
+        return;
+    }
+
+    const btn = document.getElementById('btnGuardarTC');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Guardando...';
+
+    try {
+        const res  = await fetch('<?= $base ?>api/calculadora.php?action=guardarTC', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fecha, tc_usd, tc_clp })
+        });
+        const json = await res.json();
+
+        if (json.ok) {
+            Swal.fire({ icon: 'success', title: '¡Guardado!', text: json.msg, timer: 2000, showConfirmButton: false });
+            // Recargar historial (reload completo o actualizar tabla dinámicamente)
+            setTimeout(() => {
+                document.getElementById('barTcUsd').value = tc_usd;
+                document.getElementById('barTcClp').value = tc_clp;
+                document.getElementById('barFecha').value = fecha;
+                recalcularTodo();
+                recargarHistorial();
+            }, 800);
+        } else {
+            Swal.fire({ icon: 'error', title: 'Error', text: json.msg, confirmButtonColor: '#ef4444' });
+        }
+    } catch(e) {
+        Swal.fire({ icon: 'error', title: 'Error de red', text: e.message });
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-floppy-fill me-2"></i>Guardar Tipo de Cambio';
+    }
+}
+
+async function recargarHistorial() {
+    try {
+        const res  = await fetch('<?= $base ?>api/calculadora.php?action=getTipoCambio');
+        // Reload the whole page to refresh historial table
+        window.location.reload();
+    } catch(e) {}
+}
+
+// ═══════════════════════════════════════════════════════════
+// GUARDAR PARÁMETROS
+// ═══════════════════════════════════════════════════════════
+async function guardarParams() {
+    const recargo_pos    = parseFloat(document.getElementById('pRecargoPOS').value) || 0.05;
+    const mostrar_usd    = document.getElementById('pMostrarUSD').checked ? 1 : 0;
+    const mostrar_clp    = document.getElementById('pMostrarCLP').checked ? 1 : 0;
+
+    const btn = document.getElementById('btnGuardarParams');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Guardando...';
+
+    try {
+        const res  = await fetch('<?= $base ?>api/calculadora.php?action=guardarParams', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                recargo_pos: recargo_pos.toFixed(4),
+                mostrar_panel_usd: mostrar_usd,
+                mostrar_panel_clp: mostrar_clp
+            })
+        });
+        const json = await res.json();
+
+        const msgEl = document.getElementById('paramsMsg');
+        if (json.ok) {
+            msgEl.style.display = 'block';
+            msgEl.innerHTML = `<div class="alert alert-success py-2 small mb-0"><i class="bi bi-check-circle-fill me-1"></i>${json.msg} La página se recargará pronto.</div>`;
+            setTimeout(() => window.location.reload(), 1500);
+        } else {
+            msgEl.style.display = 'block';
+            msgEl.innerHTML = `<div class="alert alert-danger py-2 small mb-0"><i class="bi bi-x-circle-fill me-1"></i>${json.msg}</div>`;
+        }
+    } catch(e) {
+        Swal.fire({ icon: 'error', title: 'Error de red', text: e.message });
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-floppy-fill me-2"></i>Guardar Parámetros';
+    }
+}
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', function() {
+    // Disparar cálculo inicial si hay valores cargados
+    recalcularTodo();
+});
+</script>
+
+<style>
+/* ═══════════════════════════════════════════════════
+   CALCULADORA — Estilos específicos del módulo
+   ═══════════════════════════════════════════════════ */
+
+/* Tabs */
+.calc-tabs {
+  display: flex;
+  gap: 4px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 0px;
+}
+.calc-tab {
+  background: transparent;
+  border: none;
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+  border-radius: 8px 8px 0 0;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  top: 2px;
+}
+.calc-tab:hover { background: #f8faff; color: #1e40af; }
+.calc-tab.active {
+  background: white;
+  color: #1e40af;
+  border: 2px solid #e2e8f0;
+  border-bottom-color: white;
+}
+
+/* Barra TC */
+.tc-bar { border-radius: 12px; }
+.tc-bar-label { font-size: 10px; font-weight: 700; color: #94a3b8; letter-spacing: .5px; text-transform: uppercase; display: block; margin-bottom: 4px; }
+.tc-input { font-weight: 600; border: 1px solid #e2e8f0; border-radius: 8px; }
+.tc-symbol { background: #f8faff; font-weight: 700; font-size: 11px; color: #64748b; }
+
+/* Paneles Calculadora */
+.calc-panel {
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.07);
+  overflow: hidden;
+  border: 1px solid #f0f4f8;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.calc-panel:hover { box-shadow: 0 6px 24px rgba(0,0,0,.10); transform: translateY(-2px); }
+
+.panel-soles  { border-top: 4px solid #22c55e; }
+.panel-dolares{ border-top: 4px solid #3b82f6; }
+.panel-pesos  { border-top: 4px solid #f97316; }
+
+.panel-pos-activo { background: #fef9c3 !important; }
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid #f1f5f9;
+}
+.panel-icon { font-size: 24px; }
+.panel-title { font-size: 15px; font-weight: 800; color: #1e293b; letter-spacing: .5px; }
+.panel-subtitle { font-size: 10px; color: #94a3b8; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
+
+.panel-body { padding: 18px 20px 0; }
+
+.input-label { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: .5px; display: block; margin-bottom: 6px; }
+.monto-input {
+  font-size: 1.4rem;
+  font-weight: 700;
+  text-align: right;
+  border: 2px solid #e2e8f0;
+  border-radius: 0 8px 8px 0;
+  padding: 8px 14px;
+  color: #1e293b;
+  transition: border-color 0.2s;
+}
+.monto-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,.15); }
+.monto-symbol {
+  background: #f8faff ;
+  border: 2px solid #e2e8f0;
+  border-right: none;
+  font-weight: 700;
+  color: #475569;
+  border-radius: 8px 0 0 8px;
+}
+
+/* Result Rows */
+.result-rows { margin-bottom: 12px; }
+.result-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 7px 0;
+  border-bottom: 1px dashed #f1f5f9;
+}
+.result-row:last-child { border-bottom: none; }
+.result-label { font-size: 12px; color: #64748b; font-weight: 600; }
+.result-value { font-size: 15px; font-weight: 700; color: #1e293b; font-variant-numeric: tabular-nums; }
+.comision-row .result-value { color: #16a34a; }
+
+/* Total */
+.result-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #1e293b;
+  color: white;
+  padding: 14px 20px;
+  margin: 0 -20px;
+  border-radius: 0 0 10px 10px;
+}
+.total-label { font-size: 11px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; opacity: .7; }
+.total-value { font-size: 20px; font-weight: 800; font-variant-numeric: tabular-nums; }
+
+/* Toggle switch */
+.toggle-container { display: flex; align-items: center; gap: 8px; }
+.toggle-label { font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: .5px; }
+.toggle-switch { position: relative; display: inline-block; width: 40px; height: 22px; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute; cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: #cbd5e1;
+  border-radius: 22px;
+  transition: .3s;
+}
+.toggle-slider::before {
+  content: "";
+  position: absolute;
+  height: 16px; width: 16px;
+  left: 3px; bottom: 3px;
+  background: white;
+  border-radius: 50%;
+  transition: .3s;
+  box-shadow: 0 1px 3px rgba(0,0,0,.2);
+}
+input:checked + .toggle-slider { background: #22c55e; }
+input:checked + .toggle-slider::before { transform: translateX(18px); }
+
+/* Mode switch (Efectivo/Tarjeta) */
+.mode-switch {
+  display: flex;
+  background: #f1f5f9;
+  border-radius: 8px;
+  padding: 3px;
+  gap: 2px;
+}
+.mode-btn {
+  flex: 1;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  padding: 7px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: all .2s;
+}
+.mode-btn.active {
+  background: white;
+  color: #1e40af;
+  box-shadow: 0 1px 4px rgba(0,0,0,.12);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .panels-row { flex-direction: column; }
+  .calc-tab { padding: 8px 14px; font-size: 12px; }
+  .monto-input { font-size: 1.1rem; }
+}
+
+/* Valor "—" gris */
+#solNeto:contains('—'), #solTotal:contains('—'),
+#usdTotal:contains('—'), #clpEfectivo:contains('—') { color: #94a3b8; }
+
+/* Param Cards (Tab Parámetros) */
+.param-card {
+  background: white;
+  border-radius: 14px;
+  border: 1px solid #f0f4f8;
+  box-shadow: 0 2px 10px rgba(0,0,0,.06);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: box-shadow .2s, transform .2s;
+}
+.param-card:hover {
+  box-shadow: 0 6px 22px rgba(0,0,0,.10);
+  transform: translateY(-2px);
+}
+.param-card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 22px 0 18px;
+  font-size: 28px;
+}
+.param-card-body {
+  padding: 0 22px 22px;
+  flex: 1;
+}
+.param-card-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #1e293b;
+  letter-spacing: .3px;
+  margin-bottom: 4px;
+}
+.param-card-desc {
+  font-size: 12px;
+  color: #94a3b8;
+  line-height: 1.4;
+}
+.param-hint {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 6px;
+}
+</style>
+
+</body></html>

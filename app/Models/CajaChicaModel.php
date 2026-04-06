@@ -63,7 +63,7 @@ class CajaChicaModel {
         // SINCRONIZACIÓN: La apertura de caja chica es un EGRESO del flujo principal
         $this->finanzas->registrarMovimientoAutomatico([
             'usuario_id'  => $usuarioId,
-            'categoria'   => 'Reposición Caja Chica',
+            'categoria'   => 'RECEPCIÓN C.CH.',
             'tipo'        => 'Egreso',
             'monto'       => $saldoInicial,
             'moneda'      => 'PEN',

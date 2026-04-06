@@ -42,46 +42,56 @@ class FinanzasHelper {
         $medioTxt = strtoupper($data['medio_pago'] ?? 'EFECTIVO');
         
         $categoria = $data['categoria'] ?? '';
+        $categoriaId = null;
+
+        // Si se pasó un nombre de categoría, intentar buscar su ID para mantener integridad
+        if (!empty($categoria)) {
+            $stmtCat = $this->pdo->prepare("SELECT id FROM finanzas_categorias WHERE modulo = 'Flujo' AND nombre = ? AND activo = 1 LIMIT 1");
+            $stmtCat->execute([$categoria]);
+            $categoriaId = $stmtCat->fetchColumn() ?: null;
+        }
 
         // Solo buscar mapeo si la categoría NO fue especificada manualmente
         if (empty($categoria)) {
-            $stmtCat = $this->pdo->prepare("SELECT nombre FROM finanzas_categorias WHERE modulo = 'Flujo' AND tipo = ? AND nombre = ? AND activo = 1 LIMIT 1");
+            $stmtCat = $this->pdo->prepare("SELECT id, nombre FROM finanzas_categorias WHERE modulo = 'Flujo' AND tipo = ? AND nombre = ? AND activo = 1 LIMIT 1");
             $stmtCat->execute([$tipo, $medioTxt]);
-            $categoriaBD = $stmtCat->fetchColumn();
+            $catBD = $stmtCat->fetch(PDO::FETCH_ASSOC);
 
-            if ($categoriaBD) {
-                $categoria = $categoriaBD;
+            if ($catBD) {
+                $categoria = $catBD['nombre'];
+                $categoriaId = $catBD['id'];
             } else {
-            if ($tipo === 'Ingreso') {
-                // Legacy / Fallback mapping
-                if ($medioTxt === 'YAPE' || $medioTxt === 'PLIN' || strpos($medioTxt, 'YAPE') !== false) {
-                    $categoria = 'YAPE O PLIN';
-                } elseif ($medioTxt === 'POS' || strpos($medioTxt, 'POS') !== false) {
-                    $categoria = ($moneda === 'USD') ? 'POS DOLARES' : 'POS SOLES';
-                } elseif ($medioTxt === 'TRANSFERENCIA' || $medioTxt === 'DEPOSITO' || $medioTxt === 'TRANSF') {
-                    $categoria = 'DEPOS/TRANS.'; // Nombre exacto en SQL original
-                } elseif ($medioTxt === 'EFECTIVO') {
-                    if ($moneda === 'USD') $categoria = 'DOLARES EFECTIVO';
-                    elseif ($moneda === 'CLP') $categoria = 'PESOS EFECTIVO';
-                    else $categoria = 'SOLES EFECTIVO';
+                if ($tipo === 'Ingreso') {
+                    // Legacy / Fallback mapping
+                    if ($medioTxt === 'YAPE' || $medioTxt === 'PLIN' || strpos($medioTxt, 'YAPE') !== false) {
+                        $categoria = 'YAPE O PLIN';
+                    } elseif ($medioTxt === 'POS' || strpos($medioTxt, 'POS') !== false) {
+                        $categoria = ($moneda === 'USD') ? 'POS DOLARES' : 'POS SOLES';
+                    } elseif ($medioTxt === 'TRANSFERENCIA' || $medioTxt === 'DEPOSITO' || $medioTxt === 'TRANSF') {
+                        $categoria = 'DEPOS/TRANS.'; // Nombre exacto en SQL original
+                    } elseif ($medioTxt === 'EFECTIVO') {
+                        if ($moneda === 'USD') $categoria = 'DOLARES EFECTIVO';
+                        elseif ($moneda === 'CLP') $categoria = 'PESOS EFECTIVO';
+                        else $categoria = 'SOLES EFECTIVO';
+                    } else {
+                        $categoria = 'OTROS INGRESOS';
+                    }
                 } else {
-                    $categoria = 'OTROS INGRESOS';
+                    $categoria = 'OTROS EGRESOS';
                 }
-            } else {
-                $categoria = 'OTROS EGRESOS';
             }
-        }
         }
 
         $medioFinal = (strpos($medioTxt, 'EFECTIVO') !== false) ? 'EFECTIVO' : 'NO EFECTIVO';
 
         $sql = "INSERT INTO flujo_caja_movimientos 
-                (flujo_id, categoria, tipo, moneda, monto, medio_pago, observacion) 
-                VALUES (:flujo_id, :categoria, :tipo, :moneda, :monto, :medio, :obs)";
+                (flujo_id, categoria_id, categoria, tipo, moneda, monto, medio_pago, observacion) 
+                VALUES (:flujo_id, :cat_id, :categoria, :tipo, :moneda, :monto, :medio, :obs)";
         
         $stmt = $this->pdo->prepare($sql);
         return $stmt->execute([
             ':flujo_id'  => $flujoId,
+            ':cat_id'    => $categoriaId,
             ':categoria' => $categoria,
             ':tipo'      => $tipo,
             ':moneda'    => $moneda,

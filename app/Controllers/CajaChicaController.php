@@ -5,6 +5,7 @@
 class CajaChicaController {
     private CajaChicaModel $model;
     private $audit;
+    private $pdo;
 
     public function __construct(PDO $pdo) {
         require_once __DIR__ . '/../Models/CajaChicaModel.php';
@@ -152,8 +153,8 @@ class CajaChicaController {
                     // Insertar egreso en flujo_caja_movimientos
                     $stmtF = $pdo->prepare("
                         INSERT INTO flujo_caja_movimientos 
-                        (flujo_id, tipo, monto, categoria, moneda, medio_pago, observacion) 
-                        VALUES (?, 'Egreso', ?, 'RECEPCIÓN C.CH.', 'PEN', 'EFECTIVO', 'Reposición automática de Caja Chica')
+                        (flujo_id, tipo, monto, categoria, categoria_id, moneda, medio_pago, observacion) 
+                        VALUES (?, 'Egreso', ?, 'RECEPCIÓN C.CH.', (SELECT id FROM finanzas_categorias WHERE nombre='RECEPCIÓN C.CH.' LIMIT 1), 'PEN', 'EFECTIVO', 'Reposición automática de Caja Chica')
                     ");
                     $stmtF->execute([$flujoHoy['id'], $montoReposicion]);
 

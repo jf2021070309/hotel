@@ -2,7 +2,7 @@
 // ============================================================
 // habitaciones/crear.php — Formulario para crear habitación
 // ============================================================
-require_once '../../../config/conexion.php';
+require_once '../../../config/db.php';
 require_once '../../../auth/middleware.php';
 $base = '../../../'; $page_title = 'Nueva Habitación — Hotel Manager';
 include '../../../includes/head.php';

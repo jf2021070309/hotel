@@ -1,6 +1,6 @@
 <?php
 // reportes/mensual.php — Shell PHP para reporte mensual
-require_once '../../../config/conexion.php';
+require_once '../../../config/db.php';
 require_once '../../../auth/middleware.php';
 $base = '../../../'; $page_title = 'Reporte Mensual — Hotel Manager'; $export_enabled = true;
 include '../../../includes/head.php';

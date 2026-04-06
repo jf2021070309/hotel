@@ -2,7 +2,7 @@
 // ============================================================
 // habitaciones/editar.php — Formulario para editar habitación
 // ============================================================
-require_once '../../../config/conexion.php';
+require_once '../../../config/db.php';
 require_once '../../../auth/middleware.php';
 $base = '../../../'; $page_title = 'Editar Habitación — Hotel Manager';
 $id_php = (int)($_GET['id'] ?? 0);

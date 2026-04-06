@@ -1,6 +1,6 @@
 <?php
 // reportes/cuadre_diario.php — Shell PHP para cuadre diario
-require_once '../../../config/conexion.php';
+require_once '../../../config/db.php';
 require_once '../../../auth/middleware.php';
 $base = '../../../'; $page_title = 'Cuadre Diario — Hotel Manager'; $export_enabled = true;
 include '../../../includes/head.php';

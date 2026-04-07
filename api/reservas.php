@@ -39,6 +39,12 @@ switch ($action) {
         json_response($res['ok'], $res['id'] ?? null, $res['ok'] ? 200 : 422, $res['msg']);
         break;
 
+    case 'checkin':
+        if ($method !== 'POST') json_response(false, null, 405, 'Método no permitido');
+        $res = $controller->checkin($input);
+        json_response($res['ok'], null, $res['ok'] ? 200 : 422, $res['msg']);
+        break;
+
     default:
         json_response(false, null, 400, 'Acción no válida');
         break;

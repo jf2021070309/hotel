@@ -110,7 +110,10 @@ class RoomingController {
                     'fecha'     => date('Y-m-d'),
                     'uid'       => $_SESSION['auth_id']
                 ];
-                $this->model->registrarPago($pago);
+                // Determinar si es pago completo o adelanto
+                $subtipo = ($mapped['cobrado'] >= $mapped['total'] - 0.05) ? 'hospedaje' : 'adelanto';
+                
+                $this->model->registrarPago($pago, $subtipo);
             }
 
             $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'CHECKIN_REGISTRADO', 'ROOMING', "Check-in hab #{$mapped['hab_id']}, ID Stay: $stay_id");
@@ -141,7 +144,25 @@ class RoomingController {
 
     public function registrarPago(array $input) {
         $input['uid'] = $_SESSION['auth_id'];
-        if ($this->model->registrarPago($input)) {
+
+        // Detectar si este pago salda la deuda completa
+        $stayId = (int)($input['stay_id'] ?? 0);
+        $montoPen = (float)($input['monto_pen'] ?? $input['monto'] ?? 0);
+
+        $stmt = $this->pdo->prepare("SELECT total_pago, total_cobrado, moneda_pago FROM rooming_stays WHERE id = ?");
+        $stmt->execute([$stayId]);
+        $stay = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        $subtipo = 'adelanto'; // Por defecto: todavía queda saldo
+        if ($stay) {
+            $saldoPendiente = (float)$stay['total_pago'] - (float)$stay['total_cobrado'];
+            // Si el monto en PEN cubre el saldo pendiente restante, es pago completo
+            if ($montoPen >= $saldoPendiente - 0.01) {
+                $subtipo = 'completo';
+            }
+        }
+
+        if ($this->model->registrarPago($input, $subtipo)) {
             return ['ok' => true, 'msg' => "Pago registrado"];
         }
         return ['ok' => false, 'msg' => "Error al registrar pago"];

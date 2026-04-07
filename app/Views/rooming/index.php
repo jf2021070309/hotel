@@ -10,9 +10,9 @@ $page_title = 'Rooming & Check-in — Hotel Manager';
 include $base . 'includes/head.php';
 ?>
 
-<div id="app-rooming">
-<?php include $base . 'includes/sidebar.php'; ?>
-<div class="main-content">
+<div id="app-rooming" style="display:contents">
+  <?php include $base . 'includes/sidebar.php'; ?>
+  <div class="main-content">
   <div class="topbar border-bottom-0 shadow-sm" style="background: linear-gradient(to right, #ffffff, #f8f9fa);">
     <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list fs-4"></i></button>
     <div>
@@ -62,13 +62,19 @@ include $base . 'includes/head.php';
       </div>
     </div>
 
+    <style>
+      .row-unpaid { background-color: #e8f5e9 !important; } /* Verde suave para pendientes */
+      .row-unpaid:hover { background-color: #c8e6c9 !important; }
+    </style>
+
     <!-- TABLA DE ESTADÍAS ACTIVAS -->
     <div class="card border-0 shadow-sm overflow-hidden" style="border-radius:12px;">
       <div class="table-responsive">
         <table class="table table-hover align-middle mb-0">
           <thead class="bg-light">
             <tr>
-              <th class="ps-4" style="width: 100px;">HAB.</th>
+              <th class="ps-4" style="width: 60px;">ID</th>
+              <th style="width: 100px;">HAB.</th>
               <th style="min-width: 220px;">HUÉSPED TITULAR</th>
               <th>INGRESO / SALIDA</th>
               <th>MONTO / PAGADO</th>
@@ -79,15 +85,18 @@ include $base . 'includes/head.php';
           </thead>
           <tbody>
             <tr v-if="loading" ><td colspan="7" class="text-center py-5"><div class="spinner-border text-primary"></div></td></tr>
-            <tr v-else v-for="s in staysFiltrados" :key="s.id">
+            <tr v-else v-for="s in staysFiltrados" :key="s.id" :class="{'row-unpaid': s.estado_pago !== 'pagado'}">
               <td class="ps-4">
+                <span class="badge bg-light text-dark border fw-bold">#{{ s.id }}</span>
+              </td>
+              <td>
                 <div class="fw-bold fs-5" style="color: #111;">#{{ s.hab_numero }}</div>
                 <span class="badge" :class="getEstadBadge(s.estado)" style="font-size: 8px; padding: 4px 8px;">{{ s.estado.toUpperCase() }}</span>
                 <div class="text-muted small fw-semibold" style="letter-spacing: 0.5px;">{{ s.hab_tipo }}</div>
               </td>
               <td>
                 <div class="fw-bold">{{ s.titular_nombre || '---' }}</div>
-                <div class="text-muted small">ID Stay: {{ s.id }} | Pax: {{ s.pax_total }}</div>
+                <div class="text-muted small">Pax: {{ s.pax_total }} personas</div>
                 <div class="mt-1">
                   <span style="font-size:10px; background:#f0f9ff; color:#0369a1; padding:2px 8px; border-radius:20px; font-weight:600; letter-spacing:.3px; border:1px solid #bae6fd;">
                     <i class="bi bi-person-fill-check me-1"></i>{{ s.operador || s.cobrador || '—' }}
@@ -104,8 +113,8 @@ include $base . 'includes/head.php';
                 <div class="text-muted mt-1" style="font-size: 11px;">🛏️ {{ s.noches }} noches</div>
               </td>
               <td>
-                <div class="fw-bold">{{ s.moneda_pago }} {{ s.total_pago }}</div>
-                <div class="text-success small">Cobrado: PEN {{ s.total_cobrado }}</div>
+                <div class="fw-bold">{{ s.moneda_pago }} {{ fmtCur(s.monto_original) }}</div>
+                <div class="text-success small">Cobrado: PEN {{ fmtCur(s.total_cobrado) }}</div>
               </td>
               <td>
                 <span class="badge" :class="getPagoClass(s.estado_pago)">{{ s.estado_pago.toUpperCase() }}</span>
@@ -194,8 +203,7 @@ include $base . 'includes/head.php';
                     <option value="LLAMADA">LLAMADA</option>
                     <option value="WHATSAPP">WHATSAPP</option>
                     <option value="BOOKING">BOOKING</option>
-                    <option value="EXPEDIA">EXPEDIA</option>
-                    <option value="CORPORATIVO">CORPORATIVO</option>
+                    <option value="CORREO">CORREO</option>
                   </select>
                 </div>
               </div>
@@ -266,27 +274,75 @@ include $base . 'includes/head.php';
               <div class="col-md-3">
                 <div class="modal-section-title">3. PAGO Y REGISTRO</div>
                 <div class="mb-3">
-                  <label class="form-label small fw-bold">Total a pagar</label>
-                  <div class="input-group">
-                    <select v-model="form.stay.moneda_pago" class="form-select w-25" @change="recalcularMoneda">
-                      <option value="PEN">S/</option>
-                      <option value="USD">$</option>
-                      <option value="CLP">P$</option>
-                    </select>
-                    <input type="number" v-model="form.stay.monto_original" class="form-control w-75" step="0.01" required @input="recalcularMoneda">
+                  <label class="form-label small fw-bold">Total a pagar (Base PEN)</label>
+                  <div class="input-group overflow-hidden shadow-sm">
+                    <span class="input-group-text bg-light fw-bold border-0">S/</span>
+                    <input type="text" :value="'S/ ' + fmtCur(form.stay.total_pago)" class="form-control border-0 bg-white fw-bold" readonly>
                   </div>
                 </div>
-                <div v-if="form.stay.moneda_pago !== 'PEN'" class="mb-3 p-2 bg-warning bg-opacity-10 rounded">
-                  <label class="form-label small fw-bold">Tipo de Cambio / Equiv. PEN</label>
-                  <div class="row g-2">
-                    <div class="col-6"><input type="number" v-model="form.stay.tc_aplicado" class="form-control form-control-sm" step="0.0001" @input="recalcularMoneda"></div>
-                    <div class="col-6"><input type="number" v-model="form.stay.total_pago" class="form-control form-control-sm" readonly></div>
-                  </div>
+                
+                <div class="p-2 mb-3 rounded border bg-light">
+                    <div class="d-flex align-items-center mb-2">
+                        <label class="form-label small fw-bold mb-0">Divisa</label>
+                        <select v-model="form.stay.moneda_pago" class="form-select form-select-sm ms-auto w-auto border-0" @change="recalcularMoneda">
+                            <option value="PEN">S/ (Soles)</option>
+                            <option value="USD">$ (Dólares)</option>
+                            <option value="CLP">P$ (Pesos)</option>
+                        </select>
+                    </div>
+                    
+                    <div v-if="form.stay.moneda_pago !== 'PEN'" class="row g-2">
+                        <div class="col-4">
+                            <label class="form-label micro-text fw-bold">T.C.</label>
+                            <input type="number" v-model="tcs[form.stay.moneda_pago]" class="form-control form-control-sm" step="0.0001" @input="recalcularMoneda">
+                        </div>
+                        <div class="col-8">
+                            <label class="form-label micro-text fw-bold">EQUIV. {{ form.stay.moneda_pago == 'USD' ? 'DÓLARES' : 'PESOS CH.' }}</label>
+                            <div class="bg-white p-1 rounded border text-center fw-bold text-primary shadow-sm" style="font-size: 1.1rem;">
+                                {{ form.stay.moneda_pago == 'USD' ? '$' : 'CLP' }} {{ fmtCur(form.stay.monto_original) }}
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
                 <div class="mb-3">
-                  <label class="form-label small fw-bold">Adelanto (opcional)</label>
-                  <input type="number" v-model="form.adelanto" class="form-control" step="0.1" @input="onAdelantoChange">
-                  <small v-if="form.adelanto > 0" class="text-success fw-bold">PEN {{ form.stay.total_cobrado }}</small>
+                  <div class="form-check form-switch p-2 bg-info bg-opacity-10 rounded border border-info border-opacity-25">
+                    <input class="form-check-input ms-0 me-2" type="checkbox" id="checkPos" v-model="form.stay.recargo_pos" @change="recalcularMoneda">
+                    <label class="form-check-label small fw-bold text-info" for="checkPos">Pagar con POS (+5%)</label>
+                  </div>
+                  
+                  <div v-if="form.stay.recargo_pos" class="mt-2 text-center p-1 bg-white rounded border border-warning shadow-sm animate__animated animate__pulse animate__infinite">
+                      <div class="micro-text text-muted fw-bold">MODO POS ACTIVO</div>
+                      <div class="small fw-bold text-danger">Total + Recargo: {{ form.stay.moneda_pago }} {{ !isNaN(parseFloat(form.stay.monto_original)) ? fmtCur(parseFloat(form.stay.monto_original) * 1.05) : '0.00' }}</div>
+                  </div>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label small fw-bold">Tipo de Pago</label>
+                  <div class="btn-group w-100 shadow-sm" role="group">
+                    <button type="button" class="btn btn-sm" 
+                            :class="form.tipoPago === 'completo' ? 'btn-primary' : 'btn-outline-primary'"
+                            @click="cambiarTipoPago('completo')">PAGO COMPLETO</button>
+                    <button type="button" class="btn btn-sm" 
+                            :class="form.tipoPago === 'adelanto' ? 'btn-primary' : 'btn-outline-primary'"
+                            @click="cambiarTipoPago('adelanto')">ADELANTO / PARCIAL</button>
+                  </div>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label small fw-bold">{{ form.tipoPago === 'completo' ? 'Monto a Cobrar' : 'Monto de Adelanto' }} ({{ form.stay.moneda_pago }})</label>
+                  <input type="text" 
+                         :value="isEditingAdelanto ? form.adelanto : fmtCur(form.adelanto)" 
+                         class="form-control fw-bold text-dark" 
+                         :readonly="form.tipoPago === 'completo'"
+                         style="background-color: #fff9c4;"
+                         @focus="isEditingAdelanto = true"
+                         @blur="isEditingAdelanto = false"
+                         @input="form.adelanto = $event.target.value; onAdelantoChange()">
+                  <div v-if="form.adelanto > 0" class="mt-1 d-flex justify-content-between align-items-center">
+                      <span class="micro-text text-muted fw-bold">CRÉDITO A CUENTA:</span>
+                      <span class="badge bg-success">PEN {{ fmtCur(form.stay.total_cobrado) }}</span>
+                  </div>
                 </div>
                 <div class="mb-3">
                   <label class="form-label small fw-bold">Método de pago</label>
@@ -384,55 +440,82 @@ include $base . 'includes/head.php';
                 </div>
 
                 <div class="mt-4">
-                  <h6 class="fw-bold text-muted small mb-2 border-bottom pb-2">CONSUMOS EXTRA</h6>
-                  <div v-if="consumosStay.length === 0" class="text-muted small">No hay consumos registrados.</div>
-                  <table v-else class="table table-sm table-borderless small">
-                    <thead>
-                      <tr class="text-muted mini fw-bold">
-                        <th>Q</th>
-                        <th>PRODUCTO</th>
-                        <th class="text-end">TOTAL</th>
-                        <th class="text-center">ESTADO</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr v-for="c in consumosStay" :key="c.id">
-                        <td>{{ c.cantidad }}</td>
-                        <td>{{ c.nombre_producto }}</td>
-                        <td class="text-end">S/ {{ c.total }}</td>
-                        <td class="text-center">
-                          <span v-if="c.metodo_pago" class="badge bg-success p-1" style="font-size: 8px;">PAGADO</span>
-                          <span v-else class="badge bg-danger p-1" style="font-size: 8px;">A CTA</span>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
+                  <h6 class="fw-bold text-dark small mb-2 border-bottom pb-2 d-flex align-items-center">
+                    <i class="bi bi-cart-check me-2 text-warning"></i>CONSUMOS ADICIONALES
+                  </h6>
+                  <div v-if="consumosStay.length === 0" class="text-center py-3 text-muted small italic bg-light rounded">
+                    Sin consumos extra registrados.
+                  </div>
+                  <div v-else class="table-responsive">
+                    <table class="table table-sm table-borderless align-middle mb-0">
+                      <thead>
+                        <tr class="text-muted mini fw-bold text-uppercase" style="font-size: 9px; letter-spacing: 0.5px;">
+                          <th style="width: 40px;">Cant</th>
+                          <th>Producto</th>
+                          <th class="text-end">Total</th>
+                          <th class="text-center">Estado</th>
+                        </tr>
+                      </thead>
+                      <tbody class="small">
+                        <tr v-for="c in consumosStay" :key="c.id" class="border-bottom">
+                          <td class="fw-bold text-primary">{{ c.cantidad }}</td>
+                          <td>
+                            <div class="fw-semibold text-dark">{{ c.nombre_producto }}</div>
+                            <div class="mini text-muted">S/ {{ (c.total / c.cantidad).toFixed(2) }} c/u</div>
+                          </td>
+                          <td class="text-end fw-bold">S/ {{ (parseFloat(c.total)).toFixed(2) }}</td>
+                          <td class="text-center">
+                            <span v-if="c.metodo_pago" class="badge bg-success-subtle text-success border border-success p-1" style="font-size: 8px;">PAGADO</span>
+                            <span v-else class="badge bg-danger-subtle text-danger border border-danger p-1" style="font-size: 8px;">A CTA</span>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
               <div class="col-md-6">
-                <h6 class="fw-bold text-muted small mb-3 border-bottom pb-2">RESUMEN FINANCIERO</h6>
-                <div class="d-flex justify-content-between mb-2">
-                  <span class="small text-muted">Total Hospedaje:</span>
-                  <span class="fw-bold">{{ selectedStay.moneda_pago }} {{ selectedStay.total_pago }}</span>
+                <h6 class="fw-bold text-dark small mb-3 border-bottom pb-2 d-flex align-items-center">
+                  <i class="bi bi-cash-stack me-2 text-success"></i>HISTORIAL DE PAGOS
+                </h6>
+                <div class="d-flex justify-content-between mb-3 p-2 bg-light rounded border-start border-primary border-4 shadow-sm">
+                  <span class="small fw-bold text-secondary">TARIFA ESTADÍA:</span>
+                  <span class="fw-bold text-dark fs-6">{{ selectedStay.moneda_pago }} {{ selectedStay.total_pago }}</span>
                 </div>
-                <div v-for="pag in selectedStay.pagos" :key="pag.id" class="d-flex justify-content-between border-bottom pb-1 mb-1">
-                  <div class="small">
-                    <div class="text-muted mini">{{ pag.tipo_pago }} - {{ pag.fecha }}</div>
+
+                <div v-if="selectedStay.pagos.length === 0" class="text-center py-3 text-muted small italic">
+                  No se registran pagos aún.
+                </div>
+                <div v-for="pag in selectedStay.pagos" :key="pag.id" class="d-flex justify-content-between align-items-center border-bottom py-2">
+                  <div>
+                    <div class="fw-bold small text-uppercase" style="letter-spacing: 0.3px; color: #444; font-size: 11px;">
+                      {{ pag.tipo_pago }}
+                    </div>
+                    <div class="text-muted mini d-flex align-items-center gap-2 mt-1">
+                       <span title="Hora de registro"><i class="bi bi-clock me-1 text-primary"></i>{{ pag.created_at.split(' ')[1].slice(0,5) }}</span>
+                       <span class="text-silver opacity-50">|</span> 
+                       <span title="Cajero que registró"><i class="bi bi-person-badge me-1 text-secondary"></i>{{ pag.cajero_nom || '---' }}</span>
+                    </div>
                   </div>
-                  <div class="text-success small fw-bold">+ {{ pag.moneda }} {{ pag.monto }}</div>
+                  <div class="text-end">
+                    <div class="text-success fw-bold">+ {{ pag.moneda }} {{ (parseFloat(pag.monto)).toFixed(2) }}</div>
+                    <div class="text-muted mini fw-semibold" style="font-size: 9px;">{{ pag.fecha }}</div>
+                  </div>
                 </div>
-                <div class="mt-3 p-3 rounded" :class="(selectedStay.total_pago - selectedStay.total_cobrado) > 0 ? 'bg-warning-subtle' : 'bg-success-subtle'">
+
+                <!-- Footer del resumen -->
+                <div class="mt-4 p-3 rounded shadow-sm border" :class="(selectedStay.total_pago - selectedStay.total_cobrado) > 0 ? 'bg-warning-subtle' : 'bg-success-subtle'">
                   <div class="d-flex justify-content-between align-items-center mb-1">
-                    <span class="small fw-bold text-muted">A COBRAR ({{ selectedStay.moneda_pago }}):</span>
-                    <span class="fw-bold fs-5">{{ selectedStay.total_pago }}</span>
+                    <span class="small fw-bold text-secondary text-uppercase mini">A COBRAR ({{ selectedStay.moneda_pago }}):</span>
+                    <span class="fw-bold fs-5 text-dark">{{ selectedStay.total_pago }}</span>
                   </div>
                   <div class="d-flex justify-content-between align-items-center mb-1 border-bottom pb-1">
-                    <span class="small fw-bold text-muted">TOTAL PAGADO (PEN):</span>
-                    <span class="fw-bold text-success">{{ selectedStay.total_cobrado }}</span>
+                    <span class="small fw-bold text-secondary text-uppercase mini">ABONADO (SOLES):</span>
+                    <span class="fw-bold text-success">S/ {{ selectedStay.total_cobrado }}</span>
                   </div>
                   <div class="d-flex justify-content-between align-items-center pt-1">
-                    <span class="small fw-bold text-dark">SALDO PENDIENTE:</span>
-                    <span class="fs-5 fw-bold" :class="(selectedStay.total_pago - selectedStay.total_cobrado) > 0 ? 'text-danger' : 'text-success'">
+                    <span class="small fw-bold text-dark text-uppercase mini">SALDO PENDIENTE:</span>
+                    <span class="fs-4 fw-bold" :class="(selectedStay.total_pago - selectedStay.total_cobrado) > 0 ? 'text-danger' : 'text-success'">
                       {{ (selectedStay.total_pago - selectedStay.total_cobrado).toFixed(2) }}
                     </span>
                   </div>
@@ -599,7 +682,8 @@ include $base . 'includes/head.php';
     </div>
   </div>
 
-</div>
+    </div> <!-- .main-content -->
+</div> <!-- #app-rooming -->
 
 <!-- Scripts -->
 <script>

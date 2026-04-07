@@ -44,15 +44,40 @@ class FinanzasHelper {
         $categoria = $data['categoria'] ?? '';
         $categoriaId = null;
 
+        // Nuevos campos para rastreo de sobre físico
+        $sFecha = !empty($data['sobre_fecha']) ? $data['sobre_fecha'] : null;
+        $sTurno = !empty($data['sobre_turno']) ? $data['sobre_turno'] : null;
+
         // Si se pasó un nombre de categoría, intentar buscar su ID para mantener integridad
+        // Si no se encuentra con el nombre exacto, intentamos buscar si coincide con un medio de pago común
         if (!empty($categoria)) {
             $stmtCat = $this->pdo->prepare("SELECT id FROM finanzas_categorias WHERE modulo = 'Flujo' AND nombre = ? AND activo = 1 LIMIT 1");
             $stmtCat->execute([$categoria]);
-            $categoriaId = $stmtCat->fetchColumn() ?: null;
+            $resCat = $stmtCat->fetch(PDO::FETCH_ASSOC);
+            
+            if ($resCat) {
+                $categoriaId = $resCat['id'];
+            } else {
+                // Fallback: si el nombre es YAPE, PLIN, etc. intentar normalizarlo a la categoría de la BD
+                $mapping = [
+                    'YAPE' => 'YAPE O PLIN',
+                    'PLIN' => 'YAPE O PLIN',
+                    'EFECTIVO' => ($moneda === 'USD') ? 'DOLARES EFECTIVO' : 'SOLES EFECTIVO',
+                    'POS' => ($moneda === 'USD') ? 'POS DOLARES' : 'POS SOLES',
+                    'TRANSFERENCIA' => 'DEPOS/TRANS.',
+                    'DEPOSITO' => 'DEPOS/TRANS.'
+                ];
+                $norm = strtoupper($categoria);
+                if (isset($mapping[$norm])) {
+                    $categoria = $mapping[$norm];
+                    $stmtCat->execute([$categoria]);
+                    $categoriaId = $stmtCat->fetchColumn() ?: null;
+                }
+            }
         }
 
-        // Solo buscar mapeo si la categoría NO fue especificada manualmente
-        if (empty($categoria)) {
+        // Si después de lo anterior no hay categoría, buscar por tipo y medio (legacy matching)
+        if (empty($categoriaId)) {
             $stmtCat = $this->pdo->prepare("SELECT id, nombre FROM finanzas_categorias WHERE modulo = 'Flujo' AND tipo = ? AND nombre = ? AND activo = 1 LIMIT 1");
             $stmtCat->execute([$tipo, $medioTxt]);
             $catBD = $stmtCat->fetch(PDO::FETCH_ASSOC);
@@ -61,23 +86,30 @@ class FinanzasHelper {
                 $categoria = $catBD['nombre'];
                 $categoriaId = $catBD['id'];
             } else {
-                if ($tipo === 'Ingreso') {
-                    // Legacy / Fallback mapping
-                    if ($medioTxt === 'YAPE' || $medioTxt === 'PLIN' || strpos($medioTxt, 'YAPE') !== false) {
-                        $categoria = 'YAPE O PLIN';
-                    } elseif ($medioTxt === 'POS' || strpos($medioTxt, 'POS') !== false) {
-                        $categoria = ($moneda === 'USD') ? 'POS DOLARES' : 'POS SOLES';
-                    } elseif ($medioTxt === 'TRANSFERENCIA' || $medioTxt === 'DEPOSITO' || $medioTxt === 'TRANSF') {
-                        $categoria = 'DEPOS/TRANS.'; // Nombre exacto en SQL original
-                    } elseif ($medioTxt === 'EFECTIVO') {
-                        if ($moneda === 'USD') $categoria = 'DOLARES EFECTIVO';
-                        elseif ($moneda === 'CLP') $categoria = 'PESOS EFECTIVO';
-                        else $categoria = 'SOLES EFECTIVO';
+                // Fallback manual si no hay nada en la BD
+                if (empty($categoria)) {
+                    if ($tipo === 'Ingreso') {
+                        if ($medioTxt === 'YAPE' || $medioTxt === 'PLIN' || strpos($medioTxt, 'YAPE') !== false) {
+                            $categoria = 'YAPE O PLIN';
+                        } elseif ($medioTxt === 'POS' || strpos($medioTxt, 'POS') !== false) {
+                            $categoria = ($moneda === 'USD') ? 'POS DOLARES' : 'POS SOLES';
+                        } elseif ($medioTxt === 'TRANSFERENCIA' || $medioTxt === 'DEPOSITO' || $medioTxt === 'TRANSF') {
+                            $categoria = 'DEPOS/TRANS.';
+                        } elseif ($medioTxt === 'EFECTIVO') {
+                            if ($moneda === 'USD') $categoria = 'DOLARES EFECTIVO';
+                            elseif ($moneda === 'CLP') $categoria = 'PESOS EFECTIVO';
+                            else $categoria = 'SOLES EFECTIVO';
+                        } else {
+                            $categoria = 'OTROS INGRESOS';
+                        }
                     } else {
-                        $categoria = 'OTROS INGRESOS';
+                        $categoria = 'OTROS EGRESOS';
                     }
-                } else {
-                    $categoria = 'OTROS EGRESOS';
+                    
+                    // Intentar buscar ID una última vez con el nombre mapeado
+                    $stmtCat = $this->pdo->prepare("SELECT id FROM finanzas_categorias WHERE modulo = 'Flujo' AND nombre = ? AND activo = 1 LIMIT 1");
+                    $stmtCat->execute([$categoria]);
+                    $categoriaId = $stmtCat->fetchColumn() ?: null;
                 }
             }
         }
@@ -85,8 +117,8 @@ class FinanzasHelper {
         $medioFinal = (strpos($medioTxt, 'EFECTIVO') !== false) ? 'EFECTIVO' : 'NO EFECTIVO';
 
         $sql = "INSERT INTO flujo_caja_movimientos 
-                (flujo_id, categoria_id, categoria, tipo, moneda, monto, medio_pago, observacion) 
-                VALUES (:flujo_id, :cat_id, :categoria, :tipo, :moneda, :monto, :medio, :obs)";
+                (flujo_id, categoria_id, categoria, tipo, moneda, monto, medio_pago, observacion, sobre_fecha, sobre_turno) 
+                VALUES (:flujo_id, :cat_id, :categoria, :tipo, :moneda, :monto, :medio, :obs, :s_fecha, :s_turno)";
         
         $stmt = $this->pdo->prepare($sql);
         return $stmt->execute([
@@ -97,7 +129,9 @@ class FinanzasHelper {
             ':moneda'    => $moneda,
             ':monto'     => $data['monto'],
             ':medio'     => $medioFinal,
-            ':obs'       => $data['observacion'] ?? ''
+            ':obs'       => $data['observacion'] ?? '',
+            ':s_fecha'   => $sFecha,
+            ':s_turno'   => $sTurno
         ]);
     }
 }

@@ -46,35 +46,85 @@ createApp({
       'bg-success': estado === 'depositado'
     });
 
-    // NUEVO TURNO
+    // NUEVO TURNO (CREACIÓN INMEDIATA)
     const nuevoTurno = async () => {
-      // Preguntar qué turno desea abrir
       const hora = new Date().getHours();
       const turnoSugerido = (hora >= 6 && hora < 14) ? 'MAÑANA' : 'TARDE';
-      
-      const { value: turno } = await Swal.fire({
+      const fechaHoy = new Date().toISOString().split('T')[0];
+
+      const { value: formValues } = await Swal.fire({
         title: 'Abrir Nuevo Turno',
-        input: 'radio',
-        inputOptions: {
-          'MAÑANA': 'Turno MAÑANA (6am - 2pm)',
-          'TARDE': 'Turno TARDE (2pm - 10pm)'
-        },
-        inputValue: turnoSugerido,
+        html: `
+          <div style="text-align:left; margin-bottom: 16px;">
+            <label style="font-weight:600; font-size:14px; color:#555; display:block; margin-bottom:6px;">
+              Fecha
+            </label>
+            <input type="date" id="swal-fecha" value="${fechaHoy}"
+              style="width:100%; padding:8px 12px; border:1px solid #ddd; border-radius:8px; font-size:15px; color:#333;">
+          </div>
+          <div style="display:flex; gap:16px; justify-content:center;">
+            <label style="cursor:pointer; border:2px solid #ddd; border-radius:10px; padding:12px 20px; flex:1; text-align:center; transition:all .2s;" id="lbl-manana">
+              <input type="radio" name="swal-turno" value="MAÑANA" ${turnoSugerido === 'MAÑANA' ? 'checked' : ''} style="display:none;">
+              <div style="font-weight:700; font-size:14px;">☀️ MAÑANA</div>
+              <div style="font-size:11px; color:#777;">6am – 2pm</div>
+            </label>
+            <label style="cursor:pointer; border:2px solid #ddd; border-radius:10px; padding:12px 20px; flex:1; text-align:center; transition:all .2s;" id="lbl-tarde">
+              <input type="radio" name="swal-turno" value="TARDE" ${turnoSugerido === 'TARDE' ? 'checked' : ''} style="display:none;">
+              <div style="font-weight:700; font-size:14px;">🌙 TARDE</div>
+              <div style="font-size:11px; color:#777;">2pm – 10pm</div>
+            </label>
+          </div>
+        `,
         showCancelButton: true,
-        confirmButtonText: 'Continuar',
-        cancelButtonText: 'Cancelar'
+        confirmButtonText: 'Abrir Turno Ahora',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#6c5ce7',
+        didOpen: () => {
+          // Estilo visual para el radio seleccionado
+          const highlight = () => {
+            document.getElementById('lbl-manana').style.borderColor = 
+              document.querySelector('[name="swal-turno"][value="MAÑANA"]').checked ? '#6c5ce7' : '#ddd';
+            document.getElementById('lbl-tarde').style.borderColor = 
+              document.querySelector('[name="swal-turno"][value="TARDE"]').checked ? '#6c5ce7' : '#ddd';
+          };
+          highlight();
+          document.querySelectorAll('[name="swal-turno"]').forEach(r => r.addEventListener('change', highlight));
+          document.querySelectorAll('#lbl-manana, #lbl-tarde').forEach(lbl => {
+            lbl.addEventListener('click', () => {
+              lbl.querySelector('input').checked = true;
+              highlight();
+            });
+          });
+        },
+        preConfirm: () => {
+          const fecha = document.getElementById('swal-fecha').value;
+          const turno = document.querySelector('[name="swal-turno"]:checked')?.value;
+          if (!fecha) { Swal.showValidationMessage('Selecciona una fecha'); return false; }
+          if (!turno)  { Swal.showValidationMessage('Selecciona un turno'); return false; }
+          return { fecha, turno };
+        }
       });
 
-      if (!turno) return;
+      if (!formValues) return;
 
       loadingCheck.value = true;
       try {
-        // En lugar de verificar y luego redireccionar, directamente llamamos a un stub de guardado
-        // o abrimos form.php pasándole la fecha de hoy y el turno, que allí se encargue guardarlo.
-        // Lo más seguro es mandar a form.php?nuevo=1&turno=TARDE
-        window.location.href = `form.php?nuevo=1&turno=${turno}`;
+        const res = await axios.post(`${BASE}guardar`, {
+          fecha: formValues.fecha,
+          turno: formValues.turno,
+          nota_entrega: '',
+          ingresos: [],
+          egresos: []
+        });
+
+        if (res.data.ok) {
+          window.location.href = `form.php?id=${res.data.data.id}`;
+        } else {
+          Swal.fire('Error', res.data.msg, 'error');
+        }
       } catch (e) {
         console.error(e);
+        Swal.fire('Error', 'No se pudo crear el turno. Es posible que ya exista uno abierto para esta fecha.', 'error');
       } finally {
         loadingCheck.value = false;
       }

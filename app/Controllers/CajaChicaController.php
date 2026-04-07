@@ -43,7 +43,10 @@ class CajaChicaController {
         }
 
         try {
-            $id = $this->model->abrirCiclo($nombre, $saldo, $_SESSION['auth_id']);
+            $id = $this->model->abrirCiclo($nombre, $saldo, $_SESSION['auth_id'], [
+                'sobre_fecha' => $input['sobre_fecha'] ?? null,
+                'sobre_turno' => $input['sobre_turno'] ?? null
+            ]);
             $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'CAJA_CHICA_ABIERTA', 'FINANZAS', "Ciclo de C.Chica abierto: $nombre con S/$saldo.");
             return ['ok' => true, 'msg' => 'Ciclo abierto correctamente', 'data' => ['id' => $id]];
         } catch (Exception $e) {
@@ -121,49 +124,43 @@ class CajaChicaController {
         }
 
         try {
-            return $this->model->ejecutarTransaccionCierreRepocision(function($pdo) use ($caja_id, $ciclo, $reponer) {
+            return $this->model->ejecutarTransaccionCierreRepocision(function($pdo) use ($caja_id, $ciclo, $reponer, $input) {
                 // 1. Cerrar ciclo actual
                 $this->model->cerrarCiclo($caja_id, $ciclo['saldo_actual'], $_SESSION['auth_id']);
                 $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'CAJA_CHICA_CERRADA', 'FINANZAS', "Caja Chica $caja_id cerrada. Saldo Final: {$ciclo['saldo_actual']}");
 
                 // 2. Si reponer es verdadero, intentar sacar dinero de Flujo de Caja
                 if ($reponer) {
-                    $montoReposicion = 100.00; // Podría ser dinámico (lo gastado) pero el req. dice que siempre arranca en 100.
-                    // Si el usuario dijo "Reponer 100 del sobre", se debita 100 cerrado.
-                    // O se debita solo lo gastado? req: "se repone sacando S/. 100 del sobre de efectivo". Interpretamos fondo variable que arranca fijo en 100.
-                    
-                    // Buscar flujo de caja abierto (Mañana o Tarde del dia actual)
-                    require_once __DIR__ . '/../Models/FlujoModel.php';
-                    $flujoModel = new FlujoModel($pdo);
-                    $flujosActivos = $flujoModel->listar(['estado' => 'borrador', 'mes' => date('n'), 'anio' => date('Y')]);
-                    
-                    // Solo tomamos el primer flujo en borrador del día (en teoría solo hay uno activo por día)
-                    // Para ser exactos, tomamos el que tenga fecha = HOY
-                    $flujoHoy = null;
-                    foreach ($flujosActivos as $f) {
-                        if ($f['fecha'] === date('Y-m-d')) {
-                            $flujoHoy = $f; break;
-                        }
-                    }
+                    $montoReposicion = 100.00;
+                    $sFecha = !empty($input['sobre_fecha']) ? $input['sobre_fecha'] : date('Y-m-d');
+                    $sTurno = !empty($input['sobre_turno']) ? $input['sobre_turno'] : 'MAÑANA';
 
-                    if (!$flujoHoy) {
-                        throw new Exception("No hay ningún turno de Flujo de Caja Físico ABIERTO el día de hoy para sacar el dinero de reposición.");
-                    }
+                    require_once __DIR__ . '/../Helpers/FinanzasHelper.php';
+                    $finanzas = new FinanzasHelper($pdo);
+                    
+                    // La reposición es un EGRESO en el flujo de caja activo
+                    $okRep = $finanzas->registrarMovimientoAutomatico([
+                        'usuario_id'  => $_SESSION['auth_id'],
+                        'categoria'   => 'RECEPCIÓN C.CH.',
+                        'tipo'        => 'Egreso',
+                        'monto'       => $montoReposicion,
+                        'moneda'      => 'PEN',
+                        'medio_pago'  => 'EFECTIVO',
+                        'observacion' => "REPO AL $sFecha ($sTurno)",
+                        'sobre_fecha' => $sFecha,
+                        'sobre_turno' => $sTurno
+                    ]);
 
-                    // Insertar egreso en flujo_caja_movimientos
-                    $stmtF = $pdo->prepare("
-                        INSERT INTO flujo_caja_movimientos 
-                        (flujo_id, tipo, monto, categoria, categoria_id, moneda, medio_pago, observacion) 
-                        VALUES (?, 'Egreso', ?, 'RECEPCIÓN C.CH.', (SELECT id FROM finanzas_categorias WHERE nombre='RECEPCIÓN C.CH.' LIMIT 1), 'PEN', 'EFECTIVO', 'Reposición automática de Caja Chica')
-                    ");
-                    $stmtF->execute([$flujoHoy['id'], $montoReposicion]);
+                    if (!$okRep) {
+                        throw new Exception("No se pudo registrar la reposición. Asegúrese de tener un turno de Flujo ABIERTO hoy.");
+                    }
 
                     // Crear nuevo ciclo de Caja Chica
-                    $nuevoNombre = "CICLO REPOSICIÓN " . date('d/m/Y H:i');
+                    $nuevoNombre = "FONDO FIJO S/ 100 - " . date('d/m/Y');
                     $this->model->abrirCiclo($nuevoNombre, $montoReposicion, $_SESSION['auth_id']);
                 }
 
-                return ['ok' => true, 'msg' => $reponer ? 'Ciclo cerrado, reintegro descontado de Caja Principal y Nuevo Ciclo creado.' : 'Ciclo cerrado con éxito.'];
+                return ['ok' => true, 'msg' => $reponer ? 'Ciclo cerrado, reintegro descontado del sobre y Nuevo Ciclo creado.' : 'Ciclo cerrado con éxito.'];
             });
         } catch (Exception $e) {
             return ['ok' => false, 'msg' => $e->getMessage()];

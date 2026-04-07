@@ -17,7 +17,6 @@ createApp({
     const formg = reactive({
       rubro: '',
       monto: '',
-      documento: '',
       observacion: ''
     });
 
@@ -65,7 +64,6 @@ createApp({
 
         if (res.data.ok) {
           formg.monto = '';
-          formg.documento = '';
           formg.observacion = '';
           loadData(); // refresh active
           const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
@@ -112,27 +110,72 @@ createApp({
 
     const cerrarCiclo = async () => {
       const confirm = await Swal.fire({
-        title: 'Cerrar Ciclo de Caja Chica',
-        html: `El saldo final será de <b>S/ ${parseFloat(ciclo.value.saldo_actual).toFixed(2)}</b>.<br><br>` + 
-              `¿Desea reponer los S/ 100 automáticamente del sobre de efectivo del <b class="text-primary">Flujo de Caja Activo</b>?`,
+        title: 'Cerrar y Reponer Caja Chica',
+        html: `
+          <div class="text-start p-2">
+            <p class="small text-muted mb-3">El saldo final de este ciclo será de <b>S/ ${parseFloat(ciclo.value.saldo_actual).toFixed(2)}</b>.</p>
+            
+            <div class="card bg-light border-0 mb-3 shadow-sm">
+              <div class="card-body p-3">
+                <label class="form-label fw-bold small mb-2 text-primary d-block">
+                  <i class="bi bi-envelope-paper me-1"></i>Sobre de Origen para Reposición S/ 100:
+                </label>
+                
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="radio" name="swal-sobre" id="s-hoy-m" value="hoy|MAÑANA" checked>
+                  <label class="form-check-label small" for="s-hoy-m">Sobre HOY (Mañana)</label>
+                </div>
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="radio" name="swal-sobre" id="s-hoy-t" value="hoy|TARDE">
+                  <label class="form-check-label small" for="s-hoy-t">Sobre HOY (Tarde)</label>
+                </div>
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="radio" name="swal-sobre" id="s-ayer-p" value="ayer|TARDE">
+                  <label class="form-check-label small" for="s-ayer-p">Sobre AYER (Tarde)</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="swal-sobre" id="s-ayer-m" value="ayer|MAÑANA">
+                  <label class="form-check-label small" for="s-ayer-m">Sobre AYER (Mañana)</label>
+                </div>
+              </div>
+            </div>
+
+            <p class="small text-center"><i class="bi bi-info-circle me-1"></i>Si elige reponer, se creará un nuevo ciclo de S/ 100.</p>
+          </div>
+        `,
         icon: 'question',
         showCancelButton: true,
         showDenyButton: true,
-        confirmButtonColor: '#3085d6',
+        confirmButtonColor: '#198754',
         denyButtonColor: '#6c757d',
-        confirmButtonText: 'Sí, Cerrar y Reponer S/100',
-        denyButtonText: 'Cerrar sin reponer',
-        cancelButtonText: 'Cancelar'
+        confirmButtonText: 'Cerrar y Reponer S/ 100',
+        denyButtonText: 'Cerrar SIN reponer',
+        cancelButtonText: 'Cancelar',
+        preConfirm: () => {
+          const selected = document.querySelector('input[name="swal-sobre"]:checked').value;
+          const [day, turn] = selected.split('|');
+          
+          let date = new Date().toISOString().split('T')[0];
+          if (day === 'ayer') {
+            const d = new Date();
+            d.setDate(d.getDate() - 1);
+            date = d.toISOString().split('T')[0];
+          }
+
+          return { sobre_fecha: date, sobre_turno: turn };
+        }
       });
 
-      if (confirm.isDismissed) return;
+      if (!confirm.isConfirmed && !confirm.isDenied) return;
 
-      const reponer = confirm.isConfirmed; // if they clicked "Yes" (confirm), we replace. 
+      const reponer = confirm.isConfirmed; 
+      const sobreData = confirm.isConfirmed ? confirm.value : {};
 
       try {
         const res = await axios.post(`${BASE}cerrar`, {
           caja_id: ciclo.value.id,
-          reponer: reponer
+          reponer: reponer,
+          ...sobreData
         });
 
         if (res.data.ok) {

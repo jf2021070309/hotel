@@ -41,9 +41,7 @@ switch ($action) {
 
     case 'cerrar':
         if ($method !== 'POST') json_response(false, null, 405, 'Método no permitido');
-        protegerPorRol('admin'); // Only supervisors usually, but maybe admin config. Let's let the controller handle it or check here.
-        // Assuming cajeras can close their own shift. If only admin can close, uncomment the line below:
-        // protegerPorRol('admin'); 
+        // Cajeras pueden cerrar su propio turno. Solo admin puede reabrir.
         $id = (int)($input['id'] ?? 0);
         $res = $controller->cerrar($id);
         json_response($res['ok'], null, $res['ok'] ? 200 : 422, $res['msg']);
@@ -69,6 +67,12 @@ switch ($action) {
         if ($method !== 'GET') json_response(false, null, 405, 'Método no permitido');
         $fecha = $_GET['fecha'] ?? date('Y-m-d');
         json_response(true, $controller->resumenDia($fecha));
+        break;
+
+    case 'resumen_alex':
+        if ($method !== 'GET') json_response(false, null, 405, 'Método no permitido');
+        $fecha = $_GET['fecha'] ?? date('Y-m-d');
+        json_response(true, $controller->resumenAlex($fecha));
         break;
 
     case 'categorias':

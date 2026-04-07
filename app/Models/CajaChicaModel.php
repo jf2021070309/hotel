@@ -55,7 +55,7 @@ class CajaChicaModel {
         return $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function abrirCiclo(string $nombre, float $saldoInicial, int $usuarioId): int {
+    public function abrirCiclo(string $nombre, float $saldoInicial, int $usuarioId, array $extra = []): int {
         $stmt = $this->pdo->prepare("INSERT INTO caja_chica (nombre, saldo_inicial, fecha_apertura, estado, usuario_apertura) VALUES (?, ?, CURDATE(), 'abierta', ?)");
         $stmt->execute([$nombre, $saldoInicial, $usuarioId]);
         $id = (int)$this->pdo->lastInsertId();
@@ -68,7 +68,9 @@ class CajaChicaModel {
             'monto'       => $saldoInicial,
             'moneda'      => 'PEN',
             'medio_pago'  => 'EFECTIVO',
-            'observacion' => "Apertura Ciclo #$id: $nombre"
+            'observacion' => "Apertura Ciclo #$id: $nombre",
+            'sobre_fecha' => $extra['sobre_fecha'] ?? null,
+            'sobre_turno' => $extra['sobre_turno'] ?? null
         ]);
 
         return $id;

@@ -33,7 +33,7 @@ createApp({
     const staySeleccionado = ref(null);
     const segsActualizado  = ref(0);
     const ctxMenu = reactive({ visible: false, x: 0, y: 0, stay: null });
-    const formQuick = reactive({ hab: null, fecha: '', titular: '', noches: 1, observaciones: '' });
+    const formQuick = reactive({ hab: null, fecha: '', titular: '', noches: 1, observaciones: '', canal: 'DIRECTO' });
 
     const pagoRapido = reactive({ monto: 0, moneda: 'PEN', metodo: 'efectivo' });
 
@@ -186,11 +186,18 @@ createApp({
       return ['D','L','M','X','J','V','S'][d.getDay()];
     };
 
+    const formatNumber = (num, decimals = 2) => {
+      return new Intl.NumberFormat('en-US', {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals
+      }).format(num);
+    };
+
     // ─── Cell click ───────────────────────────────────────────────────
     const onCeldaClick = (hab, dia) => {
       const stay = getCeldaStay(hab, dia);
       if (stay) {
-        abrirDetalle(stay);
+        abrirDetalle(stay, hab.numero);
       } else {
         abrirQuickReserva(hab, dia);
       }
@@ -202,6 +209,7 @@ createApp({
       formQuick.titular = '';
       formQuick.noches  = 1;
       formQuick.observaciones = '';
+      formQuick.canal   = 'DIRECTO';
       bootstrap.Modal.getOrCreateInstance(document.getElementById('modalQuickReserva')).show();
     };
 
@@ -214,7 +222,8 @@ createApp({
           fecha:   formQuick.fecha,
           titular: formQuick.titular,
           noches:  formQuick.noches,
-          observaciones: formQuick.observaciones
+          observaciones: formQuick.observaciones,
+          canal:   formQuick.canal
         });
         if (res.data.ok) {
           bootstrap.Modal.getInstance(document.getElementById('modalQuickReserva'))?.hide();
@@ -231,12 +240,21 @@ createApp({
       }
     };
 
-    const abrirDetalle = (stay) => {
-      staySeleccionado.value = stay;
+    const abrirDetalle = (stay, habNum = '') => {
+      staySeleccionado.value = { ...stay, hab_numero: habNum || stay.hab_numero };
       pagoRapido.monto  = 0;
       pagoRapido.moneda = stay.moneda_pago || 'PEN';
       pagoRapido.metodo = 'efectivo';
       bootstrap.Modal.getOrCreateInstance(document.getElementById('modalDetalleReservas')).show();
+    };
+
+    const irARooming = (stay) => {
+      if (!stay.hab_numero) {
+        Swal.fire('Error', 'No se pudo identificar la habitación', 'error');
+        return;
+      }
+      // Redirigir a rooming buscando la habitación
+      window.location.href = `../rooming/index.php?buscar=${stay.hab_numero}`;
     };
 
     // ─── Context Menu ─────────────────────────────────────────────────
@@ -328,14 +346,32 @@ createApp({
       }
     };
 
-    const lateCheckout = async (stay) => {
+    const realizarCheckin = async (stay) => {
+      const confirm = await Swal.fire({
+        title: '¿Confirmar Ingreso?',
+        text: `Se marcará la entrada de ${stay.titular} a la habitación ${stay.hab_numero}`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, registrar ingreso',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#0288D1'
+      });
+      if (!confirm.isConfirmed) return;
+      
+      loading.value = true;
       try {
-        await axios.post(`${BASE}late_checkout`, { id: stay.id });
-        bootstrap.Modal.getInstance(document.getElementById('modalDetalleReservas'))?.hide();
-        Swal.fire({ icon: 'info', title: 'Late Checkout aplicado', timer: 1500, showConfirmButton: false });
-        await cargarDatos();
+        const res = await axios.post(`${BASE}checkin`, { id: stay.id });
+        if (res.data.ok) {
+          bootstrap.Modal.getInstance(document.getElementById('modalDetalleReservas'))?.hide();
+          Swal.fire({ icon: 'success', title: '¡Check-in realizado!', timer: 2000, showConfirmButton: false });
+          await cargarDatos();
+        } else {
+          Swal.fire('Error', res.data.msg, 'error');
+        }
       } catch (e) {
-        Swal.fire('Error', 'No se pudo aplicar late checkout', 'error');
+        Swal.fire('Error', 'No se pudo realizar el check-in', 'error');
+      } finally {
+        loading.value = false;
       }
     };
 
@@ -356,6 +392,26 @@ createApp({
     const porcentajePago = (stay) => {
       if (!stay.total_pago) return 0;
       return Math.min(100, Math.round((stay.total_cobrado / stay.total_pago) * 100));
+    };
+
+    const getColorPago = (stay) => {
+      const perc = porcentajePago(stay);
+      if (perc >= 100) return '#22c55e'; // Verde
+      if (perc > 0)    return '#facc15'; // Amarillo
+      return '#ef4444'; // Rojo
+    };
+
+    const getStayColorClass = (stay) => {
+      if (!stay) return '';
+      // Prioridad 1: Si ya está en el hotel (In-house / Activo)
+      if (stay.estado === 'activo' || stay.estado === 'inhouse' || stay.checkin_realizado) return 'res-inhouse';
+      
+      // Prioridad 2: Canal de reserva (para ingresos pendientes)
+      const canal = (stay.canal || '').toLowerCase();
+      if (canal.includes('booking')) return 'res-booking';
+      
+      // Por defecto (Llamada, WhatsApp, Directo)
+      return 'res-directo';
     };
 
     // ─── Polling ──────────────────────────────────────────────────────
@@ -393,11 +449,12 @@ createApp({
       getCeldaStay, esInicioStay, esDiaEstadoEspecial, calcCols,
       getDiaSemana, onCeldaClick, abrirDetalle,
       openContextMenu, handleCtxAction, ctxMenu,
-      guardarPagoRapido, checkout, lateCheckout,
+      guardarPagoRapido, checkout,
       formQuick, abrirQuickReserva, guardarQuickReserva,
       getTipoClass,
       badgeClass, barClass, porcentajePago,
-      viewMode, colWidth, rowHeight,
+      viewMode, colWidth, rowHeight, formatNumber,
+      irARooming, getStayColorClass, getColorPago
     };
   }
 }).mount('#app-reservas');

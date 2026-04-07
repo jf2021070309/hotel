@@ -101,6 +101,14 @@ require_once $base . 'rutas.php';
     </div>
     <?php endif; ?>
 
+    <?php if (tieneAccesoModulo('sobres')): ?>
+    <div class="nav-item">
+      <a href="<?= route('sobres/index.php', $base) ?>" class="<?= isActive('index.php','sobres') ?>" onclick="closeSidebarOnMobile()">
+        <i class="bi bi-envelope-paper-fill text-success"></i> <span>Sobre de Alex</span>
+      </a>
+    </div>
+    <?php endif; ?>
+
     <?php if (tieneAccesoModulo('calculadora')): ?>
     <div class="nav-item">
       <a href="<?= route('calculadora/index.php', $base) ?>" class="<?= isActive('index.php','calculadora') ?>" onclick="closeSidebarOnMobile()">

@@ -62,9 +62,9 @@ foreach ($flujo['ingresos'] as $mov) {
         $ingresoYape += $montoSol;
     }
 
-    $desc = $mov['categoria'] . (!empty($mov['observacion']) ? ' ('.$mov['observacion'].')' : '');
     $desgloseIngresos[] = [
-        'desc' => $desc,
+        'categoria' => $mov['categoria'],
+        'observacion' => $mov['observacion'] ?? '',
         'monto' => $montoSol,
         'medio' => $mov['medio_pago']
     ];
@@ -76,9 +76,9 @@ foreach ($flujo['egresos'] as $mov) {
     $montoSol = $convertir($mov['monto'], $mov['moneda']);
     $totalEgresos += $montoSol;
     
-    $desc = $mov['categoria'] . (!empty($mov['observacion']) ? ' ('.$mov['observacion'].')' : '');
     $desgloseEgresos[] = [
-        'desc' => $desc,
+        'categoria' => $mov['categoria'],
+        'observacion' => $mov['observacion'] ?? '',
         'monto' => $montoSol,
         'medio' => $mov['medio_pago']
     ];
@@ -162,7 +162,11 @@ $efectivoEnSobre = $ingresoEfectivo - $egresoEfectivo;
     <div class="section-title">DETALLE DE INGRESOS</div>
     <?php foreach($desgloseIngresos as $ing): ?>
         <div class="line-item">
-            <div class="desc"><?= htmlspecialchars($ing['desc']) ?> <small class="text-muted">(<?= $ing['medio'] ?>)</small></div>
+            <div class="desc">
+                <?= htmlspecialchars($ing['categoria']) ?> 
+                <span class="text-danger fw-bold"><?= !empty($ing['observacion']) ? ' ('.htmlspecialchars($ing['observacion']).')' : '' ?></span> 
+                <small class="text-muted">(<?= $ing['medio'] ?>)</small>
+            </div>
             <div class="monto">S/ <?= number_format($ing['monto'], 2) ?></div>
         </div>
     <?php endforeach; ?>
@@ -184,7 +188,11 @@ $efectivoEnSobre = $ingresoEfectivo - $egresoEfectivo;
     <div class="section-title">DETALLE DE EGRESOS</div>
     <?php foreach($desgloseEgresos as $egr): ?>
         <div class="line-item">
-            <div class="desc"><?= htmlspecialchars($egr['desc']) ?> <small class="text-muted">(<?= $egr['medio'] ?>)</small></div>
+            <div class="desc">
+                <?= htmlspecialchars($egr['categoria']) ?> 
+                <span class="text-secondary opacity-75 small italic"><?= !empty($egr['observacion']) ? ' ('.htmlspecialchars($egr['observacion']).')' : '' ?></span>
+                <small class="text-muted">(<?= $egr['medio'] ?>)</small>
+            </div>
             <div class="monto text-danger">- S/ <?= number_format($egr['monto'], 2) ?></div>
         </div>
     <?php endforeach; ?>

@@ -31,18 +31,26 @@ class ReporteModel {
                     ELSE 'TARDE' 
                 END AS turno,
                 a.moneda,
-                SUM(CASE WHEN a.tipo_pago = 'EFECTIVO' THEN a.monto ELSE 0 END) AS cobrado_efectivo,
-                SUM(CASE WHEN a.tipo_pago LIKE 'POS%' THEN a.monto ELSE 0 END) AS cobrado_pos,
-                SUM(CASE WHEN a.tipo_pago IN ('YAPE', 'PLIN', 'YAPE O PLIN') THEN a.monto ELSE 0 END) AS cobrado_yape,
-                SUM(CASE WHEN a.tipo_pago IN ('TRANSFERENCIA', 'DEPOSITO', 'TRANSF', 'DEPOS/TRANS.') THEN a.monto ELSE 0 END) AS cobrado_transf,
-                SUM(a.monto) AS total_fila,
+                a.monto,
+                a.tipo_pago,
+                CASE 
+                    WHEN a.tipo_pago IN ('TRANSFERENCIA', 'DEPOSITO', 'TRANSF', 'DEPOS/TRANS.') THEN 'TRANSFER.'
+                    WHEN a.tipo_pago IN ('YAPE', 'PLIN', 'YAPE O PLIN') THEN 'YAPE/PLIN'
+                    WHEN a.tipo_pago LIKE '%POS%' AND a.moneda = 'USD' THEN 'POS $'
+                    WHEN a.tipo_pago LIKE '%POS%' AND a.moneda = 'PEN' THEN 'POS S/'
+                    WHEN a.tipo_pago LIKE '%POS%' AND a.moneda = 'CLP' THEN 'POS P$'
+                    WHEN a.tipo_pago LIKE '%EFECTIVO%' AND a.moneda = 'CLP' THEN 'EFEC P$'
+                    WHEN a.tipo_pago LIKE '%EFECTIVO%' AND a.moneda = 'USD' THEN 'EFEC $'
+                    WHEN a.tipo_pago LIKE '%EFECTIVO%' AND a.moneda = 'PEN' THEN 'EFEC S/'
+                    ELSE a.tipo_pago
+                END AS medio_label,
+                a.monto AS total_fila,
                 CONCAT(s.tipo_comprobante, ' ', IFNULL(s.num_comprobante, '')) AS comprobante
             FROM anticipos a
             JOIN rooming_stays s ON a.stay_id = s.id
             JOIN habitaciones h ON s.habitacion_id = h.id
             WHERE MONTH(a.fecha) = :mes AND YEAR(a.fecha) = :anio
               AND s.estado != 'anulado'
-            GROUP BY a.stay_id, a.fecha, turno, a.moneda
             ORDER BY a.fecha DESC, turno DESC, h.piso, h.numero
         ";
         $stmt = $this->pdo->prepare($sql);
@@ -77,14 +85,19 @@ class ReporteModel {
         ];
 
         foreach ($rows as $r) {
-            $m = $r['moneda'];
-            $t = $r['tipo_pago'];
+            $m   = $r['moneda'];
+            $t   = strtoupper($r['tipo_pago']);
             $val = (float)$r['total'];
 
-            if (strpos($t, 'POS') !== false) $res['POS'][$m] += $val;
-            elseif ($t === 'EFECTIVO') $res['EFECTIVO'][$m] += $val;
-            elseif (in_array($t, ['YAPE', 'PLIN', 'YAPE O PLIN'])) $res['YAPE'] += $val;
-            elseif (in_array($t, ['TRANSFERENCIA', 'DEPOSITO', 'TRANSF', 'DEPOS/TRANS.'])) $res['TRANSFERENCIA'] += $val;
+            if (strpos($t, 'YAPE') !== false || strpos($t, 'PLIN') !== false) {
+                $res['YAPE'] += $val;
+            } elseif (strpos($t, 'TRANS') !== false || strpos($t, 'DEPO') !== false || strpos($t, 'BANCO') !== false) {
+                $res['TRANSFERENCIA'] += $val;
+            } elseif (strpos($t, 'EFECTIVO') !== false) {
+                $res['EFECTIVO'][$m] += $val;
+            } elseif (strpos($t, 'POS') !== false) {
+                $res['POS'][$m] += $val;
+            }
         }
         return $res;
     }

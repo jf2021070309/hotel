@@ -108,11 +108,7 @@ include $base . 'includes/sidebar.php';
                   <label class="form-label small text-muted mb-1">Monto (S/)</label>
                   <input type="number" class="form-control form-control-sm text-end fw-bold" v-model="formg.monto" step="0.01" min="0.1" max="500" required>
                 </div>
-                <div class="col-md-3">
-                  <label class="form-label small text-muted mb-1">Doc/Entidad (opc)</label>
-                  <input type="text" class="form-control form-control-sm" v-model="formg.documento" placeholder="PANADERÍA ROJAS">
-                </div>
-                <div class="col-md-3">
+                <div class="col-md-4">
                   <label class="form-label small text-muted mb-1">Motivo/Obs</label>
                   <input type="text" class="form-control form-control-sm text-danger" v-model="formg.observacion" required placeholder="Compra de pan">
                 </div>
@@ -137,7 +133,6 @@ include $base . 'includes/sidebar.php';
                     <th>Fecha</th>
                     <th>Operador</th>
                     <th>Rubro</th>
-                    <th>Documento</th>
                     <th>Observación</th>
                     <th class="text-end">Monto</th>
                     <th class="text-center">Acción</th>
@@ -148,7 +143,6 @@ include $base . 'includes/sidebar.php';
                     <td>{{ m.fecha }}</td>
                     <td><small>{{ m.operador }}</small></td>
                     <td :class="{'text-decoration-line-through': m.anulado == 1}">{{ m.rubro }}</td>
-                    <td :class="{'text-decoration-line-through': m.anulado == 1}">{{ m.documento }}</td>
                     <td>
                        <span :class="{'text-decoration-line-through': m.anulado == 1}">{{ m.observacion }}</span>
                        <div v-if="m.anulado == 1" class="text-danger small ms-1" style="font-size:10px;"><i class="bi bi-x-circle me-1"></i>Anulado: {{ m.motivo_anulacion }}</div>

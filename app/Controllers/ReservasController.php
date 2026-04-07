@@ -77,7 +77,8 @@ class ReservasController {
             'noches'        => (int)($input['noches'] ?? 1),
             'titular'       => $input['titular'] ?? 'RESERVADO',
             'observaciones' => $input['observaciones'] ?? '',
-            'usuario_id'    => (int)($_SESSION['auth_id'] ?? 1)
+            'usuario_id'    => (int)($_SESSION['auth_id'] ?? 1),
+            'canal'         => $input['canal'] ?? 'DIRECTO'
         ];
 
         if (!$data['hab_id'] || empty($data['titular'])) {
@@ -89,6 +90,20 @@ class ReservasController {
             return ['ok' => true, 'msg' => 'Reserva registrada', 'id' => $id];
         } catch (Exception $e) {
             return ['ok' => false, 'msg' => 'Error: ' . $e->getMessage()];
+        }
+    }
+
+    public function checkin(array $input): array {
+        $id = (int)($input['id'] ?? 0);
+        if (!$id) return ['ok' => false, 'msg' => 'ID no válido'];
+        
+        try {
+            if ($this->model->activarStay($id)) {
+                return ['ok' => true, 'msg' => 'Ingreso (Check-in) registrado'];
+            }
+            return ['ok' => false, 'msg' => 'No se pudo activar la reserva'];
+        } catch (Exception $e) {
+            return ['ok' => false, 'msg' => $e->getMessage()];
         }
     }
 }

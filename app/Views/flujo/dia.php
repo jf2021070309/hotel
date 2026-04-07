@@ -94,10 +94,12 @@ $fecha = $_GET['fecha'] ?? date('Y-m-d');
             </div>
           </div>
           
-          <div class="text-center mt-4">
+          <div class="text-center mt-4 d-flex justify-content-center gap-3">
             <button class="btn btn-outline-dark" onclick="window.print()"><i class="bi bi-printer me-2"></i>Imprimir Resumen</button>
+            <a :href="'../sobres/index.php?fecha=' + resumen.fecha" class="btn btn-success fw-bold shadow-sm px-4">
+              <i class="bi bi-envelope-check me-2"></i>REPORTE ALEX (SOBRES)
+            </a>
           </div>
-
         </div>
 
       </div>

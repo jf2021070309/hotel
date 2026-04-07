@@ -39,12 +39,7 @@ class DashboardModel {
         $tc = ['USD' => 3.7, 'CLP' => 0.0039]; 
         foreach($tcData as $row) { $tc[$row['moneda_origen']] = (float)$row['factor']; }
 
-        // 3A. Ingresos reales de Rooming (anticipos): no se hace conversión para reflejar caja física separada
-        $stmtAnticipos = $this->pdo->prepare("SELECT monto, tipo_pago, moneda FROM anticipos WHERE fecha = ?");
-        $stmtAnticipos->execute([$fecha]);
-        $pagosRooming = $stmtAnticipos->fetchAll(PDO::FETCH_ASSOC);
-
-        // 3B. Ingresos extras y Egresos del Flujo de Caja
+        // 3. Ingresos y Egresos del Flujo de Caja (Incluye pagos de Rooming)
         $stmtFlujo = $this->pdo->prepare("
             SELECT m.tipo, m.categoria, m.moneda, m.monto, m.medio_pago, m.observacion
             FROM flujo_caja f 
@@ -60,46 +55,23 @@ class DashboardModel {
         $ingresos_hoy = ['PEN' => 0, 'USD' => 0, 'CLP' => 0];
         $egresos_hoy = ['PEN' => 0, 'USD' => 0, 'CLP' => 0];
 
-        // Sumar pagos de Rooming directos primero
-        foreach ($pagosRooming as $p) {
-            $moneda = $p['moneda'] ?: 'PEN';
-            $monto = (float)$p['monto'];
-            $medio = strtoupper($p['tipo_pago']);
-            
-            // Auto-corrector por si la data antigua se guardó como PEN
-            if (strpos($medio, 'PESOS') !== false) $moneda = 'CLP';
-            if (strpos($medio, 'DOLARES') !== false || strpos($medio, 'USD') !== false) $moneda = 'USD';
-
-            $ingresos_hoy[$moneda] = ($ingresos_hoy[$moneda] ?? 0) + $monto;
-
-            $cat = ($medio === 'EFECTIVO' || $medio === 'EFECTIV') ? 'Efectivo '.$moneda : $medio;
-            if (!isset($ingresos_desglose[$cat])) $ingresos_desglose[$cat] = ['moneda' => $moneda, 'monto' => 0];
-            $ingresos_desglose[$cat]['monto'] += $monto;
-        }
-
-        // Sumar Flujo de Caja
+        // Sumar movimientos (Ingresos y Egresos)
         foreach ($movimientos as $m) {
             $moneda = $m['moneda'] ?: 'PEN';
             $monto = (float)$m['monto'];
             $medio = strtoupper($m['medio_pago']);
 
+            // Auto-corrector de moneda basado en medio o categoría
+            if (strpos($medio, 'PESOS') !== false || strpos(strtoupper($m['categoria']), 'PESOS') !== false) $moneda = 'CLP';
+            if (strpos($medio, 'DOLARES') !== false || strpos($medio, 'USD') !== false || strpos(strtoupper($m['categoria']), 'DOLARES') !== false) $moneda = 'USD';
+
             if ($m['tipo'] === 'Ingreso') {
-                if (strtolower(trim($m['categoria'])) === 'alojamiento / pago extra') continue;
-                if (strpos($m['observacion'] ?? '', 'PAGO Stay #') !== false) continue; // Evitar doblaje
-
-                // Auto-corrector
-                if (strpos($medio, 'PESOS') !== false || strpos(strtoupper($m['categoria']), 'PESOS') !== false) $moneda = 'CLP';
-                if (strpos($medio, 'DOLARES') !== false || strpos(strtoupper($m['categoria']), 'DOLARES') !== false) $moneda = 'USD';
-
                 $ingresos_hoy[$moneda] = ($ingresos_hoy[$moneda] ?? 0) + $monto;
                 
                 $cat = ($medio === 'EFECTIVO' || $medio === 'EFECTIV') ? 'Efectivo '.$moneda : $medio;
                 if (!isset($ingresos_desglose[$cat])) $ingresos_desglose[$cat] = ['moneda' => $moneda, 'monto' => 0];
                 $ingresos_desglose[$cat]['monto'] += $monto;
             } else {
-                if (strpos($medio, 'PESOS') !== false || strpos(strtoupper($m['categoria']), 'PESOS') !== false) $moneda = 'CLP';
-                if (strpos($medio, 'DOLARES') !== false || strpos(strtoupper($m['categoria']), 'DOLARES') !== false) $moneda = 'USD';
-
                 $egresos_hoy[$moneda] = ($egresos_hoy[$moneda] ?? 0) + $monto;
                 $cat = empty($m['categoria']) ? 'Otros' : $m['categoria'];
                 if (!isset($egresos_desglose[$cat])) $egresos_desglose[$cat] = ['moneda' => $moneda, 'monto' => 0];
@@ -299,6 +271,16 @@ class DashboardModel {
                 $mi_turno['ingresos_clp'] = (float)$movData['ing_clp'];
                 $mi_turno['egresos']  = (float)$movData['egr_pen']; // Solo SOLES
                 $mi_turno['efectivo_sobre'] = (float)$movData['efec'];
+
+                // --- NUEVO: Desglose por medio de pago para el Dashboard ---
+                $stmtDes = $this->pdo->prepare("
+                    SELECT medio_pago, moneda, SUM(monto) as total 
+                    FROM flujo_caja_movimientos 
+                    WHERE flujo_id = ? AND tipo = 'Ingreso' 
+                    GROUP BY medio_pago, moneda
+                ");
+                $stmtDes->execute([$flujoId]);
+                $mi_turno['desglose'] = $stmtDes->fetchAll(PDO::FETCH_ASSOC);
             }
         }
 
@@ -310,40 +292,30 @@ class DashboardModel {
         $stmtPax->execute([$fecha, $fecha]);
         $pax_hoy = (int)$stmtPax->fetchColumn();
 
-        $stmtAnticipos = $this->pdo->prepare("SELECT monto, tipo_pago, moneda FROM anticipos WHERE fecha = ?");
-        $stmtAnticipos->execute([$fecha]);
-        $pagosRooming = $stmtAnticipos->fetchAll(PDO::FETCH_ASSOC);
-
-        $stmtFlujo = $this->pdo->prepare("SELECT m.tipo, m.categoria, m.moneda, m.monto, m.medio_pago, m.observacion FROM flujo_caja f JOIN flujo_caja_movimientos m ON f.id = m.flujo_id WHERE f.fecha = ? AND m.monto > 0 AND f.estado != 'borrador_eliminado'");
-        $stmtFlujo->execute([$fecha]);
-        $movimientos = $stmtFlujo->fetchAll(PDO::FETCH_ASSOC);
+        // KPIs globales de Ingresos y Egresos (Fuente única: Flujo Movimientos)
+        $stmtFlujoAll = $this->pdo->prepare("
+            SELECT m.tipo, m.categoria, m.moneda, m.monto, m.medio_pago 
+            FROM flujo_caja f 
+            JOIN flujo_caja_movimientos m ON f.id = m.flujo_id 
+            WHERE f.fecha = ? AND m.monto > 0 AND f.estado != 'borrador_eliminado'
+        ");
+        $stmtFlujoAll->execute([$fecha]);
+        $movs_globales = $stmtFlujoAll->fetchAll(PDO::FETCH_ASSOC);
 
         $ingresos_hoy = ['PEN' => 0, 'USD' => 0, 'CLP' => 0];
         $egresos_hoy = ['PEN' => 0, 'USD' => 0, 'CLP' => 0];
 
-        foreach ($pagosRooming as $p) {
-            $moneda = $p['moneda'] ?: 'PEN';
-            $monto = (float)$p['monto'];
-            $medio = strtoupper($p['tipo_pago']);
-            if (strpos($medio, 'PESOS') !== false) $moneda = 'CLP';
-            if (strpos($medio, 'DOLARES') !== false || strpos($medio, 'USD') !== false) $moneda = 'USD';
-            $ingresos_hoy[$moneda] = ($ingresos_hoy[$moneda] ?? 0) + $monto;
-        }
-
-        foreach ($movimientos as $m) {
+        foreach ($movs_globales as $m) {
             $moneda = $m['moneda'] ?: 'PEN';
             $monto = (float)$m['monto'];
             $medio = strtoupper($m['medio_pago']);
-            if ($m['tipo'] === 'Ingreso') {
-                if (strtolower(trim($m['categoria'])) === 'alojamiento / pago extra') continue;
-                if (strpos($m['observacion'] ?? '', 'PAGO Stay #') !== false) continue; // Evitar contar 2 veces si helper sobribió categoría
 
-                if (strpos($medio, 'PESOS') !== false || strpos(strtoupper($m['categoria']), 'PESOS') !== false) $moneda = 'CLP';
-                if (strpos($medio, 'DOLARES') !== false || strpos(strtoupper($m['categoria']), 'DOLARES') !== false) $moneda = 'USD';
+            if (strpos($medio, 'PESOS') !== false || strpos(strtoupper($m['categoria']), 'PESOS') !== false) $moneda = 'CLP';
+            if (strpos($medio, 'DOLARES') !== false || strpos($medio, 'USD') !== false || strpos(strtoupper($m['categoria']), 'DOLARES') !== false) $moneda = 'USD';
+
+            if ($m['tipo'] === 'Ingreso') {
                 $ingresos_hoy[$moneda] = ($ingresos_hoy[$moneda] ?? 0) + $monto;
             } else {
-                if (strpos($medio, 'PESOS') !== false || strpos(strtoupper($m['categoria']), 'PESOS') !== false) $moneda = 'CLP';
-                if (strpos($medio, 'DOLARES') !== false || strpos(strtoupper($m['categoria']), 'DOLARES') !== false) $moneda = 'USD';
                 $egresos_hoy[$moneda] = ($egresos_hoy[$moneda] ?? 0) + $monto;
             }
         }

@@ -24,15 +24,13 @@ include $base . 'includes/sidebar.php';
 
   <div class="page-body">
     <!-- PANEL PRINCIPAL ACTUAl -->
-    <div class="d-flex flex-wrap gap-2 mb-4 align-items-center">
-      <a href="detalle.php" class="btn-primary-custom fw-bold shadow-sm px-4" style="border: 1px solid #111;">
-        <i class="bi bi-box-arrow-in-right me-2 text-warning"></i> IR AL CICLO ACTIVO ACTUAL
-      </a>
-      <!-- Este botón solo debe mostrarse/habilitarse si no hay ciclo activo, lo controlamos con js -->
-      <button class="btn btn-success ms-auto" @click="abrirNuevoCiclo" v-if="!hayCicloActivo">
-        <i class="bi bi-plus-lg me-1"></i> Abrir Nuevo Ciclo Inicial
+    <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
+      <!-- Ahora el botón de abrir es el principal y está a la izquierda -->
+      <button class="btn btn-success fw-bold shadow-sm px-4" @click="abrirNuevoCiclo">
+        <i class="bi bi-plus-lg me-1"></i> ABRIR NUEVO CICLO
       </button>
-      <button class="btn btn-outline-secondary" @click="listar">
+
+      <button class="btn btn-outline-secondary ms-auto" @click="listar">
         <i class="bi bi-arrow-clockwise"></i>
       </button>
     </div>

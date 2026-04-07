@@ -208,7 +208,7 @@ class ReservasModel {
                 moneda_pago, metodo_pago, tipo_comprobante, cobrador, 
                 observaciones, usuario_id, estado, estado_pago
             ) VALUES (
-                :operador, :fecha_reg, :fecha_out, 'DIRECTO', 
+                :operador, :fecha_reg, :fecha_out, :medio, 
                 :hab_id, 'RESERVA', :noches, 1, 0, 
                 'PEN', 'EFECTIVO', 'RECIBO', :cobrador, 
                 :obs, :uid, 'reservado', 'pendiente'
@@ -223,7 +223,8 @@ class ReservasModel {
                 'noches'    => $data['noches'],
                 'cobrador'  => $_SESSION['auth_nombre'] ?? 'Admin',
                 'obs'       => $data['observaciones'] ?? '',
-                'uid'       => $data['usuario_id']
+                'uid'       => $data['usuario_id'],
+                'medio'     => $data['canal'] ?? 'DIRECTO'
             ]);
             
             $stay_id = (int)$this->pdo->lastInsertId();
@@ -234,6 +235,36 @@ class ReservasModel {
             
             $this->pdo->commit();
             return $stay_id;
+        } catch (Exception $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
+    }
+
+    /**
+     * Activate a reservation (Check-in).
+     * Changes status to 'activo' and marks room as 'ocupado'.
+     */
+    public function activarStay(int $id): bool {
+        $this->pdo->beginTransaction();
+        try {
+            // 1. Update stay status
+            $stmt = $this->pdo->prepare("UPDATE rooming_stays SET estado = 'activo' WHERE id = ?");
+            $stmt->execute([$id]);
+
+            // 2. Get hab_id
+            $stmtHabId = $this->pdo->prepare("SELECT habitacion_id FROM rooming_stays WHERE id = ?");
+            $stmtHabId->execute([$id]);
+            $habId = $stmtHabId->fetchColumn();
+
+            if ($habId) {
+                // 3. Update room status to 'ocupado'
+                $stmtRoom = $this->pdo->prepare("UPDATE habitaciones SET estado = 'ocupado' WHERE id = ?");
+                $stmtRoom->execute([$habId]);
+            }
+
+            $this->pdo->commit();
+            return true;
         } catch (Exception $e) {
             $this->pdo->rollBack();
             throw $e;

@@ -45,7 +45,13 @@ class RoomingModel {
         $stmt->execute([$id]);
         $stay['pax'] = $stmt->fetchAll();
 
-        $stmt = $this->pdo->prepare("SELECT * FROM anticipos WHERE stay_id = ?");
+        $stmt = $this->pdo->prepare("
+            SELECT a.*, u.nombre as cajero_nom 
+            FROM anticipos a 
+            LEFT JOIN usuarios u ON a.usuario_id = u.id 
+            WHERE a.stay_id = ? 
+            ORDER BY a.id ASC
+        ");
         $stmt->execute([$id]);
         $stay['pagos'] = $stmt->fetchAll();
 
@@ -204,7 +210,7 @@ class RoomingModel {
         }
     }
 
-    public function registrarPago(array $pago): bool {
+    public function registrarPago(array $pago, string $subtipo = 'hospedaje'): bool {
         $sql = "INSERT INTO anticipos (stay_id, monto, moneda, monto_pen, tc_aplicado, tipo_pago, recibo, fecha, usuario_id) 
                 VALUES (:stay_id, :monto, :moneda, :monto_pen, :tc, :tipo, :recibo, :fecha, :uid)";
         $stmt = $this->pdo->prepare($sql);
@@ -214,14 +220,37 @@ class RoomingModel {
             // Actualizar total_cobrado y estado_pago del stay
             $this->actualizarResumenPagos($pago['stay_id']);
 
+            // Obtener info básica para mejor observación
+            $stmtInfo = $this->pdo->prepare("
+                SELECT s.id, h.numero as hab_num, 
+                       (SELECT nombre_completo FROM rooming_pax WHERE stay_id = s.id AND es_titular = 1 LIMIT 1) as titular
+                FROM rooming_stays s
+                JOIN habitaciones h ON s.habitacion_id = h.id
+                WHERE s.id = ?
+            ");
+            $stmtInfo->execute([$pago['stay_id']]);
+            $info = $stmtInfo->fetch(PDO::FETCH_ASSOC);
+
+            $habNum = $info['hab_num'] ?? 'N/A';
+            $titular = $info['titular'] ?? 'Huésped';
+
+            // Etiqueta legible según el tipo de pago
+            $etiquetas = [
+                'adelanto'  => 'pagó un ADELANTO del hospedaje',
+                'hospedaje' => 'pagó el hospedaje',
+                'completo'  => 'completó el pago del hospedaje',
+                'saldo'     => 'abonó el saldo pendiente',
+            ];
+            $etiqueta = $etiquetas[$subtipo] ?? "pagó $subtipo";
+
             // SINCRONIZACIÓN: Registrar el ingreso en el Flujo de Caja
             $this->finanzas->registrarMovimientoAutomatico([
                 'usuario_id'  => $pago['uid'],
-                'categoria'   => 'Alojamiento / Pago extra',
-                'monto'       => $pago['monto'], // FIX: Usar monto original con la moneda original
+                'categoria'   => $pago['tipo'] ?? 'Alojamiento', 
+                'monto'       => $pago['monto'], 
                 'moneda'      => $pago['moneda'] ?? 'PEN',
                 'medio_pago'  => $pago['tipo'] ?? 'EFECTIVO',
-                'observacion' => "PAGO Stay #" . $pago['stay_id'] . ". Recibo: " . ($pago['recibo'] ?? 'N/A')
+                'observacion' => "$titular $etiqueta por el Registro #{$pago['stay_id']} (Hab #$habNum)"
             ]);
         }
         return $res;
@@ -236,7 +265,7 @@ class RoomingModel {
                 $pago['fecha'] = $fechaOut;
                 $pago['uid'] = $_SESSION['auth_id'] ?? 1;
                 $pago['monto_pen'] = $pago['monto_pen'] ?? $pago['monto'];
-                $this->registrarPago($pago); // Esto ya sincroniza con Flujo de Caja
+                $this->registrarPago($pago, 'completo'); // Marcamos como pago completo
             }
 
             // 2. Obtener hab ID

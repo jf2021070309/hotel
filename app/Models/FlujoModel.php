@@ -119,9 +119,21 @@ class FlujoModel {
      * @return bool True si ya existe, false si está libre.
      */
     public function checkExisteTurno(string $fecha, string $turno, int $excludeId = 0): bool {
+        // Bloquear si ya existe CUALQUIER turno para esa fecha/turno.
+        // La clave única de la BD no permite duplicados sin importar el estado.
         $stmt = $this->pdo->prepare("SELECT id FROM flujo_caja WHERE fecha = ? AND turno = ? AND id != ?");
         $stmt->execute([$fecha, $turno, $excludeId]);
         return (bool)$stmt->fetchColumn();
+    }
+
+    /**
+     * Obtiene el ID de cualquier flujo existente para una fecha y turno (sin importar estado).
+     */
+    public function getIdExistente(string $fecha, string $turno): ?int {
+        $stmt = $this->pdo->prepare("SELECT id FROM flujo_caja WHERE fecha = ? AND turno = ? ORDER BY id DESC LIMIT 1");
+        $stmt->execute([$fecha, $turno]);
+        $id = $stmt->fetchColumn();
+        return $id ? (int)$id : null;
     }
 
     /**
@@ -148,15 +160,12 @@ class FlujoModel {
                 $stmt = $this->pdo->prepare("INSERT INTO flujo_caja (fecha, turno, estado, nota_entrega, usuario_id) VALUES (?, ?, 'borrador', ?, ?)");
                 $stmt->execute([$data['fecha'], $data['turno'], $data['nota_entrega'], $data['usuario_id']]);
                 $id = (int)$this->pdo->lastInsertId();
-
-                $stmtResp = $this->pdo->prepare("INSERT INTO flujo_caja_responsables (flujo_id, usuario_id, rol_turno) VALUES (?, ?, ?)");
-                $stmtResp->execute([$id, $data['usuario_id'], 'Operador Principal']);
             }
 
             // Clear old movements and insert fresh
             $this->pdo->prepare("DELETE FROM flujo_caja_movimientos WHERE flujo_id = ?")->execute([$id]);
 
-            $stmtMov = $this->pdo->prepare("INSERT INTO flujo_caja_movimientos (flujo_id, categoria_id, categoria, tipo, moneda, monto, medio_pago, observacion) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmtMov = $this->pdo->prepare("INSERT INTO flujo_caja_movimientos (flujo_id, categoria_id, categoria, tipo, moneda, monto, medio_pago, observacion, sobre_fecha, sobre_turno) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             
             $movs = array_merge($ingresos, $egresos);
             foreach ($movs as $mov) {
@@ -164,6 +173,9 @@ class FlujoModel {
                 if (empty($mov['categoria']) || empty($mov['monto']) || $mov['monto'] <= 0) continue;
                 
                 $catId = !empty($mov['categoria_id']) ? $mov['categoria_id'] : null;
+                $sFecha = !empty($mov['sobre_fecha']) ? $mov['sobre_fecha'] : null;
+                $sTurno = !empty($mov['sobre_turno']) ? $mov['sobre_turno'] : null;
+
                 $stmtMov->execute([
                     $id, 
                     $catId, 
@@ -172,7 +184,9 @@ class FlujoModel {
                     $mov['moneda'], 
                     $mov['monto'], 
                     $mov['medio_pago'], 
-                    $mov['observacion'] ?? ''
+                    $mov['observacion'] ?? '',
+                    $sFecha,
+                    $sTurno
                 ]);
 
                 $movId = (int)$this->pdo->lastInsertId();
@@ -278,5 +292,93 @@ class FlujoModel {
         }
 
         return $resumen;
+    }
+    /**
+     * Busca si existe un turno en estado 'borrador' (activo) que coincida 
+     * con la fecha y hora actual para el auto-redireccionamiento.
+     * @return int|null ID del flujo o null si no hay ninguno abierto.
+     */
+    public function getTurnoActivo(): ?int {
+        $fecha = date('Y-m-d');
+        $hora  = (int)date('H');
+        
+        // MAÑANA: 6 am a 2 pm (06:00 - 13:59)
+        // TARDE: 2 pm a 10 pm (14:00 - 21:59). 
+        // Si es fuera de rango, buscamos el de TARDE o el último de hoy.
+        $turnoActual = ($hora >= 6 && $hora < 14) ? 'MAÑANA' : 'TARDE';
+        
+        // 1. Intentar buscar el turno exacto de hoy que corresponda a la hora
+        $stmt = $this->pdo->prepare("SELECT id FROM flujo_caja WHERE fecha = ? AND turno = ? AND estado = 'borrador' LIMIT 1");
+        $stmt->execute([$fecha, $turnoActual]);
+        $id = $stmt->fetchColumn();
+        
+        // 2. Fallback: Si no hay exacto para la hora, cualquier borrador de HOY (por si se pasó de hora)
+        if (!$id) {
+            $stmt = $this->pdo->prepare("SELECT id FROM flujo_caja WHERE fecha = ? AND estado = 'borrador' ORDER BY id DESC LIMIT 1");
+            $stmt->execute([$fecha]);
+            $id = $stmt->fetchColumn();
+        }
+        
+        return $id ? (int)$id : null;
+    }
+
+    /**
+     * Obtiene el reporte consolidado diario solicitado por el señor Alex.
+     * Muestra el efectivo recaudado en cada sobre (Mañana/Tarde) restando los 
+     * egresos que fueron extraídos específicamente de esos sobres.
+     * 
+     * @param string $fecha Fecha del reporte.
+     * @return array Estructura de datos para la "Tabla Verde".
+     */
+    public function getReporteAlexDiario(string $fecha): array {
+        // 1. Ingresos por turno (Efectivo)
+        $sqlIng = "
+            SELECT 
+                f.turno, 
+                m.moneda, 
+                SUM(m.monto) as total_ingreso
+            FROM flujo_caja f
+            JOIN flujo_caja_movimientos m ON f.id = m.flujo_id
+            WHERE f.fecha = ? AND m.tipo = 'Ingreso' AND m.medio_pago = 'EFECTIVO'
+            GROUP BY f.turno, m.moneda
+        ";
+        $stmtIng = $this->pdo->prepare($sqlIng);
+        $stmtIng->execute([$fecha]);
+        $ingresos = $stmtIng->fetchAll(PDO::FETCH_ASSOC);
+
+        // 2. Egresos asociados a estos sobres (sin importar en qué turno se registraron)
+        $sqlEgr = "
+            SELECT 
+                sobre_turno as turno, 
+                moneda, 
+                SUM(monto) as total_egreso,
+                GROUP_CONCAT(CONCAT(categoria, ' (', monto, ')') SEPARATOR ', ') as detalle_egresos
+            FROM flujo_caja_movimientos
+            WHERE sobre_fecha = ? AND tipo = 'Egreso' AND medio_pago = 'EFECTIVO'
+            GROUP BY sobre_turno, moneda
+        ";
+        $stmtEgr = $this->pdo->prepare($sqlEgr);
+        $stmtEgr->execute([$fecha]);
+        $egresos = $stmtEgr->fetchAll(PDO::FETCH_ASSOC);
+
+        // Estructurar el resultado
+        $reporte = [
+            'MAÑANA' => ['PEN' => 0, 'USD' => 0, 'CLP' => 0, 'egresos_detalle' => ''],
+            'TARDE'  => ['PEN' => 0, 'USD' => 0, 'CLP' => 0, 'egresos_detalle' => ''],
+            'fecha'  => $fecha
+        ];
+
+        foreach ($ingresos as $i) {
+            $reporte[$i['turno']][$i['moneda']] += (float)$i['total_ingreso'];
+        }
+
+        foreach ($egresos as $e) {
+            if (isset($reporte[$e['turno']])) {
+                $reporte[$e['turno']][$e['moneda']] -= (float)$e['total_egreso'];
+                $reporte[$e['turno']]['egresos_detalle'] = $e['detalle_egresos'];
+            }
+        }
+
+        return $reporte;
     }
 }

@@ -32,7 +32,13 @@ class DesayunoModel {
     }
 
     public function getDetalle(int $id): array {
-        $stmt = $this->pdo->prepare("SELECT * FROM desayunos_detalle WHERE desayuno_id = ? ORDER BY habitacion ASC");
+        $stmt = $this->pdo->prepare(
+            "SELECT dd.*, h.numero AS habitacion
+             FROM desayunos_detalle dd
+             JOIN habitaciones h ON h.id = dd.habitacion_id
+             WHERE dd.desayuno_id = ?
+             ORDER BY h.numero ASC"
+        );
         $stmt->execute([$id]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -70,12 +76,11 @@ class DesayunoModel {
             }
 
             // Insertar detalles
-            $stmtDet = $this->pdo->prepare("INSERT INTO desayunos_detalle (desayuno_id, habitacion_id, habitacion, titular, pax, incluye_desayuno) VALUES (?, ?, ?, ?, ?, ?)");
+            $stmtDet = $this->pdo->prepare("INSERT INTO desayunos_detalle (desayuno_id, habitacion_id, titular, pax, incluye_desayuno) VALUES (?, ?, ?, ?, ?)");
             foreach ($detalles as $det) {
                 $stmtDet->execute([
                     $id,
                     $det['habitacion_id'],
-                    $det['habitacion'],
                     $det['titular'] ?? '---',
                     $det['pax'],
                     ($det['incluye_desayuno'] ? 1 : 0)

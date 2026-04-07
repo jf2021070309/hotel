@@ -5,6 +5,19 @@
 $base = '../../../';
 require_once $base . 'auth/middleware.php';
 protegerPorRol('cajera', 'flujo');
+require_once $base . 'config/db.php'; // Asegurar PDO
+
+// AUTO-REDIRECT: Si hay un turno abierto (borrador), entrar directo.
+// Se permite bypass con ?noredirect=1 para ver el listado histórico.
+if (!isset($_GET['noredirect'])) {
+    require_once $base . 'app/Models/FlujoModel.php';
+    $fm = new FlujoModel($pdo);
+    $activoId = $fm->getTurnoActivo();
+    if ($activoId) {
+        header("Location: form.php?id=" . $activoId);
+        exit;
+    }
+}
 
 $page_title = 'Flujo de Caja — Hotel Manager';
 include $base . 'includes/head.php';
@@ -105,4 +118,4 @@ include $base . 'includes/sidebar.php';
 <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="<?= $base ?>app/Views/flujo/index.js"></script>
+<script src="<?= $base ?>app/Views/flujo/index.js?v=<?= time() ?>"></script>

@@ -81,16 +81,16 @@ class FlujoController {
             return ['ok' => false, 'msg' => 'Fecha y Turno son requeridos'];
         }
 
-        // Si es nuevo, chequear que no exista ya ese turno o editar el actual
-        if ($this->model->checkExisteTurno($fecha, $turno, $id)) {
-            return ['ok' => false, 'msg' => "Ya existe un flujo para el turno $turno del $fecha"];
+        // Si ya existe un turno para esa fecha/turno (abierto o cerrado), redirigir directamente
+        if ($id === 0 && $this->model->checkExisteTurno($fecha, $turno, 0)) {
+            $existente = $this->model->getIdExistente($fecha, $turno);
+            return ['ok' => true, 'msg' => 'El turno ya existe para esta fecha. Redirigiendo al registro...', 'data' => ['id' => $existente, 'existente' => true]];
         }
 
         // Si es edición, evaluar si está cerrado/depositado
         if ($id > 0) {
             $actual = $this->model->getDetalle($id);
             if ($actual && $actual['estado'] !== 'borrador') {
-                // EXCEPCIÓN: Admin/Supervisor sí pueden editar aunque esté cerrado
                 if (!in_array($_SESSION['auth_rol'] ?? '', ['admin', 'supervisor'])) {
                     return ['ok' => false, 'msg' => 'No tienes permisos para editar un turno cerrado o depositado'];
                 }
@@ -180,7 +180,23 @@ class FlujoController {
      * @param string $fecha Formato YYYY-MM-DD.
      * @return array Resumen con totales por moneda y desglose de turnos.
      */
+    /**
+     * Obtiene el resumen consolidado específico para la liquidación de sobres de Alex.
+     * 
+     * @param string $fecha Formato YYYY-MM-DD.
+     * @return array Resumen con totales por turno y desglose de egresos.
+     */
     public function resumenDia(string $fecha): array {
         return $this->model->getResumenDia($fecha);
+    }
+
+    /**
+     * Obtiene el resumen consolidado específico para la liquidación de sobres de Alex.
+     * 
+     * @param string $fecha Formato YYYY-MM-DD.
+     * @return array Resumen con totales por turno y desglose de egresos.
+     */
+    public function resumenAlex(string $fecha): array {
+        return $this->model->getReporteAlexDiario($fecha);
     }
 }

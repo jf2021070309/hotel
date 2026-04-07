@@ -32,45 +32,7 @@ include $base . 'includes/sidebar.php';
     </div>
 
     <div class="page-body">
-        <!-- Resumen Regla de Oro (Compacto) -->
-        <div class="row g-3 mb-4">
-            <div class="col-md-2">
-                <div class="card h-100 border-0 shadow-sm text-center py-2" style="background: #10b981; color: white;">
-                    <div class="small fw-bold opacity-75">HOSPEDAJE</div>
-                    <div class="h5 mb-0 fw-bold">S/ {{ parseFloat(resumen.ingresos_hospedaje).toFixed(2) }}</div>
-                </div>
-            </div>
-            <div class="col-md-2">
-                <div class="card h-100 border-0 shadow-sm text-center py-2 bg-white">
-                    <div class="small fw-bold text-muted">OTROS ING.</div>
-                    <div class="h5 mb-0 fw-bold text-dark">S/ {{ parseFloat(resumen.otros_ingresos).toFixed(2) }}</div>
-                </div>
-            </div>
-            <div class="col-md-2">
-                <div class="card h-100 border-0 shadow-sm text-center py-2 bg-white text-danger">
-                    <div class="small fw-bold opacity-75">EGR. FLUJO</div>
-                    <div class="h5 mb-0 fw-bold">S/ {{ parseFloat(resumen.egresos_operativos).toFixed(2) }}</div>
-                </div>
-            </div>
-            <div class="col-md-2">
-                <div class="card h-100 border-0 shadow-sm text-center py-2 bg-white text-danger border-start border-warning border-4">
-                    <div class="small fw-bold opacity-75">C. CHICA</div>
-                    <div class="h5 mb-0 fw-bold">S/ {{ parseFloat(resumen.gastos_caja_chica).toFixed(2) }}</div>
-                </div>
-            </div>
-            <div class="col-md-2">
-                <div class="card h-100 border-0 shadow-sm text-center py-2 bg-white text-danger border-start border-primary border-4">
-                    <div class="small fw-bold opacity-75">G. YAPE</div>
-                    <div class="h5 mb-0 fw-bold">S/ {{ parseFloat(resumen.gastos_yape).toFixed(2) }}</div>
-                </div>
-            </div>
-            <div class="col-md-2">
-                <div class="card h-100 border-0 shadow-sm text-center py-2" style="background: #fbbf24; color: #78350f;">
-                    <div class="small fw-bold opacity-75">UTILIDAD</div>
-                    <div class="h5 mb-0 fw-bold">S/ {{ parseFloat(resumen.utilidad_neta).toFixed(2) }}</div>
-                </div>
-            </div>
-        </div>
+
 
         <!-- Agrupación por Día -->
         <div v-for="(turnos, fecha) in groupedData" :key="fecha" class="mb-4">
@@ -96,9 +58,7 @@ include $base . 'includes/sidebar.php';
                                     <th class="text-center">CHECK OUT</th>
                                     <th class="text-center">N</th>
                                     <th class="text-center">CANAL</th>
-                                    <th class="text-end text-success">EFECTIVO</th>
-                                    <th class="text-end text-primary">POS</th>
-                                    <th class="text-end text-warning">YAPE</th>
+                                    <th class="text-center">MEDIO</th>
                                     <th class="text-end fw-bold">TOTAL</th>
                                     <th class="pe-4">COMPROBANTE</th>
                                 </tr>
@@ -112,20 +72,28 @@ include $base . 'includes/sidebar.php';
                                     <td class="text-center">{{ i.check_out }}</td>
                                     <td class="text-center">{{ i.noches }}</td>
                                     <td class="text-center"><span class="badge bg-light text-dark border">{{ i.canal }}</span></td>
-                                    <td class="text-end">{{ formatCurrency(i.cobrado_efectivo, getSym(i.moneda)) }}</td>
-                                    <td class="text-end">{{ formatCurrency(i.cobrado_pos, getSym(i.moneda)) }}</td>
-                                    <td class="text-end">{{ formatCurrency(i.cobrado_yape, getSym(i.moneda)) }}</td>
-                                    <td class="text-end fw-bold">{{ getSym(i.moneda) }} {{ i.total_fila }}</td>
+                                    <td class="text-center">
+                                        <span class="badge px-2 py-1" :class="getBadgeClass(i.medio_label)">
+                                            {{ i.medio_label }}
+                                        </span>
+                                    </td>
+                                    <td class="text-end fw-bold">{{ getSym(i.moneda) }} {{ formatNumber(i.monto, (i.moneda === 'CLP' ? 0 : 2)) }}</td>
                                     <td class="pe-4 small">{{ i.comprobante }}</td>
                                 </tr>
                             </tbody>
-                            <tfoot class="bg-light fw-bold">
+                            <tfoot class="bg-light border-top">
                                 <tr>
-                                    <td colspan="7" class="ps-4 text-end">Subtotal {{ turno }}:</td>
-                                    <td class="text-end text-success">S/ {{ getSubtotalTurno(items.filter(x => x.moneda === 'PEN'), 'cobrado_efectivo') }}</td>
-                                    <td class="text-end text-primary">S/ {{ getSubtotalTurno(items.filter(x => x.moneda === 'PEN'), 'cobrado_pos') }}</td>
-                                    <td class="text-end text-warning">S/ {{ getSubtotalTurno(items.filter(x => x.moneda === 'PEN'), 'cobrado_yape') }}</td>
-                                    <td colspan="2"></td>
+                                    <td colspan="10" class="p-3">
+                                        <div class="d-flex flex-wrap gap-4 align-items-center justify-content-end">
+                                            <div class="small fw-bold text-muted text-uppercase">Liquidación {{ turno }}:</div>
+                                            <div v-for="(val, label) in getResumenTurno(items)" :key="label" class="border-start ps-3" v-if="val > 0">
+                                                <div class="micro-text text-muted fw-bold">{{ label }}</div>
+                                                <div class="fw-bold" :class="getBadgeClass(label, true)">
+                                                    {{ getPrefix(label) }} {{ formatNumber(val, (label.includes('P$') || label.includes('CLP')) ? 0 : 2) }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -148,19 +116,19 @@ include $base . 'includes/sidebar.php';
                             <tbody>
                                 <tr>
                                     <td class="ps-4 py-3 text-muted">POS Soles:</td>
-                                    <td class="pe-4 py-3 text-end fw-bold">S/ {{ resumenDesglosado.POS?.PEN.toFixed(2) }}</td>
+                                    <td class="pe-4 py-3 text-end fw-bold">S/ {{ formatNumber(resumenDesglosado.POS?.PEN) }}</td>
                                 </tr>
                                 <tr>
                                     <td class="ps-4 py-3 text-muted">POS Dólares:</td>
-                                    <td class="pe-4 py-3 text-end fw-bold">USD {{ resumenDesglosado.POS?.USD.toFixed(2) }}</td>
+                                    <td class="pe-4 py-3 text-end fw-bold">USD {{ formatNumber(resumenDesglosado.POS?.USD) }}</td>
                                 </tr>
                                 <tr>
                                     <td class="ps-4 py-3 text-muted">POS Pesos:</td>
-                                    <td class="pe-4 py-3 text-end fw-bold">CLP {{ Math.round(resumenDesglosado.POS?.CLP) }}</td>
+                                    <td class="pe-4 py-3 text-end fw-bold">CLP {{ formatNumber(resumenDesglosado.POS?.CLP, 0) }}</td>
                                 </tr>
                                 <tr class="bg-light">
                                     <td class="ps-4 py-3 text-muted">Yape / Plin:</td>
-                                    <td class="pe-4 py-3 text-end fw-bold text-primary">S/ {{ resumenDesglosado.YAPE?.toFixed(2) }}</td>
+                                    <td class="pe-4 py-3 text-end fw-bold text-primary">S/ {{ formatNumber(resumenDesglosado.YAPE) }}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -170,19 +138,19 @@ include $base . 'includes/sidebar.php';
                             <tbody>
                                 <tr>
                                     <td class="ps-4 py-3 text-muted">Efectivo Soles:</td>
-                                    <td class="pe-4 py-3 text-end fw-bold">S/ {{ resumenDesglosado.EFECTIVO?.PEN.toFixed(2) }}</td>
+                                    <td class="pe-4 py-3 text-end fw-bold">S/ {{ formatNumber(resumenDesglosado.EFECTIVO?.PEN) }}</td>
                                 </tr>
                                 <tr>
                                     <td class="ps-4 py-3 text-muted">Efectivo Dólares:</td>
-                                    <td class="pe-4 py-3 text-end fw-bold">USD {{ resumenDesglosado.EFECTIVO?.USD.toFixed(2) }}</td>
+                                    <td class="pe-4 py-3 text-end fw-bold">USD {{ formatNumber(resumenDesglosado.EFECTIVO?.USD) }}</td>
                                 </tr>
                                 <tr>
                                     <td class="ps-4 py-3 text-muted">Efectivo Pesos:</td>
-                                    <td class="pe-4 py-3 text-end fw-bold">CLP {{ Math.round(resumenDesglosado.EFECTIVO?.CLP) }}</td>
+                                    <td class="pe-4 py-3 text-end fw-bold">CLP {{ formatNumber(resumenDesglosado.EFECTIVO?.CLP, 0) }}</td>
                                 </tr>
                                 <tr class="bg-light">
                                     <td class="ps-4 py-3 text-muted">Transferencia / Depósito:</td>
-                                    <td class="pe-4 py-3 text-end fw-bold text-success">S/ {{ resumenDesglosado.TRANSFERENCIA?.toFixed(2) }}</td>
+                                    <td class="pe-4 py-3 text-end fw-bold text-success">S/ {{ formatNumber(resumenDesglosado.TRANSFERENCIA) }}</td>
                                 </tr>
                             </tbody>
                         </table>

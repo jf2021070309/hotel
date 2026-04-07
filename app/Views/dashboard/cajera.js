@@ -84,9 +84,16 @@ createApp({
       modal.show();
     };
 
+    const formatNumber = (val, decimals = 2) => {
+      return new Intl.NumberFormat('en-US', {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals
+      }).format(parseFloat(val || 0));
+    };
+
     return {
       loadingInicial, segundosDesdeUpdate, usuario, urgentes, checkouts_hoy, checkins_esperados, mi_turno, kpi, alertasInventario,
-      abrirModalReporte
+      abrirModalReporte, formatNumber
     };
   }
 }).mount('#app-dash-cajera');

@@ -41,17 +41,21 @@ include 'includes/sidebar.php';
       <div class="row g-3 mb-4">
         <!-- Ocupación -->
         <div class="col-sm-6 col-lg-3">
-          <div class="card shadow-sm border-0 border-top border-4 h-100" style="border-top-color: #111 !important; border-radius: 12px;">
+          <div class="card shadow-sm border-0 border-top border-4 h-100"
+            style="border-top-color: #111 !important; border-radius: 12px;">
             <div class="card-body">
               <div class="row no-gutters align-items-center">
                 <div class="col mr-2">
-                  <div class="text-xs fw-bold text-uppercase mb-1" style="color: #64748b; letter-spacing: 1px;">🛏️ Ocupación Hoy</div>
-                  <div class="h4 mb-0 fw-bold" style="color: #111;">{{ kpi.ocupacion.ocupadas }} <span class="fs-6 text-muted">/ {{ kpi.ocupacion.total }}</span></div>
+                  <div class="text-xs fw-bold text-uppercase mb-1" style="color: #64748b; letter-spacing: 1px;">🛏️
+                    Ocupación Hoy</div>
+                  <div class="h4 mb-0 fw-bold" style="color: #111;">{{ kpi.ocupacion.ocupadas }} <span
+                      class="fs-6 text-muted">/ {{ kpi.ocupacion.total }}</span></div>
                 </div>
                 <!-- Mini Progress Bar -->
                 <div class="col-auto mt-2 w-100">
                   <div class="progress" style="height: 6px; background-color: #f1f5f9;">
-                    <div class="progress-bar" style="background-color: #d4af37;" :style="{width: (kpi.ocupacion.ocupadas * 100 / (kpi.ocupacion.total || 1)) + '%'}"></div>
+                    <div class="progress-bar" style="background-color: #d4af37;"
+                      :style="{width: (kpi.ocupacion.ocupadas * 100 / (kpi.ocupacion.total || 1)) + '%'}"></div>
                   </div>
                 </div>
               </div>
@@ -61,12 +65,15 @@ include 'includes/sidebar.php';
 
         <!-- PAX en Hotel -->
         <div class="col-sm-6 col-lg-3">
-          <div class="card shadow-sm border-0 border-top border-4 h-100" style="border-top-color: #475569 !important; border-radius: 12px;">
+          <div class="card shadow-sm border-0 border-top border-4 h-100"
+            style="border-top-color: #475569 !important; border-radius: 12px;">
             <div class="card-body">
               <div class="d-flex align-items-center justify-content-between">
                 <div>
-                  <div class="text-xs fw-bold text-uppercase mb-1" style="color: #64748b; letter-spacing: 1px;">👥 PAX en Hotel</div>
-                  <div class="h3 mb-0 fw-bold" style="color: #111;">{{ kpi.pax_hoy }} <span class="fs-6 text-muted">personas</span></div>
+                  <div class="text-xs fw-bold text-uppercase mb-1" style="color: #64748b; letter-spacing: 1px;">👥 PAX
+                    en Hotel</div>
+                  <div class="h3 mb-0 fw-bold" style="color: #111;">{{ kpi.pax_hoy }} <span
+                      class="fs-6 text-muted">personas</span></div>
                 </div>
                 <i class="bi bi-people-fill opacity-25" style="font-size: 2.5rem; color: #111;"></i>
               </div>
@@ -74,23 +81,30 @@ include 'includes/sidebar.php';
           </div>
         </div>
 
-        <!-- Ingresos Hoy -->
+        <!-- Desglose de Mi Turno -->
         <div class="col-sm-6 col-lg-3">
-          <div class="card shadow-sm border-0 border-top border-4 h-100" style="border-top-color: #16a34a !important; border-radius: 12px;">
-            <div class="card-body">
-              <div class="d-flex align-items-center justify-content-between">
-                <div>
-                  <div class="text-xs fw-bold text-uppercase mb-1" style="color: #16a34a; letter-spacing: 1px;">💰 Ingresos Hoy</div>
-                  <div class="h4 mb-0 fw-bold" style="color: #111;">S/ {{ kpi.ingresos_hoy.PEN !== undefined ? kpi.ingresos_hoy.PEN.toFixed(2) : '0.00' }}</div>
-                  
-                  <div v-if="kpi.pendientes_hoy.PEN > 0 || kpi.pendientes_hoy.CLP > 0 || kpi.pendientes_hoy.USD > 0" class="text-muted small mt-2">
-                    <i class="bi bi-clock-history"></i> Pendientes:<br>
-                    <span v-if="kpi.pendientes_hoy.PEN > 0" class="ms-1 fw-bold">S/ {{ kpi.pendientes_hoy.PEN.toFixed(2) }}</span>
-                    <span v-if="kpi.pendientes_hoy.CLP > 0" class="ms-1 fw-bold text-secondary">CLP {{ kpi.pendientes_hoy.CLP.toFixed(2) }}</span>
-                    <span v-if="kpi.pendientes_hoy.USD > 0" class="ms-1 fw-bold text-secondary">USD {{ kpi.pendientes_hoy.USD.toFixed(2) }}</span>
-                  </div>
+          <div class="card shadow-sm border-0 border-top border-4 h-100"
+            style="border-top-color: #16a34a !important; border-radius: 12px;">
+            <div class="card-body p-3">
+              <div class="text-xs fw-bold text-uppercase mb-2" style="color: #16a34a; letter-spacing: 1px;">💰
+                Desglose Mi Turno</div>
+              
+              <div class="mt-1" style="max-height: 150px; overflow-y: auto;">
+                <div v-for="d in mi_turno.desglose" :key="d.medio_pago + d.moneda" 
+                     class="d-flex justify-content-between border-bottom py-1" style="font-size: 0.8rem;">
+                  <span class="text-muted">
+                    {{ d.medio_pago }} 
+                    <span v-if="d.medio_pago.toUpperCase().includes('EFEC')" class="text-primary fw-bold" style="font-size: 0.65rem;">
+                      <br>(Efectivo en sobre)
+                    </span>
+                  </span>
+                  <span class="fw-bold text-dark text-end">
+                    {{ d.moneda }} {{ formatNumber(d.total, d.moneda === 'CLP' ? 0 : 2) }}
+                  </span>
                 </div>
-                <i class="bi bi-cash-stack text-success opacity-25" style="font-size: 2.5rem;"></i>
+                <div v-if="!mi_turno.desglose || mi_turno.desglose.length === 0" class="text-center text-muted py-3 small">
+                  Sin ingresos en este turno
+                </div>
               </div>
             </div>
           </div>
@@ -98,12 +112,14 @@ include 'includes/sidebar.php';
 
         <!-- Egresos Hoy -->
         <div class="col-sm-6 col-lg-3">
-          <div class="card shadow-sm border-0 border-top border-4 h-100" style="border-top-color: #dc2626 !important; border-radius: 12px;">
+          <div class="card shadow-sm border-0 border-top border-4 h-100"
+            style="border-top-color: #dc2626 !important; border-radius: 12px;">
             <div class="card-body">
               <div class="d-flex align-items-center justify-content-between">
                 <div>
-                  <div class="text-xs fw-bold text-uppercase mb-1" style="color: #dc2626; letter-spacing: 1px;">📤 Egresos Hoy</div>
-                  <div class="h4 mb-0 fw-bold" style="color: #111;">S/ {{ kpi.egresos_hoy.PEN !== undefined ? kpi.egresos_hoy.PEN.toFixed(2) : '0.00' }}</div>
+                  <div class="text-xs fw-bold text-uppercase mb-1" style="color: #dc2626; letter-spacing: 1px;">📤
+                    Egresos Hoy</div>
+                  <div class="h4 mb-0 fw-bold" style="color: #111;">S/ {{ formatNumber(kpi.egresos_hoy.PEN) }}</div>
                 </div>
                 <i class="bi bi-box-arrow-right text-danger opacity-25" style="font-size: 2.5rem;"></i>
               </div>
@@ -120,7 +136,7 @@ include 'includes/sidebar.php';
           <!-- BLOQUE 1: URGENTE AHORA (Cobros) -->
           <div class="card shadow-sm border-0 mb-4 border-start border-danger border-5">
             <div class="card-header bg-white py-3">
-              <h6 class="m-0 fw-bold text-danger"><i class="bi bi-exclamation-octagon-fill me-2"></i>⚠️ URGENTE AHORA:
+              <h6 class="m-0 fw-bold text-danger"><i class="bi bi-exclamation-octagon-fill me-2"></i> URGENTE AHORA:
                 Cobros pendientes</h6>
             </div>
             <div class="card-body p-0">
@@ -147,7 +163,7 @@ include 'includes/sidebar.php';
                         <small class="text-muted">Gasto acumulado</small>
                       </td>
                       <td class="text-center">
-                        <span class="badge bg-danger fs-6 px-3">S/ {{ parseFloat(u.debe).toFixed(2) }}</span>
+                        <span class="badge bg-danger fs-6 px-3">S/ {{ formatNumber(u.debe) }}</span>
                       </td>
                       <td class="text-end pe-3">
                         <a :href="'app/Views/rooming/index.php?buscar=' + u.hab"
@@ -165,7 +181,7 @@ include 'includes/sidebar.php';
           <!-- BLOQUE 2: CHECKOUTS DE HOY -->
           <div class="card shadow-sm border-0 mb-4">
             <div class="card-header bg-white py-3">
-              <h6 class="m-0 fw-bold text-dark"><i class="bi bi-calendar-x me-2"></i>📋 CHECKOUTS DE HOY (Salidas)</h6>
+              <h6 class="m-0 fw-bold text-dark"><i class="bi bi-calendar-x me-2"></i> CHECKOUTS DE HOY (Salidas)</h6>
             </div>
             <div class="card-body p-0">
               <div class="table-responsive">
@@ -186,7 +202,7 @@ include 'includes/sidebar.php';
                     <tr v-for="c in checkouts_hoy" :class="parseFloat(c.saldo) > 0 ? 'table-danger' : 'table-success'">
                       <td class="ps-3 fw-bold">{{ c.hab }}</td>
                       <td>{{ c.huesped }}</td>
-                      <td class="text-center fw-bold">S/ {{ parseFloat(c.saldo).toFixed(2) }}</td>
+                      <td class="text-center fw-bold">S/ {{ formatNumber(c.saldo) }}</td>
                       <td class="text-center">
                         <span v-if="parseFloat(c.saldo) > 0" class="badge bg-danger">DEBE SALDO</span>
                         <span v-else class="badge bg-success">✅ PAGADO</span>
@@ -201,7 +217,7 @@ include 'includes/sidebar.php';
           <!-- BLOQUE 3: CHECK-INS ESPERADOS -->
           <div class="card shadow-sm border-0">
             <div class="card-header bg-white py-3">
-              <h6 class="m-0 fw-bold text-primary"><i class="bi bi-calendar-check me-2"></i>📅 CHECK-INS ESPERADOS
+              <h6 class="m-0 fw-bold text-primary"><i class="bi bi-calendar-check me-2"></i> CHECK-INS ESPERADOS
                 (Entradas)</h6>
             </div>
             <div class="card-body p-0">
@@ -259,27 +275,27 @@ include 'includes/sidebar.php';
             <div class="card-body">
               <div class="mb-3 d-flex justify-content-between">
                 <span class="text-muted">Ingresos (Soles):</span>
-                <span class="fw-bold text-success">S/ {{ mi_turno.ingresos.toFixed(2) }}</span>
+                <span class="fw-bold text-success">S/ {{ formatNumber(mi_turno.ingresos) }}</span>
               </div>
               <div class="mb-3 d-flex justify-content-between" v-if="mi_turno.ingresos_usd > 0">
                 <span class="text-muted">Ingresos (Dólares):</span>
-                <span class="fw-bold text-success">USD {{ mi_turno.ingresos_usd.toFixed(2) }}</span>
+                <span class="fw-bold text-success">USD {{ formatNumber(mi_turno.ingresos_usd) }}</span>
               </div>
               <div class="mb-3 d-flex justify-content-between" v-if="mi_turno.ingresos_clp > 0">
                 <span class="text-muted">Ingresos (Pesos Chilenos):</span>
-                <span class="fw-bold text-success">CLP {{ mi_turno.ingresos_clp.toFixed(2) }}</span>
+                <span class="fw-bold text-success">CLP {{ formatNumber(mi_turno.ingresos_clp, 0) }}</span>
               </div>
               <div class="mb-3 d-flex justify-content-between">
                 <span class="text-muted">Egresos:</span>
-                <span class="fw-bold text-danger">S/ {{ mi_turno.egresos.toFixed(2) }}</span>
+                <span class="fw-bold text-danger">S/ {{ formatNumber(mi_turno.egresos) }}</span>
               </div>
               <hr>
               <div class="mb-4 d-flex justify-content-between align-items-center">
                 <span class="fw-bold h6 mb-0 text-dark">EFECTIVO EN SOBRE:</span>
                 <span v-if="mi_turno.efectivo_sobre >= 0" class="h4 mb-0 fw-bold text-primary">S/ {{
-                  mi_turno.efectivo_sobre.toFixed(2) }}</span>
+                  formatNumber(mi_turno.efectivo_sobre) }}</span>
                 <span v-else class="h4 mb-0 fw-bold text-danger"
-                  title="El cajón está en negativo por falta de saldo inicial.">S/ {{ mi_turno.efectivo_sobre.toFixed(2)
+                  title="El cajón está en negativo por falta de saldo inicial.">S/ {{ formatNumber(mi_turno.efectivo_sobre)
                   }} <small class="fs-6">(Faltante)</small></span>
               </div>
 
@@ -291,42 +307,15 @@ include 'includes/sidebar.php';
                 <span class="badge" :class="mi_turno.estado === 'borrador' ? 'bg-warning text-dark' : 'bg-success'">
                   {{ mi_turno.estado.toUpperCase() }}
                 </span>
-                <button @click="abrirModalReporte(mi_turno.id)" class="btn btn-sm btn-outline-primary ms-auto" title="Imprimir Reporte">
+                <button @click="abrirModalReporte(mi_turno.id)" class="btn btn-sm btn-outline-primary ms-auto"
+                  title="Imprimir Reporte">
                   <i class="bi bi-file-earmark-pdf-fill me-1"></i> Ver Reporte
                 </button>
               </div>
             </div>
           </div>
 
-          <!-- ACCESOS RÁPIDOS -->
-          <div class="card shadow-sm border-0">
-            <div class="card-header bg-white py-3">
-              <h6 class="m-0 fw-bold text-dark"><i class="bi bi-lightning-fill me-1 text-warning"></i> ACCESOS RÁPIDOS
-              </h6>
-            </div>
-            <div class="card-body pt-0">
-              <div class="d-grid gap-2 mt-3">
-                <a href="app/Views/rooming/index.php" class="btn btn-lg btn-outline-primary text-start">
-                  <i class="bi bi-plus-square-fill me-2"></i> Nuevo Check-in
-                </a>
-                <a href="app/Views/rooming/index.php" class="btn btn-lg btn-outline-secondary text-start">
-                  <i class="bi bi-card-checklist me-2"></i> Ver Rooming
-                </a>
-                <a href="app/Views/flujo/index.php" class="btn btn-lg btn-outline-secondary text-start">
-                  <i class="bi bi-cash-stack me-2 text-success"></i> Flujo de Caja
-                </a>
-                <a href="app/Views/reservas/index.php" class="btn btn-lg btn-outline-secondary text-start">
-                  <i class="bi bi-grid-3x3-gap-fill me-2 text-warning"></i> Cuadro Reservas
-                </a>
-                <a href="app/Views/caja_chica/index.php" class="btn btn-lg btn-outline-secondary text-start">
-                  <i class="bi bi-box2-heart me-2 text-danger"></i> Caja Chica
-                </a>
-                <a href="app/Views/yape/index.php" class="btn btn-lg btn-outline-secondary text-start">
-                  <i class="bi bi-wallet2 me-2" style="color:#7b2cbf"></i> Gastos Yape
-                </a>
-              </div>
-            </div>
-          </div>
+
 
         </div>
 
@@ -344,7 +333,8 @@ include 'includes/sidebar.php';
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
         </div>
         <div class="modal-body p-0 text-center" style="height: 85vh;">
-          <iframe id="iframeReporte" src="" style="width: 100%; height: 100%; border: none; background: #e9ecef;"></iframe>
+          <iframe id="iframeReporte" src=""
+            style="width: 100%; height: 100%; border: none; background: #e9ecef;"></iframe>
         </div>
       </div>
     </div>

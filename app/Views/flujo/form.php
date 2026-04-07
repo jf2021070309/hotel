@@ -23,7 +23,7 @@ $turnoQuery = $_GET['turno'] ?? 'MAÑANA';
       <p class="mb-0 small text-muted">Añade o edita movimientos de ingresos y egresos</p>
     </div>
     <div class="ms-auto">
-      <a href="index.php" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Volver</a>
+      <a href="index.php?noredirect=1" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Volver al Listado</a>
     </div>
   </div>
 
@@ -72,18 +72,17 @@ $turnoQuery = $_GET['turno'] ?? 'MAÑANA';
               <table class="table table-borderless table-striped align-middle mb-0" style="font-size:13px;">
                 <thead class="table-light">
                   <tr class="text-secondary" style="font-size:11px;">
-                    <th style="width:25%;">CATEGORÍA</th>
-                    <th style="width:12%;">MONEDA</th>
-                    <th style="width:15%;">MONTO</th>
-                    <th style="width:18%;">MEDIO PAGO</th>
-                    <th style="width:25%;">OBSERVACIÓN</th>
+                    <th style="width:22%;">CATEGORÍA</th>
+                    <th style="width:15%;">MONEDA</th>
+                    <th style="width:13%;">MONTO</th>
+                    <th style="width:45%;">OBSERVACIÓN</th>
                     <th style="width:5%;" v-if="esEditable"></th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr v-for="(mov, index) in ingresos" :key="'i'+index">
                     <td>
-                      <select class="form-select form-select-sm" v-model="mov.categoria" :disabled="!esEditable">
+                      <select class="form-select form-select-sm" v-model="mov.categoria" :disabled="!esEditable" @change="onCategoriaChange(mov)">
                         <option value="">Seleccionar...</option>
                         <option v-for="cat in categorias.ingreso" :key="cat.id" :value="cat.nombre">{{ cat.nombre }}</option>
                         <option value="OTRO">OTRO (Especificar en obs)</option>
@@ -97,16 +96,31 @@ $turnoQuery = $_GET['turno'] ?? 'MAÑANA';
                       </select>
                     </td>
                     <td>
-                      <input type="number" class="form-control form-control-sm text-end fw-bold" v-model.number="mov.monto" step="0.01" min="0" :disabled="!esEditable" placeholder="0.00">
+                      <div class="position-relative">
+                        <input v-if="focusedField === 'i' + index && esEditable" 
+                               type="number" step="0.01" 
+                               class="form-control form-control-sm text-end fw-bold border-primary shadow-sm" 
+                               v-model.number="mov.monto" 
+                               @blur="focusedField = null" 
+                               v-focus>
+                        <input v-else 
+                               type="text" 
+                               class="form-control form-control-sm text-end fw-bold" 
+                               :class="{'bg-white': esEditable, 'bg-light': !esEditable}"
+                               :value="fmtMonto(mov.monto, mov.moneda)" 
+                               @focus="focusedField = 'i' + index" 
+                               readonly>
+                      </div>
                     </td>
                     <td>
-                      <select class="form-select form-select-sm" v-model="mov.medio_pago" :class="{'bg-success text-white': mov.medio_pago==='EFECTIVO', 'bg-light': mov.medio_pago!=='EFECTIVO'}" :disabled="!esEditable">
-                        <option value="EFECTIVO" class="bg-success text-white">EFECTIVO</option>
-                        <option value="NO EFECTIVO" class="bg-light text-dark">NO EFECTIVO (Pos/Transf)</option>
-                      </select>
-                    </td>
-                    <td>
-                      <input type="text" class="form-control form-control-sm text-danger" v-model="mov.observacion" :disabled="!esEditable" placeholder="Nota rojita...">
+                      <div class="input-group input-group-sm">
+                        <textarea class="form-control text-danger border-end-0 py-1" v-model="mov.observacion" :disabled="!esEditable" placeholder="Nota..." rows="2" style="resize: none; font-size: 11px; overflow: hidden; line-height: 1.2;"></textarea>
+                        <span class="input-group-text bg-white border-start-0" v-if="mov.observacion.includes('#')">
+                           <a :href="'../rooming/index.php?stay_id=' + (mov.observacion.match(/#(\d+)/) || [])[1]" class="text-primary" title="Ver Registro" target="_blank">
+                             <i class="bi bi-box-arrow-up-right"></i>
+                           </a>
+                        </span>
+                      </div>
                     </td>
                     <td v-if="esEditable" class="text-center">
                       <button class="btn btn-sm text-danger" @click="eliminarMovimiento('ingresos', index)"><i class="bi bi-trash"></i></button>
@@ -134,18 +148,17 @@ $turnoQuery = $_GET['turno'] ?? 'MAÑANA';
               <table class="table table-borderless table-striped align-middle mb-0" style="font-size:13px;">
                 <thead class="table-light">
                   <tr class="text-secondary" style="font-size:11px;">
-                    <th style="width:25%;">CATEGORÍA</th>
-                    <th style="width:12%;">MONEDA</th>
-                    <th style="width:15%;">MONTO</th>
-                    <th style="width:18%;">MEDIO PAGO</th>
-                    <th style="width:25%;">OBSERVACIÓN</th>
+                    <th style="width:22%;">CATEGORÍA</th>
+                    <th style="width:15%;">MONEDA</th>
+                    <th style="width:13%;">MONTO</th>
+                    <th style="width:45%;">OBSERVACIÓN</th>
                     <th style="width:5%;" v-if="esEditable"></th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr v-for="(mov, index) in egresos" :key="'e'+index">
                     <td>
-                      <select class="form-select form-select-sm" v-model="mov.categoria" :disabled="!esEditable">
+                      <select class="form-select form-select-sm" v-model="mov.categoria" :disabled="!esEditable" @change="onCategoriaChange(mov)">
                         <option value="">Seleccionar...</option>
                         <option v-for="cat in categorias.egreso" :key="cat.id" :value="cat.nombre">{{ cat.nombre }}</option>
                         <option value="OTRO">OTRO (Especificar en obs)</option>
@@ -159,16 +172,31 @@ $turnoQuery = $_GET['turno'] ?? 'MAÑANA';
                       </select>
                     </td>
                     <td>
-                      <input type="number" class="form-control form-control-sm text-end fw-bold" v-model.number="mov.monto" step="0.01" min="0" :disabled="!esEditable" placeholder="0.00">
+                      <div class="position-relative">
+                        <input v-if="focusedField === 'e' + index && esEditable" 
+                               type="number" step="0.01" 
+                               class="form-control form-control-sm text-end fw-bold border-danger shadow-sm" 
+                               v-model.number="mov.monto" 
+                               @blur="focusedField = null" 
+                               v-focus>
+                        <input v-else 
+                               type="text" 
+                               class="form-control form-control-sm text-end fw-bold" 
+                               :class="{'bg-white': esEditable, 'bg-light': !esEditable}"
+                               :value="fmtMonto(mov.monto, mov.moneda)" 
+                               @focus="focusedField = 'e' + index" 
+                               readonly>
+                      </div>
                     </td>
                     <td>
-                      <select class="form-select form-select-sm" v-model="mov.medio_pago" :class="{'bg-danger text-white': mov.medio_pago==='EFECTIVO', 'bg-light': mov.medio_pago!=='EFECTIVO'}" :disabled="!esEditable">
-                        <option value="EFECTIVO" class="bg-danger text-white">EFECTIVO</option>
-                        <option value="NO EFECTIVO" class="bg-light text-dark">NO EFECTIVO (Pos/Transf)</option>
-                      </select>
-                    </td>
-                    <td>
-                      <input type="text" class="form-control form-control-sm text-danger" v-model="mov.observacion" :disabled="!esEditable" placeholder="Nota rojita...">
+                      <div class="input-group input-group-sm">
+                        <textarea class="form-control text-danger border-end-0 py-1" v-model="mov.observacion" :disabled="!esEditable" placeholder="Nota..." rows="2" style="resize: none; font-size: 11px; overflow: hidden; line-height: 1.2;"></textarea>
+                        <span class="input-group-text bg-white border-start-0" v-if="mov.observacion.includes('#')">
+                           <a :href="'../rooming/index.php?stay_id=' + (mov.observacion.match(/#(\d+)/) || [])[1]" class="text-primary" title="Ver Registro" target="_blank">
+                             <i class="bi bi-box-arrow-up-right"></i>
+                           </a>
+                        </span>
+                      </div>
                     </td>
                     <td v-if="esEditable" class="text-center">
                       <button class="btn btn-sm text-danger" @click="eliminarMovimiento('egresos', index)"><i class="bi bi-trash"></i></button>
@@ -227,13 +255,18 @@ $turnoQuery = $_GET['turno'] ?? 'MAÑANA';
               </div>
             </div>
 
+            <div class="mb-3 text-center" v-if="esEditable && !loading">
+              <span v-if="isSaving" class="badge bg-info-subtle text-info border border-info px-3 py-2" style="font-size: 11px;">
+                <span class="spinner-border spinner-border-sm me-2" style="width: 12px; height: 12px;"></span>Guardando cambios...
+              </span>
+              <span v-else class="badge bg-success-subtle text-success border border-success px-3 py-2" style="font-size: 11px;">
+                <i class="bi bi-check-circle-fill me-1"></i> Todo está sincronizado
+              </span>
+            </div>
+
             <div class="d-grid gap-2" v-if="esEditable">
-              <button class="btn btn-outline-primary py-2 fw-bold" @click="guardarTurno(false)" :disabled="isSaving">
-                <span v-if="isSaving" class="spinner-border spinner-border-sm me-1"></span>
-                <i v-else class="bi bi-save me-1"></i>Guardar Borrador
-              </button>
-              <button class="btn btn-primary py-2 fw-bold" @click="guardarTurno(true)" :disabled="isSaving">
-                <i class="bi bi-lock-fill me-1"></i>CERRAR TURNO
+              <button class="btn btn-primary py-2 fw-bold shadow-sm" @click="guardarTurno(true)" :disabled="isSaving">
+                <i class="bi bi-lock-fill me-1 text-warning"></i> CERRAR TURNO Y FINALIZAR
               </button>
             </div>
             
@@ -278,4 +311,13 @@ $turnoQuery = $_GET['turno'] ?? 'MAÑANA';
 <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="<?= $base ?>app/Views/flujo/form.js"></script>
+<script src="<?= $base ?>app/Views/flujo/form.js?v=<?= time() ?>"></script>
+
+<style>
+  /* Forzar que las glosas se vean rojas incluso si el campo está deshabilitado */
+  .text-danger:disabled, .text-danger[disabled], textarea.text-danger:read-only {
+    color: #dc3545 !important;
+    opacity: 1;
+    -webkit-text-fill-color: #dc3545;
+  }
+</style>

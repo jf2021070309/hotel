@@ -130,6 +130,19 @@ include $base . 'includes/sidebar.php';
     border: 1px solid rgba(0,0,0,.08);
     z-index: 5;
   }
+  .stay-progress-container {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: rgba(0,0,0,0.15);
+    z-index: 10;
+  }
+  .stay-progress-bar {
+    height: 100%;
+    transition: width 0.3s ease;
+  }
   .stay-block:hover {
     filter: brightness(.88);
     box-shadow: 0 2px 8px rgba(0,0,0,.18);
@@ -145,9 +158,7 @@ include $base . 'includes/sidebar.php';
   }
   .stay-block .badge-pax {
     font-size: 8px;
-    background: rgba(0,0,0,.14);
-    border-radius: 8px;
-    padding: 1px 4px;
+    padding: 1px 0;
     display: inline-block;
     font-weight: 700;
     margin-top: 1px;
@@ -166,33 +177,23 @@ include $base . 'includes/sidebar.php';
   .cat-platinium   { border-left: 5px solid #455A64 !important; background: #ECEFF1 !important; }
   .cat-generic     { border-left: 5px solid #9E9E9E !important; background: #F5F5F5 !important; }
 
-  /* ── Booking Channels Borders ────────────────────────── */
-  .canal-directo  { border-left: 3px solid #2E7D32 !important; }
-  .canal-booking  { border-left: 3px solid #003580 !important; }
-  .canal-whatsapp { border-left: 3px solid #25D366 !important; }
-  .canal-llamada  { border-left: 3px solid #0288D1 !important; }
+  /* ── Booking Channels Borders & Colors ───────────────── */
+  .canal-directo  { background-color: #2E7D32 !important; color: #fff !important; padding: 4px 8px; }
+  .canal-booking  { background-color: #003580 !important; color: #fff !important; padding: 4px 8px; }
+  .canal-whatsapp { background-color: #25D366 !important; color: #fff !important; padding: 4px 8px; }
+  .canal-llamada  { background-color: #0288D1 !important; color: #fff !important; padding: 4px 8px; }
 
   /* ── States ─────────────────────────────────────────── */
-  .est-pendiente  { background: #FFE0B2; color: #E65100; }
-  .est-adelanto   { background: #FFF176; color: #5D4000; }
-  .est-parcial    { background: #FFB74D; color: #4E2200; }
-  .est-pagado     { background: #A5D6A7; color: #1B5E20; }
-  .est-limpieza   { background: #9E9E9E; color: #fff; box-shadow: inset 0 0 10px rgba(0,0,0,0.1); }
-  .est-reservado  { background: #E1BEE7; color: #4A148C; border: 1px dashed #7B1FA2 !important; box-shadow: 0 2px 4px rgba(123,31,162,0.2) !important; }
-  .est-bloqueado  { background: #BDBDBD; color: #333; }
-  .est-mantenimiento {
-    background: repeating-linear-gradient(
-      45deg, #ccc, #ccc 4px, #e9e9e9 4px, #e9e9e9 9px
-    );
-    color: #333;
-  }
-  .est-late_checkout { background: #CE93D8; color: #4A148C; }
+  /* ── New Traffic Light Color System ───────────────────── */
+  .res-booking { background: #F57C00 !important; color: #fff !important; border: 1px solid #E65100 !important; }
+  .res-directo { background: #2E7D32 !important; color: #fff !important; border: 1px solid #1B5E20 !important; }
+  .res-inhouse { background: #0288D1 !important; color: #fff !important; border: 1px solid #01579B !important; }
   
-  /* Colores por Canal */
-  .canal-booking { background: #FF9800 !important; color: #fff !important; }
-  .canal-llamada { background: #4CAF50 !important; color: #fff !important; }
-  .canal-booking .titular, .canal-llamada .titular { color: #fff !important; }
-  .canal-booking .badge-pax, .canal-llamada .badge-pax { background: rgba(255,255,255,0.3); color: #fff; }
+  .res-booking .titular, .res-directo .titular, .res-inhouse .titular { color: #fff !important; }
+  .res-booking .badge-pax, .res-directo .badge-pax, .res-inhouse .badge-pax { background: transparent; color: #fff; }
+  
+  /* Mantener el resto para otros elementos */
+  .est-limpieza   { background: #9E9E9E; color: #fff; box-shadow: inset 0 0 10px rgba(0,0,0,0.1); }
 
   /* ── Summary pills ─────────────────────────────────────── */
   .summary-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
@@ -255,6 +256,24 @@ include $base . 'includes/sidebar.php';
   }
   .context-menu .cm-item:hover { background: #f0f0f0; }
   .context-menu .cm-item i { margin-right: 8px; opacity: 0.7; }
+
+  /* ── Custom Modal Design ──────────────────────────────── */
+  .modal-info-card {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 12px;
+    border: 1px solid #edf2f7;
+    height: 100%;
+    transition: transform 0.2s;
+  }
+  .modal-info-card:hover { transform: translateY(-2px); }
+  .modal-info-label { font-size: 10px; font-weight: 800; color: #a0aec0; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .modal-info-value { font-size: 14px; font-weight: 700; color: #2d3748; }
+  
+  .payment-section { background: #fff; border-radius: 16px; border: 1.5px solid #e2e8f0; padding: 20px; margin-top: 15px; }
+  .quick-pay-card { background: #1a202c; border-radius: 12px; padding: 15px; color: #fff; margin-top: 15px; }
+  .quick-pay-card input, .quick-pay-card select { background: rgba(255,255,255,0.1) !important; border: 1px solid rgba(255,255,255,0.2) !important; color: #fff !important; }
+  .quick-pay-card input::placeholder { color: rgba(255,255,255,0.5); }
 </style>
 
 <div class="main-content" id="app-reservas">
@@ -276,16 +295,9 @@ include $base . 'includes/sidebar.php';
 
   <div class="page-body">
 
-    <!-- RESUMEN -->
-    <div class="summary-pills">
-      <div class="s-pill"><span class="cnt" style="color: #111;">{{ resumen.ocupadas }}<small style="font-size:12px; color:#aaa;">/{{ resumen.total }}</small></span><span class="lbl">🏠 Ocupadas</span></div>
-      <div class="s-pill"><span class="cnt">{{ resumen.pax_total }}</span><span class="lbl">👥 PAX Hoy</span></div>
-      <div class="s-pill"><span class="cnt text-success">S/{{ ingresos }}</span><span class="lbl">💰 Ingresos</span></div>
-      <div class="s-pill"><span class="cnt text-danger">{{ resumen.pendientes }}</span><span class="lbl">⏳ Pendientes</span></div>
-      <div class="s-pill"><span class="cnt" style="color:#7A0000;">{{ resumen.cnt_pendiente }}</span><span class="lbl">🔴 Pendiente</span></div>
-      <div class="s-pill"><span class="cnt" style="color:#5D4000;">{{ resumen.cnt_adelanto }}</span><span class="lbl">🟡 Adelanto</span></div>
-      <div class="s-pill"><span class="cnt" style="color:#4E2200;">{{ resumen.cnt_parcial }}</span><span class="lbl">🟠 Parcial</span></div>
-      <div class="s-pill"><span class="cnt" style="color:#1B5E20;">{{ resumen.cnt_pagado }}</span><span class="lbl">🟢 Pagado</span></div>
+    <!-- RESUMEN Y LEYENDA -->
+    <div class="summary-pills align-items-center">
+
     </div>
 
     <!-- CONTROLS -->
@@ -328,20 +340,7 @@ include $base . 'includes/sidebar.php';
         <i class="bi bi-layout-split"></i> Ampliado
       </button>
 
-      <div class="divider"></div>
-      
-      <span class="small ms-2 fw-bold">CANALES:</span>
-      <span class="small"><span class="legend-dot canal-booking"></span>Booking (Naranja)</span>
-      <span class="small"><span class="legend-dot canal-llamada"></span>Llamada (Verde)</span>
 
-      <div class="divider"></div>
-
-      <!-- Leyenda inline -->
-      <span class="small"><span class="legend-dot est-pendiente"></span>Pendiente</span>
-      <span class="small"><span class="legend-dot est-adelanto"></span>Adelanto</span>
-      <span class="small"><span class="legend-dot est-parcial"></span>Parcial</span>
-      <span class="small"><span class="legend-dot est-pagado"></span>Pagado</span>
-      <span class="small"><span class="legend-dot est-late_checkout"></span>Late CO</span>
 
       <div class="ms-auto">
         <button class="btn btn-sm btn-outline-dark" onclick="window.print()"><i class="bi bi-printer"></i></button>
@@ -388,12 +387,18 @@ include $base . 'includes/sidebar.php';
 
                 <!-- Stay block: only render on first day of stay -->
                 <div v-if="esInicioStay(hab, d)"
-                     class="stay-block animate__animated animate__fadeIn"
-                     :class="['est-' + getCeldaStay(hab, d).estado_pago, 'canal-' + (getCeldaStay(hab, d).canal || '').toLowerCase()]"
+                     class="stay-block animate__animated animate__fadeIn shadow-sm"
+                     :class="getStayColorClass(getCeldaStay(hab, d))"
                      :style="{ width: (calcCols(getCeldaStay(hab, d)) * colWidth - 5) + 'px' }"
                      @click="abrirDetalle(getCeldaStay(hab, d))">
                   <span class="titular">{{ getCeldaStay(hab, d).titular }}</span>
                   <span v-if="viewMode !== 'compacto'" class="badge-pax">{{ getCeldaStay(hab, d).pax }} PAX</span>
+
+                  <!-- Micro-barra de pago -->
+                  <div class="stay-progress-container">
+                    <div class="stay-progress-bar" 
+                         :style="{ width: porcentajePago(getCeldaStay(hab, d)) + '%', backgroundColor: getColorPago(getCeldaStay(hab, d)) }"></div>
+                  </div>
                 </div>
 
                 <!-- Estado especial sin huésped (Solo hoy) -->
@@ -418,9 +423,9 @@ include $base . 'includes/sidebar.php';
 
     <!-- VISTA MÓVIL -->
     <div class="mobile-list">
-      <div class="card border-0 shadow-sm p-3 mb-2" v-for="stay in staysHoyMovil" :key="stay.id">
+      <div class="card border-0 shadow-sm p-3 mb-2" v-for="stay in staysHoyMovil" :key="stay.id" :class="getStayColorClass(stay)">
         <div class="fw-bold">#{{ stay.hab_numero }} — {{ stay.titular }}</div>
-        <div class="text-muted small">{{ stay.pax }} PAX · {{ stay.estado_pago }}</div>
+        <div class="text-muted small">{{ stay.pax }} PAX · {{ stay.canal }}</div>
       </div>
       <div v-if="!staysHoyMovil.length" class="text-center text-muted py-4">Sin ocupación hoy</div>
     </div>
@@ -456,7 +461,14 @@ include $base . 'includes/sidebar.php';
                 <input type="number" class="form-control" v-model.number="formQuick.noches" min="1" max="60" required>
               </div>
               <div class="col-6">
-                <!-- Espacio para otros campos breves si se requiere -->
+                <label class="form-label small fw-bold text-muted">CANAL</label>
+                <select class="form-select" v-model="formQuick.canal" required>
+                  <option value="DIRECTO">DIRECTO</option>
+                  <option value="LLAMADA">LLAMADA</option>
+                  <option value="WHATSAPP">WHATSAPP</option>
+                  <option value="BOOKING">BOOKING</option>
+                  <option value="CORREO">CORREO</option>
+                </select>
               </div>
             </div>
             
@@ -477,92 +489,141 @@ include $base . 'includes/sidebar.php';
     </div>
   </div>
 
-  <!-- ─── MODAL DETALLE ───────────────────────────────────── -->
+  <!-- ─── MODAL DETALLE PREMIUM ────────────────────────────── -->
   <div class="modal fade" id="modalDetalleReservas" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content" v-if="staySeleccionado">
-        <div class="modal-header">
-          <h5 class="modal-title"><i class="bi bi-info-circle me-2"></i>Estadía #{{ staySeleccionado.id }}</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;" v-if="staySeleccionado">
+        <div class="modal-header border-0 p-4 pb-2" :class="staySeleccionado.estado_pago === 'pagado' ? 'bg-success text-white' : 'bg-dark text-white'">
+          <div class="d-flex align-items-center gap-3">
+            <div class="bg-white bg-opacity-25 rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
+              <i class="bi bi-info-circle fs-4"></i>
+            </div>
+            <div>
+              <h5 class="modal-title fw-bold mb-0">Estadía #{{ staySeleccionado.id }}</h5>
+              <span class="small opacity-75">Resumen de cuenta y alojamiento</span>
+            </div>
+          </div>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
-        <div class="modal-body">
+
+        <div class="modal-body p-4 pt-4">
+          <!-- Bloque Info Principal -->
           <div class="row g-3">
             <div class="col-md-6">
-              <label class="form-label text-muted small">HUÉSPED TITULAR</label>
-              <div class="fw-bold">{{ staySeleccionado.titular }}</div>
-            </div>
-            <div class="col-md-3">
-              <label class="form-label text-muted small">PAX</label>
-              <div class="fw-bold">{{ staySeleccionado.pax }}</div>
-            </div>
-            <div class="col-md-3">
-              <label class="form-label text-muted small">CANAL</label>
-              <div>{{ staySeleccionado.canal }}</div>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label text-muted small">INGRESO</label>
-              <div>{{ staySeleccionado.fecha_inicio }}</div>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label text-muted small">SALIDA</label>
-              <div>{{ staySeleccionado.fecha_fin }}</div>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label text-muted small">NOCHES</label>
-              <div>{{ staySeleccionado.noches }}</div>
-            </div>
-            <div class="col-12">
-              <label class="form-label text-muted small">ESTADO DE PAGO</label>
-              <div class="d-flex justify-content-between small mb-1">
-                <span>Cobrado: <strong>{{ staySeleccionado.moneda_pago }} {{ staySeleccionado.total_cobrado.toFixed(2) }}</strong></span>
-                <span>Total: <strong>{{ staySeleccionado.moneda_pago }} {{ staySeleccionado.total_pago.toFixed(2) }}</strong></span>
-                <span class="badge" :class="badgeClass(staySeleccionado.estado_pago)">{{ staySeleccionado.estado_pago }}</span>
-              </div>
-              <div class="progress" style="height:8px;">
-                <div class="progress-bar" :class="barClass(staySeleccionado.estado_pago)"
-                     :style="{ width: porcentajePago(staySeleccionado) + '%' }"></div>
+              <div class="modal-info-card">
+                <div class="modal-info-label"><i class="bi bi-person-fill me-1"></i> Huésped Titular</div>
+                <div class="modal-info-value fs-5">{{ staySeleccionado.titular }}</div>
               </div>
             </div>
-            <!-- Pago rápido -->
-            <div class="col-12 border-top pt-3">
-              <div class="fw-bold small mb-2"><i class="bi bi-cash-coin me-1"></i>Pago Rápido</div>
-              <div class="row g-2">
-                <div class="col-md-3">
-                  <input type="number" class="form-control form-control-sm" v-model.number="pagoRapido.monto" placeholder="Monto" min="1">
-                </div>
-                <div class="col-md-3">
-                  <select class="form-select form-select-sm" v-model="pagoRapido.moneda">
-                    <option value="PEN">PEN</option>
-                    <option value="USD">USD</option>
-                    <option value="CLP">CLP</option>
-                  </select>
-                </div>
-                <div class="col-md-3">
-                  <select class="form-select form-select-sm" v-model="pagoRapido.metodo">
-                    <option value="efectivo">Efectivo</option>
-                    <option value="tarjeta">Tarjeta</option>
-                    <option value="transferencia">Transferencia</option>
-                    <option value="yape">Yape</option>
-                  </select>
-                </div>
-                <div class="col-md-3">
-                  <button class="btn btn-sm btn-success w-100" @click="guardarPagoRapido" :disabled="loadingPago">
-                    <span v-if="loadingPago" class="spinner-border spinner-border-sm me-1"></span>
-                    Guardar
-                  </button>
+            <div class="col-md-3 col-6">
+              <div class="modal-info-card">
+                <div class="modal-info-label"><i class="bi bi-people-fill me-1"></i> PAX</div>
+                <div class="modal-info-value">{{ staySeleccionado.pax }} Personas</div>
+              </div>
+            </div>
+            <div class="col-md-3 col-6">
+              <div class="modal-info-card">
+                <div class="modal-info-label"><i class="bi bi-tag-fill me-1"></i> Canal</div>
+                <div class="modal-info-value">
+                  <span class="badge" :class="'canal-' + (staySeleccionado.canal || '').toLowerCase()">{{ staySeleccionado.canal }}</span>
                 </div>
               </div>
+            </div>
+
+            <!-- Bloque Fechas -->
+            <div class="col-md-4 col-6">
+              <div class="modal-info-card border-start border-4 border-primary">
+                <div class="modal-info-label text-primary">Ingreso</div>
+                <div class="modal-info-value"><i class="bi bi-calendar-check me-1"></i> {{ staySeleccionado.fecha_inicio }}</div>
+              </div>
+            </div>
+            <div class="col-md-4 col-6">
+              <div class="modal-info-card border-start border-4 border-danger">
+                <div class="modal-info-label text-danger">Salida</div>
+                <div class="modal-info-value"><i class="bi bi-calendar-x me-1"></i> {{ staySeleccionado.fecha_fin }}</div>
+              </div>
+            </div>
+            <div class="col-md-4 col-12">
+              <div class="modal-info-card text-center bg-light">
+                <div class="modal-info-label">Duración</div>
+                <div class="modal-info-value"><i class="bi bi-moon-stars me-1 text-warning"></i> {{ staySeleccionado.noches }} Noches</div>
+              </div>
+            </div>
+
+            <!-- SECCIÓN DE PAGO (Regla de Oro) -->
+            <div class="col-12 mt-4">
+              <div class="payment-section">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                   <h6 class="fw-bold mb-0 text-uppercase small" style="letter-spacing: 1px;">Estado Financiero</h6>
+                   <span class="badge rounded-pill px-3 py-2 fs-6 shadow-sm" :class="badgeClass(staySeleccionado.estado_pago)">
+                     {{ staySeleccionado.estado_pago.toUpperCase() }}
+                   </span>
+                </div>
+                
+                <div class="row align-items-center g-3">
+                  <div class="col-md-4 text-center">
+                    <div class="small text-muted mb-1">Pagado</div>
+                    <div class="h5 fw-bold text-success mb-0">{{ staySeleccionado.moneda_pago }} {{ formatNumber(staySeleccionado.total_cobrado) }}</div>
+                  </div>
+                  <div class="col-md-4 text-center border-start border-end">
+                     <div class="small text-muted mb-1">Por cobrar</div>
+                     <div class="h5 fw-bold text-danger mb-0">{{ staySeleccionado.moneda_pago }} {{ formatNumber(staySeleccionado.total_pago - staySeleccionado.total_cobrado) }}</div>
+                  </div>
+                  <div class="col-md-4 text-center">
+                    <div class="small text-muted mb-1">Total Reserva</div>
+                    <div class="h5 fw-bold text-dark mb-0">{{ staySeleccionado.moneda_pago }} {{ formatNumber(staySeleccionado.total_pago) }}</div>
+                  </div>
+                </div>
+
+                <div class="mt-4">
+                  <div class="progress rounded-pill shadow-sm" style="height: 12px; background: #edf2f7;">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                         :class="barClass(staySeleccionado.estado_pago)"
+                         :style="{ width: porcentajePago(staySeleccionado) + '%' }"></div>
+                  </div>
+                  <div class="text-center mt-2 small text-muted fw-bold">{{ porcentajePago(staySeleccionado) }}% cubierto</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ACCIÓN: CHECK-IN RÁPIDO (SOLO SI ESTÁ RESERVADO) -->
+            <div class="col-12 mt-3" v-if="staySeleccionado.estado === 'reservado'">
+              <button class="btn btn-primary w-100 py-3 rounded-4 shadow-lg d-flex align-items-center justify-content-center gap-3 border-0" 
+                      @click="realizarCheckin(staySeleccionado)" 
+                      style="background: linear-gradient(135deg, #0288D1 0%, #01579B 100%);">
+                <div class="bg-white text-primary rounded-circle p-2 d-flex align-items-center justify-content-center shadow-sm" style="width: 40px; height: 40px;">
+                   <i class="bi bi-person-check-fill h4 mb-0"></i>
+                </div>
+                <div class="text-start text-white">
+                   <div class="fw-bold fs-5">REGISTRAR INGRESO</div>
+                   <div class="small opacity-75">Marcar entrada del huésped (Check-in)</div>
+                </div>
+              </button>
+            </div>
+
+            <!-- ACCIÓN: GESTIONAR EN ROOMING -->
+            <div class="col-12 mt-3" v-if="staySeleccionado.estado_pago !== 'pagado'">
+              <button class="btn btn-dark w-100 py-3 rounded-4 shadow-lg d-flex align-items-center justify-content-center gap-3 border-0" 
+                      @click="irARooming(staySeleccionado)" 
+                      style="background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);">
+                <div class="bg-success rounded-circle p-2 d-flex align-items-center justify-content-center shadow-sm" style="width: 40px; height: 40px;">
+                  <i class="bi bi-cash-stack fs-5 text-white"></i>
+                </div>
+                <div class="text-start">
+                  <div class="fw-bold lh-1 text-warning" style="letter-spacing: 0.5px;">GESTIONAR CUENTA Y PAGOS</div>
+                  <div class="small opacity-75 lh-1 mt-1 text-white">Ir al módulo oficial de Rooming</div>
+                </div>
+                <i class="bi bi-arrow-right ms-auto fs-5 text-warning opacity-75"></i>
+              </button>
             </div>
           </div>
         </div>
-        <div class="modal-footer">
-          <button class="btn btn-outline-warning btn-sm" @click="lateCheckout(staySeleccionado)">
-            <i class="bi bi-moon-stars me-1"></i>Late Checkout
+
+        <div class="modal-footer border-0 p-4 pt-0 gap-2">
+          <button class="btn btn-danger rounded-pill px-4 shadow-sm" @click="checkout(staySeleccionado)">
+            <i class="bi bi-door-open-fill me-2"></i>Check Out
           </button>
-          <button class="btn btn-outline-danger btn-sm" @click="checkout(staySeleccionado)">
-            <i class="bi bi-door-open me-1"></i>Checkout
-          </button>
-          <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+          <button class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cerrar</button>
         </div>
       </div>
     </div>

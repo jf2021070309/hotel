@@ -15,6 +15,7 @@ createApp({
     const tcs = ref({ USD: 3.75, CLP: 0.0038 });
     const loading = ref(false);
     const busqueda = ref('');
+    const isEditingAdelanto = ref(false);
     const filtroPiso = ref('');
     const filtroPago = ref('');
     const selectedStay = ref(null);
@@ -53,7 +54,8 @@ createApp({
         total_cobrado: 0,
         estado_pago: 'pendiente',
         procedencia: '',
-        observaciones: ''
+        observaciones: '',
+        recargo_pos: false // Nuevo: +5% sobre moneda extranjera
       },
       pax: [{
         nombre_completo: '',
@@ -63,7 +65,8 @@ createApp({
         ciudad: '',
         es_titular: true
       }],
-      adelanto: 0
+      adelanto: 0,
+      tipoPago: 'completo' // 'completo' o 'adelanto'
     });
 
     const pagoForm = reactive({
@@ -149,18 +152,21 @@ createApp({
         num_comprobante: '',
         carro: 'NO',
         total_cobrado: 0,
-        estado_pago: 'pendiente'
+        estado_pago: 'pendiente',
+        recargo_pos: false
       });
       form.pax = [{ nombre_completo: '', documento_tipo: 'DNI', documento_num: '', nacionalidad: 'Peruana', ciudad: '', es_titular: true }];
       form.adelanto = 0;
+      form.tipoPago = 'completo';
     };
 
     const onHabChange = () => {
       const h = habitacionesLibres.value.find(x => x.id == form.stay.habitacion_id);
       if (h) {
-        form.stay.monto_original = h.precio_base * (form.stay.noches || 1);
+        // En rooming el precio base siempre es PEN
+        form.stay.total_pago = (h.precio_base * (form.stay.noches || 1)).toFixed(2);
         form.stay.tipo_hab_declarado = h.tipo;
-        recalcularMoneda();
+        recalcularMoneda(); // Esto calculará el monto_original en la moneda destino
       }
     };
 
@@ -233,32 +239,64 @@ createApp({
       const tc = form.stay.moneda_pago === 'PEN' ? 1 : parseFloat(tcs.value[form.stay.moneda_pago]) || 1;
       form.stay.tc_aplicado = tc;
       
-      let total = parseFloat(form.stay.monto_original) || 0;
+      const totalPen = parseFloat(form.stay.total_pago) || 0;
+      let foreign = totalPen;
+
       if (form.stay.moneda_pago === 'USD') {
-         total = total / tc;
+        foreign = totalPen / tc;
       } else if (form.stay.moneda_pago === 'CLP') {
-         total = total * tc;
+        foreign = totalPen * tc;
       }
-      form.stay.total_pago = total.toFixed(2);
+      
+      form.stay.monto_original = foreign.toFixed(2);
+      
+      // Si el pago es completo, sincronizamos el monto a cobrar
+      if (form.tipoPago === 'completo') {
+        let finalForeign = parseFloat(form.stay.monto_original) || 0;
+        if (form.stay.recargo_pos) {
+          finalForeign *= 1.05;
+        }
+        form.adelanto = finalForeign.toFixed(2);
+      }
       onAdelantoChange();
     };
 
     const onAdelantoChange = () => {
-      const adelanto = parseFloat(form.adelanto) || 0;
       const tc = parseFloat(form.stay.tc_aplicado) || 1;
-      let cobradoPen = adelanto;
-
+      const amountEntered = parseFloat(form.adelanto) || 0;
+      
+      // El total cobrado en PEN es simplemente la conversión directa de lo que hay en el campo
+      let cobradoPen = amountEntered;
       if (form.stay.moneda_pago === 'USD') {
-        cobradoPen = adelanto * tc;
+        cobradoPen = amountEntered * tc;
       } else if (form.stay.moneda_pago === 'CLP') {
-        cobradoPen = tc > 0 ? (adelanto / tc) : 0;
+        cobradoPen = tc > 0 ? (amountEntered / tc) : 0;
       }
       
+      if (isNaN(cobradoPen)) cobradoPen = 0;
       form.stay.total_cobrado = cobradoPen.toFixed(2);
       
-      // Calculate state based on original currency amounts
-      const totalPendiente = parseFloat(form.stay.total_pago) - adelanto;
-      form.stay.estado_pago = totalPendiente <= 0.01 ? 'pagado' : (adelanto > 0 ? 'parcial' : 'pendiente');
+      // El estado de pago se calcula sobre el monto NETO (sin el 5% si el POS está activo)
+      const totalPen = parseFloat(form.stay.total_pago) || 0;
+      let baseForeign = amountEntered;
+      if (form.stay.recargo_pos) {
+          baseForeign = amountEntered / 1.05;
+      }
+      
+      let abonadoBasePen = 0;
+      if (tc > 0) {
+          if (form.stay.moneda_pago === 'USD') abonadoBasePen = baseForeign * tc;
+          else if (form.stay.moneda_pago === 'CLP') abonadoBasePen = baseForeign / tc;
+          else abonadoBasePen = baseForeign;
+      }
+
+      const diffBase = totalPen - abonadoBasePen;
+      form.stay.estado_pago = diffBase <= 0.05 ? 'pagado' : (amountEntered > 0 ? 'parcial' : 'pendiente');
+    };
+
+    const cambiarTipoPago = (tipo) => {
+      form.tipoPago = tipo;
+      recalcularMoneda();
     };
 
     const agregarPax = () => {
@@ -321,16 +359,20 @@ createApp({
       }
     };
 
-    const verDetalle = async (s) => {
+    const verDetalle = async (sOrId) => {
       loading.value = true;
+      const id = typeof sOrId === 'object' ? sOrId.id : sOrId;
       try {
         const [resDet, resCons] = await Promise.all([
-          axios.get(`../../../api/rooming.php?action=detalle&id=${s.id}`),
-          axios.get(`../../../api/consumos.php?action=listar&stay_id=${s.id}`)
+          axios.get(`../../../api/rooming.php?action=detalle&id=${id}`),
+          axios.get(`../../../api/consumos.php?action=listar&stay_id=${id}`)
         ]);
         selectedStay.value = resDet.data.data;
         consumosStay.value = resCons.data.data || [];
-        new bootstrap.Modal('#modalDetalle').show();
+        
+        // El modal de detalle tiene id="modalDetalle"
+        const modal = new bootstrap.Modal('#modalDetalle');
+        modal.show();
       } catch (err) {
         showToast('Error al cargar detalle', 'error');
       } finally {
@@ -406,10 +448,13 @@ createApp({
     const recalcularPago = () => {
       const tc = pagoForm.moneda === 'PEN' ? 1 : parseFloat(tcs.value[pagoForm.moneda]) || 1;
       pagoForm.tc = tc;
-      let montoPen = parseFloat(pagoForm.monto) || 0;
-      if (pagoForm.moneda === 'USD') montoPen *= tc;
-      if (pagoForm.moneda === 'CLP') montoPen = tc > 0 ? (montoPen / tc) : 0;
-      pagoForm.monto_pen = montoPen.toFixed(2);
+      let foreign = parseFloat(pagoForm.monto) || 0;
+      let pen = foreign;
+      
+      if (pagoForm.moneda === 'USD') pen = foreign * tc;
+      else if (pagoForm.moneda === 'CLP') pen = tc > 0 ? (foreign / tc) : 0;
+      
+      pagoForm.monto_pen = pen.toFixed(2);
     };
 
     const guardarPago = async () => {
@@ -450,6 +495,12 @@ createApp({
     };
 
     // HELPERS
+    const fmtCur = (val) => {
+      const n = parseFloat(val);
+      if (isNaN(n)) return '0.00';
+      return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    };
+
     const fmtFecha = (f) => f;
     const getPagoClass = (p) => {
        if (p === 'pagado') return 'bg-success';
@@ -465,15 +516,36 @@ createApp({
       Swal.fire({ toast: true, position: 'top-end', icon, title: msg, showConfirmButton: false, timer: 3000 });
     };
 
-    onMounted(cargarDatos);
+    onMounted(async () => {
+      await cargarDatos();
+      
+      const urlParams = new URLSearchParams(window.location.search);
+      
+      // AUTO-COBRO: Si viene de Reservas con una habitación específica
+      const buscarHab = urlParams.get('buscar');
+      if (buscarHab) {
+        busqueda.value = buscarHab;
+        // Esperamos un momento a que Vue procese la lista y buscamos el match
+        const match = stays.value.find(s => s.hab_numero == buscarHab);
+        if (match) {
+          abrirPago(match);
+        }
+      }
+
+      // DEEP LINKING: Abrir detalle si viene un stay_id por URL (existente)
+      const stayId = urlParams.get('stay_id');
+      if (stayId) {
+        verDetalle(stayId);
+      }
+    });
 
     return {
-      stays, habitacionesLibres, loading, busqueda, filtroPiso, filtroPago, form, 
+      stays, habitacionesLibres, tcs, loading, busqueda, filtroPiso, filtroPago, form, 
       staysFiltrados, selectedStay, stayParaPago, mediosPago, pagoForm,
       abrirCheckin, onHabChange, calcularNoches, onNochesChange, recalcularMoneda, 
       onAdelantoChange, agregarPax, setTitular, guardarCheckin, verDetalle, cargarDatos,
       fmtFecha, getPagoClass, getEstadBadge, procederCheckout, abrirPago, recalcularPago, guardarPago,
-      activarReserva,
+      activarReserva, cambiarTipoPago, fmtCur, isEditingAdelanto,
       // CONSUMOS
       inventario, inventarioAgrupado, stayParaConsumo, consumosStay, consumoForm,
       abrirConsumo, onProductoChange, calcularTotalConsumo, guardarConsumo,

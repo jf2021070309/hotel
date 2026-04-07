@@ -30,24 +30,71 @@ createApp({
     };
 
     const abrirNuevoCiclo = async () => {
+      // Si ya hay un ciclo activo, redirigir directamente al detalle
+      if (hayCicloActivo.value) {
+        window.location.href = 'detalle.php';
+        return;
+      }
+
       const { value: formValues } = await Swal.fire({
-        title: 'Iniciar Nuevo Ciclo',
-        html:
-          '<input id="swal-input1" class="swal2-input" placeholder="Nombre (Ej: CICLO MARZO SEMANA 1)">' +
-          '<input id="swal-input2" class="swal2-input" type="number" step="0.01" value="100.00" title="Saldo Inicial">',
+        title: 'Iniciar Nuevo Ciclo de Caja Chica',
+        html: `
+          <input id="swal-name" class="swal2-input" placeholder="Nombre (Ej: CICLO ABRIL)">
+          <input id="swal-monto" class="swal2-input" type="number" step="0.01" value="100.00" title="Saldo Inicial">
+          
+          <div class="text-start mt-3">
+            <div class="card bg-light border-0 shadow-sm">
+              <div class="card-body p-3">
+                <label class="form-label fw-bold small mb-2 text-primary d-block">
+                  <i class="bi bi-envelope-paper me-1"></i>Sobre de Origen (S/ 100):
+                </label>
+                
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="radio" name="swal-sobre" id="s-hoy-m" value="hoy|MAÑANA" checked>
+                  <label class="form-check-label small" for="s-hoy-m">Sobre HOY (Mañana)</label>
+                </div>
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="radio" name="swal-sobre" id="s-hoy-t" value="hoy|TARDE">
+                  <label class="form-check-label small" for="s-hoy-t">Sobre HOY (Tarde)</label>
+                </div>
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="radio" name="swal-sobre" id="s-ayer-p" value="ayer|TARDE">
+                  <label class="form-check-label small" for="s-ayer-p">Sobre AYER (Tarde)</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="swal-sobre" id="s-ayer-m" value="ayer|MAÑANA">
+                  <label class="form-check-label small" for="s-ayer-m">Sobre AYER (Mañana)</label>
+                </div>
+              </div>
+            </div>
+          </div>
+        `,
         focusConfirm: false,
         showCancelButton: true,
-        confirmButtonText: 'Abrir Caja Chica',
+        confirmButtonColor: '#198754',
+        confirmButtonText: 'Abrir y Descontar del Sobre',
         preConfirm: () => {
-          return [
-            document.getElementById('swal-input1').value,
-            document.getElementById('swal-input2').value
-          ]
+          const selected = document.querySelector('input[name="swal-sobre"]:checked').value;
+          const [day, turn] = selected.split('|');
+          
+          let date = new Date().toISOString().split('T')[0];
+          if (day === 'ayer') {
+            const d = new Date();
+            d.setDate(d.getDate() - 1);
+            date = d.toISOString().split('T')[0];
+          }
+
+          return {
+            nombre: document.getElementById('swal-name').value,
+            saldo: document.getElementById('swal-monto').value,
+            sobre_fecha: date,
+            sobre_turno: turn
+          }
         }
       });
 
       if (formValues) {
-        const [nombre, saldo] = formValues;
+        const { nombre, saldo, sobre_fecha, sobre_turno } = formValues;
         if (!nombre || parseFloat(saldo) <= 0) {
           Swal.fire('Error', 'Debe indicar un nombre y un saldo mayor a 0', 'error');
           return;
@@ -55,8 +102,10 @@ createApp({
 
         try {
           const res = await axios.post(`${BASE}abrir`, {
-            nombre: nombre,
-            saldo_inicial: saldo
+            nombre,
+            saldo_inicial: saldo,
+            sobre_fecha,
+            sobre_turno
           });
 
           if (res.data.ok) {

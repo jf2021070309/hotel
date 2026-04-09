@@ -12,7 +12,14 @@ class TiposCambioModel {
     public function getToday(string $moneda): ?float {
         $stmt = $this->pdo->prepare("SELECT factor FROM tipos_cambio WHERE moneda_origen = ? AND fecha = CURDATE() LIMIT 1");
         $stmt->execute([$moneda]);
-        return (float)$stmt->fetchColumn() ?: null;
+        $val = $stmt->fetchColumn();
+        if ($val === false) {
+            // Fallback robusto si no hay registro hoy
+            require_once __DIR__ . '/TipoCambioModel.php';
+            $tc = TipoCambioModel::obtenerActual($this->pdo);
+            return $moneda === 'USD' ? $tc['tc_usd'] : $tc['tc_clp'];
+        }
+        return (float)$val;
     }
 
     public function setTC(string $moneda, float $factor): bool {

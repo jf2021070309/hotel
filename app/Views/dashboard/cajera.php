@@ -40,7 +40,7 @@ include 'includes/sidebar.php';
       <!-- FILA 1: TARJETAS KPI (Global) -->
       <div class="row g-3 mb-4">
         <!-- Ocupación -->
-        <div class="col-sm-6 col-lg-3">
+        <div class="col-sm-6 col-lg-4">
           <div class="card shadow-sm border-0 border-top border-4 h-100"
             style="border-top-color: #111 !important; border-radius: 12px;">
             <div class="card-body">
@@ -64,7 +64,7 @@ include 'includes/sidebar.php';
         </div>
 
         <!-- PAX en Hotel -->
-        <div class="col-sm-6 col-lg-3">
+        <div class="col-sm-6 col-lg-4">
           <div class="card shadow-sm border-0 border-top border-4 h-100"
             style="border-top-color: #475569 !important; border-radius: 12px;">
             <div class="card-body">
@@ -81,37 +81,9 @@ include 'includes/sidebar.php';
           </div>
         </div>
 
-        <!-- Desglose de Mi Turno -->
-        <div class="col-sm-6 col-lg-3">
-          <div class="card shadow-sm border-0 border-top border-4 h-100"
-            style="border-top-color: #16a34a !important; border-radius: 12px;">
-            <div class="card-body p-3">
-              <div class="text-xs fw-bold text-uppercase mb-2" style="color: #16a34a; letter-spacing: 1px;">💰
-                Desglose Mi Turno</div>
-              
-              <div class="mt-1" style="max-height: 150px; overflow-y: auto;">
-                <div v-for="d in mi_turno.desglose" :key="d.medio_pago + d.moneda" 
-                     class="d-flex justify-content-between border-bottom py-1" style="font-size: 0.8rem;">
-                  <span class="text-muted">
-                    {{ d.medio_pago }} 
-                    <span v-if="d.medio_pago.toUpperCase().includes('EFEC')" class="text-primary fw-bold" style="font-size: 0.65rem;">
-                      <br>(Efectivo en sobre)
-                    </span>
-                  </span>
-                  <span class="fw-bold text-dark text-end">
-                    {{ d.moneda }} {{ formatNumber(d.total, d.moneda === 'CLP' ? 0 : 2) }}
-                  </span>
-                </div>
-                <div v-if="!mi_turno.desglose || mi_turno.desglose.length === 0" class="text-center text-muted py-3 small">
-                  Sin ingresos en este turno
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
 
         <!-- Egresos Hoy -->
-        <div class="col-sm-6 col-lg-3">
+        <div class="col-sm-6 col-lg-4">
           <div class="card shadow-sm border-0 border-top border-4 h-100"
             style="border-top-color: #dc2626 !important; border-radius: 12px;">
             <div class="card-body">
@@ -273,20 +245,44 @@ include 'includes/sidebar.php';
               <h6 class="m-0 fw-bold"><i class="bi bi-wallet2 me-2"></i>💰 MI TURNO (En curso)</h6>
             </div>
             <div class="card-body">
-              <div class="mb-3 d-flex justify-content-between">
-                <span class="text-muted">Ingresos (Soles):</span>
-                <span class="fw-bold text-success">S/ {{ formatNumber(mi_turno.ingresos) }}</span>
+              <div class="mb-2 d-flex justify-content-between small">
+                <span class="text-muted">POS Soles:</span>
+                <span class="fw-bold text-dark">S/ {{ formatNumber(desgloseFormateado.pos_pen) }}</span>
               </div>
-              <div class="mb-3 d-flex justify-content-between" v-if="mi_turno.ingresos_usd > 0">
-                <span class="text-muted">Ingresos (Dólares):</span>
-                <span class="fw-bold text-success">USD {{ formatNumber(mi_turno.ingresos_usd) }}</span>
+              <div class="mb-2 d-flex justify-content-between small">
+                <span class="text-muted">POS Dólares:</span>
+                <span class="fw-bold text-dark">USD {{ formatNumber(desgloseFormateado.pos_usd) }}</span>
               </div>
-              <div class="mb-3 d-flex justify-content-between" v-if="mi_turno.ingresos_clp > 0">
-                <span class="text-muted">Ingresos (Pesos Chilenos):</span>
-                <span class="fw-bold text-success">CLP {{ formatNumber(mi_turno.ingresos_clp, 0) }}</span>
+              <div class="mb-2 d-flex justify-content-between small border-bottom pb-1">
+                <span class="text-muted">POS Pesos:</span>
+                <span class="fw-bold text-dark">CLP {{ formatNumber(desgloseFormateado.pos_clp, 0) }}</span>
               </div>
-              <div class="mb-3 d-flex justify-content-between">
-                <span class="text-muted">Egresos:</span>
+              
+              <div class="mb-2 d-flex justify-content-between small mt-2">
+                <span class="text-muted">Yape / Plin:</span>
+                <span class="fw-bold text-primary">S/ {{ formatNumber(desgloseFormateado.yape_plin) }}</span>
+              </div>
+              
+              <div class="mb-2 d-flex justify-content-between small mt-2">
+                <span class="text-muted">Efectivo Soles:</span>
+                <span class="fw-bold text-success">S/ {{ formatNumber(desgloseFormateado.efectivo_pen) }}</span>
+              </div>
+              <div class="mb-2 d-flex justify-content-between small">
+                <span class="text-muted">Efectivo Dólares:</span>
+                <span class="fw-bold text-success">USD {{ formatNumber(desgloseFormateado.efectivo_usd) }}</span>
+              </div>
+              <div class="mb-2 d-flex justify-content-between small border-bottom pb-1">
+                <span class="text-muted">Efectivo Pesos:</span>
+                <span class="fw-bold text-success">CLP {{ formatNumber(desgloseFormateado.efectivo_clp, 0) }}</span>
+              </div>
+
+              <div class="mb-2 d-flex justify-content-between small mt-2">
+                <span class="text-muted">Transferencia / Depósito:</span>
+                <span class="fw-bold text-info">S/ {{ formatNumber(desgloseFormateado.transferencia) }}</span>
+              </div>
+              
+              <div class="mb-3 d-flex justify-content-between border-top pt-2 mt-2">
+                <span class="text-muted fw-bold">Egresos:</span>
                 <span class="fw-bold text-danger">S/ {{ formatNumber(mi_turno.egresos) }}</span>
               </div>
               <hr>

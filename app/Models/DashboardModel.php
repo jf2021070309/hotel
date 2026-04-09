@@ -24,7 +24,12 @@ class DashboardModel {
      */
     public function getAdminData(string $fecha): array {
         // 1. KPI Ocupación
-        $stmtOcup = $this->pdo->query("SELECT COUNT(id) as total, SUM(CASE WHEN estado IN ('ocupado','ocupada') THEN 1 ELSE 0 END) as ocupadas FROM habitaciones");
+        $stmtOcup = $this->pdo->prepare("
+            SELECT COUNT(id) as total, 
+                   (SELECT COUNT(DISTINCT habitacion_id) FROM rooming_stays WHERE estado IN ('activo','late_checkout') AND fecha_registro <= ? AND fecha_checkout > ?) as ocupadas 
+            FROM habitaciones
+        ");
+        $stmtOcup->execute([$fecha, $fecha]);
         $ocupacion = $stmtOcup->fetch(PDO::FETCH_ASSOC);
 
         // 2. KPI PAX Hoy
@@ -274,10 +279,10 @@ class DashboardModel {
 
                 // --- NUEVO: Desglose por medio de pago para el Dashboard ---
                 $stmtDes = $this->pdo->prepare("
-                    SELECT medio_pago, moneda, SUM(monto) as total 
+                    SELECT medio_pago, categoria, moneda, SUM(monto) as total 
                     FROM flujo_caja_movimientos 
                     WHERE flujo_id = ? AND tipo = 'Ingreso' 
-                    GROUP BY medio_pago, moneda
+                    GROUP BY medio_pago, categoria, moneda
                 ");
                 $stmtDes->execute([$flujoId]);
                 $mi_turno['desglose'] = $stmtDes->fetchAll(PDO::FETCH_ASSOC);
@@ -285,7 +290,12 @@ class DashboardModel {
         }
 
         // 5. KPIs globales (Ocupación, PAX, Ingresos, Egresos) para las tarjetas superiores
-        $stmtOcup = $this->pdo->query("SELECT COUNT(id) as total, SUM(CASE WHEN estado IN ('ocupado','ocupada') THEN 1 ELSE 0 END) as ocupadas FROM habitaciones");
+        $stmtOcup = $this->pdo->prepare("
+            SELECT COUNT(id) as total, 
+                   (SELECT COUNT(DISTINCT habitacion_id) FROM rooming_stays WHERE estado IN ('activo','late_checkout') AND fecha_registro <= ? AND fecha_checkout > ?) as ocupadas 
+            FROM habitaciones
+        ");
+        $stmtOcup->execute([$fecha, $fecha]);
         $ocupacion = $stmtOcup->fetch(PDO::FETCH_ASSOC);
 
         $stmtPax = $this->pdo->prepare("SELECT SUM(pax_total) FROM rooming_stays WHERE estado IN ('activo','late_checkout') AND fecha_registro <= ? AND fecha_checkout > ?");

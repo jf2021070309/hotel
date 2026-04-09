@@ -6,7 +6,7 @@
  * 
  * @module Dashboard/CajeraJS
  */
-const { createApp, ref, onMounted, onUnmounted } = Vue;
+const { createApp, ref, computed, onMounted, onUnmounted } = Vue;
 
 createApp({
   setup() {
@@ -23,7 +23,8 @@ createApp({
       ingresos: 0,
       egresos: 0,
       efectivo_sobre: 0,
-      estado: 'inexistente'
+      estado: 'inexistente',
+      desglose: []
     });
     const kpi = ref({
       ocupacion: { ocupadas: 0, total: 0 },
@@ -33,6 +34,47 @@ createApp({
       egresos_hoy: { PEN: 0, USD: 0, CLP: 0 },
     });
     const alertasInventario = ref([]);
+
+    // COMPUTED: Desglose granular solicitado
+    const desgloseFormateado = computed(() => {
+      const d = mi_turno.value.desglose || [];
+      const res = {
+        pos_pen: 0, pos_usd: 0, pos_clp: 0,
+        yape_plin: 0,
+        efectivo_pen: 0, efectivo_usd: 0, efectivo_clp: 0,
+        transferencia: 0
+      };
+
+      d.forEach(item => {
+        const medio = (item.medio_pago || '').toUpperCase();
+        const cat = (item.categoria || '').toUpperCase();
+        const mon = (item.moneda || 'PEN').toUpperCase();
+        const total = parseFloat(item.total || 0);
+
+        // Prioridad 1: Yape / Plin (por categoría o medio)
+        if (cat.includes('YAPE') || cat.includes('PLIN') || medio.includes('YAPE') || medio.includes('PLIN')) {
+          res.yape_plin += total;
+        } 
+        // Prioridad 2: POS (por categoría o medio)
+        else if (cat.includes('POS') || medio.includes('POS')) {
+          if (mon === 'PEN') res.pos_pen += total;
+          else if (mon === 'USD') res.pos_usd += total;
+          else if (mon === 'CLP') res.pos_clp += total;
+        }
+        // Prioridad 3: Transferencias / Depósitos
+        else if (cat.includes('TRANS') || cat.includes('DEPOS') || medio.includes('TRANS') || medio.includes('DEPOS')) {
+          res.transferencia += total;
+        }
+        // Prioridad 4: Efectivo (Evitar que "NO EFECTIVO" caiga aquí)
+        else if (medio === 'EFECTIVO' || cat.includes('EFECTIVO')) {
+          if (mon === 'PEN') res.efectivo_pen += total;
+          else if (mon === 'USD') res.efectivo_usd += total;
+          else if (mon === 'CLP') res.efectivo_clp += total;
+        }
+      });
+
+      return res;
+    });
 
     /**
      * Obtiene la data operativa del día invocando al endpoint de dashboard.
@@ -93,6 +135,7 @@ createApp({
 
     return {
       loadingInicial, segundosDesdeUpdate, usuario, urgentes, checkouts_hoy, checkins_esperados, mi_turno, kpi, alertasInventario,
+      desgloseFormateado,
       abrirModalReporte, formatNumber
     };
   }

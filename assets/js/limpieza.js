@@ -137,6 +137,37 @@ const appConfig = {
             loading.value = false;
         };
 
+        const marcarListaRapido = async (h) => {
+            const formData = new FormData();
+            formData.append('id', h.id);
+            formData.append('estado', 'lista');
+            formData.append('observacion', h.observacion || '');
+            formData.append('responsable', h.responsable || '');
+
+            loading.value = true;
+            try {
+                const res = await axios.post('/hotel/api/limpieza.php?action=actualizar', formData);
+                if (res.data.ok) {
+                    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Habitación marcada como lista', showConfirmButton: false, timer: 2000 });
+                    h.estado = 'lista';
+                    if (res.data.data && res.data.data.hora_fin) h.hora_fin = res.data.data.hora_fin;
+                } else {
+                    Swal.fire('Error', res.data.msg, 'error');
+                }
+            } catch (e) {
+                Swal.fire('Error', 'Hubo un problema de conexión', 'error');
+            }
+            loading.value = false;
+        };
+
+        const getColorTop = (h) => {
+            if (h.estado === 'mantenimiento') return '#343a40'; 
+            if (h.estado === 'lista') return '#198754';
+            if (h.tipo_limpieza === 'salida') return '#dc3545';
+            if (h.tipo_limpieza === 'estadía') return '#ffc107';
+            return '#0dcaf0';
+        };
+
         const getTipoClass = (t) => {
             if (t === 'salida')    return 'bg-danger';
             if (t === 'estadía')   return 'bg-warning text-dark';
@@ -144,9 +175,11 @@ const appConfig = {
         };
 
         const getEstadoClass = (e) => {
-            if (e === 'pendiente')  return 'bg-light text-dark border';
-            if (e === 'en proceso') return 'bg-warning text-dark';
-            return 'bg-success';
+            let est = String(e).toLowerCase();
+            if (est === 'pendiente')  return 'bg-light text-dark border';
+            if (est === 'en proceso' || est === 'en_proceso') return 'bg-warning text-dark';
+            if (est === 'mantenimiento') return 'bg-danger text-white border border-danger';
+            return 'bg-success text-white';
         };
 
         // HISTORIAL
@@ -192,7 +225,7 @@ const appConfig = {
         return {
             loading, yaGenerado, lista, filtro, stats, listaFiltrada, personalLimpieza,
             generarLista, tareaEdit, abrirEdicion, guardarEdicion, fmtHora,
-            getTipoClass, getEstadoClass,
+            getTipoClass, getEstadoClass, getColorTop, marcarListaRapido,
             listaHistorial, filtroHist,
             detalleDia, fechaDetalle, fetchHistorial, verDetalle, formatFecha, formatFechaHora
         };

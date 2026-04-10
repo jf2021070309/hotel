@@ -41,7 +41,7 @@ class LimpiezaController {
                 $p['tipo_limpieza'] = $p['tipo'];
                 $p['hab_id'] = $p['habitacion_id'];
                 $p['hab'] = $p['habitacion'];
-                $p['uid'] = $usuarioId;
+                $p['usuario_id'] = $usuarioId;
             }
             $this->model->guardarMasivo($propuesta);
             return ['ok' => true, 'msg' => 'Lista de limpieza generada correctamente.'];

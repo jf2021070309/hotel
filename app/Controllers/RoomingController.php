@@ -57,7 +57,7 @@ class RoomingController {
         
         // Mapeo manual de campos para coincidir con los placeholders del Modelo
         $mapped = [
-            'operador'     => $_SESSION['auth_nombre'],
+            'operador'     => $_SESSION['auth_nombre'] ?? 'Administrador',
             'fecha_reg'    => $stayData['fecha_registro'],
             'fecha_out'    => $stayData['fecha_checkout'],
             'hora_in'      => $stayData['hora_checkin'],
@@ -75,7 +75,7 @@ class RoomingController {
             'comprobante'  => $stayData['tipo_comprobante'],
             'num_comp'     => $stayData['num_comprobante'] ?? '',
             'ruc'          => $stayData['ruc_factura'] ?? '',
-            'cobrador'     => $_SESSION['auth_nombre'],
+            'cobrador'     => $_SESSION['auth_nombre'] ?? '',
             'procedencia'  => $stayData['procedencia'] ?? '',
             'carro'        => $stayData['carro'] ?? 'NO',
             'obs'          => $stayData['observaciones'] ?? '',

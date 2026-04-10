@@ -84,7 +84,7 @@ class LimpiezaModel {
                                s.fecha_checkout
                         FROM rooming_stays s
                         JOIN habitaciones h ON s.habitacion_id = h.id
-                        WHERE s.estado IN ('activo', 'late_checkout') AND s.fecha_checkout > ? AND s.fecha_registro <= ?";
+                        WHERE s.estado IN ('activo', 'late_checkout') AND DATE(s.fecha_checkout) > ? AND DATE(s.fecha_registro) <= ?";
 
         // 3. Programadas (Libres con checkin hoy o mañana)
         $sqlProgramadas = "SELECT s.habitacion_id, h.numero as habitacion, 'programada' as tipo, 'normal' as prioridad,
@@ -92,7 +92,7 @@ class LimpiezaModel {
                                   s.fecha_registro
                            FROM rooming_stays s
                            JOIN habitaciones h ON s.habitacion_id = h.id
-                           WHERE s.estado = 'reserva' AND s.fecha_registro IN (?, DATE_ADD(?, INTERVAL 1 DAY))";
+                           WHERE s.estado = 'reservado' AND DATE(s.fecha_registro) IN (?, DATE_ADD(?, INTERVAL 1 DAY))";
 
         // Ejecutar y unir
         $stmtS = $this->pdo->prepare($sqlSalidas); $stmtS->execute([$fecha]);

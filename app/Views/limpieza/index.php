@@ -77,6 +77,7 @@ include $base . 'includes/sidebar.php';
                         <option value="pendiente">Pendiente</option>
                         <option value="en proceso">En Proceso</option>
                         <option value="lista">Lista</option>
+                        <option value="mantenimiento">Mantenimiento</option>
                     </select>
                 </div>
                 <div class="d-flex align-items-center gap-2">
@@ -96,85 +97,83 @@ include $base . 'includes/sidebar.php';
             </div>
         </div>
 
-        <!-- TABLA PRINCIPAL -->
-        <div class="bg-white rounded shadow-sm overflow-hidden">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="ps-3" style="width: 80px;">HAB.</th>
-                            <th>TIPO</th>
-                            <th>RESUMEN</th>
-                            <th class="text-center">ESTADO</th>
-                            <th>RESPONSABLE</th>
-                            <th class="text-center">HORAS</th>
-                            <th class="text-end pe-3">ACCIONES</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-if="loading" class="text-center">
-                            <td colspan="7" class="py-5">
-                                <div class="spinner-border text-primary" role="status"></div>
-                                <p class="mt-2 text-muted">Sincronizando estados...</p>
-                            </td>
-                        </tr>
-                        <tr v-if="!loading && listaFiltrada.length === 0" class="text-center">
-                            <td colspan="7" class="py-5 text-muted fst-italic">
-                                <i class="bi bi-inbox fs-2 d-block mb-3 opacity-25"></i>
-                                No hay tareas de limpieza registradas para hoy o con este filtro.
-                            </td>
-                        </tr>
-                        <tr v-for="h in listaFiltrada" :key="h.id" :class="{'table-success': h.estado === 'lista'}">
-                            <td class="ps-3 fw-bold fs-5 text-primary">{{ h.habitacion }}</td>
-                            <td>
-                                <span class="badge" :class="getTipoClass(h.tipo_limpieza)">
-                                    {{ h.tipo_limpieza.toUpperCase() }}
-                                </span>
-                                <div v-if="h.prioridad === 'alta'" class="mt-1 small text-danger fw-bold">
-                                    <i class="bi bi-caret-up-fill"></i> PRIORIDAD ALTA
-                                </div>
-                            </td>
-                            <td>
-                                <div v-if="h.tipo_limpieza === 'salida'" class="small">
-                                    <i class="bi bi-door-closed text-danger me-1"></i> Salida de Huésped
-                                </div>
-                                <div v-else-if="h.tipo_limpieza === 'estadía'" class="small">
-                                    <i class="bi bi-person-check text-warning me-1"></i> Ocupada (Rutinario)
-                                </div>
-                                <div v-else class="small">
-                                    <i class="bi bi-calendar-event text-info me-1"></i> Libre (Programada)
-                                </div>
-                                <div class="mt-1 text-muted small fst-italic" v-if="h.observacion">
-                                    <i class="bi bi-chat-left-dots me-1"></i> {{ h.observacion }}
-                                </div>
-                            </td>
-                            <td class="text-center">
-                                <span class="badge rounded-pill px-3 py-2 fs-6" :class="getEstadoClass(h.estado)">
-                                    {{ h.estado === 'pendiente' ? 'PENDIENTE' : (h.estado === 'en proceso' ? 'EN PROCESO' : 'LISTA') }}
-                                </span>
-                            </td>
-                            <td>
-                                <div v-if="h.responsable" class="fw-bold small">{{ h.responsable }}</div>
-                                <button v-else class="btn btn-sm btn-light border text-muted py-0 px-2" @click="abrirEdicion(h)">
-                                    Sin asignar
-                                </button>
-                            </td>
-                            <td class="text-center small">
-                                <div v-if="h.estado === 'lista' && h.hora_fin && !h.hora_fin.startsWith('0000')">
-                                    <span class="text-muted d-block" style="font-size: 0.70rem;">Completado el:</span>
-                                    <b class="text-success">{{ formatFechaHora(h.hora_fin, h.fecha) }}</b>
-                                </div>
-                                <span v-else class="text-muted mini">—</span>
-                            </td>
-                            <td class="text-end pe-3">
-                                <button class="btn btn-sm btn-outline-primary shadow-sm" @click="abrirEdicion(h)">
-                                    <i class="bi bi-pencil-square me-1"></i> Agregar / Editar
-                                </button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+        <!-- GRID PRINCIPAL DE LIMPIEZA (Optimizada para móviles y tablets) -->
+        <div class="row g-3">
+            <div v-if="loading" class="col-12 text-center py-5 bg-white rounded shadow-sm">
+                <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status"></div>
+                <p class="mt-3 text-muted fw-bold fs-5">Sincronizando estados...</p>
             </div>
+
+            <div v-if="!loading && listaFiltrada.length === 0" class="col-12 text-center py-5 bg-white rounded shadow-sm">
+                <i class="bi bi-inbox fs-1 d-block mb-3 opacity-25"></i>
+                <h4 class="text-muted">No hay tareas de limpieza para hoy o bajo este filtro.</h4>
+            </div>
+
+            <div v-for="h in listaFiltrada" :key="h.id" class="col-12 col-md-6 col-lg-4">
+                <div class="card shadow-sm border-0 h-100 position-relative" :class="{'bg-light opacity-75': h.estado === 'lista'}" style="border-radius: 1rem; border-top: 5px solid transparent !important;" :style="'border-top-color: ' + getColorTop(h) + ' !important;'">
+                    <!-- Botón de opciones en la esquina -->
+                    <button class="btn btn-sm btn-outline-secondary position-absolute bg-white" style="top: 15px; right: 15px; border-radius: 8px;" @click="abrirEdicion(h)">
+                        <i class="bi bi-pencil-square"></i>
+                    </button>
+
+                    <div class="card-body d-flex flex-column">
+                        <!-- Cabecera de Tarjeta -->
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div>
+                                <h1 class="fw-black mb-0" style="font-size: 3rem; letter-spacing: -2px; color: #1e293b; line-height: 1;">{{ h.habitacion }}</h1>
+                            </div>
+                            <div class="d-flex flex-column gap-1">
+                                <span class="badge py-2 px-3 fw-bold shadow-sm" :class="getEstadoClass(h.estado)" style="font-size: 0.85rem;">
+                                    {{ h.estado.toUpperCase() }}
+                                </span>
+                                <div class="d-flex gap-1">
+                                    <span class="badge" :class="getTipoClass(h.tipo_limpieza)" style="font-size: 0.75rem;">
+                                        {{ h.tipo_limpieza.toUpperCase() }}
+                                    </span>
+                                    <span class="badge bg-secondary" style="font-size: 0.75rem;" title="Ocupantes esperados">
+                                        <i class="bi bi-people-fill"></i> {{ h.pax || h.ocupantes || '?' }} PAX
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Detalles -->
+                        <div class="mb-3 flex-grow-1">
+                            <div v-if="h.tipo_limpieza === 'salida' && h.estado !== 'lista'" class="small text-danger fw-bold mb-1">
+                                <i class="bi bi-exclamation-triangle-fill"></i> Prioridad: Limpieza Profunda
+                            </div>
+                            <div v-if="h.estado === 'mantenimiento'" class="small text-danger fw-bold mb-1">
+                                <i class="bi bi-tools"></i> FUERA DE SERVICIO
+                            </div>
+                            
+                            <div class="text-muted small fw-semibold">
+                                <i class="bi bi-person-badge"></i> {{ h.responsable ? h.responsable : 'Sin asignar' }}
+                            </div>
+                            <div class="mt-2 text-dark small fst-italic p-2 bg-light rounded border" v-if="h.observacion">
+                                <i class="bi bi-chat-left-dots text-primary me-1"></i> "{{ h.observacion }}"
+                            </div>
+                        </div>
+
+                        <!-- Botón 1-Clic -->
+                        <div class="mt-auto border-top pt-3 d-flex gap-2">
+                            <button v-if="h.estado !== 'lista' && h.estado !== 'mantenimiento'" 
+                                class="btn btn-success flex-grow-1 fw-bold fs-5 px-3 py-2 shadow rounded-3" 
+                                style="line-height: 1.2;"
+                                @click="marcarListaRapido(h)" :disabled="loading">
+                                <i class="bi bi-check2-circle d-block fs-3 mb-1"></i> MARCAR LISTA
+                            </button>
+                            <div v-else-if="h.estado === 'lista'" class="w-100 text-center py-2 text-success fw-bold bg-success bg-opacity-10 rounded-3 border border-success border-opacity-25">
+                                <i class="bi bi-check-all fs-4 d-block mb-1"></i> HABITACIÓN LISTA<br>
+                                <small v-if="h.hora_fin && !h.hora_fin.startsWith('0000')" class="text-muted">{{ formatFechaHora(h.hora_fin, h.fecha) }}</small>
+                            </div>
+                            <div v-else-if="h.estado === 'mantenimiento'" class="w-100 text-center py-2 text-danger fw-bold bg-danger bg-opacity-10 rounded-3 border border-danger border-opacity-25">
+                                <i class="bi bi-exclamation-octagon fs-4 d-block mb-1"></i> BLOQUEADA
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <!-- Modal Édition Limpieza -->
         <div class="modal fade" id="modalEdicionLimpieza" tabindex="-1">
             <div class="modal-dialog">
@@ -192,6 +191,7 @@ include $base . 'includes/sidebar.php';
                                 <option value="pendiente">Pendiente</option>
                                 <option value="en_proceso">En Proceso</option>
                                 <option value="lista">Lista</option>
+                                <option value="mantenimiento">Mantenimiento / Bloqueada</option>
                             </select>
                         </div>
                         

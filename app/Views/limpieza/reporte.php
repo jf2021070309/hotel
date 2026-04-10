@@ -77,115 +77,203 @@ include $base . 'includes/sidebar.php';
         </div>
       </div>
 
-      <!-- SECCIÓN: SALIDAS -->
-      <div v-if="grupos.salida.length > 0" class="mb-5">
-        <div class="d-flex align-items-center gap-2 mb-3">
-          <div class="badge bg-danger px-3 py-2 fs-6">🔴 LIMPIEZA DE SALIDA</div>
-          <span class="text-muted small">Limpieza profunda — prioridad ALTA</span>
-        </div>
-        <div class="row g-3">
-          <div class="col-md-6" v-for="h in grupos.salida" :key="h.id">
-            <div class="card border-0 shadow-sm tipo-salida" :class="h.estado === 'lista' ? 'estado-done' : ''">
-              <div class="card-body p-3">
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                  <div class="d-flex gap-3 align-items-center">
-                    <div class="hab-badge bg-danger text-white">{{ h.habitacion }}</div>
-                    <div>
-                      <div class="fw-bold">HAB #{{ h.habitacion }}</div>
-                      <div class="small text-muted">{{ h.responsable || 'Sin asignar' }}</div>
-                      <div class="mini text-muted" v-if="h.hora_inicio">⏱ Inicio: {{ h.hora_inicio }}</div>
+      <div class="d-print-none">
+          <!-- SECCIÓN: SALIDAS -->
+          <div v-if="grupos.salida.length > 0" class="mb-5">
+            <div class="d-flex align-items-center gap-2 mb-3">
+              <div class="badge bg-danger px-3 py-2 fs-6">🔴 LIMPIEZA DE SALIDA</div>
+              <span class="text-muted small">Limpieza profunda — prioridad ALTA</span>
+            </div>
+            <div class="row g-3">
+              <div class="col-md-6" v-for="h in grupos.salida" :key="h.id">
+                <div class="card border-0 shadow-sm tipo-salida" :class="h.estado === 'lista' ? 'estado-done' : ''">
+                  <div class="card-body p-3">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                      <div class="d-flex gap-3 align-items-center">
+                        <div class="hab-badge bg-danger text-white">{{ h.habitacion }}</div>
+                        <div>
+                          <div class="fw-bold">HAB #{{ h.habitacion }}</div>
+                          <div class="small text-muted">{{ h.responsable || 'Sin asignar' }}</div>
+                          <div class="mini text-muted" v-if="h.hora_inicio">⏱ Inicio: {{ h.hora_inicio }}</div>
+                        </div>
+                      </div>
+                      <span class="badge" :class="h.estado === 'lista' ? 'bg-success' : (h.estado === 'en_proceso' ? 'bg-warning text-dark' : 'bg-light text-dark border')">
+                        {{ h.estado === 'lista' ? '✅ LISTA' : (h.estado === 'en_proceso' ? '🧹 EN PROCESO' : '⏳ PENDIENTE') }}
+                      </span>
+                    </div>
+                    <div class="bg-light rounded p-2">
+                      <div class="mini fw-bold text-uppercase text-muted mb-2">Checklist — Salida</div>
+                      <div class="check-item" v-for="task in checklistSalida" :key="task">
+                        <div class="check-box" :class="h.estado === 'lista' ? 'done' : ''"></div>
+                        <span>{{ task }}</span>
+                      </div>
+                    </div>
+                    <div v-if="h.observacion" class="mt-2 small text-muted fst-italic">
+                      <i class="bi bi-chat-dots me-1"></i> {{ h.observacion }}
                     </div>
                   </div>
-                  <span class="badge" :class="h.estado === 'lista' ? 'bg-success' : (h.estado === 'en_proceso' ? 'bg-warning text-dark' : 'bg-light text-dark border')">
-                    {{ h.estado === 'lista' ? '✅ LISTA' : (h.estado === 'en_proceso' ? '🧹 EN PROCESO' : '⏳ PENDIENTE') }}
-                  </span>
-                </div>
-                <div class="bg-light rounded p-2">
-                  <div class="mini fw-bold text-uppercase text-muted mb-2">Checklist — Salida</div>
-                  <div class="check-item" v-for="task in checklistSalida" :key="task">
-                    <div class="check-box" :class="h.estado === 'lista' ? 'done' : ''"></div>
-                    <span>{{ task }}</span>
-                  </div>
-                </div>
-                <div v-if="h.observacion" class="mt-2 small text-muted fst-italic">
-                  <i class="bi bi-chat-dots me-1"></i> {{ h.observacion }}
                 </div>
               </div>
             </div>
           </div>
-        </div>
+
+          <!-- SECCIÓN: REPASO (ESTADÍA) -->
+          <div v-if="grupos.estadia.length > 0" class="mb-5">
+            <div class="d-flex align-items-center gap-2 mb-3">
+              <div class="badge bg-warning text-dark px-3 py-2 fs-6">🟡 REPASO DIARIO</div>
+              <span class="text-muted small">Huésped sigue hospedado</span>
+            </div>
+            <div class="row g-3">
+              <div class="col-md-6" v-for="h in grupos.estadia" :key="h.id">
+                <div class="card border-0 shadow-sm tipo-estadia" :class="h.estado === 'lista' ? 'estado-done' : ''">
+                  <div class="card-body p-3">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                      <div class="d-flex gap-3 align-items-center">
+                        <div class="hab-badge bg-warning text-dark">{{ h.habitacion }}</div>
+                        <div>
+                          <div class="fw-bold">HAB #{{ h.habitacion }}</div>
+                          <div class="small text-muted">{{ h.responsable || 'Sin asignar' }}</div>
+                        </div>
+                      </div>
+                      <span class="badge" :class="h.estado === 'lista' ? 'bg-success' : (h.estado === 'en_proceso' ? 'bg-warning text-dark' : 'bg-light text-dark border')">
+                        {{ h.estado === 'lista' ? '✅ LISTA' : (h.estado === 'en_proceso' ? '🧹 EN PROCESO' : '⏳ PENDIENTE') }}
+                      </span>
+                    </div>
+                    <div class="bg-light rounded p-2">
+                      <div class="mini fw-bold text-uppercase text-muted mb-2">Checklist — Repaso</div>
+                      <div class="check-item" v-for="task in checklistRepaso" :key="task">
+                        <div class="check-box" :class="h.estado === 'lista' ? 'done' : ''"></div>
+                        <span>{{ task }}</span>
+                      </div>
+                    </div>
+                    <div v-if="h.observacion" class="mt-2 small text-muted fst-italic">
+                      <i class="bi bi-chat-dots me-1"></i> {{ h.observacion }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+      </div>
+      <div class="d-print-none">
+          <!-- SECCIÓN: RESERVA (PRE CHECK-IN) -->
+          <div v-if="grupos.reserva.length > 0" class="mb-5">
+            <div class="d-flex align-items-center gap-2 mb-3">
+              <div class="badge bg-success px-3 py-2 fs-6">🟢 LIMPIEZA DE RESERVA</div>
+              <span class="text-muted small">Verificación pre Check-in</span>
+            </div>
+            <div class="row g-3">
+              <div class="col-md-6" v-for="h in grupos.reserva" :key="h.id">
+                <div class="card border-0 shadow-sm tipo-reserva" :class="h.estado === 'lista' ? 'estado-done' : ''">
+                  <div class="card-body p-3">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                      <div class="d-flex gap-3 align-items-center">
+                        <div class="hab-badge bg-success text-white">{{ h.habitacion }}</div>
+                        <div>
+                          <div class="fw-bold">HAB #{{ h.habitacion }}</div>
+                          <div class="small text-muted">{{ h.responsable || 'Sin asignar' }}</div>
+                        </div>
+                      </div>
+                      <span class="badge" :class="h.estado === 'lista' ? 'bg-success' : (h.estado === 'en_proceso' ? 'bg-warning text-dark' : 'bg-light text-dark border')">
+                        {{ h.estado === 'lista' ? '✅ LISTA' : (h.estado === 'en_proceso' ? '🧹 EN PROCESO' : '⏳ PENDIENTE') }}
+                      </span>
+                    </div>
+                    <div class="bg-light rounded p-2">
+                      <div class="mini fw-bold text-uppercase text-muted mb-2">Checklist — Reserva</div>
+                      <div class="check-item" v-for="task in checklistReserva" :key="task">
+                        <div class="check-box" :class="h.estado === 'lista' ? 'done' : ''"></div>
+                        <span>{{ task }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
       </div>
 
-      <!-- SECCIÓN: REPASO (ESTADÍA) -->
-      <div v-if="grupos.estadia.length > 0" class="mb-5">
-        <div class="d-flex align-items-center gap-2 mb-3">
-          <div class="badge bg-warning text-dark px-3 py-2 fs-6">🟡 REPASO DIARIO</div>
-          <span class="text-muted small">Huésped sigue hospedado</span>
-        </div>
-        <div class="row g-3">
-          <div class="col-md-6" v-for="h in grupos.estadia" :key="h.id">
-            <div class="card border-0 shadow-sm tipo-estadia" :class="h.estado === 'lista' ? 'estado-done' : ''">
-              <div class="card-body p-3">
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                  <div class="d-flex gap-3 align-items-center">
-                    <div class="hab-badge bg-warning text-dark">{{ h.habitacion }}</div>
-                    <div>
-                      <div class="fw-bold">HAB #{{ h.habitacion }}</div>
-                      <div class="small text-muted">{{ h.responsable || 'Sin asignar' }}</div>
-                    </div>
-                  </div>
-                  <span class="badge" :class="h.estado === 'lista' ? 'bg-success' : (h.estado === 'en_proceso' ? 'bg-warning text-dark' : 'bg-light text-dark border')">
-                    {{ h.estado === 'lista' ? '✅ LISTA' : (h.estado === 'en_proceso' ? '🧹 EN PROCESO' : '⏳ PENDIENTE') }}
-                  </span>
-                </div>
-                <div class="bg-light rounded p-2">
-                  <div class="mini fw-bold text-uppercase text-muted mb-2">Checklist — Repaso</div>
-                  <div class="check-item" v-for="task in checklistRepaso" :key="task">
-                    <div class="check-box" :class="h.estado === 'lista' ? 'done' : ''"></div>
-                    <span>{{ task }}</span>
-                  </div>
-                </div>
-                <div v-if="h.observacion" class="mt-2 small text-muted fst-italic">
-                  <i class="bi bi-chat-dots me-1"></i> {{ h.observacion }}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <!-- FORMATO DE IMPRESIÓN (Condensado en 1 sola hoja) -->
+      <div class="d-none d-print-block">
+        <h2 class="text-center fw-bold text-uppercase border-bottom border-dark border-2 pb-2 mb-4">Hoja de Tareas de Limpieza</h2>
+        
+        <!-- Salidas -->
+        <template v-if="grupos.salida.length > 0">
+            <h5 class="fw-bold text-dark border-bottom border-dark p-2 mb-0 mt-3 pt-3">🔴 SALIDA (Limpieza Profunda) - Prioridad ALTA</h5>
+            <table class="table table-bordered border-dark mb-4" style="font-size: 14px; width: 100%;">
+                <thead>
+                    <tr class="table-light border-dark">
+                        <th style="width:10%" class="text-center">Hab</th>
+                        <th style="width:25%">Responsable</th>
+                        <th style="width:45%">Observaciones especiales</th>
+                        <th style="width:20%" class="text-center">Realizado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="h in grupos.salida" :key="h.id">
+                        <td class="text-center fw-bold fs-5 align-middle">{{ h.habitacion }}</td>
+                        <td class="align-middle">{{ h.responsable || '____________________' }}</td>
+                        <td class="align-middle text-muted">{{ h.observacion || '' }}</td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+        </template>
 
-      <!-- SECCIÓN: RESERVA (PRE CHECK-IN) -->
-      <div v-if="grupos.reserva.length > 0" class="mb-5">
-        <div class="d-flex align-items-center gap-2 mb-3">
-          <div class="badge bg-success px-3 py-2 fs-6">🟢 LIMPIEZA DE RESERVA</div>
-          <span class="text-muted small">Verificación pre Check-in</span>
-        </div>
-        <div class="row g-3">
-          <div class="col-md-6" v-for="h in grupos.reserva" :key="h.id">
-            <div class="card border-0 shadow-sm tipo-reserva" :class="h.estado === 'lista' ? 'estado-done' : ''">
-              <div class="card-body p-3">
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                  <div class="d-flex gap-3 align-items-center">
-                    <div class="hab-badge bg-success text-white">{{ h.habitacion }}</div>
-                    <div>
-                      <div class="fw-bold">HAB #{{ h.habitacion }}</div>
-                      <div class="small text-muted">{{ h.responsable || 'Sin asignar' }}</div>
-                    </div>
-                  </div>
-                  <span class="badge" :class="h.estado === 'lista' ? 'bg-success' : (h.estado === 'en_proceso' ? 'bg-warning text-dark' : 'bg-light text-dark border')">
-                    {{ h.estado === 'lista' ? '✅ LISTA' : (h.estado === 'en_proceso' ? '🧹 EN PROCESO' : '⏳ PENDIENTE') }}
-                  </span>
-                </div>
-                <div class="bg-light rounded p-2">
-                  <div class="mini fw-bold text-uppercase text-muted mb-2">Checklist — Reserva</div>
-                  <div class="check-item" v-for="task in checklistReserva" :key="task">
-                    <div class="check-box" :class="h.estado === 'lista' ? 'done' : ''"></div>
-                    <span>{{ task }}</span>
-                  </div>
-                </div>
-              </div>
+        <!-- Repaso -->
+        <template v-if="grupos.estadia.length > 0">
+            <h5 class="fw-bold text-dark border-bottom border-dark p-2 mb-0 mt-2">🟡 REPASO (Estadía Continua)</h5>
+            <table class="table table-bordered border-dark mb-4" style="font-size: 14px; width: 100%;">
+                <thead>
+                    <tr class="table-light border-dark">
+                        <th style="width:10%" class="text-center">Hab</th>
+                        <th style="width:25%">Responsable</th>
+                        <th style="width:45%">Sugerencias del Huésped</th>
+                        <th style="width:20%" class="text-center">Realizado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="h in grupos.estadia" :key="h.id">
+                        <td class="text-center fw-bold fs-5 align-middle">{{ h.habitacion }}</td>
+                        <td class="align-middle">{{ h.responsable || '____________________' }}</td>
+                        <td class="align-middle text-muted">{{ h.observacion || '' }}</td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+        </template>
+
+        <!-- Reservas -->
+        <template v-if="grupos.reserva.length > 0">
+            <h5 class="fw-bold text-dark border-bottom border-dark p-2 mb-0 mt-2">🟢 PROGRAMADA (Para Check-in hoy)</h5>
+            <table class="table table-bordered border-dark mb-4" style="font-size: 14px; width: 100%;">
+                <thead>
+                    <tr class="table-light border-dark">
+                        <th style="width:10%" class="text-center">Hab</th>
+                        <th style="width:25%">Responsable</th>
+                        <th style="width:45%">Verificación</th>
+                        <th style="width:20%" class="text-center">Realizado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="h in grupos.reserva" :key="h.id">
+                        <td class="text-center fw-bold fs-5 align-middle">{{ h.habitacion }}</td>
+                        <td class="align-middle">{{ h.responsable || '____________________' }}</td>
+                        <td class="align-middle text-muted">{{ h.observacion || '' }}</td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+        </template>
+        
+        <div class="mt-5 pt-4 d-flex justify-content-between px-5">
+            <div class="text-center">
+                <p>___________________________________</p>
+                <p class="fw-bold">Recepción (Emisor)</p>
             </div>
-          </div>
+            <div class="text-center">
+                <p>___________________________________</p>
+                <p class="fw-bold">Gobernanta / Limpieza</p>
+            </div>
         </div>
       </div>
 

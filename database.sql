@@ -15,9 +15,11 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 
+-- Volcando estructura de base de datos para hotel_db
 CREATE DATABASE IF NOT EXISTS `hotel_db` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci */;
 USE `hotel_db`;
 
+-- Volcando estructura para tabla hotel_db.anticipos
 CREATE TABLE IF NOT EXISTS `anticipos` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `stay_id` int(10) unsigned NOT NULL,
@@ -37,8 +39,11 @@ CREATE TABLE IF NOT EXISTS `anticipos` (
   KEY `usuario_id` (`usuario_id`),
   CONSTRAINT `anticipos_ibfk_1` FOREIGN KEY (`stay_id`) REFERENCES `rooming_stays` (`id`) ON DELETE CASCADE,
   CONSTRAINT `anticipos_ibfk_2` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=52 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- La exportación de datos fue deseleccionada.
+
+-- Volcando estructura para tabla hotel_db.auditoria
 CREATE TABLE IF NOT EXISTS `auditoria` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `usuario_id` int(10) unsigned DEFAULT NULL,
@@ -52,8 +57,11 @@ CREATE TABLE IF NOT EXISTS `auditoria` (
   KEY `idx_fecha` (`fecha_hora`),
   KEY `idx_usuario` (`usuario_id`),
   KEY `idx_modulo` (`modulo`)
-) ENGINE=InnoDB AUTO_INCREMENT=137 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=173 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- La exportación de datos fue deseleccionada.
+
+-- Volcando estructura para tabla hotel_db.caja_chica
 CREATE TABLE IF NOT EXISTS `caja_chica` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `nombre` varchar(100) NOT NULL,
@@ -71,8 +79,11 @@ CREATE TABLE IF NOT EXISTS `caja_chica` (
   KEY `usuario_cierre` (`usuario_cierre`),
   CONSTRAINT `caja_chica_ibfk_1` FOREIGN KEY (`usuario_apertura`) REFERENCES `usuarios` (`id`),
   CONSTRAINT `caja_chica_ibfk_2` FOREIGN KEY (`usuario_cierre`) REFERENCES `usuarios` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- La exportación de datos fue deseleccionada.
+
+-- Volcando estructura para tabla hotel_db.caja_chica_movimientos
 CREATE TABLE IF NOT EXISTS `caja_chica_movimientos` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `caja_id` int(10) unsigned NOT NULL,
@@ -96,9 +107,11 @@ CREATE TABLE IF NOT EXISTS `caja_chica_movimientos` (
   CONSTRAINT `caja_chica_movimientos_ibfk_1` FOREIGN KEY (`caja_id`) REFERENCES `caja_chica` (`id`),
   CONSTRAINT `caja_chica_movimientos_ibfk_2` FOREIGN KEY (`categoria_id`) REFERENCES `finanzas_categorias` (`id`),
   CONSTRAINT `caja_chica_movimientos_ibfk_3` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- TABLA CLIENTES ELIMINADO
+-- La exportación de datos fue deseleccionada.
+
+-- Volcando estructura para tabla hotel_db.configuracion
 CREATE TABLE IF NOT EXISTS `configuracion` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `parametro` varchar(50) NOT NULL,
@@ -108,8 +121,9 @@ CREATE TABLE IF NOT EXISTS `configuracion` (
   UNIQUE KEY `uk_parametro` (`parametro`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
- -- TABLA consumos_hab ELIMINADO
+-- La exportación de datos fue deseleccionada.
 
+-- Volcando estructura para tabla hotel_db.desayunos
 CREATE TABLE IF NOT EXISTS `desayunos` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `fecha` date NOT NULL,
@@ -124,6 +138,9 @@ CREATE TABLE IF NOT EXISTS `desayunos` (
   CONSTRAINT `desayunos_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- La exportación de datos fue deseleccionada.
+
+-- Volcando estructura para tabla hotel_db.desayunos_detalle
 CREATE TABLE IF NOT EXISTS `desayunos_detalle` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `desayuno_id` int(10) unsigned NOT NULL,
@@ -137,6 +154,9 @@ CREATE TABLE IF NOT EXISTS `desayunos_detalle` (
   CONSTRAINT `desayunos_detalle_ibfk_1` FOREIGN KEY (`desayuno_id`) REFERENCES `desayunos` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- La exportación de datos fue deseleccionada.
+
+-- Volcando estructura para tabla hotel_db.finanzas_categorias
 CREATE TABLE IF NOT EXISTS `finanzas_categorias` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `modulo` enum('C.Chica','Flujo') NOT NULL,
@@ -146,8 +166,11 @@ CREATE TABLE IF NOT EXISTS `finanzas_categorias` (
   `activo` tinyint(1) DEFAULT 1,
   PRIMARY KEY (`id`),
   KEY `idx_modulo_tipo` (`modulo`,`tipo`)
-) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=56 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- La exportación de datos fue deseleccionada.
+
+-- Volcando estructura para tabla hotel_db.flujo_caja
 CREATE TABLE IF NOT EXISTS `flujo_caja` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `fecha` date NOT NULL,
@@ -163,9 +186,11 @@ CREATE TABLE IF NOT EXISTS `flujo_caja` (
   KEY `idx_estado` (`estado`),
   KEY `usuario_id` (`usuario_id`),
   CONSTRAINT `flujo_caja_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- La exportación de datos fue deseleccionada.
 
+-- Volcando estructura para tabla hotel_db.flujo_caja_movimientos
 CREATE TABLE IF NOT EXISTS `flujo_caja_movimientos` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `flujo_id` int(10) unsigned NOT NULL,
@@ -177,17 +202,18 @@ CREATE TABLE IF NOT EXISTS `flujo_caja_movimientos` (
   `medio_pago` enum('EFECTIVO','NO EFECTIVO') DEFAULT 'EFECTIVO',
   `observacion` text DEFAULT NULL,
   `vuelto` decimal(12,2) DEFAULT 0.00,
-  `sobre_fecha` DATE NULL,
-  `sobre_turno` VARCHAR(20) NULL,
+  `sobre_fecha` date DEFAULT NULL,
+  `sobre_turno` varchar(20) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `idx_flujo` (`flujo_id`),
   KEY `categoria_id` (`categoria_id`),
   CONSTRAINT `flujo_caja_movimientos_ibfk_1` FOREIGN KEY (`flujo_id`) REFERENCES `flujo_caja` (`id`) ON DELETE CASCADE,
   CONSTRAINT `flujo_caja_movimientos_ibfk_2` FOREIGN KEY (`categoria_id`) REFERENCES `finanzas_categorias` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=50 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=84 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- TABLA flujo_caja_responsables ELIMINADO
+-- La exportación de datos fue deseleccionada.
 
+-- Volcando estructura para tabla hotel_db.gastos_yape
 CREATE TABLE IF NOT EXISTS `gastos_yape` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `fecha` date NOT NULL,
@@ -203,8 +229,11 @@ CREATE TABLE IF NOT EXISTS `gastos_yape` (
   UNIQUE KEY `uk_fecha_turno_yape` (`fecha`,`turno`),
   KEY `usuario_id` (`usuario_id`),
   CONSTRAINT `gastos_yape_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- La exportación de datos fue deseleccionada.
+
+-- Volcando estructura para tabla hotel_db.gastos_yape_detalle
 CREATE TABLE IF NOT EXISTS `gastos_yape_detalle` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `gasto_yape_id` int(10) unsigned NOT NULL,
@@ -219,8 +248,11 @@ CREATE TABLE IF NOT EXISTS `gastos_yape_detalle` (
   KEY `categoria_id` (`categoria_id`),
   CONSTRAINT `gastos_yape_detalle_ibfk_1` FOREIGN KEY (`gasto_yape_id`) REFERENCES `gastos_yape` (`id`) ON DELETE CASCADE,
   CONSTRAINT `gastos_yape_detalle_ibfk_2` FOREIGN KEY (`categoria_id`) REFERENCES `finanzas_categorias` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=37 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- La exportación de datos fue deseleccionada.
+
+-- Volcando estructura para tabla hotel_db.habitaciones
 CREATE TABLE IF NOT EXISTS `habitaciones` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `numero` varchar(10) NOT NULL,
@@ -234,23 +266,29 @@ CREATE TABLE IF NOT EXISTS `habitaciones` (
   UNIQUE KEY `uk_numero` (`numero`),
   KEY `idx_estado` (`estado`),
   KEY `idx_piso` (`piso`)
-) ENGINE=InnoDB AUTO_INCREMENT=57 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=82 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- La exportación de datos fue deseleccionada.
+
+-- Volcando estructura para tabla hotel_db.inventario_movimientos
 CREATE TABLE IF NOT EXISTS `inventario_movimientos` (
-  `id`           INT(11)       NOT NULL AUTO_INCREMENT,
-  `producto_id`  INT(11)       NOT NULL,
-  `tipo`         ENUM('VENTA','RECARGA','CONSUMO_INTERNO','AJUSTE') NOT NULL,
-  `cantidad`     INT(11)       NOT NULL,
-  `stock_antes`  INT(11)       NOT NULL DEFAULT 0,
-  `stock_despues`INT(11)       NOT NULL DEFAULT 0,
-  `referencia`   VARCHAR(150)  NULL DEFAULT NULL COMMENT 'Ej: HAB 201 - Juanpa / Dueño Mendoza',
-  `usuario_id`   INT(11)       NOT NULL DEFAULT 1,
-  `created_at`   TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `producto_id` int(11) NOT NULL,
+  `tipo` enum('VENTA','RECARGA','CONSUMO_INTERNO','AJUSTE') NOT NULL,
+  `cantidad` int(11) NOT NULL,
+  `stock_antes` int(11) NOT NULL DEFAULT 0,
+  `stock_despues` int(11) NOT NULL DEFAULT 0,
+  `referencia` varchar(150) DEFAULT NULL COMMENT 'Ej: HAB 201 - Juanpa / Dueño Mendoza',
+  `usuario_id` int(11) NOT NULL DEFAULT 1,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
-  INDEX `idx_producto` (`producto_id`),
-  INDEX `idx_fecha` (`created_at`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  KEY `idx_producto` (`producto_id`),
+  KEY `idx_fecha` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- La exportación de datos fue deseleccionada.
+
+-- Volcando estructura para tabla hotel_db.inventario_productos
 CREATE TABLE IF NOT EXISTS `inventario_productos` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `nombre` varchar(100) NOT NULL,
@@ -260,8 +298,11 @@ CREATE TABLE IF NOT EXISTS `inventario_productos` (
   `stock_actual` int(11) DEFAULT 0,
   `activo` tinyint(1) DEFAULT 1,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- La exportación de datos fue deseleccionada.
+
+-- Volcando estructura para tabla hotel_db.limpieza_registros
 CREATE TABLE IF NOT EXISTS `limpieza_registros` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `fecha` date NOT NULL,
@@ -281,14 +322,11 @@ CREATE TABLE IF NOT EXISTS `limpieza_registros` (
   KEY `usuario_id` (`usuario_id`),
   CONSTRAINT `limpieza_registros_ibfk_1` FOREIGN KEY (`habitacion_id`) REFERENCES `habitaciones` (`id`),
   CONSTRAINT `limpieza_registros_ibfk_2` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=154 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- La exportación de datos fue deseleccionada.
 
--- TABLA registros ELIMINADO
-
-
--- TABLA reporte_alex ELIMINADO
-
+-- Volcando estructura para tabla hotel_db.reporte_mendoza
 CREATE TABLE IF NOT EXISTS `reporte_mendoza` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `fecha` date NOT NULL,
@@ -304,6 +342,9 @@ CREATE TABLE IF NOT EXISTS `reporte_mendoza` (
   CONSTRAINT `reporte_mendoza_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- La exportación de datos fue deseleccionada.
+
+-- Volcando estructura para tabla hotel_db.reporte_mendoza_habs
 CREATE TABLE IF NOT EXISTS `reporte_mendoza_habs` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `reporte_id` int(10) unsigned NOT NULL,
@@ -346,6 +387,26 @@ CREATE TABLE IF NOT EXISTS `reporte_mendoza_otros` (
 
 -- La exportación de datos fue deseleccionada.
 
+-- Volcando estructura para tabla hotel_db.rooming_consumos
+CREATE TABLE IF NOT EXISTS `rooming_consumos` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `stay_id` int(11) NOT NULL,
+  `producto_id` int(11) NOT NULL,
+  `nombre_producto` varchar(100) NOT NULL,
+  `cantidad` int(11) NOT NULL DEFAULT 1,
+  `precio_unitario` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `total` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `metodo_pago` varchar(50) DEFAULT NULL,
+  `pagado` tinyint(1) NOT NULL DEFAULT 0,
+  `usuario_id` int(11) NOT NULL DEFAULT 1,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `idx_stay` (`stay_id`),
+  KEY `idx_producto` (`producto_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- La exportación de datos fue deseleccionada.
+
 -- Volcando estructura para tabla hotel_db.rooming_pax
 CREATE TABLE IF NOT EXISTS `rooming_pax` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -361,7 +422,7 @@ CREATE TABLE IF NOT EXISTS `rooming_pax` (
   KEY `idx_stay` (`stay_id`),
   KEY `idx_documento` (`documento_num`),
   CONSTRAINT `rooming_pax_ibfk_1` FOREIGN KEY (`stay_id`) REFERENCES `rooming_stays` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=39 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=64 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- La exportación de datos fue deseleccionada.
 
@@ -397,6 +458,7 @@ CREATE TABLE IF NOT EXISTS `rooming_stays` (
   `usuario_id` int(10) unsigned NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `total_cobrado_orig` decimal(12,2) NOT NULL DEFAULT 0.00 COMMENT 'Total cobrado en la moneda del stay (moneda_pago)',
   PRIMARY KEY (`id`),
   KEY `idx_habitacion` (`habitacion_id`),
   KEY `idx_fecha` (`fecha_registro`),
@@ -405,7 +467,7 @@ CREATE TABLE IF NOT EXISTS `rooming_stays` (
   KEY `usuario_id` (`usuario_id`),
   CONSTRAINT `rooming_stays_ibfk_1` FOREIGN KEY (`habitacion_id`) REFERENCES `habitaciones` (`id`),
   CONSTRAINT `rooming_stays_ibfk_2` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=54 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- La exportación de datos fue deseleccionada.
 
@@ -420,7 +482,20 @@ CREATE TABLE IF NOT EXISTS `tipos_cambio` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_tc_fecha` (`moneda_origen`,`moneda_destino`,`fecha`),
   KEY `idx_fecha` (`fecha`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- La exportación de datos fue deseleccionada.
+
+-- Volcando estructura para tabla hotel_db.usuario_permisos
+CREATE TABLE IF NOT EXISTS `usuario_permisos` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `usuario_id` int(11) NOT NULL,
+  `modulo` varchar(50) NOT NULL,
+  `activo` tinyint(1) NOT NULL DEFAULT 1,
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_usuario_modulo` (`usuario_id`,`modulo`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- La exportación de datos fue deseleccionada.
 
@@ -435,36 +510,7 @@ CREATE TABLE IF NOT EXISTS `usuarios` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_usuario` (`usuario`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-
-CREATE TABLE IF NOT EXISTS `rooming_consumos` (
-  `id`              INT(11)        NOT NULL AUTO_INCREMENT,
-  `stay_id`         INT(11)        NOT NULL,
-  `producto_id`     INT(11)        NOT NULL,
-  `nombre_producto` VARCHAR(100)   NOT NULL,
-  `cantidad`        INT(11)        NOT NULL DEFAULT 1,
-  `precio_unitario` DECIMAL(10,2)  NOT NULL DEFAULT 0.00,
-  `total`           DECIMAL(10,2)  NOT NULL DEFAULT 0.00,
-  `metodo_pago`     VARCHAR(50)    NULL DEFAULT NULL,
-  `pagado`          TINYINT(1)     NOT NULL DEFAULT 0,
-  `usuario_id`      INT(11)        NOT NULL DEFAULT 1,
-  `created_at`      TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  INDEX `idx_stay` (`stay_id`),
-  INDEX `idx_producto` (`producto_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-CREATE TABLE IF NOT EXISTS `usuario_permisos` (
-  `id`          INT(11)     NOT NULL AUTO_INCREMENT,
-  `usuario_id`  INT(11)     NOT NULL,
-  `modulo`      VARCHAR(50) NOT NULL,
-  `activo`      TINYINT(1)  NOT NULL DEFAULT 1,
-  `updated_at`  TIMESTAMP   DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_usuario_modulo` (`usuario_id`, `modulo`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Registros
 

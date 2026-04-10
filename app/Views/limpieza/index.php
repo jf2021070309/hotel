@@ -9,15 +9,34 @@ include $base . 'includes/head.php';
 include $base . 'includes/sidebar.php';
 ?>
 
+<style>
+    .fw-black {
+        font-weight: 900;
+    }
+
+    .card-hover:hover {
+        transform: translateY(-5px);
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .main-content {
+        background-color: #f4f7fa;
+        min-height: 100vh;
+    }
+</style>
+
 <div class="main-content" id="app-limpieza" v-cloak>
     <div class="topbar border-bottom-0 shadow-sm" style="background: linear-gradient(to right, #ffffff, #f8f9fa);">
         <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list fs-4"></i></button>
         <div>
-            <h4 class="fw-bold" style="color: #111; letter-spacing: -0.5px;"><i class="bi bi-stars me-2" style="color: #d4af37;"></i>Panel de Limpieza Diario</h4>
+            <h4 class="fw-bold" style="color: #111; letter-spacing: -0.5px;"><i class="bi bi-stars me-2"
+                    style="color: #d4af37;"></i>Panel de Limpieza Diario</h4>
             <p class="mb-0 small text-muted fw-semibold">Gestión de estados y prioridades por habitación</p>
         </div>
         <div class="ms-auto d-flex align-items-center gap-2">
-            <button v-if="!yaGenerado" class="btn-primary-custom shadow-sm" @click="generarLista()" :disabled="loading" style="border: 1px solid #111;">
+            <button v-if="!yaGenerado" class="btn-primary-custom shadow-sm" @click="generarLista()" :disabled="loading"
+                style="border: 1px solid #111;">
                 <i class="bi bi-magic me-1 text-warning"></i> Generar Lista de Hoy
             </button>
             <a href="<?= route('limpieza/reporte.php', $base) ?>" class="btn btn-outline-danger shadow-sm">
@@ -30,38 +49,92 @@ include $base . 'includes/sidebar.php';
     </div>
 
     <div class="page-body">
-        
-        <!-- RESUMEN SUPERIOR -->
+
+        <!-- RESUMEN SUPERIOR - DISEÑO PREMIUM & ORDENADO -->
         <div class="row g-3 mb-4" v-if="lista.length > 0">
-            <div class="col-md-3">
-                <div class="card shadow-sm border-0 border-start border-danger border-5">
-                    <div class="card-body">
-                        <div class="small fw-bold text-danger text-uppercase">Salida (Prioridad Alta)</div>
-                        <div class="h3 mb-0 fw-bold">{{ stats.salida }} <span class="fs-6 text-muted">hab</span></div>
+            <!-- SALIDAS -->
+            <div class="col-6 col-md-3">
+                <div class="card border-0 shadow card-hover position-relative overflow-hidden" 
+                    style="border-radius: 1.5rem; background: linear-gradient(135deg, #f87171 0%, #dc2626 100%); color: white; min-height: 130px;">
+                    <div class="card-body p-4 d-flex flex-column justify-content-center">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-white fw-bold text-uppercase mb-1" style="font-size: 0.75rem; letter-spacing: 1.5px; opacity: 0.9;">Salidas Hoy</h6>
+                                <div class="d-flex align-items-baseline gap-1">
+                                    <h2 class="fw-black mb-0 text-white" style="font-size: 2.3rem;">{{ stats.salida }}</h2>
+                                    <span class="text-white small fw-bold opacity-75">habs</span>
+                                </div>
+                            </div>
+                            <div class="rounded-4 d-flex align-items-center justify-content-center shadow-lg" 
+                                style="width: 58px; height: 58px; background: rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(4px);">
+                                <i class="bi bi-door-open-fill text-white fs-2"></i>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="card shadow-sm border-0 border-start border-warning border-5">
-                    <div class="card-body">
-                        <div class="small fw-bold text-warning text-uppercase">Estadía (Rutinaria)</div>
-                        <div class="h3 mb-0 fw-bold">{{ stats.estadia }} <span class="fs-6 text-muted">hab</span></div>
+            
+            <!-- ESTADÍAS -->
+            <div class="col-6 col-md-3">
+                <div class="card border-0 shadow card-hover position-relative overflow-hidden" 
+                    style="border-radius: 1.5rem; background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%); color: white; min-height: 130px;">
+                    <div class="card-body p-4 d-flex flex-column justify-content-center">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-white fw-bold text-uppercase mb-1" style="font-size: 0.75rem; letter-spacing: 1.5px; opacity: 0.9;">Repaso / Stay</h6>
+                                <div class="d-flex align-items-baseline gap-1">
+                                    <h2 class="fw-black mb-0 text-white" style="font-size: 2.3rem;">{{ stats.estadia }}</h2>
+                                    <span class="text-white small fw-bold opacity-75">habs</span>
+                                </div>
+                            </div>
+                            <div class="rounded-4 d-flex align-items-center justify-content-center shadow-lg" 
+                                style="width: 58px; height: 58px; background: rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(4px);">
+                                <i class="bi bi-person-walking text-white fs-2"></i>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="card shadow-sm border-0 border-start border-info border-5">
-                    <div class="card-body">
-                        <div class="small fw-bold text-info text-uppercase">Programada (Libre)</div>
-                        <div class="h3 mb-0 fw-bold">{{ stats.programada }} <span class="fs-6 text-muted">hab</span></div>
+
+            <!-- PROGRAMADAS -->
+            <div class="col-6 col-md-3">
+                <div class="card border-0 shadow card-hover position-relative overflow-hidden" 
+                    style="border-radius: 1.5rem; background: linear-gradient(135deg, #22d3ee 0%, #0891b2 100%); color: white; min-height: 130px;">
+                    <div class="card-body p-4 d-flex flex-column justify-content-center">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-white fw-bold text-uppercase mb-1" style="font-size: 0.75rem; letter-spacing: 1.5px; opacity: 0.9;">Reservas Act.</h6>
+                                <div class="d-flex align-items-baseline gap-1">
+                                    <h2 class="fw-black mb-0 text-white" style="font-size: 2.3rem;">{{ stats.programada }}</h2>
+                                    <span class="text-white small fw-bold opacity-75">habs</span>
+                                </div>
+                            </div>
+                            <div class="rounded-4 d-flex align-items-center justify-content-center shadow-lg" 
+                                style="width: 58px; height: 58px; background: rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(4px);">
+                                <i class="bi bi-calendar-check-fill text-white fs-2"></i>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="card shadow-sm border-0 bg-dark text-white">
-                    <div class="card-body">
-                        <div class="small fw-bold text-uppercase opacity-75">Total Hoy</div>
-                        <div class="h3 mb-0 fw-bold text-warning">{{ lista.length }} <span class="fs-6 text-muted">tareas</span></div>
+
+            <!-- TOTAL -->
+            <div class="col-6 col-md-3">
+                <div class="card border-0 shadow card-hover position-relative overflow-hidden" 
+                    style="border-radius: 1.5rem; background: linear-gradient(135deg, #444 0%, #111 100%); color: white; min-height: 130px;">
+                    <div class="card-body p-4 d-flex flex-column justify-content-center">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-warning fw-bold text-uppercase mb-1" style="font-size: 0.75rem; letter-spacing: 1.5px; color: #fbbf24 !important;">Carga Total</h6>
+                                <div class="d-flex align-items-baseline gap-1">
+                                    <h2 class="fw-black mb-0 text-warning" style="font-size: 2.3rem;">{{ lista.length }}</h2>
+                                    <span class="text-white small fw-bold opacity-75">trabajos</span>
+                                </div>
+                            </div>
+                            <div class="rounded-4 bg-warning d-flex align-items-center justify-content-center shadow-lg" style="width: 58px; height: 58px; border: 1px solid rgba(255,255,255,0.1);">
+                                <i class="bi bi-stars text-dark fs-2"></i>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -91,7 +164,8 @@ include $base . 'includes/sidebar.php';
                 </div>
                 <div class="ms-auto">
                     <span class="badge bg-light text-dark border px-3 py-2">
-                        <i class="bi bi-calendar3 me-1"></i> <?= date('d/m/Y') ?>
+                        <i class="bi bi-calendar3 me-1"></i>
+                        <?= date('d/m/Y') ?>
                     </span>
                 </div>
             </div>
@@ -104,15 +178,20 @@ include $base . 'includes/sidebar.php';
                 <p class="mt-3 text-muted fw-bold fs-5">Sincronizando estados...</p>
             </div>
 
-            <div v-if="!loading && listaFiltrada.length === 0" class="col-12 text-center py-5 bg-white rounded shadow-sm">
+            <div v-if="!loading && listaFiltrada.length === 0"
+                class="col-12 text-center py-5 bg-white rounded shadow-sm">
                 <i class="bi bi-inbox fs-1 d-block mb-3 opacity-25"></i>
                 <h4 class="text-muted">No hay tareas de limpieza para hoy o bajo este filtro.</h4>
             </div>
 
             <div v-for="h in listaFiltrada" :key="h.id" class="col-12 col-md-6 col-lg-4">
-                <div class="card shadow-sm border-0 h-100 position-relative" :class="{'bg-light opacity-75': h.estado === 'lista'}" style="border-radius: 1rem; border-top: 5px solid transparent !important;" :style="'border-top-color: ' + getColorTop(h) + ' !important;'">
+                <div class="card shadow-sm border-0 h-100 position-relative"
+                    :class="{'bg-light opacity-75': h.estado === 'lista'}"
+                    style="border-radius: 1rem; border-top: 5px solid transparent !important;"
+                    :style="'border-top-color: ' + getColorTop(h) + ' !important;'">
                     <!-- Botón de opciones en la esquina -->
-                    <button class="btn btn-sm btn-outline-secondary position-absolute bg-white" style="top: 15px; right: 15px; border-radius: 8px;" @click="abrirEdicion(h)">
+                    <button class="btn btn-sm btn-outline-secondary position-absolute bg-white"
+                        style="top: 15px; right: 15px; border-radius: 8px;" @click="abrirEdicion(h)">
                         <i class="bi bi-pencil-square"></i>
                     </button>
 
@@ -120,17 +199,22 @@ include $base . 'includes/sidebar.php';
                         <!-- Cabecera de Tarjeta -->
                         <div class="d-flex align-items-center gap-3 mb-3">
                             <div>
-                                <h1 class="fw-black mb-0" style="font-size: 3rem; letter-spacing: -2px; color: #1e293b; line-height: 1;">{{ h.habitacion }}</h1>
+                                <h1 class="fw-black mb-0"
+                                    style="font-size: 3rem; letter-spacing: -2px; color: #1e293b; line-height: 1;">{{
+                                    h.habitacion }}</h1>
                             </div>
                             <div class="d-flex flex-column gap-1">
-                                <span class="badge py-2 px-3 fw-bold shadow-sm" :class="getEstadoClass(h.estado)" style="font-size: 0.85rem;">
+                                <span class="badge py-2 px-3 fw-bold shadow-sm" :class="getEstadoClass(h.estado)"
+                                    style="font-size: 0.85rem;">
                                     {{ h.estado.toUpperCase() }}
                                 </span>
                                 <div class="d-flex gap-1">
-                                    <span class="badge" :class="getTipoClass(h.tipo_limpieza)" style="font-size: 0.75rem;">
+                                    <span class="badge" :class="getTipoClass(h.tipo_limpieza)"
+                                        style="font-size: 0.75rem;">
                                         {{ h.tipo_limpieza.toUpperCase() }}
                                     </span>
-                                    <span class="badge bg-secondary" style="font-size: 0.75rem;" title="Ocupantes esperados">
+                                    <span class="badge bg-secondary" style="font-size: 0.75rem;"
+                                        title="Ocupantes esperados">
                                         <i class="bi bi-people-fill"></i> {{ h.pax || h.ocupantes || '?' }} PAX
                                     </span>
                                 </div>
@@ -139,34 +223,42 @@ include $base . 'includes/sidebar.php';
 
                         <!-- Detalles -->
                         <div class="mb-3 flex-grow-1">
-                            <div v-if="h.tipo_limpieza === 'salida' && h.estado !== 'lista'" class="small text-danger fw-bold mb-1">
+                            <div v-if="h.tipo_limpieza === 'salida' && h.estado !== 'lista'"
+                                class="small text-danger fw-bold mb-1">
                                 <i class="bi bi-exclamation-triangle-fill"></i> Prioridad: Limpieza Profunda
                             </div>
                             <div v-if="h.estado === 'mantenimiento'" class="small text-danger fw-bold mb-1">
                                 <i class="bi bi-tools"></i> FUERA DE SERVICIO
                             </div>
-                            
+
                             <div class="text-muted small fw-semibold">
-                                <i class="bi bi-person-badge"></i> {{ h.responsable ? h.responsable : 'Sin asignar' }}
+                                <i class="bi bi-person-badge"></i>
+                                <span :class="!h.responsable ? 'text-danger fw-bold' : ''">
+                                    {{ h.responsable ? h.responsable : '⚠️ Sin asignar' }}
+                                </span>
                             </div>
-                            <div class="mt-2 text-dark small fst-italic p-2 bg-light rounded border" v-if="h.observacion">
+                            <div class="mt-2 text-dark small fst-italic p-2 bg-light rounded border"
+                                v-if="h.observacion">
                                 <i class="bi bi-chat-left-dots text-primary me-1"></i> "{{ h.observacion }}"
                             </div>
                         </div>
 
                         <!-- Botón 1-Clic -->
                         <div class="mt-auto border-top pt-3 d-flex gap-2">
-                            <button v-if="h.estado !== 'lista' && h.estado !== 'mantenimiento'" 
-                                class="btn btn-success flex-grow-1 fw-bold fs-5 px-3 py-2 shadow rounded-3" 
-                                style="line-height: 1.2;"
-                                @click="marcarListaRapido(h)" :disabled="loading">
+                            <button v-if="h.estado !== 'lista' && h.estado !== 'mantenimiento'"
+                                class="btn btn-success flex-grow-1 fw-bold fs-5 px-3 py-2 shadow rounded-3"
+                                style="line-height: 1.2;" @click="marcarListaRapido(h)"
+                                :disabled="loading || !h.responsable">
                                 <i class="bi bi-check2-circle d-block fs-3 mb-1"></i> MARCAR LISTA
                             </button>
-                            <div v-else-if="h.estado === 'lista'" class="w-100 text-center py-2 text-success fw-bold bg-success bg-opacity-10 rounded-3 border border-success border-opacity-25">
+                            <div v-else-if="h.estado === 'lista'"
+                                class="w-100 text-center py-2 text-success fw-bold bg-success bg-opacity-10 rounded-3 border border-success border-opacity-25">
                                 <i class="bi bi-check-all fs-4 d-block mb-1"></i> HABITACIÓN LISTA<br>
-                                <small v-if="h.hora_fin && !h.hora_fin.startsWith('0000')" class="text-muted">{{ formatFechaHora(h.hora_fin, h.fecha) }}</small>
+                                <small v-if="h.hora_fin && !h.hora_fin.startsWith('0000')" class="text-muted">{{
+                                    formatFechaHora(h.hora_fin, h.fecha) }}</small>
                             </div>
-                            <div v-else-if="h.estado === 'mantenimiento'" class="w-100 text-center py-2 text-danger fw-bold bg-danger bg-opacity-10 rounded-3 border border-danger border-opacity-25">
+                            <div v-else-if="h.estado === 'mantenimiento'"
+                                class="w-100 text-center py-2 text-danger fw-bold bg-danger bg-opacity-10 rounded-3 border border-danger border-opacity-25">
                                 <i class="bi bi-exclamation-octagon fs-4 d-block mb-1"></i> BLOQUEADA
                             </div>
                         </div>
@@ -180,7 +272,8 @@ include $base . 'includes/sidebar.php';
                 <div class="modal-content">
                     <div class="modal-header border-0 pb-0">
                         <h5 class="modal-title fw-bold">
-                            <i class="bi bi-pencil-square text-primary me-2"></i>Editar Limpieza — HAB {{ tareaEdit.habitacion }}
+                            <i class="bi bi-pencil-square text-primary me-2"></i>Editar Limpieza — HAB {{
+                            tareaEdit.habitacion }}
                         </h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
@@ -194,7 +287,7 @@ include $base . 'includes/sidebar.php';
                                 <option value="mantenimiento">Mantenimiento / Bloqueada</option>
                             </select>
                         </div>
-                        
+
                         <div class="mb-3">
                             <label class="form-label fw-bold text-muted small">Personal Responsable</label>
                             <select class="form-select" v-model="tareaEdit.responsable">
@@ -206,12 +299,14 @@ include $base . 'includes/sidebar.php';
 
                         <div class="mb-3" v-if="tareaEdit.responsable === '__otro__'">
                             <label class="form-label fw-bold text-muted small">Nombre del Responsable</label>
-                            <input type="text" class="form-control" v-model="tareaEdit.responsable_manual" placeholder="Ej: Maria Lopez">
+                            <input type="text" class="form-control" v-model="tareaEdit.responsable_manual"
+                                placeholder="Ej: Maria Lopez">
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label fw-bold text-muted small">Observación / Reporte (Opcional)</label>
-                            <textarea class="form-control" rows="3" v-model="tareaEdit.observacion" placeholder="Detalles o cosas olvidadas..."></textarea>
+                            <textarea class="form-control" rows="3" v-model="tareaEdit.observacion"
+                                placeholder="Detalles o cosas olvidadas..."></textarea>
                         </div>
                     </div>
                     <div class="modal-footer border-0 pt-0">

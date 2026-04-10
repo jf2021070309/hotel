@@ -16,6 +16,7 @@ createApp({
     const loading = ref(false);
     const busqueda = ref('');
     const isEditingAdelanto = ref(false);
+    const adelantoExcede = ref(false);
     const filtroPiso = ref('');
     const filtroPago = ref('');
     const selectedStay = ref(null);
@@ -258,6 +259,41 @@ createApp({
         }
         form.adelanto = finalForeign.toFixed(2);
       }
+
+      // ── Auto-selección de Método de Pago para POS ──────────────────
+      if (form.stay.recargo_pos) {
+        // Palabras clave por moneda para buscar el POS correcto
+        const posKeywords = {
+          'USD': ['dolar', 'usd', 'dollar'],
+          'CLP': ['peso', 'clp', 'chile', 'pesos'],
+          'PEN': ['sol', 'soles', 'pen']
+        };
+        const kwList = posKeywords[form.stay.moneda_pago] || [];
+
+        // 1° intento: POS específico para la moneda
+        let posMatch = mediosPago.value.find(m =>
+          m.activo == 1 &&
+          m.nombre.toLowerCase().includes('pos') &&
+          kwList.some(kw => m.nombre.toLowerCase().includes(kw))
+        );
+
+        // 2° intento: cualquier POS activo
+        if (!posMatch) {
+          posMatch = mediosPago.value.find(m =>
+            m.activo == 1 && m.nombre.toLowerCase().includes('pos')
+          );
+        }
+
+        if (posMatch) form.stay.metodo_pago = posMatch.nombre;
+
+      } else {
+        // Si se desactiva POS y el método actual era un POS, limpiarlo
+        if (form.stay.metodo_pago && form.stay.metodo_pago.toLowerCase().includes('pos')) {
+          form.stay.metodo_pago = '';
+        }
+      }
+      // ───────────────────────────────────────────────────────────────
+
       onAdelantoChange();
     };
 
@@ -292,6 +328,13 @@ createApp({
 
       const diffBase = totalPen - abonadoBasePen;
       form.stay.estado_pago = diffBase <= 0.05 ? 'pagado' : (amountEntered > 0 ? 'parcial' : 'pendiente');
+
+      // ── Validación: adelanto no debe superar el monto base en la divisa ──
+      // monto_original ya está en la moneda del pago (USD, CLP o PEN)
+      const montoMaxEnMoneda = parseFloat(form.stay.monto_original) || totalPen;
+      // Si hay POS, el tope incluye el 5% de recargo
+      const tope = form.stay.recargo_pos ? montoMaxEnMoneda * 1.05 : montoMaxEnMoneda;
+      adelantoExcede.value = form.tipoPago === 'adelanto' && amountEntered > tope + 0.01;
     };
 
     const cambiarTipoPago = (tipo) => {
@@ -339,6 +382,9 @@ createApp({
     // ────────────────────────────────────────────────────────
 
     const guardarCheckin = async () => {
+      if (form.tipoPago === 'adelanto' && adelantoExcede.value) {
+        return showToast('El adelanto no puede superar el costo total.', 'warning');
+      }
       loading.value = true;
       try {
         const res = await axios.post('../../../api/rooming.php?action=checkin', form);
@@ -459,6 +505,16 @@ createApp({
 
     const guardarPago = async () => {
       if (pagoForm.monto <= 0) return showToast('Monto inválido', 'warning');
+      
+      const s = stayParaPago.value;
+      if (s) {
+        const saldo = parseFloat(s.total_pago) - parseFloat(s.total_cobrado);
+        const montoPen = parseFloat(pagoForm.monto_pen) || 0;
+        if (montoPen > saldo + 0.10) {
+          return showToast('El monto ingresado (' + pagoForm.monto + ') supera el saldo pendiente de la habitación.', 'warning');
+        }
+      }
+
       loading.value = true;
       try {
         const res = await axios.post('../../../api/rooming.php?action=pago', pagoForm);
@@ -553,7 +609,7 @@ createApp({
       abrirCheckin, onHabChange, calcularNoches, onNochesChange, recalcularMoneda, 
       onAdelantoChange, agregarPax, setTitular, guardarCheckin, verDetalle, cargarDatos,
       fmtFecha, getPagoClass, getEstadBadge, procederCheckout, abrirPago, recalcularPago, guardarPago,
-      activarReserva, cambiarTipoPago, fmtCur, isEditingAdelanto, getMetodoPagoIcon,
+      activarReserva, cambiarTipoPago, fmtCur, isEditingAdelanto, adelantoExcede, getMetodoPagoIcon,
       // CONSUMOS
       inventario, inventarioAgrupado, stayParaConsumo, consumosStay, consumoForm,
       abrirConsumo, onProductoChange, calcularTotalConsumo, guardarConsumo,

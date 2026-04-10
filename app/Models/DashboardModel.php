@@ -232,7 +232,7 @@ class DashboardModel {
                 COALESCE(s.hora_checkin, '14:00:00') as hora_estimada
             FROM rooming_stays s
             JOIN habitaciones h ON s.habitacion_id = h.id
-            WHERE s.fecha_registro = ? AND s.estado = 'reserva'
+            WHERE s.fecha_registro = ? AND s.estado IN ('reserva', 'reservado')
         ");
         $stmtCheckins->execute([$fecha]);
         $checkins_esperados = $stmtCheckins->fetchAll(PDO::FETCH_ASSOC);

@@ -85,13 +85,13 @@ class RoomingModel {
                 habitacion_id, tipo_hab_declarado, noches, pax_total, total_pago, 
                 moneda_pago, monto_original, tc_aplicado, recargo_tarjeta, metodo_pago, 
                 tipo_comprobante, num_comprobante, ruc_factura, cobrador, procedencia, 
-                carro, observaciones, usuario_id, checkin_realizado, total_cobrado, estado_pago
+                carro, observaciones, usuario_id, checkin_realizado, total_cobrado, total_cobrado_orig, estado_pago
             ) VALUES (
                 :operador, :fecha_reg, :fecha_out, :hora_in, :medio, 
                 :hab_id, :tipo_hab, :noches, :pax_total, :total, 
                 :moneda, :monto_orig, :tc, :recargo, :metodo, 
                 :comprobante, :num_comp, :ruc, :cobrador, :procedencia, 
-                :carro, :obs, :uid, 1, :cobrado, :est_pago
+                :carro, :obs, :uid, 1, :cobrado, :cobrado_orig, :est_pago
             )";
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute($data);
@@ -303,24 +303,42 @@ class RoomingModel {
     }
 
     public function actualizarResumenPagos(int $stay_id): void {
-        // Calcular total cobrado (convertido a soles si es necesario o en moneda base)
-        // Por simplificación, sumamos montos PEN de los anticipos
+        // 1. Obtener la moneda y TC del stay para poder reconvertir pagos en divisa distinta
+        $stmtStay = $this->pdo->prepare("SELECT moneda_pago, tc_aplicado, total_pago FROM rooming_stays WHERE id = ?");
+        $stmtStay->execute([$stay_id]);
+        $stay = $stmtStay->fetch(PDO::FETCH_ASSOC);
+        $monedaStay = $stay['moneda_pago'] ?? 'PEN';
+        $tcStay     = (float)($stay['tc_aplicado'] ?? 1);
+        $totalPago  = (float)($stay['total_pago'] ?? 0);
+
+        // 2. Total cobrado en PEN (base contable)
         $stmt = $this->pdo->prepare("SELECT SUM(monto_pen) FROM anticipos WHERE stay_id = ?");
         $stmt->execute([$stay_id]);
         $totalCobrado = (float)$stmt->fetchColumn();
 
-        $stmt = $this->pdo->prepare("SELECT total_pago FROM rooming_stays WHERE id = ?");
-        $stmt->execute([$stay_id]);
-        $totalPuntual = (float)$stmt->fetchColumn();
+        // 3. Total cobrado en la moneda original del stay
+        //    - Si el pago es en la misma moneda: usar monto directamente
+        //    - Si es en otra moneda: reconvertir vía tc_aplicado del stay
+        $stmt = $this->pdo->prepare("
+            SELECT SUM(
+                CASE
+                    WHEN moneda = :moneda THEN monto
+                    ELSE monto_pen / NULLIF(:tc, 0)
+                END
+            ) FROM anticipos WHERE stay_id = :stay_id
+        ");
+        $stmt->execute(['moneda' => $monedaStay, 'tc' => $tcStay, 'stay_id' => $stay_id]);
+        $totalCobradoOrig = (float)$stmt->fetchColumn();
 
+        // 4. Estado de pago (basado en PEN, que es la moneda contable base)
         $estadoPago = 'pendiente';
         if ($totalCobrado > 0) {
-            if ($totalCobrado >= $totalPuntual) $estadoPago = 'pagado';
+            if ($totalCobrado >= $totalPago) $estadoPago = 'pagado';
             else $estadoPago = 'parcial';
         }
 
-        $stmt = $this->pdo->prepare("UPDATE rooming_stays SET total_cobrado = ?, estado_pago = ? WHERE id = ?");
-        $stmt->execute([$totalCobrado, $estadoPago, $stay_id]);
+        $stmt = $this->pdo->prepare("UPDATE rooming_stays SET total_cobrado = ?, total_cobrado_orig = ?, estado_pago = ? WHERE id = ?");
+        $stmt->execute([$totalCobrado, $totalCobradoOrig, $estadoPago, $stay_id]);
     }
 
     public function incrementarTotal(int $stayId, float $monto): bool {

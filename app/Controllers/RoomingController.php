@@ -81,6 +81,7 @@ class RoomingController {
             'obs'          => $stayData['observaciones'] ?? '',
             'uid'          => $_SESSION['auth_id'],
             'cobrado'      => $stayData['total_cobrado'] ?? 0,
+            'cobrado_orig' => isset($input['adelanto']) && (float)$input['adelanto'] > 0 ? (float)$input['adelanto'] : (float)($stayData['monto_original'] ?? 0),
             'est_pago'     => $stayData['estado_pago'] ?? 'pendiente'
         ];
         

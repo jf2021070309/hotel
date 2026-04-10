@@ -512,6 +512,14 @@ createApp({
        if (e === 'late_checkout') return 'bg-dark text-white';
        return 'bg-success text-white';
     };
+    const getMetodoPagoIcon = (m) => {
+      if (!m) return 'bi-question-circle';
+      const u = m.toUpperCase();
+      if (u.includes('POS') || u.includes('TARJETA') || u.includes('VISA') || u.includes('MASTER')) return 'bi-credit-card me-1';
+      if (u.includes('YAPE') || u.includes('PLIN') || u.includes('LUKITA')) return 'bi-phone me-1';
+      if (u.includes('TRANSF') || u.includes('DEPOSITO') || u.includes('BANK') || u.includes('BANCO')) return 'bi-bank me-1';
+      return 'bi-cash-coin me-1'; // Efectivo por defecto
+    };
     const showToast = (msg, icon) => {
       Swal.fire({ toast: true, position: 'top-end', icon, title: msg, showConfirmButton: false, timer: 3000 });
     };
@@ -545,7 +553,7 @@ createApp({
       abrirCheckin, onHabChange, calcularNoches, onNochesChange, recalcularMoneda, 
       onAdelantoChange, agregarPax, setTitular, guardarCheckin, verDetalle, cargarDatos,
       fmtFecha, getPagoClass, getEstadBadge, procederCheckout, abrirPago, recalcularPago, guardarPago,
-      activarReserva, cambiarTipoPago, fmtCur, isEditingAdelanto,
+      activarReserva, cambiarTipoPago, fmtCur, isEditingAdelanto, getMetodoPagoIcon,
       // CONSUMOS
       inventario, inventarioAgrupado, stayParaConsumo, consumosStay, consumoForm,
       abrirConsumo, onProductoChange, calcularTotalConsumo, guardarConsumo,

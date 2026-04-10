@@ -49,7 +49,7 @@ include $base . 'includes/sidebar.php';
   <div class="page-body">
     <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
       <button class="btn-primary-custom shadow-sm" @click="nuevoRegistro()" style="border: 1px solid #111;">
-        <i class="bi bi-plus-lg text-warning"></i> Nuevo Registro Yape (Hoy)
+        <i class="bi bi-plus-lg text-warning"></i> Nuevo Registro Yape
       </button>
       <button class="btn btn-outline-secondary btn-sm ms-auto" @click="listar()">
         <i class="bi bi-arrow-clockwise"></i>

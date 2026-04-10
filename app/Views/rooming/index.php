@@ -79,6 +79,7 @@ include $base . 'includes/head.php';
               <th>INGRESO / SALIDA</th>
               <th>MONTO / PAGADO</th>
               <th style="width: 120px;">ESTADO PAGO</th>
+              <th style="width: 110px;">MEDIO PAGO</th>
               <th style="width: 100px;">CANAL</th>
               <th class="text-end pe-4" style="width: 120px;">ACCIONES</th>
             </tr>
@@ -114,10 +115,16 @@ include $base . 'includes/head.php';
               </td>
               <td>
                 <div class="fw-bold">{{ s.moneda_pago }} {{ fmtCur(s.monto_original) }}</div>
-                <div class="text-success small">Cobrado: PEN {{ fmtCur(s.total_cobrado) }}</div>
+                <div class="text-success small">Abonado: {{ s.moneda_pago }} {{ fmtCur(s.total_cobrado_orig) }}</div>
               </td>
               <td>
                 <span class="badge" :class="getPagoClass(s.estado_pago)">{{ s.estado_pago.toUpperCase() }}</span>
+              </td>
+              <td>
+                <span v-if="s.metodo_pago" class="badge bg-light text-dark border" style="font-size:10px; padding:5px 9px;">
+                  {{ s.metodo_pago }}
+                </span>
+                <span v-else class="text-muted small">—</span>
               </td>
               <td>
                 <span class="text-muted small">{{ s.medio_reserva }}</span>

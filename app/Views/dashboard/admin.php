@@ -20,11 +20,6 @@ include 'includes/sidebar.php';
       <p class="mb-0 small text-muted fw-semibold">Centro de control y KPI Financiero — <?= date('d/m/Y') ?></p>
     </div>
     <div class="ms-auto d-flex flex-wrap align-items-center gap-2 justify-content-end">
-       <span class="badge bg-white text-dark shadow-sm border px-2 py-1 rounded-pill d-none d-sm-block" style="font-size: 10px;">
-           <i class="bi bi-arrow-repeat me-1" id="icon-refreshing"></i>
-           <span id="label-seconds">Hace 0s</span>
-       </span>
-       <span class="badge px-3 py-2 fs-6 rounded-pill shadow-sm" id="reloj" style="background: #111; color: #d4af37; border: 1px solid #d4af37;"></span>
     </div>
   </div>
 

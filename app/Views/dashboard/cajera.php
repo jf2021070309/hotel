@@ -21,10 +21,6 @@ include 'includes/sidebar.php';
       <p class="mb-0 small text-muted fw-semibold">Panel de control operativo — <?= date('d/m/Y') ?></p>
     </div>
     <div class="ms-auto d-flex flex-wrap align-items-center gap-1 justify-content-end py-1">
-      <span class="badge bg-white text-dark shadow-sm border px-2 py-1 rounded-pill d-none d-sm-block" style="font-size: 10px;">
-        <i class="bi bi-clock-history me-1"></i> <span id="label-seconds-cajera">Hace 0s</span>
-      </span>
-      <span class="badge bg-dark px-3 py-2 fs-6 shadow-sm rounded-pill" id="reloj" style="color: #d4af37; border: 1px solid #d4af37;"></span>
     </div>
   </div>
 

@@ -15,22 +15,26 @@ $nuevo = $_GET['nuevo'] ?? '0';
 $turnoQuery = $_GET['turno'] ?? 'MAÑANA';
 ?>
 
-<div class="main-content" id="app-flujo-form">
+<div class="main-content">
   <div class="topbar border-bottom-0 shadow-sm" style="background: linear-gradient(to right, #ffffff, #f8f9fa);">
-    <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list fs-4"></i></button>
-    <div>
-      <h4 class="fw-bold mb-0" style="color: #111; letter-spacing: -0.5px;">
-        <i class="bi bi-wallet2 me-2" style="color:#2563eb"></i>Flujo de Caja
-        <span class="badge bg-secondary ms-2 p-1" style="font-size:10px">{{ cabecera.estado.toUpperCase() }}</span>
-      </h4>
-      <p class="mb-0 small text-muted fw-semibold d-none d-sm-block">Gestión de movimientos de caja por turno</p>
+    <button class="btn-burger" onclick="handleMenuClick()"><i class="bi bi-list fs-4"></i></button>
+    <div class="d-flex align-items-center gap-1">
+      <i class="bi bi-wallet2 fs-5 d-none d-sm-block" style="color:#2563eb"></i>
+      <div class="text-nowrap">
+        <h5 class="fw-bold mb-0" style="color: #111; letter-spacing: -0.5px; font-size: 1.05rem;">
+          Flujo de Caja
+          <span class="badge bg-secondary ms-1 p-1 d-none" style="font-size:9px" id="badge-estado"></span>
+        </h5>
+      </div>
     </div>
-    <div class="ms-auto">
-      <a href="index.php?noredirect=1" class="btn btn-sm btn-outline-secondary px-2 py-1" style="font-size: 11px;">
-        <i class="bi bi-arrow-left"></i> <span class="d-none d-sm-inline">Listado</span>
-      </a>
+    <div class="ms-auto d-flex align-items-center gap-2">
+       <a href="index.php?noredirect=1" class="btn btn-sm btn-outline-secondary px-2 d-flex align-items-center gap-1" style="font-size: 11px; border-radius: 8px;">
+          <i class="bi bi-arrow-left"></i> <span class="d-none d-sm-inline">LISTADO</span>
+       </a>
     </div>
   </div>
+
+  <div id="app-flujo-form" v-cloak style="display:contents">
 
   <div class="page-body border-0 bg-transparent p-0 mt-3 px-3">
     <div v-if="loading" class="text-center py-5">
@@ -314,6 +318,7 @@ $turnoQuery = $_GET['turno'] ?? 'MAÑANA';
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="<?= $base ?>app/Views/flujo/form.js?v=<?= time() ?>"></script>
 
+<style>
   /* Forzar que las glosas se vean rojas incluso si el campo está deshabilitado */
   .text-danger:disabled, .text-danger[disabled], textarea.text-danger:read-only {
     color: #dc3545 !important;

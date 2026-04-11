@@ -11,9 +11,7 @@ const { createApp, ref, computed, onMounted, onUnmounted } = Vue;
 createApp({
   setup() {
     const loadingInicial = ref(true);
-    const segundosDesdeUpdate = ref(0);
     let timerUpdate = null;
-    let pollingInterval = null;
 
     const usuario = ref({ nombre: '', turno: '' });
     const urgentes = ref([]);
@@ -98,12 +96,9 @@ createApp({
           
           // Cargar alertas de inventario desde su propia API para mantener dashboard.php limpio
           const resInv = await axios.get('api/inventario.php?action=alertas');
-          alertasInventario.value = resInv.data.data || [];
+          if (d.kpi) kpi.value = d.kpi;
           
-          segundosDesdeUpdate.value = 0;
-          const el = document.getElementById('label-seconds-cajera');
-          if (el) el.textContent = 'Hace 0s';
-        }
+          // Cargar alertas de inventario desde su propia API para mantener dashboard.php limpio
       } catch (e) {
         console.error("Error Dashboard Cajera:", e);
       } finally {
@@ -113,17 +108,9 @@ createApp({
 
     onMounted(() => {
       fetchData();
-      timerUpdate = setInterval(() => { 
-        segundosDesdeUpdate.value++; 
-        const el = document.getElementById('label-seconds-cajera');
-        if (el) el.textContent = `Hace ${segundosDesdeUpdate.value}s`;
-      }, 1000);
-      pollingInterval = setInterval(fetchData, 60000);
     });
 
     onUnmounted(() => {
-      clearInterval(timerUpdate);
-      clearInterval(pollingInterval);
     });
 
     const abrirModalReporte = (id) => {
@@ -140,7 +127,7 @@ createApp({
     };
 
     return {
-      loadingInicial, segundosDesdeUpdate, usuario, urgentes, checkouts_hoy, checkins_esperados, mi_turno, kpi, alertasInventario,
+      loadingInicial, usuario, urgentes, checkouts_hoy, checkins_esperados, mi_turno, kpi, alertasInventario,
       desgloseFormateado,
       abrirModalReporte, formatNumber
     };

@@ -286,10 +286,6 @@ include $base . 'includes/sidebar.php';
       <p class="mb-0 small text-muted fw-semibold" style="letter-spacing: 0.5px;">Vista mensual — Tiempo real</p>
     </div>
     <div class="d-flex align-items-center gap-2 ms-auto">
-      <span class="badge" style="background: #111; color: #d4af37; font-size:10px; border: 1px solid #d4af37;">
-        <i class="bi bi-arrow-repeat me-1"></i> Actualizado hace {{ segsActualizado }}s
-      </span>
-      <button class="btn btn-sm btn-outline-dark" @click="cargarDatos" title="Recargar"><i class="bi bi-arrow-clockwise"></i></button>
     </div>
   </div>
 

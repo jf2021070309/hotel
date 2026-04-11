@@ -31,7 +31,6 @@ createApp({
     const filtroPago    = ref('');
     const viewMode      = ref('normal');   // 'compacto' | 'normal' | 'ampliado'
     const staySeleccionado = ref(null);
-    const segsActualizado  = ref(0);
     const ctxMenu = reactive({ visible: false, x: 0, y: 0, stay: null });
     const formQuick = reactive({ hab: null, fecha: '', titular: '', noches: 1, observaciones: '', canal: 'DIRECTO' });
 
@@ -43,7 +42,6 @@ createApp({
     ];
 
     let pollingTimer  = null;
-    let segsTimer     = null;
 
     // ─── Computed ──────────────────────────────────────────────────────
     const colWidth = computed(() => {
@@ -100,7 +98,6 @@ createApp({
           diasEnMes.value    = d.dias_en_mes;
           resumen.value      = d.resumen;
           hoyDia.value       = d.hoy;
-          segsActualizado.value = 0;
         }
       } catch (e) {
         console.error('Error cargando datos:', e);
@@ -416,8 +413,6 @@ createApp({
 
     // ─── Polling ──────────────────────────────────────────────────────
     const iniciarPolling = () => {
-      pollingTimer = setInterval(cargarDatos, 30_000);
-      segsTimer    = setInterval(() => { segsActualizado.value++; }, 1000);
     };
 
     // ─── Lifecycle ────────────────────────────────────────────────────
@@ -432,8 +427,6 @@ createApp({
 
     onUnmounted(() => {
       document.removeEventListener('click', closeContextMenu);
-      clearInterval(pollingTimer);
-      clearInterval(segsTimer);
     });
 
     return {
@@ -442,7 +435,7 @@ createApp({
       mesActual, anioActual, hoyDia, mesHoy, anioHoy,
       filtroPiso, filtroPago,
       staySeleccionado, pagoRapido,
-      segsActualizado, meses, pisos,
+      meses, pisos,
       habitacionesFiltradas, staysHoyMovil,
       // methods
       cargarDatos, cambiarMes, irHoy,

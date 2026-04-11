@@ -26,18 +26,22 @@ include $base . 'includes/sidebar.php';
 
 <div class="main-content" id="app-flujo-index">
   <div class="topbar border-bottom-0 shadow-sm" style="background: linear-gradient(to right, #ffffff, #f8f9fa);">
-    <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list fs-4"></i></button>
-    <div>
-      <h4 class="fw-bold" style="color: #111; letter-spacing: -0.5px;">
-        <i class="bi bi-cash-stack me-2" style="color: #d4af37;"></i>Flujo de Caja
-      </h4>
-      <p class="mb-0 small text-muted fw-semibold">Control de ingresos, egresos y efectivo por turnos</p>
+    <button class="btn-burger" onclick="handleMenuClick()"><i class="bi bi-list fs-4"></i></button>
+    <div class="d-flex align-items-center gap-1">
+      <i class="bi bi-cash-stack fs-5 d-none d-sm-block" style="color: #d4af37;"></i>
+      <div class="text-nowrap">
+        <h5 class="fw-bold mb-0" style="color: #111; letter-spacing: -0.5px; font-size: 1.05rem;">Flujo de Caja</h5>
+        <p class="mb-0 small text-muted fw-semibold d-none d-md-block" style="font-size: 10px;">Control de ingresos y egresos</p>
+      </div>
     </div>
-    <div class="ms-auto d-flex flex-wrap align-items-center gap-1 justify-content-end py-1">
-      <select class="form-select form-select-sm border-0 shadow-sm fw-bold text-secondary bg-light" v-model="filtros.mes" @change="listar" style="width: auto; min-width: 90px; font-size: 11px;">
-        <option v-for="(m, i) in mesesShort" :key="i" :value="i+1">{{ m }}</option>
-      </select>
-      <input type="number" class="form-control form-control-sm border-0 shadow-sm text-center fw-bold bg-light" v-model="filtros.anio" @change="listar" style="width: 70px; font-size: 11px;" min="2020">
+    <div class="ms-auto d-flex align-items-center gap-2">
+      <div class="d-flex bg-white border rounded shadow-sm p-1">
+        <select class="form-select form-select-sm border-0 fw-bold text-dark bg-transparent py-0 px-2" v-model="filtros.mes" @change="listar" style="width: auto; font-size: 11px; cursor: pointer;">
+          <option v-for="(m, i) in mesesShort" :key="i" :value="i+1">{{ m }}</option>
+        </select>
+        <div class="vr mx-1"></div>
+        <input type="number" class="form-control form-control-sm border-0 fw-bold text-dark bg-transparent py-0 px-1 text-center" v-model="filtros.anio" @change="listar" style="width: 55px; font-size: 11px;" min="2020">
+      </div>
     </div>
   </div>
 
@@ -120,14 +124,15 @@ include $base . 'includes/sidebar.php';
 </div>
 <style>
   [v-cloak] { display: none !important; }
-  .table th, .table td { padding: 0.6rem 0.6rem !important; }
+  .table th, .table td { padding: 0.7rem 0.6rem !important; }
   
   @media (max-width: 768px) {
-    .main-content { padding: 10px !important; }
-    .topbar h4 { font-size: 1.1rem; }
-    .topbar p { display: none; }
-    .table td { font-size: 12px; }
-    .badge { font-size: 9px; }
+    .main-content { padding: 6px !important; }
+    .page-body { padding: 10px 5px !important; }
+    .topbar h5 { font-size: 1rem !important; }
+    .table td { font-size: 11px !important; }
+    .badge { font-size: 8px !important; padding: 0.35em 0.5em !important; }
+    .btn-sm { padding: 0.4rem 0.5rem !important; font-size: 10px !important; }
   }
 </style>
 <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>

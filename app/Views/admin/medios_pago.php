@@ -22,7 +22,6 @@ include $base . 'includes/sidebar.php';
       </div>
     </div>
     <div class="ms-auto d-flex align-items-center gap-2">
-       <span class="badge px-3 py-2 fs-6 rounded-pill shadow-sm d-none d-md-inline-block" id="reloj" style="background: #111; color: #d4af37; border: 1px solid #d4af37; font-size: 12px !important;"></span>
        <button class="btn btn-primary d-flex align-items-center gap-2 shadow-sm fw-bold px-3 py-2" @click="abrirNuevo" style="font-size: 12px; border: 1px solid #111;">
           <i class="bi bi-plus-lg text-warning"></i> <span class="d-none d-sm-inline">NUEVO MEDIO</span>
        </button>

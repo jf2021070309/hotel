@@ -11,10 +11,7 @@ const { createApp, ref, onMounted, onUnmounted } = Vue;
 createApp({
   setup() {
     const loadingInicial = ref(true);
-    const isRefreshing = ref(false);
-    const segundosDesdeUpdate = ref(0);
     let timerUpdate = null;
-    let pollingInterval = null;
 
     // Data states
     const kpi = ref({
@@ -97,9 +94,6 @@ createApp({
      * @returns {Promise<void>}
      */
     const fetchData = async () => {
-      isRefreshing.value = true;
-      const icon = document.getElementById('icon-refreshing');
-      if (icon) icon.classList.add('fa-spin');
 
       try {
         const res = await axios.get('api/dashboard.php');
@@ -112,42 +106,24 @@ createApp({
           cobros_pendientes.value = d.cobros_pendientes;
           sobres.value = d.sobres;
           
-          segundosDesdeUpdate.value = 0;
-          const el = document.getElementById('label-seconds');
-          if (el) el.textContent = 'Hace 0s';
-
           initChart(d.grafico_mes);
         }
       } catch (e) {
         console.error("Error Dashboard Admin:", e);
       } finally {
         loadingInicial.value = false;
-        isRefreshing.value = false;
-        if (icon) icon.classList.remove('fa-spin');
       }
     };
 
     onMounted(() => {
       fetchData();
-      
-      // Counter for "updated X seconds ago"
-      timerUpdate = setInterval(() => {
-        segundosDesdeUpdate.value++;
-        const el = document.getElementById('label-seconds');
-        if (el) el.textContent = `Hace ${segundosDesdeUpdate.value}s`;
-      }, 1000);
-
-      // Refresh every 60 seconds
-      pollingInterval = setInterval(fetchData, 60000);
     });
 
     onUnmounted(() => {
-      clearInterval(timerUpdate);
-      clearInterval(pollingInterval);
     });
 
     return {
-      loadingInicial, isRefreshing, segundosDesdeUpdate,
+      loadingInicial,
       kpi, ingresos_desglose, egresos_desglose,
       habitaciones, cobros_pendientes, sobres
     };

@@ -28,6 +28,17 @@ createApp({
       });
     };
     
+    // Función para actualizar el badge de estado en la cabecera (fuera de Vue)
+    const updateBadgeEstado = () => {
+      const el = document.getElementById('badge-estado');
+      if (el && cabecera.estado) {
+        el.innerText = cabecera.estado.toUpperCase();
+        el.classList.remove('d-none');
+        // Cambiar color según estado
+        el.className = 'badge ms-1 p-1 ' + (cabecera.estado === 'borrador' ? 'bg-secondary' : 'bg-success');
+      }
+    };
+    
     // IDs y Modo
     const id = ref(SERVER_DATA.id);
     const esNuevo = ref(SERVER_DATA.nuevo === 1);
@@ -234,6 +245,10 @@ createApp({
        triggerAutoSave();
     }, { deep: true });
 
+    watch(() => cabecera.estado, () => {
+      updateBadgeEstado();
+    });
+
     /**
      * Persiste los datos del turno en el servidor.
      * Puede opcionalmente cerrar el turno permanentemente.
@@ -351,6 +366,7 @@ createApp({
 
     onMounted(() => {
       loadData();
+      updateBadgeEstado();
     });
 
     return {

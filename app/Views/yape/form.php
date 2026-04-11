@@ -52,7 +52,7 @@ include $base . 'includes/sidebar.php';
             </div>
             <div class="col-auto">
               <label class="form-label small fw-bold mb-1 d-block">FECHA</label>
-              <input type="date" v-model="fecha" class="form-control form-control-sm fw-bold" :disabled="!esNuevo" style="width:150px;">
+              <input type="date" v-model="fecha" class="form-control form-control-sm fw-bold" :disabled="estado==='cerrado'" style="width:150px;">
             </div>
             <div class="col-auto">
               <label class="form-label small fw-bold mb-1 d-block">TURNO</label>

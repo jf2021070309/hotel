@@ -33,7 +33,26 @@ class YapeModel {
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute($params);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $registros = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        if (empty($registros)) return [];
+
+        $ids = array_column($registros, 'id');
+        $placeholders = str_repeat('?,', count($ids) - 1) . '?';
+        $stmtDet = $this->pdo->prepare("SELECT gasto_yape_id, rubro, monto FROM gastos_yape_detalle WHERE gasto_yape_id IN ($placeholders)");
+        $stmtDet->execute($ids);
+        $detalles = $stmtDet->fetchAll(PDO::FETCH_ASSOC);
+
+        $detallesMap = [];
+        foreach ($detalles as $d) {
+            $detallesMap[$d['gasto_yape_id']][$d['rubro']] = (float)$d['monto'];
+        }
+
+        foreach ($registros as &$r) {
+            $r['detalles_montos'] = $detallesMap[$r['id']] ?? [];
+        }
+
+        return $registros;
     }
 
     public function getDetalle(int $id): ?array {

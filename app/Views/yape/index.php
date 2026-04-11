@@ -65,44 +65,65 @@ include $base . 'includes/sidebar.php';
       </div>
 
       <div class="table-responsive" v-else>
-        <table class="table table-hover table-striped align-middle mb-0 text-sm">
-          <thead class="table-light text-secondary">
+        <table class="table table-bordered table-hover align-middle mb-0 text-sm" style="white-space: nowrap;">
+          <thead class="table-dark text-white text-uppercase" style="font-size: 11px; letter-spacing: 0.5px;">
             <tr>
-              <th class="ps-3">FECHA</th>
-              <th>TURNO</th>
-              <th>OPERADOR</th>
-              <th class="text-end">YAPE RECIBIDO</th>
-              <th class="text-end">TOTAL GASTADO</th>
-              <th class="text-end">VUELTO</th>
+              <th class="ps-3 text-center">TURNO</th>
+              <th class="text-center">FECHA</th>
+              <th class="text-end">YAPE REC.</th>
+              <th class="text-end" v-for="cat in categoriasConfig" :key="cat">{{ cat }}</th>
+              <th class="text-end" style="background-color: #334155;">TOTAL</th>
+              <th class="text-end text-success">VUELTOS</th>
               <th class="text-center">ESTADO</th>
               <th class="text-center pe-3">ACCIONES</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-if="registros.length === 0">
-              <td colspan="8" class="text-center text-muted py-4">No se encontraron registros Yape para el mes seleccionado.</td>
+            <tr v-if="diasAgrupados.length === 0">
+              <td :colspan="8 + categoriasConfig.length" class="text-center text-muted py-4">No se encontraron registros Yape para el mes seleccionado.</td>
             </tr>
-            <tr v-for="y in registros" :key="y.id" :class="y.estado == 'borrador' ? 'border-start border-4 border-warning' : 'border-start border-4 border-success'">
-              <td class="ps-3 fw-bold">{{ formatFecha(y.fecha) }}</td>
-              <td>
-                <span :class="{'badge bg-info text-dark': y.turno=='MAÑANA', 'badge bg-dark': y.turno=='TARDE'}">
-                  {{ y.turno }}
-                </span>
-              </td>
-              <td class="small">{{ y.operador }}</td>
-              <td class="text-end text-primary fw-bold">S/ {{ parseFloat(y.yape_recibido).toFixed(2) }}</td>
-              <td class="text-end text-danger fw-bold">S/ {{ parseFloat(y.total_gastado).toFixed(2) }}</td>
-              <td class="text-end text-success fw-bold">S/ {{ parseFloat(y.vuelto).toFixed(2) }}</td>
-              <td class="text-center">
-                <span v-if="y.estado==='borrador'" class="badge bg-warning text-dark"><i class="bi bi-pencil-square"></i> Borrador</span>
-                <span v-else class="badge bg-success"><i class="bi bi-check-circle-fill"></i> Cerrado</span>
-              </td>
-              <td class="text-center pe-3">
-                <a :href="`form.php?id=${y.id}`" class="btn btn-sm" :class="y.estado==='borrador'?'btn-primary':'btn-outline-secondary'">
-                   <i class="bi" :class="y.estado==='borrador'?'bi-pencil':'bi-eye'"></i>
-                </a>
-              </td>
-            </tr>
+            <template v-for="grupo in diasAgrupados" :key="grupo.fecha">
+                <!-- Filas de Turnos Individuales -->
+                <tr v-for="y in grupo.turnos" :key="y.id" class="bg-white">
+                  <td class="ps-3 fw-bold text-center">
+                    <span :class="y.turno=='MAÑANA' ? 'text-info' : 'text-dark'">{{ y.turno }}</span>
+                  </td>
+                  <td class="text-center fw-bold text-secondary">{{ formatFecha(y.fecha) }}</td>
+                  <td class="text-end text-primary fw-bold">{{ parseFloat(y.yape_recibido).toFixed(2) }}</td>
+                  <td class="text-end" v-for="cat in categoriasConfig" :key="cat">
+                      <span v-if="y.detalles_montos && y.detalles_montos[cat] > 0">{{ parseFloat(y.detalles_montos[cat]).toFixed(2) }}</span>
+                      <span v-else class="text-muted" style="opacity:0.3">-</span>
+                  </td>
+                  <td class="text-end text-danger fw-bold" style="background-color: #f8fafc;">{{ parseFloat(y.total_gastado).toFixed(2) }}</td>
+                  <td class="text-end text-success fw-bold">{{ parseFloat(y.vuelto).toFixed(2) }}</td>
+                  <td class="text-center">
+                    <span v-if="y.estado==='borrador'" class="badge bg-warning text-dark" style="font-size: 10px;"><i class="bi bi-pencil-square"></i> Borrador</span>
+                    <span v-else class="badge bg-success" style="font-size: 10px;"><i class="bi bi-check-circle-fill"></i> Cerrado</span>
+                  </td>
+                  <td class="text-center pe-3">
+                    <a :href="`form.php?id=${y.id}`" class="btn btn-sm" :class="y.estado==='borrador'?'btn-primary':'btn-outline-secondary'">
+                       <i class="bi" :class="y.estado==='borrador'?'bi-pencil':'bi-eye'"></i>
+                    </a>
+                  </td>
+                </tr>
+                <!-- Fila de Totales del Día -->
+                <tr style="background-color: #fffbeb; font-weight: bold; border-bottom: 2px solid #cbd5e1;">
+                  <td class="ps-3 text-center text-warning" style="text-shadow: 1px 1px 0px #fff;">TOTAL</td>
+                  <td class="text-center">
+                     <button class="btn btn-sm btn-outline-dark py-0" style="font-size: 10px;" @click="nuevoRegistroForm(grupo.fecha, 'MAÑANA')">
+                         <i class="bi bi-plus"></i> Añadir
+                     </button>
+                  </td>
+                  <td class="text-end text-primary">{{ grupo.totales.yape_recibido.toFixed(2) }}</td>
+                  <td class="text-end text-secondary" v-for="cat in categoriasConfig" :key="cat">
+                      <span v-if="grupo.totales.rubros[cat] > 0">{{ grupo.totales.rubros[cat].toFixed(2) }}</span>
+                      <span v-else class="text-muted" style="opacity:0.3">-</span>
+                  </td>
+                  <td class="text-end text-danger" style="background-color: #fef0f2;">{{ grupo.totales.total_gastado.toFixed(2) }}</td>
+                  <td class="text-end text-success">{{ grupo.totales.vuelto.toFixed(2) }}</td>
+                  <td colspan="2"></td>
+                </tr>
+            </template>
           </tbody>
         </table>
       </div>

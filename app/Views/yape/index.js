@@ -9,12 +9,15 @@ createApp({
 
     const loading = ref(true);
     const registros = ref([]);
+    const diasAgrupados = ref([]);
     
     // Config filtros init
     const filtros = ref({
       mes: window.MES_ACTUAL || new Date().getMonth() + 1,
       anio: window.ANIO_ACTUAL || new Date().getFullYear()
     });
+
+    const categoriasConfig = ['MERCADO', 'MOVILIDAD', 'CAFETERÍA/VEA', 'LAVANDERÍA', 'SERV. REPUESTOS', 'OTROS'];
 
     const formatFecha = (f) => {
       if (!f) return '';
@@ -28,6 +31,38 @@ createApp({
         const res = await axios.get(`${BASE}listar`, { params: filtros.value });
         if (res.data.ok) {
           registros.value = res.data.data;
+
+          // Agrupar por fecha
+          const grupos = {};
+          res.data.data.forEach(r => {
+             if(!grupos[r.fecha]) {
+                grupos[r.fecha] = {
+                   fecha: r.fecha,
+                   turnos: [],
+                   totales: {
+                      yape_recibido: 0,
+                      total_gastado: 0,
+                      vuelto: 0,
+                      rubros: { 'MERCADO': 0, 'MOVILIDAD': 0, 'CAFETERÍA/VEA': 0, 'LAVANDERÍA': 0, 'SERV. REPUESTOS': 0, 'OTROS': 0 }
+                   }
+                };
+             }
+             grupos[r.fecha].turnos.push(r);
+             
+             // Sumar totales
+             grupos[r.fecha].totales.yape_recibido += parseFloat(r.yape_recibido) || 0;
+             grupos[r.fecha].totales.total_gastado += parseFloat(r.total_gastado) || 0;
+             grupos[r.fecha].totales.vuelto += parseFloat(r.vuelto) || 0;
+             
+             // Sumar rubros
+             if (r.detalles_montos) {
+                 for(let key in grupos[r.fecha].totales.rubros) {
+                     grupos[r.fecha].totales.rubros[key] += parseFloat(r.detalles_montos[key]) || 0;
+                 }
+             }
+          });
+          
+          diasAgrupados.value = Object.values(grupos).sort((a, b) => b.fecha.localeCompare(a.fecha));
         }
       } catch (e) {
         console.error("Error al listar registros Yape", e);
@@ -35,6 +70,10 @@ createApp({
       } finally {
         loading.value = false;
       }
+    };
+
+    const nuevoRegistroForm = (fechaDef, turnoDef) => {
+        window.location.href = `form.php?nuevo=1&turno=${turnoDef}&fecha=${fechaDef}`;
     };
 
     const nuevoRegistro = async () => {
@@ -70,7 +109,7 @@ createApp({
       });
 
       if (!formData) return;
-      window.location.href = `form.php?nuevo=1&turno=${formData.turno}&fecha=${formData.fecha}`;
+      nuevoRegistroForm(formData.fecha, formData.turno);
     };
 
     onMounted(() => {
@@ -78,8 +117,8 @@ createApp({
     });
 
     return {
-      loading, registros, filtros,
-      formatFecha, listar, nuevoRegistro
+      loading, registros, diasAgrupados, filtros, categoriasConfig,
+      formatFecha, listar, nuevoRegistro, nuevoRegistroForm
     };
   }
 }).mount('#app-yape-index');

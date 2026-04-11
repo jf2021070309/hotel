@@ -22,6 +22,7 @@ createApp({
     const selectedStay = ref(null);
     const stayParaPago = ref(null);
     const mediosPago = ref([]);
+    let pollingTimer = null;
     
     // CONSUMOS
     const inventario = ref([]);
@@ -110,8 +111,8 @@ createApp({
     });
 
     // MÉTODOS
-    const cargarDatos = async () => {
-      loading.value = true;
+    const cargarDatos = async (silent = false) => {
+      if (!silent) loading.value = true;
       try {
         const [resStays, resHabs, resTC, resMedios] = await Promise.all([
           axios.get('../../../api/rooming.php?action=listar'),
@@ -126,7 +127,7 @@ createApp({
       } catch (err) {
         showToast('Error al cargar datos', 'error');
       } finally {
-        loading.value = false;
+        if (!silent) loading.value = false;
       }
     };
 
@@ -391,7 +392,7 @@ createApp({
         if (res.data.ok) {
           showToast(res.data.msg, 'success');
           bootstrap.Modal.getInstance('#modalCheckin').hide();
-          cargarDatos();
+          cargarDatos(true);
         } else {
           showToast(res.data.msg || 'Error al procesar check-in', 'error');
         }
@@ -464,7 +465,7 @@ createApp({
         if (res.data.ok) {
           showToast(res.data.msg, 'success');
           bootstrap.Modal.getInstance('#modalConsumo').hide();
-          cargarDatos();
+          cargarDatos(true);
         } else {
           showToast(res.data.msg, 'error');
         }
@@ -521,7 +522,7 @@ createApp({
         if (res.data.ok) {
           showToast(res.data.msg, 'success');
           bootstrap.Modal.getInstance('#modalPago').hide();
-          cargarDatos();
+          cargarDatos(true);
         } else {
           showToast(res.data.msg, 'error');
         }
@@ -543,7 +544,7 @@ createApp({
         try {
           await axios.post('../../../api/rooming.php?action=checkout', { id: s.id });
           showToast('Checkout realizado', 'success');
-          cargarDatos();
+          cargarDatos(true);
         } catch (err) {
           showToast('Error en el proceso', 'error');
         }
@@ -583,6 +584,9 @@ createApp({
     onMounted(async () => {
       await cargarDatos();
       
+      // Iniciar polling silencioso cada 10 segundos
+      pollingTimer = setInterval(() => cargarDatos(true), 10000);
+      
       const urlParams = new URLSearchParams(window.location.search);
       
       // AUTO-COBRO: Si viene de Reservas con una habitación específica
@@ -601,6 +605,10 @@ createApp({
       if (stayId) {
         verDetalle(stayId);
       }
+    });
+
+    onUnmounted(() => {
+      if (pollingTimer) clearInterval(pollingTimer);
     });
 
     return {

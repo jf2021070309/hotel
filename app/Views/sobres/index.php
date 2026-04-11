@@ -15,16 +15,17 @@ $fecha = $_GET['fecha'] ?? date('Y-m-d');
 ?>
 
 <div class="main-content" id="app-sobres" v-cloak>
-  <div class="topbar py-2" style="min-height: auto;">
-    <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list"></i></button>
-    <div class="d-flex align-items-center gap-2">
-      <h5 class="mb-0 fw-bold text-success"><i class="bi bi-envelope-paper-fill me-1"></i>Sobre de Alex</h5>
-      <span class="text-muted small d-none d-md-inline">| Control de efectivo físico</span>
+  <div class="topbar border-bottom-0 shadow-sm" style="background: linear-gradient(to right, #ffffff, #f8f9fa);">
+    <button class="btn-burger" onclick="handleMenuClick()"><i class="bi bi-list fs-4"></i></button>
+    <div class="d-flex align-items-center gap-1">
+      <h4 class="mb-0 fw-bold text-dark" style="letter-spacing: -0.5px;">Sobre de Alex</h4>
+      <span class="text-muted small d-none d-lg-inline ps-2 border-start ms-2">Control de efectivo físico</span>
     </div>
-    <div class="ms-auto d-flex gap-2 align-items-center">
-      <input type="date" class="form-control form-control-sm" v-model="fechaFiltro" @change="consultar" style="width: 140px;">
-      <button class="btn btn-success btn-sm fw-bold px-3" @click="imprimirReporte">
-        <i class="bi bi-printer me-1"></i>Imprimir
+    <div class="ms-auto d-flex gap-1 align-items-center">
+      <input type="date" class="form-control form-control-sm border-0 bg-light shadow-none" v-model="fechaFiltro" @change="consultar" style="width: 125px; font-size: 13px;">
+      <button class="btn btn-success btn-sm fw-bold px-2 px-sm-3 d-flex align-items-center gap-1" @click="imprimirReporte" style="height: 31px; font-size: 11.5px;">
+        <i class="bi bi-printer-fill"></i>
+        <span class="d-none d-sm-inline">Imprimir</span>
       </button>
     </div>
   </div>
@@ -144,5 +145,24 @@ $fecha = $_GET['fecha'] ?? date('Y-m-d');
 <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="<?= $base ?>app/Views/sobres/index.js"></script>
+
+<style>
+  [v-cloak] { display: none !important; }
+  .text-orange { color: #e65100 !important; }
+  .bg-orange-subtle { background-color: #fff3e0 !important; }
+
+  @media (max-width: 768px) {
+    .main-content { padding: 0 !important; }
+    .page-body { padding: 12px 10px !important; }
+    .topbar h4 { font-size: 1.1rem; }
+    .topbar input[type="date"] { width: 110px !important; padding: 4px 6px !important; }
+    
+    .fs-5 { font-size: 1.1rem !important; }
+    h4 { font-size: 1.25rem !important; }
+    
+    .card-body { padding: 12px !important; }
+    .badge { font-size: 9px !important; padding: 4px 8px !important; }
+  }
+</style>
 
 <?php include $base . 'includes/footer.php'; ?>

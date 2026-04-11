@@ -11,21 +11,29 @@ include $base . 'includes/head.php';
 include $base . 'includes/sidebar.php';
 ?>
 
-<div class="main-content" id="app-medios-pago">
-  <div class="topbar">
-    <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list"></i></button>
-    <div>
-      <h4><i class="bi bi-credit-card-2-back-fill me-2 text-primary"></i>Medios de Pago</h4>
-      <p class="mb-0 small text-muted">Configuración de métodos de ingreso para el hotel</p>
+<div class="main-content">
+  <div class="topbar border-bottom-0 shadow-sm" style="background: linear-gradient(to right, #ffffff, #f8f9fa);">
+    <button class="btn-burger" onclick="handleMenuClick()"><i class="bi bi-list fs-4"></i></button>
+    <div class="d-flex align-items-center gap-1">
+      <i class="bi bi-credit-card-2-back-fill fs-5 d-none d-sm-block" style="color: #0d6efd;"></i>
+      <div class="text-nowrap">
+        <h5 class="fw-bold mb-0" style="color: #111; letter-spacing: -0.5px; font-size: 1.15rem;">Medios de Pago</h5>
+        <p class="mb-0 small text-muted d-none d-sm-block" style="font-size: 10px;">Configuración de métodos de cobro</p>
+      </div>
     </div>
-    <button class="btn btn-primary d-flex align-items-center gap-2" @click="abrirNuevo">
-      <i class="bi bi-plus-lg"></i> Nuevo Medio
-    </button>
+    <div class="ms-auto d-flex align-items-center gap-2">
+       <span class="badge px-3 py-2 fs-6 rounded-pill shadow-sm d-none d-md-inline-block" id="reloj" style="background: #111; color: #d4af37; border: 1px solid #d4af37; font-size: 12px !important;"></span>
+       <button class="btn btn-primary d-flex align-items-center gap-2 shadow-sm fw-bold px-3 py-2" @click="abrirNuevo" style="font-size: 12px; border: 1px solid #111;">
+          <i class="bi bi-plus-lg text-warning"></i> <span class="d-none d-sm-inline">NUEVO MEDIO</span>
+       </button>
+    </div>
   </div>
 
+  <div id="app-medios-pago" v-cloak style="display:contents">
+
   <div class="page-body">
-    <div class="row">
-      <div class="col-lg-8">
+    <div class="row g-3">
+      <div class="col-lg-12">
         <div class="card border-0 shadow-sm overflow-hidden" style="border-radius:12px;">
           <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
@@ -75,18 +83,6 @@ include $base . 'includes/sidebar.php';
         </div>
       </div>
       
-      <div class="col-lg-4 mt-4 mt-lg-0">
-        <div class="card border-0 shadow-sm sticky-top" style="top:90px; border-radius:12px;">
-            <div class="card-body p-4 text-center">
-                <i class="bi bi-info-circle fs-1 text-primary mb-3 d-block"></i>
-                <h6 class="fw-bold">Gestión de Medios</h6>
-                <p class="small text-muted mb-0">
-                    Estos medios aparecerán en los formularios de Rooming y Flujo de Caja. 
-                    El orden determina su posición en las listas desplegables.
-                </p>
-            </div>
-        </div>
-      </div>
     </div>
   </div>
 
@@ -128,8 +124,9 @@ include $base . 'includes/sidebar.php';
         </form>
       </div>
     </div>
-  </div>
-</div>
+    </div> <!-- /page-body -->
+  </div> <!-- /app-medios-pago -->
+</div> <!-- /main-content -->
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>

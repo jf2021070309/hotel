@@ -16,14 +16,19 @@ $turnoQuery = $_GET['turno'] ?? 'MAÑANA';
 ?>
 
 <div class="main-content" id="app-flujo-form">
-  <div class="topbar">
-    <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list"></i></button>
+  <div class="topbar border-bottom-0 shadow-sm" style="background: linear-gradient(to right, #ffffff, #f8f9fa);">
+    <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list fs-4"></i></button>
     <div>
-      <h4><i class="bi bi-wallet2 me-2 text-primary"></i>Turno Flujo de Caja <span class="badge bg-secondary ms-2" style="font-size:0.5em">{{ cabecera.estado.toUpperCase() }}</span></h4>
-      <p class="mb-0 small text-muted">Añade o edita movimientos de ingresos y egresos</p>
+      <h4 class="fw-bold mb-0" style="color: #111; letter-spacing: -0.5px;">
+        <i class="bi bi-wallet2 me-2" style="color:#2563eb"></i>Flujo de Caja
+        <span class="badge bg-secondary ms-2 p-1" style="font-size:10px">{{ cabecera.estado.toUpperCase() }}</span>
+      </h4>
+      <p class="mb-0 small text-muted fw-semibold d-none d-sm-block">Gestión de movimientos de caja por turno</p>
     </div>
     <div class="ms-auto">
-      <a href="index.php?noredirect=1" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Volver al Listado</a>
+      <a href="index.php?noredirect=1" class="btn btn-sm btn-outline-secondary px-2 py-1" style="font-size: 11px;">
+        <i class="bi bi-arrow-left"></i> <span class="d-none d-sm-inline">Listado</span>
+      </a>
     </div>
   </div>
 
@@ -38,22 +43,18 @@ $turnoQuery = $_GET['turno'] ?? 'MAÑANA';
         
         <!-- CABECERA -->
         <div class="card mb-3 border-0 shadow-sm border-top border-primary border-3">
-          <div class="card-body">
-            <div class="row g-3 align-items-center">
-              <div class="col-md-4">
-                <label class="form-label text-muted small fw-bold mb-1">FECHA</label>
-                <input type="date" class="form-control" v-model="cabecera.fecha" :disabled="!esEditable || !esNuevo">
+          <div class="card-body py-2 px-3">
+            <div class="row g-2">
+              <div class="col-6 col-md-4">
+                <label class="form-label text-muted fw-bold mb-1" style="font-size: 10px;">FECHA</label>
+                <input type="date" class="form-control form-control-sm fw-bold border-0 bg-light" v-model="cabecera.fecha" :disabled="!esEditable || !esNuevo" style="font-size: 12px;">
               </div>
-              <div class="col-md-4">
-                <label class="form-label text-muted small fw-bold mb-1">TURNO</label>
-                <select class="form-select" v-model="cabecera.turno" :disabled="!esEditable || !esNuevo">
-                  <option value="MAÑANA">MAÑANA (6am - 2pm)</option>
-                  <option value="TARDE">TARDE (2pm - 10pm)</option>
+              <div class="col-6 col-md-4">
+                <label class="form-label text-muted fw-bold mb-1" style="font-size: 10px;">TURNO</label>
+                <select class="form-select form-select-sm fw-bold border-0 bg-light" v-model="cabecera.turno" :disabled="!esEditable || !esNuevo" style="font-size: 11px;">
+                  <option value="MAÑANA">MAÑANA</option>
+                  <option value="TARDE">TARDE</option>
                 </select>
-              </div>
-              <div class="col-md-4">
-                <label class="form-label text-muted small fw-bold mb-1">OPERADOR</label>
-                <input type="text" class="form-control bg-light" :value="cabecera.operador || 'Automático al guardar'" disabled>
               </div>
             </div>
           </div>
@@ -313,11 +314,22 @@ $turnoQuery = $_GET['turno'] ?? 'MAÑANA';
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="<?= $base ?>app/Views/flujo/form.js?v=<?= time() ?>"></script>
 
-<style>
   /* Forzar que las glosas se vean rojas incluso si el campo está deshabilitado */
   .text-danger:disabled, .text-danger[disabled], textarea.text-danger:read-only {
     color: #dc3545 !important;
     opacity: 1;
     -webkit-text-fill-color: #dc3545;
+  }
+
+  @media (max-width: 768px) {
+    .main-content { padding: 8px !important; }
+    .page-body { padding: 0 !important; }
+    .topbar h4 { font-size: 1.1rem; }
+    .card { border-radius: 4px !important; }
+    .table td { padding: 0.4rem 0.3rem !important; }
+    .form-select-sm, .form-control-sm { font-size: 12px; }
+    .badge { font-size: 9px; }
+    h2 { font-size: 1.5rem !important; }
+    .sticky-top { position: relative !important; top: 0 !important; }
   }
 </style>

@@ -98,6 +98,9 @@ createApp({
      */
     const fetchData = async () => {
       isRefreshing.value = true;
+      const icon = document.getElementById('icon-refreshing');
+      if (icon) icon.classList.add('fa-spin');
+
       try {
         const res = await axios.get('api/dashboard.php');
         if (res.data.ok) {
@@ -110,6 +113,9 @@ createApp({
           sobres.value = d.sobres;
           
           segundosDesdeUpdate.value = 0;
+          const el = document.getElementById('label-seconds');
+          if (el) el.textContent = 'Hace 0s';
+
           initChart(d.grafico_mes);
         }
       } catch (e) {
@@ -117,6 +123,7 @@ createApp({
       } finally {
         loadingInicial.value = false;
         isRefreshing.value = false;
+        if (icon) icon.classList.remove('fa-spin');
       }
     };
 
@@ -126,6 +133,8 @@ createApp({
       // Counter for "updated X seconds ago"
       timerUpdate = setInterval(() => {
         segundosDesdeUpdate.value++;
+        const el = document.getElementById('label-seconds');
+        if (el) el.textContent = `Hace ${segundosDesdeUpdate.value}s`;
       }, 1000);
 
       // Refresh every 60 seconds

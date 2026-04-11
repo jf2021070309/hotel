@@ -237,55 +237,79 @@ require_once $base . 'rutas.php';
 </aside>
 
 <script>
-function openSidebar() {
-  document.getElementById('mainSidebar').classList.add('open');
-  document.getElementById('sidebarOverlay').classList.add('active');
-  document.body.style.overflow = 'hidden';
-}
-function closeSidebar() {
-  document.getElementById('mainSidebar').classList.remove('open');
-  document.getElementById('sidebarOverlay').classList.remove('active');
-  document.body.style.overflow = '';
-}
-function closeSidebarOnMobile() {
-  if (window.innerWidth <= 768) closeSidebar();
-}
+// Exponer funciones al ámbito global para asegurar acceso desde onclick
+window.handleMenuClick = function() {
+  if (window.innerWidth <= 768) {
+    window.openSidebar();
+  } else {
+    window.toggleSidebar();
+  }
+};
 
-// --- COLLAPSIBLE LOGIC ---
-function toggleSidebar() {
+window.openSidebar = function() {
+  const sidebar = document.getElementById('mainSidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  if (sidebar) sidebar.classList.add('open');
+  if (overlay) overlay.classList.add('active');
+  document.body.style.overflow = 'hidden';
+};
+
+window.closeSidebar = function() {
+  const sidebar = document.getElementById('mainSidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  if (sidebar) sidebar.classList.remove('open');
+  if (overlay) overlay.classList.remove('active');
+  document.body.style.overflow = '';
+};
+
+window.closeSidebarOnMobile = function() {
+  if (window.innerWidth <= 768) window.closeSidebar();
+};
+
+// Listener automático para asegurar que cualquier botón burger funcione
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('.btn-burger');
+  if (btn) {
+    e.preventDefault();
+    window.handleMenuClick();
+  }
+});
+
+window.toggleSidebar = function() {
   const sidebar = document.getElementById('mainSidebar');
   const mainContent = document.querySelector('.main-content');
   const btn = document.getElementById('btnToggleSidebar');
 
+  if (!sidebar) return;
+  
   sidebar.classList.toggle('collapsed');
   if (mainContent) mainContent.classList.toggle('sidebar-collapsed');
 
   const isCollapsed = sidebar.classList.contains('collapsed');
   localStorage.setItem('sidebar_collapsed', isCollapsed ? 'true' : 'false');
   
-  const icon = btn.querySelector('i');
-  icon.className = isCollapsed ? 'bi bi-chevron-right' : 'bi bi-chevron-left';
-}
+  if (btn) {
+    const icon = btn.querySelector('i');
+    if (icon) icon.className = isCollapsed ? 'bi bi-chevron-right' : 'bi bi-chevron-left';
+  }
+};
 
 // --- SIDEBAR SCROLL PERSISTENCE ---
 (function() {
   const sidebarNav = document.querySelector('.sidebar-nav');
   if (!sidebarNav) return;
 
-  // Restore scroll position
   const savedScroll = sessionStorage.getItem('sidebar_scroll');
   if (savedScroll) {
     sidebarNav.scrollTop = parseInt(savedScroll, 10);
   }
 
-  // Save scroll position on any click in the nav
   sidebarNav.addEventListener('click', (e) => {
     if (e.target.closest('a')) {
       sessionStorage.setItem('sidebar_scroll', sidebarNav.scrollTop);
     }
   });
 
-  // Also save periodically or on scroll if needed, but click is most important for navigation
   sidebarNav.addEventListener('scroll', () => {
     sessionStorage.setItem('sidebar_scroll', sidebarNav.scrollTop);
   }, { passive: true });
@@ -302,8 +326,12 @@ function toggleSidebar() {
       
       if (sidebar) sidebar.classList.add('collapsed');
       if (main) main.classList.add('sidebar-collapsed');
-      if (btn) btn.querySelector('i').className = 'bi bi-chevron-right';
+      if (btn) {
+        const icon = btn.querySelector('i');
+        if (icon) icon.className = 'bi bi-chevron-right';
+      }
     });
   }
 })();
 </script>
+

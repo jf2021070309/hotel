@@ -751,7 +751,9 @@ body {
 
 /* ─── HAMBURGER BUTTON ─── */
 .btn-burger {
-    display: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background: none;
     border: none;
     cursor: pointer;
@@ -807,11 +809,10 @@ body {
         display: block;
     }
 
-    /* Hamburger button visible on mobile */
+    /* El botón burger ya es display:flex globalmente */
     .btn-burger {
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        width: 38px;
+        height: 38px;
     }
 
     /* Main content takes full width */

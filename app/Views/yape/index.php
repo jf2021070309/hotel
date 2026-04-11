@@ -17,62 +17,70 @@ include $base . 'includes/head.php';
 include $base . 'includes/sidebar.php';
 ?>
 
-<div class="main-content" id="app-yape-index" v-cloak>
+<div class="main-content">
   <div class="topbar border-bottom-0 shadow-sm" style="background: linear-gradient(to right, #ffffff, #f8f9fa);">
-    <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list fs-4"></i></button>
-    <div>
-      <h4 class="fw-bold" style="color: #111; letter-spacing: -0.5px;">
-        <i class="bi bi-wallet2 me-2" style="color: #d4af37;"></i>Gastos Yape
-      </h4>
-      <p class="mb-0 small text-muted fw-semibold">Gestión de compras con dinero enviado mediante Yape</p>
+    <button class="btn-burger" onclick="handleMenuClick()"><i class="bi bi-list fs-4"></i></button>
+    <div class="d-flex align-items-center gap-1">
+      <i class="bi bi-wallet2 fs-5 d-none d-sm-block" style="color: #d4af37;"></i>
+      <div class="text-nowrap">
+        <h5 class="fw-bold mb-0" style="color: #111; letter-spacing: -0.5px; font-size: 1.15rem;">Gastos Yape</h5>
+        <p class="mb-0 small text-muted d-none d-sm-block" style="font-size: 10px;">Gestión de compras con Yape</p>
+      </div>
     </div>
-    <div class="ms-auto d-flex align-items-center gap-2">
-      <!-- Filtro Turno -->
-      <select v-model="filtros.turno" class="form-select form-select-sm bg-light fw-bold text-secondary border-0 shadow-sm" style="width: 125px; font-size: 11.5px;" @change="aplicarFiltrosFront()">
-        <option value="">Turno: Todos</option>
-        <option value="MAÑANA">MAÑANA</option>
-        <option value="TARDE">TARDE</option>
-      </select>
-      <!-- Filtro Estado -->
-      <select v-model="filtros.estado" class="form-select form-select-sm bg-light fw-bold text-secondary border-0 shadow-sm" style="width: 135px; font-size: 11.5px;" @change="aplicarFiltrosFront()">
-        <option value="">Estado: Todos</option>
-        <option value="borrador">Borrador</option>
-        <option value="cerrado">Cerrado</option>
-      </select>
-
-      <div style="width:1px; height: 28px; background-color: #cbd5e1; margin: 0 4px;"></div>
-
-      <!-- Filtro Mes -->
-      <select v-model="filtros.mes" class="form-select form-select-sm bg-white fw-bold border-1 shadow-sm" style="width:115px; font-size: 12px;" @change="listar()">
-        <option value="1">Enero</option>
-        <option value="2">Febrero</option>
-        <option value="3">Marzo</option>
-        <option value="4">Abril</option>
-        <option value="5">Mayo</option>
-        <option value="6">Junio</option>
-        <option value="7">Julio</option>
-        <option value="8">Agosto</option>
-        <option value="9">Septiembre</option>
-        <option value="10">Octubre</option>
-        <option value="11">Noviembre</option>
-        <option value="12">Diciembre</option>
-      </select>
-      <input type="number" v-model="filtros.anio" class="form-control form-control-sm text-center fw-bold bg-white border-1 shadow-sm" style="width:80px; font-size: 12px;" @change="listar()">
+    <div class="ms-auto d-flex align-items-center">
+       <span class="badge px-3 py-2 fs-6 rounded-pill shadow-sm" id="reloj" style="background: #111; color: #d4af37; border: 1px solid #d4af37; font-size: 12px !important;"></span>
     </div>
   </div>
 
-  <div class="page-body">
-    <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
-      <button class="btn-primary-custom shadow-sm" @click="nuevoRegistro()" style="border: 1px solid #111;">
-        <i class="bi bi-plus-lg text-warning"></i> Nuevo Registro Yape
-      </button>
-      <a :href="`reporte_mensual.php?mes=${filtros.mes}&anio=${filtros.anio}`" target="_blank"
-        class="btn btn-success shadow-sm" style="font-weight: 600; font-size: 14px;">
-        <i class="bi bi-printer-fill me-1"></i> Generar Reporte Mensual
-      </a>
-      <button class="btn btn-outline-secondary btn-sm ms-auto" @click="listar()">
-        <i class="bi bi-arrow-clockwise"></i>
-      </button>
+  <div id="app-yape-index" v-cloak style="display:contents">
+    <div class="page-body">
+
+      <!-- BARRA DE FILTROS COMPACTA (Dentro de Vue) -->
+      <div class="card shadow-sm border-0 mb-3" style="border-radius: 12px; background: #f8fafc;">
+        <div class="card-body py-2 px-3">
+          <div class="row g-2 align-items-center">
+            <div class="col-6 col-sm-auto">
+              <select v-model="filtros.turno" class="form-select form-select-sm border-0 shadow-sm fw-bold" style="font-size: 11px;" @change="aplicarFiltrosFront()">
+                <option value="">Turno: Todos</option>
+                <option value="MAÑANA">MAÑANA</option>
+                <option value="TARDE">TARDE</option>
+              </select>
+            </div>
+            <div class="col-6 col-sm-auto">
+              <select v-model="filtros.estado" class="form-select form-select-sm border-0 shadow-sm fw-bold" style="font-size: 11px;" @change="aplicarFiltrosFront()">
+                <option value="">Estado: Todos</option>
+                <option value="borrador">Borrador</option>
+                <option value="cerrado">Cerrado</option>
+              </select>
+            </div>
+            <div class="col-7 col-sm-auto ms-sm-auto">
+              <div class="input-group input-group-sm">
+                <select v-model="filtros.mes" class="form-select border-0 shadow-sm fw-bold" style="font-size: 11px;" @change="listar()">
+                  <option v-for="m in 12" :key="m" :value="m">{{ ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'][m-1] }}</option>
+                </select>
+                <input type="number" v-model="filtros.anio" class="form-control border-0 shadow-sm fw-bold text-center" style="width: 70px; font-size: 11px;" @change="listar()">
+              </div>
+            </div>
+            <div class="col-5 col-sm-auto text-end">
+               <button class="btn btn-sm btn-light border shadow-sm w-100 py-1" @click="listar()">
+                  <i class="bi bi-arrow-clockwise"></i>
+               </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    <div class="row g-2 mb-3 align-items-center">
+      <div class="col-8 col-sm-auto">
+        <button class="btn btn-sm btn-primary w-100 shadow-sm fw-bold py-2" @click="nuevoRegistro()" style="border: 1px solid #111; font-size: 12px;">
+          <i class="bi bi-plus-lg text-warning me-1"></i> NUEVO REGISTRO
+        </button>
+      </div>
+      <div class="col-4 col-sm-auto ms-sm-auto">
+        <a :href="`reporte_mensual.php?mes=${filtros.mes}&anio=${filtros.anio}`" target="_blank"
+          class="btn btn-sm btn-success w-100 shadow-sm fw-bold py-2" style="font-size: 12px; border: 1px solid #111;">
+          <i class="bi bi-printer-fill me-1"></i> REPORTE
+        </a>
+      </div>
     </div>
 
     <div class="card border-0 shadow-sm" style="border-radius:10px; overflow:hidden;">
@@ -186,17 +194,21 @@ include $base . 'includes/sidebar.php';
 </div>
 
 <style>
-  [v-cloak] {
-    display: none !important;
+  [v-cloak] { display: none !important; }
+  .table-hover tbody tr:hover { background-color: #f8f9fa; }
+  .text-sm { font-size: 0.85rem; }
+
+  @media (max-width: 768px) {
+    .topbar h5 { font-size: 1.05rem !important; }
+    .topbar .badge { padding: 6px 12px !important; font-size: 11px !important; }
+    .topbar p { display: none; }
+    .main-content { padding: 8px !important; }
+    .table-responsive { border-radius: 0; }
+    .card { border-radius: 6px !important; }
   }
 
-  .table-hover tbody tr:hover {
-    background-color: #f8f9fa;
-  }
-
-  .text-sm {
-    font-size: 0.9rem;
-  }
+  /* Estrechamos un poco la tabla en mobile para que el scroll sea más corto */
+  .table th, .table td { padding: 0.6rem 0.5rem !important; }
 </style>
 
 <script>

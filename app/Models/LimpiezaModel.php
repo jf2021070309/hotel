@@ -10,7 +10,12 @@ class LimpiezaModel {
     }
 
     public function getDetalleDia(string $fecha): array {
-        $stmt = $this->pdo->prepare("SELECT * FROM limpieza_registros WHERE fecha = ? ORDER BY prioridad ASC, habitacion ASC");
+        $sql = "SELECT r.*, u.nombre as responsable_nombre 
+                FROM limpieza_registros r
+                LEFT JOIN usuarios u ON r.usuario_id = u.id
+                WHERE r.fecha = ? 
+                ORDER BY r.prioridad ASC, r.habitacion ASC";
+        $stmt = $this->pdo->prepare($sql);
         $stmt->execute([$fecha]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }

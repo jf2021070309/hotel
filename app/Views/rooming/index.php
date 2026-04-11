@@ -22,8 +22,9 @@ include $base . 'includes/head.php';
         <p class="mb-0 small text-muted fw-semibold">Gestión de estadías activas y registro de ingresos</p>
       </div>
       <div class="ms-auto">
-        <button class="btn-primary-custom shadow-sm" @click="abrirCheckin" style="border: 1px solid #111;">
-          <i class="bi bi-plus-lg text-warning"></i> Nuevo Check-in
+        <button class="btn btn-sm btn-primary shadow-sm px-2 px-sm-3" @click="abrirCheckin" style="border: 1px solid #111; font-weight: 700; font-size: 11px;">
+          <i class="bi bi-plus-lg text-warning me-1"></i>
+          <span>NUEVO</span>
         </button>
       </div>
     </div>
@@ -33,29 +34,29 @@ include $base . 'includes/head.php';
       <div class="card border-0 shadow-sm mb-4" style="border-radius:12px;">
         <div class="card-body p-3">
           <div class="row g-2 align-items-center">
-            <div class="col-md-4">
-              <div class="input-group">
-                <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
-                <input type="text" class="form-control border-start-0" v-model="busqueda"
-                  placeholder="Buscar por huésped o habitación...">
+            <div class="col-12 col-md-4">
+              <div class="input-group input-group-sm rounded shadow-sm">
+                <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                <input type="text" class="form-control border-start-0 bg-white fw-bold text-secondary" style="font-size: 12px;" v-model="busqueda"
+                  placeholder="Buscar huésped / hab...">
               </div>
             </div>
-            <div class="col-md-2">
-              <select class="form-select" v-model="filtroPiso">
-                <option value="">Todos los pisos</option>
+            <div class="col-6 col-md-2">
+              <select class="form-select form-select-sm fw-bold text-secondary shadow-sm" style="font-size: 11px;" v-model="filtroPiso">
+                <option value="">Pisos: Todos</option>
                 <option v-for="p in [2,3,4,5,6]" :key="p" :value="p">Piso {{ p }}</option>
               </select>
             </div>
-            <div class="col-md-2">
-              <select class="form-select" v-model="filtroPago">
-                <option value="">Todos los pagos</option>
+            <div class="col-6 col-md-2">
+              <select class="form-select form-select-sm fw-bold text-secondary shadow-sm" style="font-size: 11px;" v-model="filtroPago">
+                <option value="">Pagos: Todos</option>
                 <option value="pendiente">Pendiente</option>
                 <option value="parcial">Parcial</option>
                 <option value="pagado">Pagado</option>
               </select>
             </div>
-            <div class="col text-end">
-              <button class="btn btn-light" @click="cargarDatos" :disabled="loading">
+            <div class="col col-md-auto ms-auto text-end">
+              <button class="btn btn-light btn-sm shadow-sm px-3" @click="cargarDatos" :disabled="loading">
                 <i class="bi bi-arrow-clockwise"></i>
               </button>
             </div>
@@ -78,16 +79,15 @@ include $base . 'includes/head.php';
       <div class="card border-0 shadow-sm overflow-hidden" style="border-radius:12px;">
         <div class="table-responsive">
           <table class="table table-hover align-middle mb-0">
-            <thead class="bg-light">
+            <thead class="table-dark text-white text-uppercase" style="font-size: 11px; letter-spacing: 0.5px;">
               <tr>
                 <th class="ps-4" style="width: 60px;">ID</th>
                 <th style="width: 100px;">HAB.</th>
                 <th style="min-width: 220px;">HUÉSPED TITULAR</th>
-                <th>INGRESO / SALIDA</th>
-                <th>MONTO / PAGADO</th>
-                <th style="width: 120px;">ESTADO PAGO</th>
-                <th style="width: 110px;">MEDIO PAGO</th>
-                <th style="width: 100px;">CANAL</th>
+                <th>FECHAS</th>
+                <th class="text-end">MONTO</th>
+                <th class="text-center">PAGO</th>
+                <th class="text-center">MEDIO</th>
                 <th class="text-end pe-4" style="width: 120px;">ACCIONES</th>
               </tr>
             </thead>
@@ -128,22 +128,19 @@ include $base . 'includes/head.php';
                   </div>
                   <div class="text-muted mt-1" style="font-size: 11px;">🛏️ {{ s.noches }} noches</div>
                 </td>
-                <td>
-                  <div class="fw-bold">{{ s.moneda_pago }} {{ fmtCur(s.monto_original) }}</div>
-                  <div class="text-success small">Abonado: {{ s.moneda_pago }} {{ fmtCur(s.total_cobrado_orig) }}</div>
+                <td class="text-end fw-bold">
+                  <div class="text-dark">{{ s.moneda_pago }} {{ fmtCur(s.monto_original) }}</div>
+                  <div class="text-success small" style="font-size: 10px;">Abono S/ {{ s.total_cobrado }}</div>
                 </td>
-                <td>
-                  <span class="badge" :class="getPagoClass(s.estado_pago)">{{ s.estado_pago.toUpperCase() }}</span>
+                <td class="text-center">
+                  <span class="badge" :class="getPagoClass(s.estado_pago)" style="font-size: 9px;">{{ s.estado_pago.toUpperCase() }}</span>
                 </td>
-                <td>
-                  <span v-if="s.metodo_pago" class="badge bg-light text-dark border"
-                    style="font-size:10px; padding:5px 9px;">
+                <td class="text-center">
+                  <span v-if="s.metodo_pago" class="badge bg-light text-dark border fw-bold"
+                    style="font-size:9px; padding:4px 7px;">
                     {{ s.metodo_pago }}
                   </span>
                   <span v-else class="text-muted small">—</span>
-                </td>
-                <td>
-                  <span class="text-muted small">{{ s.medio_reserva }}</span>
                 </td>
                 <td class="text-end pe-4">
                   <div class="btn-group shadow-sm" style="border-radius:8px; overflow:hidden;">
@@ -781,14 +778,10 @@ include $base . 'includes/head.php';
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="index.js?v=<?= time() ?>"></script>
 
-<style>
-  .btn-white {
-    background: white;
-  }
 
-  .btn-white:hover {
-    background: #f8f9fa;
-  }
+<style>
+  .btn-white { background: white; }
+  .btn-white:hover { background: #f8f9fa; }
 
   .badge {
     padding: 8px 12px;
@@ -798,6 +791,7 @@ include $base . 'includes/head.php';
   }
 
   .table thead th {
+    padding: 12px 10px !important;
     font-size: 11px;
     letter-spacing: 0.5px;
     color: #6c757d;
@@ -806,8 +800,7 @@ include $base . 'includes/head.php';
     text-transform: uppercase;
   }
 
-  .form-control,
-  .form-select {
+  .form-control, .form-select {
     border-radius: 8px;
     border: 1px solid #e0e0e0;
   }
@@ -821,6 +814,16 @@ include $base . 'includes/head.php';
     margin-bottom: 20px;
     border-bottom: 1px solid #f0f0f0;
     padding-bottom: 8px;
+  }
+
+  @media (max-width: 768px) {
+    .main-content { padding: 8px !important; }
+    .topbar h4 { font-size: 1.1rem; }
+    .topbar p { display: none; }
+    .table td { font-size: 12.5px; padding: 10px 8px !important; }
+    .btn-group-sm > .btn, .btn-sm { font-size: 11px; }
+    .modal-body { padding: 15px !important; }
+    .modal-section-title { font-size: 11px; margin-bottom: 12px; }
   }
 </style>
 

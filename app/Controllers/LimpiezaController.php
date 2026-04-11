@@ -53,7 +53,7 @@ class LimpiezaController {
     public function actualizar(): array {
         $id = $_POST['id'] ?? 0;
         $estado = $_POST['estado'] ?? null;
-        $responsable = $_POST['responsable'] ?? null;
+        $usuario_id = $_POST['usuario_id'] ?? null;
         $observacion = $_POST['observacion'] ?? null;
         
         $data = [];
@@ -62,7 +62,7 @@ class LimpiezaController {
             if ($estado === 'en proceso') $data['hora_inicio'] = date('Y-m-d H:i:s');
             if ($estado === 'lista') $data['hora_fin'] = date('Y-m-d H:i:s');
         }
-        if ($responsable !== null) $data['responsable'] = $responsable;
+        if ($usuario_id !== null) $data['usuario_id'] = $usuario_id;
         if ($observacion !== null) $data['observacion'] = $observacion;
 
         if (empty($data)) return ['ok' => false, 'msg' => 'No hay datos para actualizar.'];

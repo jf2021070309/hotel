@@ -21,15 +21,15 @@ include $base . 'includes/sidebar.php';
 
 <div class="main-content" id="app-yape-form" v-cloak>
 
-  <div class="topbar">
-    <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list"></i></button>
+  <div class="topbar border-bottom-0 shadow-sm" style="background: linear-gradient(to right, #ffffff, #f8f9fa);">
+    <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list fs-4"></i></button>
     <div>
-      <h4>
+      <h4 class="fw-bold mb-0" style="color: #111; letter-spacing: -0.5px;">
         <i class="bi bi-wallet2 me-2" style="color:#7b2cbf"></i>
-        <span v-if="esNuevo">Nuevo Registro Yape</span>
-        <span v-else>Registro Yape #{{ id }}</span>
+        <span v-if="esNuevo">Nuevo Registro</span>
+        <span v-else>Registro #{{ id }}</span>
       </h4>
-      <p class="mb-0 small text-muted">Rendición de compras realizadas con flujo Yape externo</p>
+      <p class="mb-0 small text-muted fw-semibold d-none d-sm-block">Rendición de compras realizadas con flujo Yape externo</p>
     </div>
   </div>
 
@@ -44,31 +44,29 @@ include $base . 'includes/sidebar.php';
       <!-- BARRA SUPERIOR: fecha, turno, estado -->
       <div class="card shadow-sm border-0 mb-2" style="border-radius:6px;">
         <div class="card-body py-2 px-3">
-          <div class="row g-3 align-items-center">
-            <div class="col-auto">
+          <div class="d-flex flex-wrap gap-2 align-items-center">
+            <div>
               <a href="index.php" class="btn btn-outline-secondary btn-sm">
-                <i class="bi bi-arrow-left"></i> Volver
+                <i class="bi bi-arrow-left"></i> <span class="d-none d-sm-inline">Volver</span>
               </a>
             </div>
-            <div class="col-auto">
-              <label class="form-label small fw-bold mb-1 d-block">FECHA</label>
-              <input type="date" v-model="fecha" class="form-control form-control-sm fw-bold" :disabled="estado==='cerrado'" style="width:150px;">
+            <div class="ms-sm-2">
+              <input type="date" v-model="fecha" class="form-control form-control-sm fw-bold border-0 bg-light" :disabled="estado==='cerrado'" style="width:130px; font-size: 13px;">
             </div>
-            <div class="col-auto">
-              <label class="form-label small fw-bold mb-1 d-block">TURNO</label>
+            <div class="ms-sm-auto">
               <div class="btn-group btn-group-sm">
-                <button class="btn fw-bold" :class="turno==='MAÑANA' ? 'btn-info text-dark' : 'btn-outline-secondary'"
-                        @click="turno='MAÑANA'" :disabled="estado==='cerrado'">☀️ MAÑANA</button>
-                <button class="btn fw-bold" :class="turno==='TARDE' ? 'btn-dark text-white' : 'btn-outline-secondary'"
-                        @click="turno='TARDE'" :disabled="estado==='cerrado'">🌙 TARDE</button>
+                <button class="btn fw-bold px-2" :class="turno==='MAÑANA' ? 'btn-info text-dark' : 'btn-outline-secondary'"
+                        @click="turno='MAÑANA'" :disabled="estado==='cerrado'">☀️ <span class="d-none d-md-inline">MAÑANA</span></button>
+                <button class="btn fw-bold px-2" :class="turno==='TARDE' ? 'btn-dark text-white' : 'btn-outline-secondary'"
+                        @click="turno='TARDE'" :disabled="estado==='cerrado'">🌙 <span class="d-none d-md-inline">TARDE</span></button>
               </div>
             </div>
-            <div class="col-auto ms-auto">
-              <span v-if="estado==='cerrado'" class="badge bg-success fs-6 px-3 py-2">
-                <i class="bi bi-check-circle-fill me-1"></i>Cerrado
+            <div class="ms-auto ms-sm-2">
+              <span v-if="estado==='cerrado'" class="badge bg-success px-2 py-2" style="font-size: 10px;">
+                <i class="bi bi-check-circle-fill me-1"></i>CERRADO
               </span>
-              <span v-else class="badge bg-warning text-dark fs-6 px-3 py-2">
-                <i class="bi bi-pencil-square me-1"></i>Borrador
+              <span v-else class="badge bg-warning text-dark px-2 py-2" style="font-size: 10px;">
+                <i class="bi bi-pencil-square me-1"></i>BORRADOR
               </span>
             </div>
           </div>
@@ -81,7 +79,8 @@ include $base . 'includes/sidebar.php';
           <!-- CUADRÍCULA PRINCIPAL -->
           <div class="card shadow-sm border-0 mb-2" style="border-radius:6px; overflow:hidden;">
             <div class="card-body p-0">
-              <table class="table table-bordered mb-0 align-middle" style="font-size:14px;">
+              <div class="table-responsive">
+              <table class="table table-bordered mb-0 align-middle" style="font-size:13px; white-space: nowrap;">
                 <thead style="background:#1e293b; color:#fff; font-size: 12px; letter-spacing: 0.5px;">
                   <tr>
                     <th class="py-2 px-2" style="min-width:140px;">CONCEPTO</th>
@@ -168,6 +167,7 @@ include $base . 'includes/sidebar.php';
                   </tr>
                 </tfoot>
               </table>
+              </div>
             </div>
           </div>
         </div>
@@ -224,9 +224,19 @@ include $base . 'includes/sidebar.php';
 
 <style>
   [v-cloak] { display: none !important; }
-  .table td, .table th { vertical-align: middle; padding: .4rem .5rem !important;}
+  .table td, .table th { vertical-align: middle; padding: .5rem .6rem !important;}
   .form-control:focus { box-shadow: none; }
   input[type=number]::-webkit-inner-spin-button { opacity: 0.5; }
+
+  @media (max-width: 768px) {
+    .main-content { padding: 10px !important; }
+    .page-body { padding: 0 !important; }
+    .topbar h4 { font-size: 1.15rem; }
+    .card { border-radius: 4px !important; }
+    .table td { padding: 0.4rem 0.3rem !important; }
+    .input-group-text { padding: 0.2rem 0.4rem; font-size: 12px; }
+    input.form-control { font-size: 13px !important; }
+  }
 </style>
 
 <script>

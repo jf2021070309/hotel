@@ -10,23 +10,25 @@ include 'includes/head.php';
 include 'includes/sidebar.php';
 ?>
 
-<div class="main-content" id="app-dash-admin" v-cloak>
+<div class="main-content">
   <div class="topbar border-bottom-0 shadow-sm" style="background: linear-gradient(to right, #ffffff, #f8f9fa);">
-    <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list fs-4"></i></button>
+    <button class="btn-burger" onclick="handleMenuClick()"><i class="bi bi-list fs-4"></i></button>
     <div>
       <h4 class="fw-bold" style="color: #111; letter-spacing: -0.5px;">
         <i class="bi bi-grid-1x2-fill me-2" style="color: #d4af37;"></i>Dashboard Ejecutivo
       </h4>
       <p class="mb-0 small text-muted fw-semibold">Centro de control y KPI Financiero — <?= date('d/m/Y') ?></p>
     </div>
-    <div class="ms-auto d-flex align-items-center gap-3">
-       <span class="badge bg-white text-dark shadow-sm border px-3 py-2 rounded-pill">
-           <i class="bi bi-arrow-repeat me-1" :class="{'fa-spin': isRefreshing}"></i>
-           Actualizado hace {{ segundosDesdeUpdate }}s
+    <div class="ms-auto d-flex flex-wrap align-items-center gap-2 justify-content-end">
+       <span class="badge bg-white text-dark shadow-sm border px-2 py-1 rounded-pill d-none d-sm-block" style="font-size: 10px;">
+           <i class="bi bi-arrow-repeat me-1" id="icon-refreshing"></i>
+           <span id="label-seconds">Hace 0s</span>
        </span>
-       <span class="badge px-3 py-2 fs-6 rounded-pill" id="reloj" style="background: #111; color: #d4af37; border: 1px solid #d4af37;"></span>
+       <span class="badge px-3 py-2 fs-6 rounded-pill shadow-sm" id="reloj" style="background: #111; color: #d4af37; border: 1px solid #d4af37;"></span>
     </div>
   </div>
+
+<div id="app-dash-admin" v-cloak style="display:contents">
 
   <div class="page-body">
     
@@ -137,12 +139,12 @@ include 'includes/sidebar.php';
             <div class="card-body d-flex flex-column align-items-center justify-content-center text-center py-4">
               <h5 class="text-uppercase mb-3 fw-bold" style="letter-spacing: 3px; color: #d4af37;"><i class="bi bi-star-fill me-2 fs-6"></i>CAJA REAL LÍQUIDA</h5>
               
-              <h1 class="display-4 fw-bold mb-1" style="text-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);">
+              <h1 class="display-4 fw-bold mb-1 title-total" style="text-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);">
                 S/ {{ kpi.neto_hoy.PEN !== undefined ? kpi.neto_hoy.PEN.toFixed(2) : '0.00' }}
               </h1>
               
-              <div class="mt-4 opacity-75 px-3" style="color: #e2e8f0; font-weight: 300; font-size:12px;">
-                Monto exclusivamente en Soles generado hoy.
+              <div class="mt-4 opacity-75 px-3" style="color: #e2e8f0; font-weight: 300; font-size:11px;">
+                Efectivo neto generado hoy.
               </div>
             </div>
           </div>
@@ -278,22 +280,31 @@ include 'includes/sidebar.php';
             <div class="card-header bg-white fw-bold py-3 text-primary">
               <i class="bi bi-bar-chart-line-fill me-1"></i> Resumen de Ingresos y Egresos del Mes (S/)
             </div>
-            <div class="card-body">
-               <canvas id="graficoMes" style="width:100%; height:300px;"></canvas>
+            <div class="card-body p-2">
+               <canvas id="graficoMes" style="width:100%; height:250px;"></canvas>
             </div>
           </div>
         </div>
       </div>
 
-    </div> <!-- /MAIN CONTENT v-else -->
-  </div>
-</div>
+  </div> <!-- /v-else -->
+</div> <!-- /app-dash-admin -->
+</div> <!-- /main-content -->
 
 <style>
   [v-cloak] { display: none !important; }
-  .text-sm { font-size: 0.85rem; }
+  .text-sm { font-size: 0.82rem; }
   .border-dashed { border-bottom: 1px dashed #e3e6f0; }
   .text-purple { color: #6f42c1 !important; }
+
+  @media (max-width: 768px) {
+    .main-content { padding: 10px !important; }
+    .topbar h4 { font-size: 1rem; }
+    .title-total { font-size: 2rem !important; }
+    .card-header { font-size: 0.85rem; }
+    .display-4 { font-size: 2.2rem; }
+    #graficoMes { height: 200px !important; }
+  }
 </style>
 
 <script src="app/Views/dashboard/admin.js"></script>
@@ -303,3 +314,6 @@ include 'includes/sidebar.php';
   function tick() { document.getElementById('reloj').textContent = new Date().toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit'}); }
   tick(); setInterval(tick, 1000);
 </script>
+
+<?php include 'includes/footer.php'; ?>
+

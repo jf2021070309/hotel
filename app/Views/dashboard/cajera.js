@@ -101,6 +101,8 @@ createApp({
           alertasInventario.value = resInv.data.data || [];
           
           segundosDesdeUpdate.value = 0;
+          const el = document.getElementById('label-seconds-cajera');
+          if (el) el.textContent = 'Hace 0s';
         }
       } catch (e) {
         console.error("Error Dashboard Cajera:", e);
@@ -111,7 +113,11 @@ createApp({
 
     onMounted(() => {
       fetchData();
-      timerUpdate = setInterval(() => { segundosDesdeUpdate.value++; }, 1000);
+      timerUpdate = setInterval(() => { 
+        segundosDesdeUpdate.value++; 
+        const el = document.getElementById('label-seconds-cajera');
+        if (el) el.textContent = `Hace ${segundosDesdeUpdate.value}s`;
+      }, 1000);
       pollingInterval = setInterval(fetchData, 60000);
     });
 

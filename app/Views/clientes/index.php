@@ -19,23 +19,22 @@ include $base . 'includes/sidebar.php';
       </h4>
       <p class="mb-0 small text-muted fw-semibold">Huéspedes titulares registrados en el sistema</p>
     </div>
-    <div class="ms-auto d-flex align-items-center gap-2">
-      <span class="badge px-3 py-2 rounded-pill" style="background: #111; color: #d4af37; border: 1px solid #d4af37;">{{ clientes.length }} huéspedes</span>
+    <div class="ms-auto d-flex align-items-center gap-1">
+      <span class="badge px-2 py-1 rounded-pill" style="background: #111; color: #d4af37; border: 1px solid #d4af37; font-size: 11px;">{{ clientes.length }} PAX</span>
     </div>
   </div>
 
   <div class="page-body">
 
     <!-- BUSCADOR -->
-    <div class="card border-0 shadow-sm mb-4" style="border-radius:12px;">
-      <div class="card-body py-3">
+    <div class="card border-0 shadow-sm mb-3" style="border-radius:12px;">
+      <div class="card-body py-2 px-3">
         <div class="d-flex gap-2 align-items-center">
-          <div class="position-relative flex-grow-1" style="max-width:420px;">
-            <i class="bi bi-search position-absolute" style="top:50%;left:12px;transform:translateY(-50%);color:#adb5bd;"></i>
-            <input v-model="buscar" class="form-control ps-4" placeholder="Buscar por nombre o DNI...">
+          <div class="position-relative flex-grow-1">
+            <i class="bi bi-search position-absolute" style="top:50%;left:12px;transform:translateY(-50%);color:#adb5bd; font-size: 13px;"></i>
+            <input v-model="buscar" class="form-control form-control-sm ps-4 fw-bold text-secondary" placeholder="Buscar nombre o DNI..." style="font-size: 12px; height: 36px;">
           </div>
-          <button @click="buscar=''" class="btn btn-light border"><i class="bi bi-x-circle"></i></button>
-          <span class="ms-auto text-muted small">{{ clientesFiltrados.length }} resultado(s)</span>
+          <button @click="buscar=''" class="btn btn-sm btn-light border h-100 py-2"><i class="bi bi-x-circle text-muted"></i></button>
         </div>
       </div>
     </div>
@@ -191,6 +190,22 @@ include $base . 'includes/sidebar.php';
     </div>
   </div>
 </div>
+
+<style>
+  [v-cloak] { display: none !important; }
+  .table td, .table th { padding: 0.75rem 0.6rem !important; }
+
+  @media (max-width: 768px) {
+    .main-content { padding: 10px !important; }
+    .page-body { padding: 0 !important; }
+    .topbar h4 { font-size: 1.1rem; }
+    .table td { font-size: 12.5px; }
+    .modal-body { padding: 12px !important; }
+    .card { border-radius: 6px !important; }
+    .badge { font-size: 9px; padding: 4px 6px; }
+    .mini { font-size: 10px; }
+  }
+</style>
 
 <?php include $base . 'includes/footer.php'; ?>
 <script src="index.js?v=<?= time() ?>"></script>

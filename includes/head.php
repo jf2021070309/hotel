@@ -24,7 +24,7 @@ $chartjs_enabled = $chartjs_enabled ?? false;
   <!-- Bootstrap Icons -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <!-- Estilos personalizados -->
-  <link rel="stylesheet" href="<?= $base ?>style.css">
+  <link rel="stylesheet" href="<?= $base ?>style.css?v=<?= time() ?>">
   <!-- Vue 3 CDN (Global Build) -->
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
   <!-- Axios CDN -->

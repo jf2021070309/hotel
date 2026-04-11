@@ -77,23 +77,11 @@ const appConfig = {
 
         const abrirEdicion = (h) => {
             tareaTarget = h;
-            // Clonemmos la data para editar:
-            // Si el responsable no está en la lista de limpiadoras, marcamos responsable_manual
-            let resp = h.responsable || '';
-            let manualResp = '';
-            
-            const noEsPersonal = resp !== '' && !personalLimpieza.value.some(p => p.nombre === resp);
-            if (noEsPersonal) {
-                manualResp = resp;
-                resp = '__otro__';
-            }
-
             tareaEdit.value = {
                 id: h.id,
                 habitacion: h.habitacion,
                 estado: h.estado,
-                responsable: resp,
-                responsable_manual: manualResp,
+                usuario_id: h.usuario_id || '',
                 observacion: h.observacion || ''
             };
             new bootstrap.Modal(document.getElementById('modalEdicionLimpieza')).show();
@@ -104,12 +92,7 @@ const appConfig = {
             formData.append('id', tareaEdit.value.id);
             formData.append('estado', tareaEdit.value.estado);
             formData.append('observacion', tareaEdit.value.observacion);
-            
-            let responsableFinal = tareaEdit.value.responsable;
-            if (responsableFinal === '__otro__') {
-                responsableFinal = tareaEdit.value.responsable_manual;
-            }
-            formData.append('responsable', responsableFinal);
+            formData.append('usuario_id', tareaEdit.value.usuario_id);
 
             loading.value = true;
             try {
@@ -121,8 +104,12 @@ const appConfig = {
                     // Actualizar UI
                     if(tareaTarget) {
                         tareaTarget.estado = tareaEdit.value.estado;
-                        tareaTarget.responsable = responsableFinal;
+                        tareaTarget.usuario_id = tareaEdit.value.usuario_id;
                         tareaTarget.observacion = tareaEdit.value.observacion;
+                        
+                        // Actualizar nombre mostrado buscando en la lista de personal
+                        const p = personalLimpieza.value.find(x => x.id == tareaEdit.value.usuario_id);
+                        tareaTarget.responsable_nombre = p ? p.nombre : '';
                         
                         // Actualizar horas internamente (simplificado - ideal recargar o inyectar del API)
                         if (res.data.data.hora_inicio) tareaTarget.hora_inicio = res.data.data.hora_inicio;
@@ -142,7 +129,7 @@ const appConfig = {
             formData.append('id', h.id);
             formData.append('estado', 'lista');
             formData.append('observacion', h.observacion || '');
-            formData.append('responsable', h.responsable || '');
+            formData.append('usuario_id', h.usuario_id || '');
 
             loading.value = true;
             try {

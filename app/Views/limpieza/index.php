@@ -233,8 +233,8 @@ include $base . 'includes/sidebar.php';
 
                             <div class="text-muted small fw-semibold">
                                 <i class="bi bi-person-badge"></i>
-                                <span :class="!h.responsable ? 'text-danger fw-bold' : ''">
-                                    {{ h.responsable ? h.responsable : '⚠️ Sin asignar' }}
+                                <span :class="!h.usuario_id ? 'text-danger fw-bold' : ''">
+                                    {{ h.responsable_nombre ? h.responsable_nombre : '⚠️ Sin asignar' }}
                                 </span>
                             </div>
                             <div class="mt-2 text-dark small fst-italic p-2 bg-light rounded border"
@@ -248,7 +248,7 @@ include $base . 'includes/sidebar.php';
                             <button v-if="h.estado !== 'lista' && h.estado !== 'mantenimiento'"
                                 class="btn btn-success flex-grow-1 fw-bold fs-5 px-3 py-2 shadow rounded-3"
                                 style="line-height: 1.2;" @click="marcarListaRapido(h)"
-                                :disabled="loading || !h.responsable">
+                                :disabled="loading || !h.usuario_id">
                                 <i class="bi bi-check2-circle d-block fs-3 mb-1"></i> MARCAR LISTA
                             </button>
                             <div v-else-if="h.estado === 'lista'"
@@ -290,10 +290,9 @@ include $base . 'includes/sidebar.php';
 
                         <div class="mb-3">
                             <label class="form-label fw-bold text-muted small">Personal Responsable</label>
-                            <select class="form-select" v-model="tareaEdit.responsable">
+                            <select class="form-select" v-model="tareaEdit.usuario_id">
                                 <option value="">-- Sin Asignar --</option>
-                                <option v-for="p in personalLimpieza" :value="p.nombre">{{ p.nombre }}</option>
-                                <option value="__otro__">Escribir manualmente...</option>
+                                <option v-for="p in personalLimpieza" :value="p.id">{{ p.nombre }}</option>
                             </select>
                         </div>
 

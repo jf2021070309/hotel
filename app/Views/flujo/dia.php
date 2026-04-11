@@ -14,15 +14,17 @@ $fecha = $_GET['fecha'] ?? date('Y-m-d');
 ?>
 
 <div class="main-content" id="app-flujo-dia">
-  <div class="topbar">
-    <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list"></i></button>
-    <div>
-      <h4><i class="bi bi-calendar2-range me-2 text-dark"></i>Resumen Consoildado del Día</h4>
-      <p class="mb-0 small text-muted">Muestra la sumatoria de todos los turnos del día consultado</p>
+  <div class="topbar border-bottom-0 shadow-sm" style="background: linear-gradient(to right, #ffffff, #f8f9fa);">
+    <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list fs-4"></i></button>
+    <div class="flex-grow-1">
+      <h4 class="fw-bold mb-0" style="color: #111; letter-spacing: -0.5px;">
+        <i class="bi bi-calendar2-range me-2" style="color:#d4af37"></i>Resumen
+      </h4>
+      <p class="mb-0 small text-muted fw-semibold d-none d-sm-block">Sumatoria de todos los turnos del día</p>
     </div>
-    <div class="ms-auto d-flex gap-2 align-items-center">
-      <input type="date" class="form-control" v-model="fechaFiltro" @change="consultar">
-      <a href="index.php" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Volver</a>
+    <div class="ms-auto d-flex align-items-center gap-1">
+      <input type="date" class="form-control form-control-sm border-0 bg-light fw-bold" v-model="fechaFiltro" @change="consultar" style="width: 125px; font-size: 11px;">
+      <a href="index.php" class="btn btn-sm btn-outline-secondary px-2"><i class="bi bi-arrow-left"></i></a>
     </div>
   </div>
 
@@ -108,12 +110,24 @@ $fecha = $_GET['fecha'] ?? date('Y-m-d');
 </div>
 
 <style>
+  [v-cloak] { display: none !important; }
+  
   @media print {
     body * { visibility: hidden; }
     #app-flujo-dia, #app-flujo-dia * { visibility: visible; }
     #app-flujo-dia { position: absolute; left: 0; top: 0; width: 100%; }
     .topbar, .btn-outline-dark { display: none !important; }
     .card { border: 1px solid #ccc !important; box-shadow: none !important; }
+  }
+
+  @media (max-width: 768px) {
+    .main-content { padding: 10px !important; }
+    .page-body { padding: 0 !important; }
+    .topbar h4 { font-size: 1.1rem; }
+    .card { border-radius: 8px !important; }
+    h2 { font-size: 1.75rem !important; }
+    h3 { font-size: 1.25rem !important; }
+    .px-4 { padding-left: 1rem !important; padding-right: 1rem !important; }
   }
 </style>
 

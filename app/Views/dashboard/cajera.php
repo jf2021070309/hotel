@@ -9,24 +9,26 @@ include 'includes/head.php';
 include 'includes/sidebar.php';
 ?>
 
-<div class="main-content" id="app-dash-cajera" v-cloak>
-  <div class="topbar">
-    <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list"></i></button>
+<div class="main-content">
+  <div class="topbar border-bottom-0 shadow-sm" style="background: linear-gradient(to right, #ffffff, #f8f9fa);">
+    <button class="btn-burger" onclick="handleMenuClick()"><i class="bi bi-list fs-4"></i></button>
     <div>
       <h4>
         ¡Hola, <?= explode(' ', $_SESSION['auth_nombre'] ?? 'Operador')[0] ?>!
         <span class="fs-6 text-muted fw-normal ms-2">Turno
           <?= (date('H') >= 6 && date('H') < 14) ? 'MAÑANA' : 'TARDE' ?></span>
       </h4>
-      <p class="mb-0 small text-muted">Panel de control operativo — <?= date('d/m/Y') ?></p>
+      <p class="mb-0 small text-muted fw-semibold">Panel de control operativo — <?= date('d/m/Y') ?></p>
     </div>
-    <div class="ms-auto d-flex align-items-center gap-2">
-      <span class="badge bg-light text-dark border px-3 py-2">
-        <i class="bi bi-clock-history me-1"></i> Actualizado hace {{ segundosDesdeUpdate }}s
+    <div class="ms-auto d-flex flex-wrap align-items-center gap-1 justify-content-end py-1">
+      <span class="badge bg-white text-dark shadow-sm border px-2 py-1 rounded-pill d-none d-sm-block" style="font-size: 10px;">
+        <i class="bi bi-clock-history me-1"></i> <span id="label-seconds-cajera">Hace 0s</span>
       </span>
-      <span class="badge bg-dark px-3 py-2 fs-6" id="reloj"></span>
+      <span class="badge bg-dark px-3 py-2 fs-6 shadow-sm rounded-pill" id="reloj" style="color: #d4af37; border: 1px solid #d4af37;"></span>
     </div>
   </div>
+
+<div id="app-dash-cajera" v-cloak style="display:contents">
 
   <div class="page-body">
 
@@ -137,9 +139,9 @@ include 'includes/sidebar.php';
                       <td class="text-center">
                         <span class="badge bg-danger fs-6 px-3">S/ {{ formatNumber(u.debe) }}</span>
                       </td>
-                      <td class="text-end pe-3">
+                      <td class="text-end pe-2 pe-sm-3">
                         <a :href="'app/Views/rooming/index.php?buscar=' + u.hab"
-                          class="btn btn-primary fw-bold shadow-sm">
+                          class="btn btn-sm btn-primary fw-bold shadow-sm px-2 px-sm-3" style="font-size: 10.5px;">
                           COBRAR <i class="bi bi-arrow-right ms-1"></i>
                         </a>
                       </td>
@@ -334,14 +336,30 @@ include 'includes/sidebar.php';
         </div>
       </div>
     </div>
-  </div>
+  </div> <!-- /page-body -->
+</div> <!-- /app-dash-cajera -->
+</div> <!-- /main-content -->
 
-</div>
+<style>
+  [v-cloak] { display: none !important; }
+  .table-responsive { border-radius: 0 0 12px 12px; }
+  
+  @media (max-width: 768px) {
+    .main-content { padding: 10px !important; }
+    .topbar h4 { font-size: 1rem; }
+    .topbar p { display: none; }
+    .card-header h6 { font-size: 0.85rem; }
+    .badge { font-size: 9px; padding: 4px 8px; }
+    .table td { font-size: 12.5px; padding: 12px 10px !important; }
+    h4, .h4 { font-size: 1.2rem; }
+  }
+</style>
 
 <script src="app/Views/dashboard/cajera.js"></script>
 
 <script>
-  function tick() { document.getElementById('reloj').textContent = new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }); }
+  // Clock logic independent of Vue
+  function tick() { document.getElementById('reloj').textContent = new Date().toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit'}); }
   tick(); setInterval(tick, 1000);
 </script>
 

@@ -20,12 +20,12 @@ include $base . 'includes/sidebar.php';
             </h4>
             <p class="mb-0 small text-muted fw-semibold">Administración de bebidas, vinos y otros consumibles</p>
         </div>
-        <div class="ms-auto d-flex gap-2">
-            <a href="historial.php" class="btn btn-outline-secondary shadow-sm d-flex align-items-center gap-2">
-                <i class="bi bi-journal-text"></i> Kardex / Historial
+        <div class="ms-auto d-flex flex-wrap gap-1 justify-content-end">
+            <a href="historial.php" class="btn btn-sm btn-outline-secondary shadow-sm d-flex align-items-center gap-1 px-2" style="font-size: 11px;">
+                <i class="bi bi-journal-text"></i> <span class="d-none d-sm-inline">Kardex</span>
             </a>
-            <button @click="abrirNuevo" class="btn-primary-custom shadow-sm d-flex align-items-center gap-2" style="border: 1px solid #111;">
-                <i class="bi bi-plus-lg text-warning"></i> Agregar Producto
+            <button @click="abrirNuevo" class="btn btn-sm btn-primary shadow-sm d-flex align-items-center gap-1 px-2" style="border: 1px solid #111; font-weight: 700; font-size: 11px;">
+                <i class="bi bi-plus-lg text-warning"></i> <span>NUEVO</span>
             </button>
         </div>
     </div>
@@ -156,6 +156,19 @@ include $base . 'includes/sidebar.php';
 
 </div>
 
+<style>
+    [v-cloak] { display: none !important; }
+    .table th, .table td { padding: 0.75rem 0.75rem !important; }
+    
+    @media (max-width: 768px) {
+        .main-content { padding: 10px !important; }
+        .topbar h4 { font-size: 1rem; }
+        .topbar p { display: none; }
+        .table td { font-size: 12.5px; padding: 10px 8px !important; }
+        .badge { font-size: 9px; padding: 4px 6px; }
+        .btn-group .btn { padding: 0.25rem 0.5rem; }
+    }
+</style>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="index.js?v=<?= time() ?>"></script>

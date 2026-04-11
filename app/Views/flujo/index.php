@@ -33,32 +33,36 @@ include $base . 'includes/sidebar.php';
       </h4>
       <p class="mb-0 small text-muted fw-semibold">Control de ingresos, egresos y efectivo por turnos</p>
     </div>
-    <div class="ms-auto d-flex align-items-center gap-2">
-      <!-- Mismos botones globales de filtro -->
-      <select class="form-select form-select-sm" v-model="filtros.mes" @change="listar" style="width:120px;">
-        <option v-for="(m, i) in meses" :key="i" :value="i+1">{{ m }}</option>
+    <div class="ms-auto d-flex flex-wrap align-items-center gap-1 justify-content-end py-1">
+      <select class="form-select form-select-sm border-0 shadow-sm fw-bold text-secondary bg-light" v-model="filtros.mes" @change="listar" style="width: auto; min-width: 90px; font-size: 11px;">
+        <option v-for="(m, i) in mesesShort" :key="i" :value="i+1">{{ m }}</option>
       </select>
-      <input type="number" class="form-control form-control-sm" v-model="filtros.anio" @change="listar" style="width:80px;" min="2020">
+      <input type="number" class="form-control form-control-sm border-0 shadow-sm text-center fw-bold bg-light" v-model="filtros.anio" @change="listar" style="width: 70px; font-size: 11px;" min="2020">
     </div>
   </div>
 
   <div class="page-body">
     <!-- BARRA DE ACCIONES SUPERIOR -->
-    <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
-      <button class="btn-primary-custom shadow-sm" @click="nuevoTurno" :disabled="loadingCheck" style="border: 1px solid #111;">
-        <span v-if="loadingCheck" class="spinner-border spinner-border-sm me-1"></span>
-        <i v-else class="bi bi-plus-lg me-1 text-warning"></i>Nuevo Turno (Hoy)
-      </button>
-      <select class="form-select form-select-sm" v-model="filtros.estado" @change="listar" style="width:160px;">
-        <option value="todos">Todos los Estados</option>
-        <option value="borrador">Borrador</option>
-        <option value="cerrado">Cerrado</option>
-        <option value="depositado">Depositado</option>
-      </select>
-      <a href="dia.php" class="btn btn-sm btn-outline-dark ms-auto">
-        <i class="bi bi-calendar2-range me-1"></i>Ver Resumen del Día
-      </a>
-      <button class="btn btn-sm btn-outline-secondary" @click="listar"><i class="bi bi-arrow-clockwise"></i></button>
+    <div class="row g-2 mb-3 align-items-center">
+      <div class="col-12 col-sm-auto">
+        <button class="btn btn-sm btn-primary w-100 shadow-sm fw-bold py-2" @click="nuevoTurno" :disabled="loadingCheck" style="border: 1px solid #111; font-size: 12px;">
+          <span v-if="loadingCheck" class="spinner-border spinner-border-sm me-1"></span>
+          <i v-else class="bi bi-plus-lg me-1 text-warning"></i>NUEVO TURNO
+        </button>
+      </div>
+      <div class="col-6 col-sm-auto">
+        <select class="form-select form-select-sm fw-bold text-secondary shadow-sm" v-model="filtros.estado" @change="listar" style="font-size: 12px;">
+          <option value="todos">Todos los Estados</option>
+          <option value="borrador">Borrador</option>
+          <option value="cerrado">Cerrado</option>
+          <option value="depositado">Depositado</option>
+        </select>
+      </div>
+      <div class="col-6 col-sm-auto ms-sm-auto">
+        <a href="dia.php" class="btn btn-sm btn-outline-dark w-100 fw-bold shadow-sm" style="font-size: 11px;">
+          <i class="bi bi-calendar2-range me-1"></i>RESUMEN DÍA
+        </a>
+      </div>
     </div>
 
     <!-- TABLA DE TURNOS -->
@@ -114,7 +118,18 @@ include $base . 'includes/sidebar.php';
 
   </div>
 </div>
-
+<style>
+  [v-cloak] { display: none !important; }
+  .table th, .table td { padding: 0.6rem 0.6rem !important; }
+  
+  @media (max-width: 768px) {
+    .main-content { padding: 10px !important; }
+    .topbar h4 { font-size: 1.1rem; }
+    .topbar p { display: none; }
+    .table td { font-size: 12px; }
+    .badge { font-size: 9px; }
+  }
+</style>
 <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

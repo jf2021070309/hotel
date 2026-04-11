@@ -6,7 +6,7 @@
  * 
  * @module Rooming/FrontDeskJS
  */
-const { createApp, ref, reactive, computed, onMounted } = Vue;
+const { createApp, ref, reactive, computed, onMounted, onUnmounted } = Vue;
 
 createApp({
   setup() {

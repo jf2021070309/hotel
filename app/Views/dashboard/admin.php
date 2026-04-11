@@ -12,14 +12,14 @@ include 'includes/sidebar.php';
 
 <div class="main-content">
   <div class="topbar border-bottom-0 shadow-sm" style="background: linear-gradient(to right, #ffffff, #f8f9fa);">
-    <button class="btn-burger" onclick="handleMenuClick()"><i class="bi bi-list fs-4"></i></button>
-    <div>
-      <h4 class="fw-bold" style="color: #111; letter-spacing: -0.5px;">
-        <i class="bi bi-grid-1x2-fill me-2" style="color: #d4af37;"></i>Dashboard Ejecutivo
-      </h4>
-      <p class="mb-0 small text-muted fw-semibold">Centro de control y KPI Financiero — <?= date('d/m/Y') ?></p>
-    </div>
-    <div class="ms-auto d-flex flex-wrap align-items-center gap-2 justify-content-end">
+    <div class="d-flex align-items-center gap-3">
+      <button class="btn-burger" onclick="handleMenuClick()"><i class="bi bi-list fs-4"></i></button>
+      <div>
+        <h4 class="fw-bold" style="color: #111; letter-spacing: -0.5px;">
+          <i class="bi bi-grid-1x2-fill me-2" style="color: #d4af37;"></i>Dashboard Ejecutivo
+        </h4>
+        <p class="mb-0 small text-muted fw-semibold">Centro de control y KPI Financiero — <?= date('d/m/Y') ?></p>
+      </div>
     </div>
   </div>
 

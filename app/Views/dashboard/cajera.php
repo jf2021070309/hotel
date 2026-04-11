@@ -11,16 +11,16 @@ include 'includes/sidebar.php';
 
 <div class="main-content">
   <div class="topbar border-bottom-0 shadow-sm" style="background: linear-gradient(to right, #ffffff, #f8f9fa);">
-    <button class="btn-burger" onclick="handleMenuClick()"><i class="bi bi-list fs-4"></i></button>
-    <div>
-      <h4>
-        ¡Hola, <?= explode(' ', $_SESSION['auth_nombre'] ?? 'Operador')[0] ?>!
-        <span class="fs-6 text-muted fw-normal ms-2">Turno
-          <?= (date('H') >= 6 && date('H') < 14) ? 'MAÑANA' : 'TARDE' ?></span>
-      </h4>
-      <p class="mb-0 small text-muted fw-semibold">Panel de control operativo — <?= date('d/m/Y') ?></p>
-    </div>
-    <div class="ms-auto d-flex flex-wrap align-items-center gap-1 justify-content-end py-1">
+    <div class="d-flex align-items-center gap-3">
+      <button class="btn-burger" onclick="handleMenuClick()"><i class="bi bi-list fs-4"></i></button>
+      <div>
+        <h4 class="fw-bold" style="color: #111; letter-spacing: -0.5px;">
+          ¡Hola, <?= explode(' ', $_SESSION['auth_nombre'] ?? 'Operador')[0] ?>!
+          <span class="fs-6 text-muted fw-normal ms-2">Turno
+            <?= (date('H') >= 6 && date('H') < 14) ? 'MAÑANA' : 'TARDE' ?></span>
+        </h4>
+        <p class="mb-0 small text-muted fw-semibold">Panel de control operativo — <?= date('d/m/Y') ?></p>
+      </div>
     </div>
   </div>
 

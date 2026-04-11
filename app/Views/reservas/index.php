@@ -278,14 +278,14 @@ include $base . 'includes/sidebar.php';
 
 <div class="main-content" id="app-reservas">
   <div class="topbar border-bottom-0 shadow-sm" style="background: linear-gradient(to right, #ffffff, #f8f9fa);">
-    <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list fs-4"></i></button>
-    <div>
-      <h4 class="fw-bold" style="color: #111; letter-spacing: -0.5px;">
-        <i class="bi bi-calendar3 me-2" style="color: #d4af37;"></i>Cuadro de Reservas
-      </h4>
-      <p class="mb-0 small text-muted fw-semibold" style="letter-spacing: 0.5px;">Vista mensual — Tiempo real</p>
-    </div>
-    <div class="d-flex align-items-center gap-2 ms-auto">
+    <div class="d-flex align-items-center gap-3">
+      <button class="btn-burger" onclick="handleMenuClick()"><i class="bi bi-list fs-4"></i></button>
+      <div>
+        <h4 class="fw-bold" style="color: #111; letter-spacing: -0.5px;">
+          <i class="bi bi-calendar3 me-2" style="color: #d4af37;"></i>Cuadro de Reservas
+        </h4>
+        <p class="mb-0 small text-muted fw-semibold" style="letter-spacing: 0.5px;">Vista mensual — Tiempo real</p>
+      </div>
     </div>
   </div>
 

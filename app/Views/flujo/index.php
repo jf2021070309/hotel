@@ -26,12 +26,14 @@ include $base . 'includes/sidebar.php';
 
 <div class="main-content" id="app-flujo-index">
   <div class="topbar border-bottom-0 shadow-sm" style="background: linear-gradient(to right, #ffffff, #f8f9fa);">
-    <button class="btn-burger" onclick="handleMenuClick()"><i class="bi bi-list fs-4"></i></button>
-    <div class="d-flex align-items-center gap-1">
-      <i class="bi bi-cash-stack fs-5 d-none d-sm-block" style="color: #d4af37;"></i>
-      <div class="text-nowrap">
-        <h5 class="fw-bold mb-0" style="color: #111; letter-spacing: -0.5px; font-size: 1.05rem;">Flujo de Caja</h5>
-        <p class="mb-0 small text-muted fw-semibold d-none d-md-block" style="font-size: 10px;">Control de ingresos y egresos</p>
+    <div class="d-flex align-items-center gap-3">
+      <button class="btn-burger" onclick="handleMenuClick()"><i class="bi bi-list fs-4"></i></button>
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-cash-stack fs-5 d-none d-sm-block" style="color: #d4af37;"></i>
+        <div class="text-nowrap">
+          <h5 class="fw-bold mb-0" style="color: #111; letter-spacing: -0.5px; font-size: 1.05rem;">Flujo de Caja</h5>
+          <p class="mb-0 small text-muted fw-semibold d-none d-md-block" style="font-size: 10px;">Control de ingresos y egresos</p>
+        </div>
       </div>
     </div>
     <div class="ms-auto d-flex align-items-center gap-2">

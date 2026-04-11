@@ -13,12 +13,14 @@ include $base . 'includes/sidebar.php';
 
 <div class="main-content">
   <div class="topbar border-bottom-0 shadow-sm" style="background: linear-gradient(to right, #ffffff, #f8f9fa);">
-    <button class="btn-burger" onclick="handleMenuClick()"><i class="bi bi-list fs-4"></i></button>
-    <div class="d-flex align-items-center gap-1">
-      <i class="bi bi-credit-card-2-back-fill fs-5 d-none d-sm-block" style="color: #0d6efd;"></i>
-      <div class="text-nowrap">
-        <h5 class="fw-bold mb-0" style="color: #111; letter-spacing: -0.5px; font-size: 1.15rem;">Medios de Pago</h5>
-        <p class="mb-0 small text-muted d-none d-sm-block" style="font-size: 10px;">Configuración de métodos de cobro</p>
+    <div class="d-flex align-items-center gap-3">
+      <button class="btn-burger" onclick="handleMenuClick()"><i class="bi bi-list fs-4"></i></button>
+      <div class="d-flex align-items-center gap-1">
+        <i class="bi bi-credit-card-2-back-fill fs-5 d-none d-sm-block" style="color: #0d6efd;"></i>
+        <div class="text-nowrap">
+          <h5 class="fw-bold mb-0" style="color: #111; letter-spacing: -0.5px; font-size: 1.15rem;">Medios de Pago</h5>
+          <p class="mb-0 small text-muted d-none d-sm-block" style="font-size: 10px;">Configuración de métodos de cobro</p>
+        </div>
       </div>
     </div>
     <div class="ms-auto d-flex align-items-center gap-2">

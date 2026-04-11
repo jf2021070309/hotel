@@ -13,12 +13,14 @@ include $base . 'includes/sidebar.php';
 
 <div class="main-content" id="app-cchica-index">
   <div class="topbar border-bottom-0 shadow-sm" style="background: linear-gradient(to right, #ffffff, #f8f9fa);">
-    <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list fs-4"></i></button>
-    <div>
-      <h4 class="fw-bold" style="color: #111; letter-spacing: -0.5px;">
-        <i class="bi bi-box2-heart me-2" style="color: #d4af37;"></i>Historial de Caja Chica
-      </h4>
-      <p class="mb-0 small text-muted fw-semibold">Registro de ciclos terminados y vigentes</p>
+    <div class="d-flex align-items-center gap-3">
+      <button class="btn-burger" onclick="handleMenuClick()"><i class="bi bi-list fs-4"></i></button>
+      <div>
+        <h4 class="fw-bold" style="color: #111; letter-spacing: -0.5px;">
+          <i class="bi bi-box2-heart me-2" style="color: #d4af37;"></i>Historial de Caja Chica
+        </h4>
+        <p class="mb-0 small text-muted fw-semibold">Registro de ciclos terminados y vigentes — <?= date('d/m/Y') ?></p>
+      </div>
     </div>
   </div>
 

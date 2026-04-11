@@ -94,11 +94,10 @@ createApp({
           mi_turno.value = d.mi_turno;
           if (d.kpi) kpi.value = d.kpi;
           
-          // Cargar alertas de inventario desde su propia API para mantener dashboard.php limpio
+          // Alertas de inventario
           const resInv = await axios.get('api/inventario.php?action=alertas');
-          if (d.kpi) kpi.value = d.kpi;
-          
-          // Cargar alertas de inventario desde su propia API para mantener dashboard.php limpio
+          alertasInventario.value = resInv.data.data || [];
+        }
       } catch (e) {
         console.error("Error Dashboard Cajera:", e);
       } finally {

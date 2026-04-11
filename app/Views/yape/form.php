@@ -42,8 +42,8 @@ include $base . 'includes/sidebar.php';
     <div v-else>
 
       <!-- BARRA SUPERIOR: fecha, turno, estado -->
-      <div class="card shadow-sm border-0 mb-3" style="border-radius:10px;">
-        <div class="card-body py-3 px-4">
+      <div class="card shadow-sm border-0 mb-2" style="border-radius:6px;">
+        <div class="card-body py-2 px-3">
           <div class="row g-3 align-items-center">
             <div class="col-auto">
               <a href="index.php" class="btn btn-outline-secondary btn-sm">
@@ -75,177 +75,148 @@ include $base . 'includes/sidebar.php';
         </div>
       </div>
 
-      <!-- CUADRÍCULA PRINCIPAL -->
-      <div class="card shadow-sm border-0 mb-3" style="border-radius:10px; overflow:hidden;">
-        <div class="card-body p-0">
-          <table class="table table-bordered mb-0 align-middle" style="font-size:14px;">
-            <thead style="background:#1e293b; color:#fff;">
-              <tr>
-                <th class="py-3 px-3" style="min-width:160px;">CONCEPTO</th>
-                <th class="text-center py-3" style="min-width:130px;">MONTO (S/)</th>
-                <th class="py-3 px-3">REFERENCIA / DOC</th>
-                <th class="py-3 px-3">OBSERVACIÓN</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(cat, idx) in categorias" :key="cat.key"
-                  :style="idx % 2 === 0 ? 'background:#f8fafc' : 'background:#fff'">
-                <td class="px-3 fw-bold" style="color:#374151;">
-                  <i class="bi me-2" :class="cat.icon" :style="'color:'+cat.color"></i>
-                  {{ cat.label }}
-                </td>
-                <td>
-                  <div class="input-group input-group-sm">
-                    <span class="input-group-text bg-white text-muted fw-bold border-0">S/</span>
-                    <input type="number" step="0.01" min="0"
-                           class="form-control text-end fw-bold border-0"
-                           style="background:transparent; font-size:15px;"
-                           :class="montos[cat.key] > 0 ? 'text-danger' : 'text-muted'"
-                           v-model.number="montos[cat.key]"
-                           :disabled="estado==='cerrado'"
-                           placeholder="—">
-                  </div>
-                </td>
-                <td>
-                  <input type="text" class="form-control form-control-sm border-0"
-                         style="background:transparent;"
-                         v-model="refs[cat.key]"
-                         :disabled="estado==='cerrado'"
-                         placeholder="Boleta, ticket...">
-                </td>
-                <td>
-                  <input type="text" class="form-control form-control-sm border-0"
-                         style="background:transparent;"
-                         v-model="obs[cat.key]"
-                         :disabled="estado==='cerrado'"
-                         placeholder="Detalle...">
-                </td>
-              </tr>
-              <!-- FILA OTROS (desplegable) -->
-              <tr style="background:#fffbeb;">
-                <td class="px-3 fw-bold text-warning">
-                  <i class="bi bi-plus-circle me-2"></i>OTROS
-                </td>
-                <td>
-                  <div class="input-group input-group-sm">
-                    <span class="input-group-text bg-white text-muted fw-bold border-0">S/</span>
-                    <input type="number" step="0.01" min="0"
-                           class="form-control text-end fw-bold border-0"
-                           style="background:transparent; font-size:15px;"
-                           :class="montos['OTROS'] > 0 ? 'text-danger' : 'text-muted'"
-                           v-model.number="montos['OTROS']"
-                           :disabled="estado==='cerrado'"
-                           placeholder="—">
-                  </div>
-                </td>
-                <td>
-                  <input type="text" class="form-control form-control-sm border-0"
-                         style="background:transparent;"
-                         v-model="refs['OTROS']"
-                         :disabled="estado==='cerrado'"
-                         placeholder="Boleta, ticket...">
-                </td>
-                <td>
-                  <input type="text" class="form-control form-control-sm border-0"
-                         style="background:transparent;"
-                         v-model="obs['OTROS']"
-                         :disabled="estado==='cerrado'"
-                         placeholder="Especificar...">
-                </td>
-              </tr>
-            </tbody>
-            <!-- FILA TOTALES -->
-            <tfoot style="background:#f1f5f9; font-weight:800;">
-              <tr>
-                <td class="px-3 py-3 text-uppercase" style="color:#475569; font-size:12px; letter-spacing:.5px;">Total Gastado</td>
-                <td class="text-end pe-3 py-3" style="font-size:18px; color:#dc2626;">
-                  S/ {{ totalGastado.toFixed(2) }}
-                </td>
-                <td colspan="2"></td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
-      </div>
-
-      <!-- FILA INFERIOR: YAPE, OBSERVACIÓN Y RESUMEN -->
-      <div class="row g-3">
-
-        <!-- Yape recibido + Observación -->
-        <div class="col-md-7">
-          <div class="card shadow-sm border-0" style="border-radius:10px;">
-            <div class="card-body">
-              <div class="row g-3">
-                <div class="col-sm-5">
-                  <label class="form-label fw-bold text-primary small">YAPE RECIBIDO (S/)</label>
-                  <div class="input-group">
-                    <span class="input-group-text fw-bold text-primary bg-white">S/</span>
-                    <input type="number" step="0.01" min="0"
-                           class="form-control fw-bold text-primary"
-                           style="font-size:20px;"
-                           v-model.number="yape_recibido"
-                           :disabled="estado==='cerrado'"
-                           placeholder="0.00">
-                  </div>
-                </div>
-                <div class="col-sm-7">
-                  <label class="form-label fw-bold text-secondary small">OBSERVACIÓN GENERAL</label>
-                  <textarea class="form-control" rows="2"
-                            v-model="observacion_general"
-                            :disabled="estado==='cerrado'"
-                            placeholder="Notas del turno..."></textarea>
-                </div>
-              </div>
+      <div class="row g-2">
+        <!-- COLUMNA IZQUIERDA: Tablas -->
+        <div class="col-lg-9 col-md-8">
+          <!-- CUADRÍCULA PRINCIPAL -->
+          <div class="card shadow-sm border-0 mb-2" style="border-radius:6px; overflow:hidden;">
+            <div class="card-body p-0">
+              <table class="table table-bordered mb-0 align-middle" style="font-size:14px;">
+                <thead style="background:#1e293b; color:#fff; font-size: 12px; letter-spacing: 0.5px;">
+                  <tr>
+                    <th class="py-2 px-2" style="min-width:140px;">CONCEPTO</th>
+                    <th class="text-center py-2" style="min-width:120px;">MONTO (S/)</th>
+                    <th class="py-2 px-2">REFERENCIA / DOC</th>
+                    <th class="py-2 px-2">OBSERVACIÓN</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(cat, idx) in categorias" :key="cat.key"
+                      :style="idx % 2 === 0 ? 'background:#f8fafc' : 'background:#fff'">
+                    <td class="px-3 fw-bold" style="color:#374151;">
+                      <i class="bi me-2" :class="cat.icon" :style="'color:'+cat.color"></i>
+                      {{ cat.label }}
+                    </td>
+                    <td>
+                      <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-white text-muted fw-bold border-0">S/</span>
+                        <input type="number" step="0.01" min="0"
+                               class="form-control text-end fw-bold border-0"
+                               style="background:transparent; font-size:15px;"
+                               :class="montos[cat.key] > 0 ? 'text-danger' : 'text-muted'"
+                               v-model.number="montos[cat.key]"
+                               :disabled="estado==='cerrado'"
+                               placeholder="—">
+                      </div>
+                    </td>
+                    <td>
+                      <input type="text" class="form-control form-control-sm border-0"
+                             style="background:transparent;"
+                             v-model="refs[cat.key]"
+                             :disabled="estado==='cerrado'"
+                             placeholder="Boleta, ticket...">
+                    </td>
+                    <td>
+                      <input type="text" class="form-control form-control-sm border-0"
+                             style="background:transparent;"
+                             v-model="obs[cat.key]"
+                             :disabled="estado==='cerrado'"
+                             placeholder="Detalle...">
+                    </td>
+                  </tr>
+                  <!-- FILA OTROS (desplegable) -->
+                  <tr style="background:#fffbeb;">
+                    <td class="px-3 fw-bold text-warning">
+                      <i class="bi bi-plus-circle me-2"></i>OTROS
+                    </td>
+                    <td>
+                      <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-white text-muted fw-bold border-0">S/</span>
+                        <input type="number" step="0.01" min="0"
+                               class="form-control text-end fw-bold border-0"
+                               style="background:transparent; font-size:15px;"
+                               :class="montos['OTROS'] > 0 ? 'text-danger' : 'text-muted'"
+                               v-model.number="montos['OTROS']"
+                               :disabled="estado==='cerrado'"
+                               placeholder="—">
+                      </div>
+                    </td>
+                    <td>
+                      <input type="text" class="form-control form-control-sm border-0"
+                             style="background:transparent;"
+                             v-model="refs['OTROS']"
+                             :disabled="estado==='cerrado'"
+                             placeholder="Boleta, ticket...">
+                    </td>
+                    <td>
+                      <input type="text" class="form-control form-control-sm border-0"
+                             style="background:transparent;"
+                             v-model="obs['OTROS']"
+                             :disabled="estado==='cerrado'"
+                             placeholder="Especificar...">
+                    </td>
+                  </tr>
+                </tbody>
+                <!-- FILA TOTALES -->
+                <tfoot style="background:#f1f5f9; font-weight:800;">
+                  <tr>
+                    <td class="px-2 py-2 text-uppercase" style="color:#475569; font-size:11px; letter-spacing:.5px;">Total Gastado</td>
+                    <td class="text-end pe-2 py-2" style="font-size:16px; color:#dc2626;">
+                      S/ {{ totalGastado.toFixed(2) }}
+                    </td>
+                    <td colspan="2"></td>
+                  </tr>
+                </tfoot>
+              </table>
             </div>
           </div>
         </div>
 
-        <!-- Panel Vuelto + Acciones -->
-        <div class="col-md-5">
-          <div class="card shadow-sm border-0 h-100" style="border-radius:10px;"
-               :style="vueltoComputed >= 0 ? 'border-bottom:4px solid #16a34a' : 'border-bottom:4px solid #dc2626'">
-            <div class="card-body d-flex flex-column justify-content-between">
-              <div>
+        <!-- COLUMNA DERECHA: Resumen y Acciones -->
+        <div class="col-lg-3 col-md-4">
+          <!-- Panel Lateral Unificado -->
+          <div class="card shadow-sm border-0 mb-2" style="border-radius:6px;" :style="vueltoComputed >= 0 ? 'border-top:4px solid #16a34a' : 'border-top:4px solid #dc2626'">
+            <div class="card-body p-3 d-flex flex-column">
+              
+              <!-- Yape y Obs -->
+              <div class="mb-3">
+                <label class="form-label fw-bold text-primary small mb-1" style="font-size: 11px;">YAPE RECIBIDO (S/)</label>
+                <div class="input-group input-group-sm mb-3">
+                  <span class="input-group-text fw-bold text-primary bg-white">S/</span>
+                  <input type="number" step="0.01" min="0" class="form-control fw-bold text-primary" style="font-size:18px;" v-model.number="yape_recibido" :disabled="estado==='cerrado'" placeholder="0.00">
+                </div>
+                
+                <label class="form-label fw-bold text-secondary small mb-1" style="font-size: 11px;">OBSERVACIÓN GENERAL</label>
+                <textarea class="form-control form-control-sm" rows="3" v-model="observacion_general" :disabled="estado==='cerrado'" placeholder="Ej. Hubo un faltante, etc."></textarea>
+              </div>
+
+              <!-- Resumen Vuelto -->
+              <div class="p-2 bg-light rounded mb-3" style="border: 1px solid #e2e8f0;">
                 <div class="d-flex justify-content-between mb-1">
-                  <span class="small text-muted fw-bold">Yape Recibido:</span>
-                  <span class="fw-bold text-primary">S/ {{ yape_recibido.toFixed(2) }}</span>
+                  <span class="small text-muted fw-bold" style="font-size: 11px;">Gasto Total:</span>
+                  <span class="fw-bold text-danger" style="font-size: 11.5px;">S/ {{ totalGastado.toFixed(2) }}</span>
                 </div>
-                <div class="d-flex justify-content-between mb-2 pb-2 border-bottom">
-                  <span class="small text-muted fw-bold">Total Gastado:</span>
-                  <span class="fw-bold text-danger">S/ {{ totalGastado.toFixed(2) }}</span>
-                </div>
-                <div class="d-flex justify-content-between align-items-center">
-                  <span class="fw-bold" :class="vueltoComputed >= 0 ? 'text-success' : 'text-danger'">
-                    {{ vueltoComputed >= 0 ? 'VUELTO:' : '⚠️ FALTANTE:' }}
+                <hr class="my-1">
+                <div class="text-center mt-2 pb-1">
+                  <span class="fw-bold d-block" style="font-size: 11px;" :class="vueltoComputed >= 0 ? 'text-success' : 'text-danger'">
+                    {{ vueltoComputed >= 0 ? 'VUELTO / BALANCE:' : '⚠️ FALTANTE:' }}
                   </span>
-                  <span class="fw-bold" style="font-size:26px;"
-                        :class="vueltoComputed >= 0 ? 'text-success' : 'text-danger'">
+                  <span class="fw-bold d-block" style="font-size:26px; line-height: 1.1;" :class="vueltoComputed >= 0 ? 'text-success' : 'text-danger'">
                     S/ {{ Math.abs(vueltoComputed).toFixed(2) }}
                   </span>
                 </div>
-                <div v-if="vueltoComputed > 0" class="small text-muted mt-1" style="font-size:11px;">
-                  <i class="bi bi-arrow-right-circle-fill text-success me-1"></i>Se inyectará al Flujo de Caja al cerrar.
-                </div>
               </div>
 
-              <div v-if="estado==='borrador'" class="d-grid gap-2 mt-3">
-                <button class="btn btn-primary fw-bold" @click="guardarBorrador(false)">
-                  <i class="bi bi-save me-1"></i> Guardar Borrador
-                </button>
-                <button class="btn btn-success fw-bold" @click="cerrarRegistro()" :disabled="vueltoComputed < 0">
-                  <i class="bi bi-lock-fill me-1"></i> CERRAR Y RENDIR CUENTAS
+              <!-- Acciones -->
+              <div class="d-flex flex-column gap-2">
+                <button v-if="estado==='borrador'" class="btn btn-primary btn-sm fw-bold w-100 py-2 shadow-sm" @click="guardarBorrador(false)">
+                   <i class="bi bi-save me-1"></i> Guardar Modificaciones
                 </button>
               </div>
-
-              <div v-if="!esNuevo" class="d-grid mt-2">
-                <a :href="`imprimir.php?id=${id}`" target="_blank" class="btn btn-outline-dark btn-sm fw-bold">
-                  <i class="bi bi-printer me-1"></i> Imprimir / Enviar a Mendoza
-                </a>
-              </div>
+              
             </div>
           </div>
         </div>
-
       </div>
     </div>
   </div>
@@ -253,7 +224,7 @@ include $base . 'includes/sidebar.php';
 
 <style>
   [v-cloak] { display: none !important; }
-  .table td, .table th { vertical-align: middle; }
+  .table td, .table th { vertical-align: middle; padding: .4rem .5rem !important;}
   .form-control:focus { box-shadow: none; }
   input[type=number]::-webkit-inner-spin-button { opacity: 0.5; }
 </style>

@@ -39,17 +39,23 @@ class YapeModel {
 
         $ids = array_column($registros, 'id');
         $placeholders = str_repeat('?,', count($ids) - 1) . '?';
-        $stmtDet = $this->pdo->prepare("SELECT gasto_yape_id, rubro, monto FROM gastos_yape_detalle WHERE gasto_yape_id IN ($placeholders)");
+        $stmtDet = $this->pdo->prepare("SELECT gasto_yape_id, rubro, monto, observacion, documento FROM gastos_yape_detalle WHERE gasto_yape_id IN ($placeholders)");
         $stmtDet->execute($ids);
         $detalles = $stmtDet->fetchAll(PDO::FETCH_ASSOC);
 
         $detallesMap = [];
+        $detallesInfoMap = [];
         foreach ($detalles as $d) {
             $detallesMap[$d['gasto_yape_id']][$d['rubro']] = (float)$d['monto'];
+            $detallesInfoMap[$d['gasto_yape_id']][$d['rubro']] = [
+                'observacion' => $d['observacion'] ?? '',
+                'documento' => $d['documento'] ?? ''
+            ];
         }
 
         foreach ($registros as &$r) {
             $r['detalles_montos'] = $detallesMap[$r['id']] ?? [];
+            $r['detalles_info']   = $detallesInfoMap[$r['id']] ?? [];
         }
 
         return $registros;

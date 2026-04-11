@@ -130,12 +130,9 @@ createApp({
         if (!silencioso) Swal.close();
         if (res.data.ok) {
           if (!silencioso) {
-            Swal.fire({ icon: 'success', title: res.data.msg, toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
-          }
-          if (esNuevo.value) {
-            esNuevo.value = false;
-            id.value = res.data.data.id;
-            window.history.replaceState({}, '', `form.php?id=${id.value}`);
+            Swal.fire({ icon: 'success', title: res.data.msg, toast: true, position: 'top-end', showConfirmButton: false, timer: 1500 }).then(() => {
+                window.location.href = 'index.php';
+            });
           }
           return true;
         } else {

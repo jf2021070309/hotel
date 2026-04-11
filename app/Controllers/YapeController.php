@@ -95,6 +95,35 @@ class YapeController {
         }
     }
 
+    public function crearDia(array $input): array {
+        $fecha = $_POST['fecha'] ?? $input['fecha'] ?? date('Y-m-d');
+        $montoInicial = (float)($input['yape_recibido'] ?? 0);
+
+        if ($this->model->verificarUnico($fecha, 'MAÑANA') || $this->model->verificarUnico($fecha, 'TARDE')) {
+            return ['ok' => false, 'msg' => "Ya existen registros para la fecha $fecha."];
+        }
+
+        try {
+            $this->model->ejecutarTransaccionCierre(function($pdo) use ($fecha, $montoInicial) {
+                // Crear MAÑANA
+                $stmtM = $pdo->prepare("INSERT INTO gastos_yape (fecha, turno, yape_recibido, total_gastado, vuelto, observacion, estado, usuario_id) VALUES (?, 'MAÑANA', ?, 0, ?, '', 'borrador', ?)");
+                $stmtM->execute([$fecha, $montoInicial, $montoInicial, $_SESSION['auth_id']]);
+                
+                // Crear TARDE
+                $stmtT = $pdo->prepare("INSERT INTO gastos_yape (fecha, turno, yape_recibido, total_gastado, vuelto, observacion, estado, usuario_id) VALUES (?, 'TARDE', 0, 0, 0, '', 'borrador', ?)");
+                $stmtT->execute([$fecha, $_SESSION['auth_id']]);
+            });
+
+            $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'YAPE_CREADO_DIA', 'FINANZAS', "Se inicializó el día $fecha con un monto inicial de $montoInicial.");
+            return ['ok' => true, 'msg' => 'Se han creado los turnos MAÑANA y TARDE para el día indicado.'];
+        } catch (Exception $e) {
+            if (strpos($e->getMessage(), 'Duplicate entry') !== false) {
+                return ['ok' => false, 'msg' => 'Ya existe un registro para esta fecha debido a colisión en base de datos.'];
+            }
+            return ['ok' => false, 'msg' => 'Error BD: ' . $e->getMessage()];
+        }
+    }
+
     public function cerrar(array $input): array {
         $id = (int)($input['id'] ?? 0);
         $registro = $this->model->getDetalle($id);

@@ -35,6 +35,12 @@ switch ($action) {
         json_response($res['ok'], $res['data'] ?? null, $res['ok'] ? 200 : 422, $res['msg']);
         break;
 
+    case 'crear_dia':
+        if ($method !== 'POST') json_response(false, null, 405, 'Método no permitido');
+        $res = $controller->crearDia($input);
+        json_response($res['ok'], $res['data'] ?? null, $res['ok'] ? 200 : 422, $res['msg']);
+        break;
+
     case 'cerrar':
         if ($method !== 'POST') json_response(false, null, 405, 'Método no permitido');
         $res = $controller->cerrar($input);

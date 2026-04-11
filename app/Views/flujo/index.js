@@ -2,7 +2,7 @@
  * app/Views/flujo/index.js
  * Vue 3 Composition API — Lista de Flujos de Caja
  */
-const { createApp, ref, reactive, onMounted } = Vue;
+const { createApp, ref, reactive, onMounted, onUnmounted } = Vue;
 
 createApp({
   setup() {
@@ -24,9 +24,11 @@ createApp({
       'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'
     ];
 
+    let pollingTimer = null;
+
     // CARGAR LISTA
-    const listar = async () => {
-      loading.value = true;
+    const listar = async (silent = false) => {
+      if (!silent) loading.value = true;
       try {
         const res = await axios.get(`${BASE}listar&mes=${filtros.mes}&anio=${filtros.anio}&estado=${filtros.estado}`);
         if (res.data.ok) {
@@ -35,7 +37,7 @@ createApp({
       } catch (e) {
         console.error("Error al listar flujos", e);
       } finally {
-        loading.value = false;
+        if (!silent) loading.value = false;
       }
     };
 
@@ -118,7 +120,7 @@ createApp({
         });
 
         if (res.data.ok) {
-          window.location.href = `form.php?id=${res.data.data.id}`;
+          window.location.href = `${window.FLUJO_ROUTES.form}?id=${res.data.data.id}`;
         } else {
           Swal.fire('Error', res.data.msg, 'error');
         }
@@ -132,6 +134,11 @@ createApp({
 
     onMounted(() => {
       listar();
+      pollingTimer = setInterval(() => listar(true), 10000);
+    });
+
+    onUnmounted(() => {
+      if (pollingTimer) clearInterval(pollingTimer);
     });
 
     return {

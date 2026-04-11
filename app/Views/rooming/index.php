@@ -119,11 +119,10 @@ include $base . 'includes/head.php';
                 </td>
                 <td class="small text-nowrap">
                   <div class="mb-1">
-                    <span><i class="bi bi-box-arrow-in-right text-success me-1"></i> In: <span class="fw-bold">{{
-                        fmtFecha(s.fecha_registro) }}</span></span>
+                    <span>Ingreso: <span class="fw-bold">{{ fmtFecha(s.fecha_registro) }}</span></span>
                   </div>
                   <div>
-                    <span><i class="bi bi-box-arrow-out-right text-danger me-1"></i> Out: <span class="fw-bold">{{
+                    <span><i class="bi bi-box-arrow-out-right text-danger me-1"></i> Salida: <span class="fw-bold">{{
                         fmtFecha(s.fecha_checkout) }}</span></span>
                   </div>
                   <div class="text-muted mt-1" style="font-size: 11px;">🛏️ {{ s.noches }} noches</div>
@@ -355,7 +354,7 @@ include $base . 'includes/head.php';
                   class="d-flex align-items-center justify-content-between mb-2 py-1 px-2 bg-info bg-opacity-10 rounded border border-info border-opacity-25">
                   <div class="form-check form-switch mb-0 ps-0 d-flex align-items-center gap-2">
                     <input class="form-check-input m-0" type="checkbox" id="checkPos" v-model="form.stay.recargo_pos"
-                      @change="recalcularMoneda" style="cursor:pointer;">
+                      @change="recalcularMoneda(true)" style="cursor:pointer;">
                     <label class="form-check-label small fw-bold text-info mb-0" for="checkPos">POS (+5%)</label>
                   </div>
                   <span v-if="form.stay.recargo_pos" class="badge bg-danger" style="font-size:11px;">
@@ -650,7 +649,7 @@ include $base . 'includes/head.php';
                 <div class="col-6">
                   <div class="p-2 border rounded text-center cursor-pointer"
                     :class="consumoForm.pago_inmediato ? 'bg-white text-muted' : 'bg-primary text-white'"
-                    @click="consumoForm.pago_inmediato = false; consumoForm.metodo_pago = null">
+                    @click="consumoForm.pago_inmediato = false; consumoForm.metodo_pago = null; consumoForm.recargo_pos = false">
                     <i class="bi bi-clock-history mb-1 d-block"></i>
                     <span class="mini fw-bold">CARGAR A HAB.</span>
                   </div>
@@ -667,6 +666,16 @@ include $base . 'includes/head.php';
             </div>
 
             <div v-if="consumoForm.pago_inmediato" class="mb-3 animate__animated animate__fadeIn">
+              <div class="d-flex justify-content-between align-items-center mb-2 px-2 py-1 bg-info bg-opacity-10 rounded border border-info border-opacity-25">
+                <div class="form-check form-switch mb-0 ps-0 d-flex align-items-center gap-2">
+                  <input class="form-check-input m-0" type="checkbox" id="checkPosConsumo" v-model="consumoForm.recargo_pos"
+                    @change="calcularTotalConsumo" style="cursor:pointer;">
+                  <label class="form-check-label small fw-bold text-info mb-0" for="checkPosConsumo">POS (+5%)</label>
+                </div>
+                <span v-if="consumoForm.recargo_pos" class="badge bg-danger" style="font-size:10px;">
+                  + S/ {{ (parseFloat(consumoForm.total) * 0.05 / 1.05).toFixed(2) }}
+                </span>
+              </div>
               <label class="form-label small fw-bold">Medio de Pago</label>
               <select class="form-select" v-model="consumoForm.metodo_pago" required>
                 <option v-for="m in mediosPago" :key="m.id" :value="m.nombre">{{ m.nombre }}</option>
@@ -732,6 +741,16 @@ include $base . 'includes/head.php';
             </div>
 
             <div class="mb-3">
+              <div class="d-flex justify-content-between align-items-center mb-2 px-2 py-1 bg-info bg-opacity-10 rounded border border-info border-opacity-25">
+                <div class="form-check form-switch mb-0 ps-0 d-flex align-items-center gap-2">
+                  <input class="form-check-input m-0" type="checkbox" id="checkPosPago" v-model="pagoForm.recargo_pos"
+                    @change="recalcularPago(true)" style="cursor:pointer;">
+                  <label class="form-check-label small fw-bold text-info mb-0" for="checkPosPago">POS (+5%)</label>
+                </div>
+                <span v-if="pagoForm.recargo_pos" class="badge bg-danger" style="font-size:10px;">
+                  + {{ pagoForm.moneda }} {{ (parseFloat(pagoForm.monto) * 0.05 / 1.05).toFixed(2) }}
+                </span>
+              </div>
               <label class="form-label small fw-bold">Método de Pago</label>
               <select class="form-select form-select-sm" v-model="pagoForm.tipo" required>
                 <option value="">Seleccione...</option>

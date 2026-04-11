@@ -2,7 +2,7 @@
  * app/Views/caja_chica/index.js
  * Vue 3 Composition API — Lista de Ciclos de Caja Chica
  */
-const { createApp, ref, computed, onMounted } = Vue;
+const { createApp, ref, computed, onMounted, onUnmounted } = Vue;
 
 createApp({
   setup() {
@@ -10,13 +10,14 @@ createApp({
 
     const loading = ref(true);
     const ciclos = ref([]);
+    let pollingTimer = null;
 
     const hayCicloActivo = computed(() => {
       return ciclos.value.some(c => c.estado === 'abierta');
     });
 
-    const listar = async () => {
-      loading.value = true;
+    const listar = async (silent = false) => {
+      if (!silent) loading.value = true;
       try {
         const res = await axios.get(`${BASE}listar`);
         if (res.data.ok) {
@@ -25,7 +26,7 @@ createApp({
       } catch (e) {
         console.error("Error listar ciclos caja chica", e);
       } finally {
-        loading.value = false;
+        if (!silent) loading.value = false;
       }
     };
 
@@ -123,6 +124,11 @@ createApp({
 
     onMounted(() => {
       listar();
+      pollingTimer = setInterval(() => listar(true), 10000);
+    });
+
+    onUnmounted(() => {
+      if (pollingTimer) clearInterval(pollingTimer);
     });
 
     return {

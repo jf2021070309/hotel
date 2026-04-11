@@ -70,7 +70,7 @@ class RoomingController {
             'moneda'       => $stayData['moneda_pago'],
             'monto_orig'   => $stayData['monto_original'],
             'tc'           => $stayData['tc_aplicado'] ?? 1,
-            'recargo'      => $stayData['recargo_tarjeta'] ?? 0,
+            'recargo'      => !empty($stayData['recargo_pos']) ? ((float)$stayData['total_pago'] * 0.05 / 1.05) : ($stayData['recargo_tarjeta'] ?? 0),
             'metodo'       => $stayData['metodo_pago'],
             'comprobante'  => $stayData['tipo_comprobante'],
             'num_comp'     => $stayData['num_comprobante'] ?? '',
@@ -145,20 +145,26 @@ class RoomingController {
 
     public function registrarPago(array $input) {
         $input['uid'] = $_SESSION['auth_id'];
-
-        // Detectar si este pago salda la deuda completa
         $stayId = (int)($input['stay_id'] ?? 0);
-        $montoPen = (float)($input['monto_pen'] ?? $input['monto'] ?? 0);
+        
+        if ($stayId <= 0 || (float)($input['monto'] ?? 0) <= 0) {
+            return ['ok' => false, 'msg' => 'ID o monto inválido.'];
+        }
 
-        $stmt = $this->pdo->prepare("SELECT total_pago, total_cobrado, moneda_pago FROM rooming_stays WHERE id = ?");
+        $stmt = $this->pdo->prepare("SELECT total_pago, total_cobrado FROM rooming_stays WHERE id = ?");
         $stmt->execute([$stayId]);
         $stay = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        $subtipo = 'adelanto'; // Por defecto: todavía queda saldo
+        $subtipo = 'adelanto';
         if ($stay) {
             $saldoPendiente = (float)$stay['total_pago'] - (float)$stay['total_cobrado'];
-            // Si el monto en PEN cubre el saldo pendiente restante, es pago completo
-            if ($montoPen >= $saldoPendiente - 0.01) {
+            // Si hay recargo del POS, el saldo que el usuario DEBE pagar 
+            // para completar es Saldo + 5%, ya que el total_pago aumentará en esa proporción.
+            if (!empty($input['recargo_pos'])) {
+                $saldoPendiente *= 1.05;
+            }
+
+            if ((float)$input['monto_pen'] >= $saldoPendiente - 0.05) {
                 $subtipo = 'completo';
             }
         }

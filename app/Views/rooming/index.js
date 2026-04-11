@@ -72,14 +72,15 @@ createApp({
     });
 
     const pagoForm = reactive({
-      stay_id: '',
+      stay_id: null,
       monto: 0,
       moneda: 'PEN',
       monto_pen: 0,
       tc: 1,
-      tipo: 'EFECTIVO',
+      tipo: '',
       recibo: '',
-      fecha: new Date().toISOString().split('T')[0]
+      fecha: new Date().toISOString().split('T')[0],
+      recargo_pos: false
     });
 
     // COMPUTED
@@ -166,9 +167,16 @@ createApp({
       const h = habitacionesLibres.value.find(x => x.id == form.stay.habitacion_id);
       if (h) {
         // En rooming el precio base siempre es PEN
-        form.stay.total_pago = (h.precio_base * (form.stay.noches || 1)).toFixed(2);
+        let base = h.precio_base * (form.stay.noches || 1);
+        
+        // Si el POS está activo, aplicamos el recargo al nuevo precio base
+        if (form.stay.recargo_pos) {
+          base *= 1.05;
+        }
+        
+        form.stay.total_pago = base.toFixed(2);
         form.stay.tipo_hab_declarado = h.tipo;
-        recalcularMoneda(); // Esto calculará el monto_original en la moneda destino
+        recalcularMoneda(); 
       }
     };
 
@@ -237,13 +245,23 @@ createApp({
       calcularNoches();
     };
 
-    const recalcularMoneda = () => {
+    const recalcularMoneda = (fromSurchargeToggle = false) => {
       const tc = form.stay.moneda_pago === 'PEN' ? 1 : parseFloat(tcs.value[form.stay.moneda_pago]) || 1;
       form.stay.tc_aplicado = tc;
       
-      const totalPen = parseFloat(form.stay.total_pago) || 0;
-      let foreign = totalPen;
+      let totalPen = parseFloat(form.stay.total_pago) || 0;
 
+      // Solo ajustamos el total_pago si la función fue llamada por el evento del checkbox
+      if (fromSurchargeToggle === true) {
+        if (form.stay.recargo_pos) {
+          totalPen = totalPen * 1.05;
+        } else {
+          totalPen = totalPen / 1.05;
+        }
+        form.stay.total_pago = totalPen.toFixed(2);
+      }
+
+      let foreign = totalPen;
       if (form.stay.moneda_pago === 'USD') {
         foreign = totalPen / tc;
       } else if (form.stay.moneda_pago === 'CLP') {
@@ -252,13 +270,11 @@ createApp({
       
       form.stay.monto_original = foreign.toFixed(2);
       
-      // Si el pago es completo, sincronizamos el monto a cobrar
+      // Si el pago es completo, sincronizamos el monto a cobrar con el total calculado
       if (form.tipoPago === 'completo') {
-        let finalForeign = parseFloat(form.stay.monto_original) || 0;
-        if (form.stay.recargo_pos) {
-          finalForeign *= 1.05;
-        }
-        form.adelanto = finalForeign.toFixed(2);
+        form.adelanto = foreign.toFixed(2);
+        // Forzamos el recalculo del abono en soles y estado de pago
+        onAdelantoChange();
       }
 
       // ── Auto-selección de Método de Pago para POS ──────────────────
@@ -302,7 +318,6 @@ createApp({
       const tc = parseFloat(form.stay.tc_aplicado) || 1;
       const amountEntered = parseFloat(form.adelanto) || 0;
       
-      // El total cobrado en PEN es simplemente la conversión directa de lo que hay en el campo
       let cobradoPen = amountEntered;
       if (form.stay.moneda_pago === 'USD') {
         cobradoPen = amountEntered * tc;
@@ -313,21 +328,8 @@ createApp({
       if (isNaN(cobradoPen)) cobradoPen = 0;
       form.stay.total_cobrado = cobradoPen.toFixed(2);
       
-      // El estado de pago se calcula sobre el monto NETO (sin el 5% si el POS está activo)
       const totalPen = parseFloat(form.stay.total_pago) || 0;
-      let baseForeign = amountEntered;
-      if (form.stay.recargo_pos) {
-          baseForeign = amountEntered / 1.05;
-      }
-      
-      let abonadoBasePen = 0;
-      if (tc > 0) {
-          if (form.stay.moneda_pago === 'USD') abonadoBasePen = baseForeign * tc;
-          else if (form.stay.moneda_pago === 'CLP') abonadoBasePen = baseForeign / tc;
-          else abonadoBasePen = baseForeign;
-      }
-
-      const diffBase = totalPen - abonadoBasePen;
+      const diffBase = totalPen - cobradoPen;
       form.stay.estado_pago = diffBase <= 0.05 ? 'pagado' : (amountEntered > 0 ? 'parcial' : 'pendiente');
 
       // ── Validación: adelanto no debe superar el monto base en la divisa ──
@@ -435,7 +437,8 @@ createApp({
         cantidad: 1,
         total: 0,
         pago_inmediato: false,
-        metodo_pago: null
+        metodo_pago: null,
+        recargo_pos: false
       });
       // Recargar inventario para tener stock fresco
       const resInv = await axios.get('../../../api/inventario.php?action=listar');
@@ -451,9 +454,23 @@ createApp({
     };
 
     const calcularTotalConsumo = () => {
-      const p = inventario.value.find(x => x.id == consumoForm.producto_id);
+      const p = inventario.value.find(x => x.id === consumoForm.producto_id);
       if (p) {
-        consumoForm.total = (p.precio_venta * consumoForm.cantidad).toFixed(2);
+        let base = p.precio_venta * consumoForm.cantidad;
+        if (consumoForm.pago_inmediato && consumoForm.recargo_pos) {
+          base *= 1.05;
+        }
+        consumoForm.total = base.toFixed(2);
+      } else {
+        consumoForm.total = 0;
+      }
+
+      // Auto-selección de método POS si el recargo está activo
+      if (consumoForm.pago_inmediato && consumoForm.recargo_pos) {
+        if (!consumoForm.metodo_pago || !consumoForm.metodo_pago.toLowerCase().includes('pos')) {
+          const mPos = mediosPago.value.find(m => m.nombre.toLowerCase().includes('pos'));
+          if (mPos) consumoForm.metodo_pago = mPos.nombre;
+        }
       }
     };
 
@@ -476,32 +493,45 @@ createApp({
       }
     };
 
-    const abrirPago = (s) => {
-      stayParaPago.value = s;
-      const saldo = s.total_pago - s.total_cobrado;
-      Object.assign(pagoForm, {
-        stay_id: s.id,
-        monto: saldo > 0 ? saldo.toFixed(2) : 0,
-        moneda: 'PEN',
-        monto_pen: saldo > 0 ? saldo.toFixed(2) : 0,
-        tc: 1,
-        tipo: 'EFECTIVO',
-        recibo: '',
-        fecha: new Date().toISOString().split('T')[0]
-      });
+    const abrirPago = (stay) => {
+      pagoForm.stay_id = stay.id;
+      pagoForm.monto = (parseFloat(stay.total_pago) - parseFloat(stay.total_cobrado)).toFixed(2);
+      pagoForm.moneda = stay.moneda_pago;
+      pagoForm.recargo_pos = false;
+      pagoForm.tipo = '';
+      pagoForm.recibo = 'ABONO-' + new Date().getTime().toString().substr(-6);
+      recalcularPago();
       new bootstrap.Modal('#modalPago').show();
     };
 
-    const recalcularPago = () => {
+    const recalcularPago = (fromToggle = false) => {
       const tc = pagoForm.moneda === 'PEN' ? 1 : parseFloat(tcs.value[pagoForm.moneda]) || 1;
       pagoForm.tc = tc;
-      let foreign = parseFloat(pagoForm.monto) || 0;
-      let pen = foreign;
       
-      if (pagoForm.moneda === 'USD') pen = foreign * tc;
-      else if (pagoForm.moneda === 'CLP') pen = tc > 0 ? (foreign / tc) : 0;
+      let amount = parseFloat(pagoForm.monto) || 0;
+      
+      if (fromToggle === true) {
+        if (pagoForm.recargo_pos) {
+          amount *= 1.05;
+        } else {
+          amount /= 1.05;
+        }
+        pagoForm.monto = amount.toFixed(2);
+      }
+
+      let pen = amount;
+      if (pagoForm.moneda === 'USD') pen = amount * tc;
+      else if (pagoForm.moneda === 'CLP') pen = tc > 0 ? (amount / tc) : 0;
       
       pagoForm.monto_pen = pen.toFixed(2);
+
+      // Auto-selección de método POS
+      if (pagoForm.recargo_pos) {
+        if (!pagoForm.tipo || !pagoForm.tipo.toLowerCase().includes('pos')) {
+          const mPos = mediosPago.value.find(m => m.nombre.toLowerCase().includes('pos'));
+          if (mPos) pagoForm.tipo = mPos.nombre;
+        }
+      }
     };
 
     const guardarPago = async () => {

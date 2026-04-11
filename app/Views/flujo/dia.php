@@ -4,6 +4,7 @@
  */
 $base = '../../../';
 require_once $base . 'auth/middleware.php';
+require_once $base . 'rutas.php';
 protegerPorRol('cajera', 'flujo');
 
 $page_title = 'Resumen del Día — Flujo de Caja';
@@ -24,7 +25,7 @@ $fecha = $_GET['fecha'] ?? date('Y-m-d');
     </div>
     <div class="ms-auto d-flex align-items-center gap-1">
       <input type="date" class="form-control form-control-sm border-0 bg-light fw-bold" v-model="fechaFiltro" @change="consultar" style="width: 125px; font-size: 11px;">
-      <a href="index.php" class="btn btn-sm btn-outline-secondary px-2"><i class="bi bi-arrow-left"></i></a>
+      <a href="<?= route('flujo/index.php') ?>" class="btn btn-sm btn-outline-secondary px-2"><i class="bi bi-arrow-left"></i></a>
     </div>
   </div>
 
@@ -98,7 +99,7 @@ $fecha = $_GET['fecha'] ?? date('Y-m-d');
           
           <div class="text-center mt-4 d-flex justify-content-center gap-3">
             <button class="btn btn-outline-dark" onclick="window.print()"><i class="bi bi-printer me-2"></i>Imprimir Resumen</button>
-            <a :href="'../sobres/index.php?fecha=' + resumen.fecha" class="btn btn-success fw-bold shadow-sm px-4">
+            <a :href="window.FLUJO_DIA_ROUTES.sobres + '?fecha=' + resumen.fecha" class="btn btn-success fw-bold shadow-sm px-4">
               <i class="bi bi-envelope-check me-2"></i>REPORTE ALEX (SOBRES)
             </a>
           </div>
@@ -133,6 +134,9 @@ $fecha = $_GET['fecha'] ?? date('Y-m-d');
 
 <script>
   const SERVER_FECHA = '<?= $fecha ?>';
+  window.FLUJO_DIA_ROUTES = {
+    sobres: <?= json_encode(route('sobres/index.php')) ?>
+  };
 </script>
 <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>

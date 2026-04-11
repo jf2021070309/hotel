@@ -4,6 +4,7 @@
  */
 $base = '../../../';
 require_once $base . 'auth/middleware.php';
+require_once $base . 'rutas.php';
 protegerPorRol('cajera', 'flujo');
 
 $page_title = 'Turno Flujo de Caja — Hotel Manager';
@@ -30,7 +31,7 @@ $turnoQuery = $_GET['turno'] ?? 'MAÑANA';
       </div>
     </div>
     <div class="ms-auto d-flex align-items-center gap-2">
-       <a href="index.php?noredirect=1" class="btn btn-sm btn-outline-secondary px-2 d-flex align-items-center gap-1" style="font-size: 11px; border-radius: 8px;">
+       <a href="<?= route('flujo/index.php') ?>?noredirect=1" class="btn btn-sm btn-outline-secondary px-2 d-flex align-items-center gap-1" style="font-size: 11px; border-radius: 8px;">
           <i class="bi bi-arrow-left"></i> <span class="d-none d-sm-inline">LISTADO</span>
        </a>
     </div>
@@ -123,7 +124,7 @@ $turnoQuery = $_GET['turno'] ?? 'MAÑANA';
                       <div class="input-group input-group-sm">
                         <textarea class="form-control text-danger border-end-0 py-1" v-model="mov.observacion" :disabled="!esEditable" placeholder="Nota..." rows="2" style="resize: none; font-size: 11px; overflow: hidden; line-height: 1.2;"></textarea>
                         <span class="input-group-text bg-white border-start-0" v-if="mov.observacion.includes('#')">
-                           <a :href="'../rooming/index.php?stay_id=' + (mov.observacion.match(/#(\d+)/) || [])[1]" class="text-primary" title="Ver Registro" target="_blank">
+                           <a :href="SERVER_DATA.roomingIndex + '?stay_id=' + (mov.observacion.match(/#(\d+)/) || [])[1]" class="text-primary" title="Ver Registro" target="_blank">
                              <i class="bi bi-box-arrow-up-right"></i>
                            </a>
                         </span>
@@ -199,7 +200,7 @@ $turnoQuery = $_GET['turno'] ?? 'MAÑANA';
                       <div class="input-group input-group-sm">
                         <textarea class="form-control text-danger border-end-0 py-1" v-model="mov.observacion" :disabled="!esEditable" placeholder="Nota..." rows="2" style="resize: none; font-size: 11px; overflow: hidden; line-height: 1.2;"></textarea>
                         <span class="input-group-text bg-white border-start-0" v-if="mov.observacion.includes('#')">
-                           <a :href="'../rooming/index.php?stay_id=' + (mov.observacion.match(/#(\d+)/) || [])[1]" class="text-primary" title="Ver Registro" target="_blank">
+                           <a :href="SERVER_DATA.roomingIndex + '?stay_id=' + (mov.observacion.match(/#(\d+)/) || [])[1]" class="text-primary" title="Ver Registro" target="_blank">
                              <i class="bi bi-box-arrow-up-right"></i>
                            </a>
                         </span>
@@ -293,7 +294,7 @@ $turnoQuery = $_GET['turno'] ?? 'MAÑANA';
 
             <!-- IMPRIMIR REPORTE ALEX -->
             <div class="d-grid gap-2 mt-3 pt-3 border-top" v-if="!esNuevo && cabecera.id">
-              <a :href="'reporte_sobre.php?id=' + cabecera.id" target="_blank" class="btn btn-dark py-2 fw-bold">
+              <a :href="SERVER_DATA.reporteSobre + '?id=' + cabecera.id" target="_blank" class="btn btn-dark py-2 fw-bold">
                 <i class="bi bi-printer-fill me-1"></i>Imprimir Reporte de Sobre (Alex)
               </a>
             </div>
@@ -312,7 +313,11 @@ $turnoQuery = $_GET['turno'] ?? 'MAÑANA';
     nuevo: <?= $nuevo ?>,
     turnoDefault: '<?= $turnoQuery ?>',
     userRol: '<?= $_SESSION['auth_rol'] ?? 'cajera' ?>',
-    canEditClosed: <?= in_array($_SESSION['auth_rol'] ?? '', ['admin', 'supervisor']) ? 'true' : 'false' ?>
+    canEditClosed: <?= in_array($_SESSION['auth_rol'] ?? '', ['admin', 'supervisor']) ? 'true' : 'false' ?>,
+    flujoIndex: <?= json_encode(route('flujo/index.php')) ?>,
+    flujoForm: <?= json_encode(route('flujo/form.php')) ?>,
+    roomingIndex: <?= json_encode(route('rooming/index.php')) ?>,
+    reporteSobre: <?= json_encode(route('flujo/reporte_sobre.php')) ?>
   };
 </script>
 <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>

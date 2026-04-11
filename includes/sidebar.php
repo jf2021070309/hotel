@@ -3,19 +3,6 @@
 // includes/sidebar.php — Barra lateral de navegación
 // ============================================================
 
-// Determine la página activa
-$current = basename($_SERVER['PHP_SELF']);
-$folder  = basename(dirname($_SERVER['PHP_SELF']));
-
-function isActive(string $page, string $folder_): string {
-    global $current, $folder;
-    // Módulos normales (registros, pagos, etc.)
-    if ($folder_ !== '' && $folder === $folder_ && $current === $page) return 'active';
-    // Dashboard: en XAMPP $folder='hotel', en Railway $folder=''
-    if ($folder_ === '' && ($folder === 'hotel' || $folder === '' || $folder === 'app') && $current === $page) return 'active';
-    return '';
-}
-
 // Calcular $base: cuántos niveles subir para llegar a la raíz del proyecto
 // Funciona en XAMPP (/hotel/modulo/archivo.php) y Railway (/modulo/archivo.php)
 $_selfPath  = str_replace('\\', '/', $_SERVER['PHP_SELF']);
@@ -29,6 +16,44 @@ $base = str_repeat('../', count($_dirParts));
 
 // Incluir el sistema de rutas
 require_once $base . 'rutas.php';
+
+// Determine la ruta activa considerando URLs limpias y rutas físicas
+$requestPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
+$projectBase = project_base_url();
+if (strpos($requestPath, $projectBase) === 0) {
+    $requestPath = substr($requestPath, strlen($projectBase));
+}
+$requestPath = trim((string)$requestPath, '/');
+
+function isActive(string $page, string $folder_): string {
+    global $requestPath;
+
+    $path = ltrim($page, '/');
+    if ($folder_ !== '' && $path === 'index.php') {
+        $path = $folder_ . '/index.php';
+    }
+
+    $map = clean_route_map();
+    $clean = $map[$path] ?? null;
+
+    if ($clean === null) {
+        if ($folder_ === '' && ($requestPath === '' || $requestPath === 'index.php')) {
+            return 'active';
+        }
+        return '';
+    }
+
+    $clean = trim($clean, '/');
+    if ($clean === '') {
+        return $requestPath === '' ? 'active' : '';
+    }
+
+    if ($requestPath === $clean || strpos($requestPath, $clean . '/') === 0) {
+        return 'active';
+    }
+
+    return '';
+}
 ?>
 <!-- Sidebar overlay (mobile) -->
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>

@@ -1,7 +1,7 @@
 /**
  * assets/js/reportes/mendoza.js
  */
-const { createApp, ref, onMounted } = Vue;
+const { createApp, ref, onMounted, onUnmounted } = Vue;
 
 createApp({
     setup() {
@@ -14,9 +14,10 @@ createApp({
         const resumenDesglosado = ref({});
         const loading = ref(false);
         const colapsados = ref({}); // { '2026-03-27': false, '2026-03-26': true }
+        let pollingTimer = null;
 
-        const fetchData = async () => {
-            loading.value = true;
+        const fetchData = async (silent = false) => {
+            if (!silent) loading.value = true;
             try {
                 const res = await axios.get(`/hotel/api/reportes.php?action=mendoza&mes=${filtro.value.mes}&anio=${filtro.value.anio}`);
                 if (res.data.ok) {
@@ -32,11 +33,11 @@ createApp({
                         tempCol[f] = (f !== hoy);
                     });
                     colapsados.value = tempCol;
-                }
             } catch (e) {
                 console.error(e);
+            } finally {
+                if (!silent) loading.value = false;
             }
-            loading.value = false;
         };
 
         const groupedData = Vue.computed(() => {
@@ -99,7 +100,14 @@ createApp({
             return 'S/';
         };
 
-        onMounted(fetchData);
+        onMounted(() => {
+            fetchData();
+            pollingTimer = setInterval(() => fetchData(true), 10000);
+        });
+
+        onUnmounted(() => {
+            if (pollingTimer) clearInterval(pollingTimer);
+        });
 
         return { 
             filtro, data, groupedData, resumen, resumenDesglosado, colapsados, loading, 

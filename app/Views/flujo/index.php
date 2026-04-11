@@ -4,6 +4,7 @@
  */
 $base = '../../../';
 require_once $base . 'auth/middleware.php';
+require_once $base . 'rutas.php';
 protegerPorRol('cajera', 'flujo');
 require_once $base . 'config/db.php'; // Asegurar PDO
 
@@ -14,7 +15,7 @@ if (!isset($_GET['noredirect'])) {
     $fm = new FlujoModel($pdo);
     $activoId = $fm->getTurnoActivo();
     if ($activoId) {
-        header("Location: form.php?id=" . $activoId);
+        header("Location: " . route('flujo/form.php') . '?id=' . $activoId);
         exit;
     }
 }
@@ -65,7 +66,7 @@ include $base . 'includes/sidebar.php';
         </select>
       </div>
       <div class="col-6 col-sm-auto ms-sm-auto">
-        <a href="dia.php" class="btn btn-sm btn-outline-dark w-100 fw-bold shadow-sm" style="font-size: 11px;">
+        <a href="<?= route('flujo/dia.php') ?>" class="btn btn-sm btn-outline-dark w-100 fw-bold shadow-sm" style="font-size: 11px;">
           <i class="bi bi-calendar2-range me-1"></i>RESUMEN DÍA
         </a>
       </div>
@@ -108,7 +109,7 @@ include $base . 'includes/sidebar.php';
                 </span>
               </td>
               <td class="text-end">
-                <a :href="'form.php?id=' + f.id" class="btn btn-sm" :class="f.estado==='borrador'?'btn-primary':'btn-outline-dark'">
+                <a :href="window.FLUJO_ROUTES.form + '?id=' + f.id" class="btn btn-sm" :class="f.estado==='borrador'?'btn-primary':'btn-outline-dark'">
                   <i class="bi" :class="f.estado==='borrador'?'bi-pencil-square':'bi-eye'"></i>
                   {{ f.estado==='borrador' ? 'Editar' : 'Ver' }}
                 </a>
@@ -140,4 +141,10 @@ include $base . 'includes/sidebar.php';
 <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  window.FLUJO_ROUTES = {
+    form: <?= json_encode(route('flujo/form.php')) ?>,
+    dia: <?= json_encode(route('flujo/dia.php')) ?>
+  };
+</script>
 <script src="<?= $base ?>app/Views/flujo/index.js?v=<?= time() ?>"></script>

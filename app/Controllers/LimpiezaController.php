@@ -76,7 +76,7 @@ class LimpiezaController {
                 $stmt->execute([$id]);
                 $hab_id = $stmt->fetchColumn();
                 if ($hab_id) {
-                    $this->pdo->prepare("UPDATE habitaciones SET estado = 'libre' WHERE id = ? AND estado = 'limpieza'")->execute([$hab_id]);
+                    $this->pdo->prepare("UPDATE habitaciones SET estado = 'libre' WHERE id = ? AND estado != 'ocupado'")->execute([$hab_id]);
                 }
             }
             

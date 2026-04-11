@@ -1,7 +1,7 @@
 /**
  * app/Views/yape/index.js
  */
-const { createApp, ref, onMounted } = Vue;
+const { createApp, ref, onMounted, onUnmounted } = Vue;
 
 createApp({
   setup() {
@@ -87,8 +87,10 @@ createApp({
         diasAgrupados.value = Object.values(grupos).sort((a, b) => b.fecha.localeCompare(a.fecha));
     };
 
-    const listar = async () => {
-      loading.value = true;
+    let pollingTimer = null;
+
+    const listar = async (silent = false) => {
+      if (!silent) loading.value = true;
       try {
         const res = await axios.get(`${BASE}listar`, { params: { mes: filtros.value.mes, anio: filtros.value.anio } });
         if (res.data.ok) {
@@ -99,7 +101,7 @@ createApp({
         console.error("Error al listar registros Yape", e);
         Swal.fire('Error', 'Fallo de red al listar', 'error');
       } finally {
-        loading.value = false;
+        if (!silent) loading.value = false;
       }
     };
 
@@ -171,6 +173,11 @@ createApp({
 
     onMounted(() => {
       listar();
+      pollingTimer = setInterval(() => listar(true), 10000);
+    });
+
+    onUnmounted(() => {
+      if (pollingTimer) clearInterval(pollingTimer);
     });
 
     return {

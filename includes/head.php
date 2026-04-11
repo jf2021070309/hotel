@@ -7,6 +7,9 @@ $page_title      = $page_title      ?? 'Hotel Manager';
 $base            = $base            ?? '';
 $export_enabled  = $export_enabled  ?? false;
 $chartjs_enabled = $chartjs_enabled ?? false;
+
+require_once dirname(__DIR__) . '/rutas.php';
+$view_base_href = view_base_href_for_request();
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -14,6 +17,9 @@ $chartjs_enabled = $chartjs_enabled ?? false;
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><?= htmlspecialchars($page_title, ENT_QUOTES, 'UTF-8') ?></title>
+<?php if ($view_base_href): ?>
+  <base href="<?= htmlspecialchars($view_base_href, ENT_QUOTES, 'UTF-8') ?>">
+<?php endif; ?>
 
   <!-- Favicon -->
   <link rel="icon" type="image/jpeg" href="<?= $base ?>assets/img/logo.jpg">

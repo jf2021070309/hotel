@@ -211,11 +211,29 @@ class RoomingModel {
     }
 
     public function registrarPago(array $pago, string $subtipo = 'hospedaje'): bool {
+        // Opción 1: Si hay recargo POS, incrementamos el total del stay para que el pago calce
+        if (!empty($pago['recargo_pos'])) {
+            $montoPen = (float)($pago['monto_pen'] ?? $pago['monto'] ?? 0);
+            $surcharge = $montoPen * 0.05 / 1.05;
+            $this->incrementarTotal((int)$pago['stay_id'], $surcharge);
+        }
+
         $sql = "INSERT INTO anticipos (stay_id, monto, moneda, monto_pen, tc_aplicado, tipo_pago, recibo, fecha, usuario_id) 
                 VALUES (:stay_id, :monto, :moneda, :monto_pen, :tc, :tipo, :recibo, :fecha, :uid)";
-        $stmt = $this->pdo->prepare($sql);
-        $res = $stmt->execute($pago);
         
+        $stmt = $this->pdo->prepare($sql);
+        $res = $stmt->execute([
+            ':stay_id' => $pago['stay_id'],
+            ':monto'   => $pago['monto'],
+            ':moneda'  => $pago['moneda'],
+            ':monto_pen' => $pago['monto_pen'],
+            ':tc'      => $pago['tc'],
+            ':tipo'    => $pago['tipo'],
+            ':recibo'  => $pago['recibo'],
+            ':fecha'   => $pago['fecha'],
+            ':uid'     => $pago['uid']
+        ]);
+
         if ($res) {
             // Actualizar total_cobrado y estado_pago del stay
             $this->actualizarResumenPagos($pago['stay_id']);

@@ -224,8 +224,50 @@ include $base . 'includes/sidebar.php';
   @media (max-width: 768px) {
     .cuadro-wrapper { display: none; }
     .mobile-list { display: block !important; }
+    #app-reservas .page-body { height: auto; }
   }
-  .mobile-list { display: none; }
+  .mobile-list { display: none; padding-bottom: 30px; }
+  .mobile-stay-card {
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    color: #fff;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: none;
+    position: relative;
+    overflow: hidden;
+  }
+  .mobile-stay-card:active { transform: scale(0.98); opacity: 0.9; }
+  .mobile-stay-card .hab-badge {
+    background: rgba(0,0,0,0.2);
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 800;
+  }
+  .mobile-stay-card .titular {
+    font-size: 16px;
+    font-weight: 700;
+    margin-top: 4px;
+    display: block;
+    text-transform: uppercase;
+  }
+  .mobile-stay-card .info-line {
+    font-size: 12px;
+    opacity: 0.9;
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  /* Colores Mobile por Canal (Sincronizados con desktop pero sólidos) */
+  .m-res-directo { background: linear-gradient(135deg, #2E7D32, #1B5E20) !important; box-shadow: 0 4px 12px rgba(46,125,50,0.3); }
+  .m-res-booking  { background: linear-gradient(135deg, #003580, #00224f) !important; box-shadow: 0 4px 12px rgba(0,53,128,0.3); }
+  .m-res-whatsapp { background: linear-gradient(135deg, #25D366, #128C7E) !important; box-shadow: 0 4px 12px rgba(37,211,102,0.3); }
+  .m-res-llamada  { background: linear-gradient(135deg, #0288D1, #01579B) !important; box-shadow: 0 4px 12px rgba(2,136,209,0.3); }
+  .m-res-generic  { background: linear-gradient(135deg, #455A64, #263238) !important; box-shadow: 0 4px 12px rgba(69,90,100,0.3); }
 
   /* ── Print ─────────────────────────────────────────────── */
   @media print {
@@ -417,13 +459,33 @@ include $base . 'includes/sidebar.php';
       </div>
     </div>
 
-    <!-- VISTA MÓVIL -->
-    <div class="mobile-list">
-      <div class="card border-0 shadow-sm p-3 mb-2" v-for="stay in staysHoyMovil" :key="stay.id" :class="getStayColorClass(stay)">
-        <div class="fw-bold">#{{ stay.hab_numero }} — {{ stay.titular }}</div>
-        <div class="text-muted small">{{ stay.pax }} PAX · {{ stay.canal }}</div>
+    <!-- VISTA MÓVIL (Lista de tarjetas) -->
+    <div class="mobile-list px-2 mt-2">
+      <div v-for="stay in staysHoyMovil" 
+           :key="stay.id" 
+           class="mobile-stay-card shadow-sm animate__animated animate__fadeInUp" 
+           :class="'m-res-' + (stay.canal || 'directo').toLowerCase()"
+           @click="abrirDetalle(stay)">
+        
+        <div class="d-flex justify-content-between align-items-start">
+          <span class="hab-badge">HAB #{{ stay.hab_numero }}</span>
+          <i class="bi bi-chevron-right opacity-50"></i>
+        </div>
+        
+        <span class="titular">{{ stay.titular }}</span>
+        
+        <div class="info-line">
+          <span><i class="bi bi-people-fill me-1"></i> {{ stay.pax }} PAX</span>
+          <span><i class="bi bi-tag-fill me-1"></i> {{ stay.canal }}</span>
+        </div>
       </div>
-      <div v-if="!staysHoyMovil.length" class="text-center text-muted py-4">Sin ocupación hoy</div>
+
+      <!-- Estado vacío -->
+      <div v-if="!loading && !staysHoyMovil.length" class="text-center py-5">
+        <div class="mb-3"><i class="bi bi-calendar-x fs-1 text-muted opacity-25"></i></div>
+        <h6 class="text-muted fw-bold">Sin ocupación para esta fecha</h6>
+        <p class="small text-muted">No se encontraron reservas activas con los filtros actuales.</p>
+      </div>
     </div>
 
   </div><!-- /.page-body -->

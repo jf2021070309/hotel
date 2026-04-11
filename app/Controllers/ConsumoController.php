@@ -62,6 +62,7 @@ class ConsumoController {
                     'monto_pen' => $total,
                     'tc'        => 1.0,
                     'tipo'      => $metodo,
+                    'recargo_pos' => $input['recargo_pos'] ?? false,
                     'recibo'    => 'CONSUMO-' . date('His'),
                     'fecha'     => date('Y-m-d'),
                     'uid'       => $_SESSION['auth_id'] ?? 1

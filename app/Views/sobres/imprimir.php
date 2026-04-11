@@ -182,7 +182,10 @@ $totalGeneral = $totalManana + $totalTarde;
 </head>
 <body>
 
-  <div class="container no-print mt-3 text-end">
+  <div class="container no-print mt-3 d-flex justify-content-between">
+    <a href="./index.php" class="btn btn-outline-secondary shadow-sm">
+      <i class="bi bi-arrow-left me-2"></i>Volver
+    </a>
     <button class="btn btn-primary shadow-sm" onclick="window.print()">
       <i class="bi bi-printer me-2"></i>Imprimir Reporte A4
     </button>

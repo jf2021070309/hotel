@@ -86,8 +86,8 @@ createApp({
     });
 
     // ─── API ───────────────────────────────────────────────────────────
-    const cargarDatos = async () => {
-      loading.value = true;
+    const cargarDatos = async (silent = false) => {
+      if (!silent) loading.value = true;
       try {
         const res = await axios.get(
           `${BASE}datos&mes=${mesActual.value}&anio=${anioActual.value}`
@@ -102,7 +102,7 @@ createApp({
       } catch (e) {
         console.error('Error cargando datos:', e);
       } finally {
-        loading.value = false;
+        if (!silent) loading.value = false;
       }
     };
 
@@ -413,6 +413,8 @@ createApp({
 
     // ─── Polling ──────────────────────────────────────────────────────
     const iniciarPolling = () => {
+      if (pollingTimer) clearInterval(pollingTimer);
+      pollingTimer = setInterval(() => cargarDatos(true), 10000);
     };
 
     // ─── Lifecycle ────────────────────────────────────────────────────
@@ -427,6 +429,7 @@ createApp({
 
     onUnmounted(() => {
       document.removeEventListener('click', closeContextMenu);
+      if (pollingTimer) clearInterval(pollingTimer);
     });
 
     return {

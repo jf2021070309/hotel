@@ -103,7 +103,7 @@ createApp({
               tc.CLP = d.tc.CLP;
             }
           } else {
-            Swal.fire('Error', 'Turno no encontrado', 'error').then(()=>window.location.href='index.php');
+            Swal.fire('Error', 'Turno no encontrado', 'error').then(()=>window.location.href = SERVER_DATA.flujoIndex);
           }
         } else {
           // Si llegamos aquí (vía URL antigua nuevo=1), creamos el registro de inmediato
@@ -289,7 +289,7 @@ createApp({
             const resCerrar = await axios.post(`${BASE}cerrar`, { id: id.value });
             if (resCerrar.data.ok) {
               Swal.fire('Cerrado', 'El turno ha sido cerrado y guardado.', 'success').then(() => {
-                window.location.href = `form.php?id=${id.value}`;
+                window.location.href = `${SERVER_DATA.flujoForm}?id=${id.value}`;
               });
             } else {
               Swal.fire('Error', resCerrar.data.msg, 'error');

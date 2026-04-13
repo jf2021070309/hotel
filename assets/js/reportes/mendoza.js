@@ -33,6 +33,7 @@ createApp({
                         tempCol[f] = (f !== hoy);
                     });
                     colapsados.value = tempCol;
+                }
             } catch (e) {
                 console.error(e);
             } finally {
@@ -100,6 +101,26 @@ createApp({
             return 'S/';
         };
 
+        const exportar = () => {
+            const columnas = [
+                { header: 'FECHA', key: 'pago_fecha' },
+                { header: 'TURNO', key: 'turno' },
+                { header: 'HAB', key: 'habitacion' },
+                { header: 'TIPO', key: 'tipo_hab' },
+                { header: 'PAX', key: 'pax' },
+                { header: 'CHECK IN', key: 'check_in' },
+                { header: 'CHECK OUT', key: 'check_out' },
+                { header: 'NOCHES', key: 'noches' },
+                { header: 'CANAL', key: 'canal' },
+                { header: 'MEDIO', key: 'medio_label' },
+                { header: 'MONEDA', key: 'moneda' },
+                { header: 'TOTAL', key: 'monto' },
+                { header: 'COMPROBANTE', key: 'comprobante' }
+            ];
+            const titulo = `Reporte Mendoza ${getMesNombre(filtro.value.mes)} ${filtro.value.anio}`;
+            exportarExcel(titulo, columnas, data.value, titulo);
+        };
+
         onMounted(() => {
             fetchData();
             pollingTimer = setInterval(() => fetchData(true), 10000);
@@ -111,7 +132,7 @@ createApp({
 
         return { 
             filtro, data, groupedData, resumen, resumenDesglosado, colapsados, loading, 
-            fetchData, toggleDia, getResumenTurno, getBadgeClass, getPrefix, getMesNombre, formatCurrency, formatNumber, getSym 
+            fetchData, toggleDia, getResumenTurno, getBadgeClass, getPrefix, getMesNombre, formatCurrency, formatNumber, getSym, exportar 
         };
     }
 }).mount('#app-mendoza');

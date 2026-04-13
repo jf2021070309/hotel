@@ -36,7 +36,7 @@ class RoomingModel {
     }
 
     public function getStayDetail(int $id): ?array {
-        $stmt = $this->pdo->prepare("SELECT s.*, h.numero as hab_numero FROM rooming_stays s JOIN habitaciones h ON s.habitacion_id = h.id WHERE s.id = ?");
+        $stmt = $this->pdo->prepare("SELECT s.*, h.numero as hab_numero, h.tipo as hab_tipo, h.precio_base as hab_precio FROM rooming_stays s JOIN habitaciones h ON s.habitacion_id = h.id WHERE s.id = ?");
         $stmt->execute([$id]);
         $stay = $stmt->fetch();
         if (!$stay) return null;
@@ -159,7 +159,7 @@ class RoomingModel {
                 tipo_comprobante = :comprobante, num_comprobante = :num_comp, 
                 ruc_factura = :ruc, observaciones = :obs, 
                 total_cobrado = :cobrado, estado_pago = :est_pago,
-                estado = 'activo'
+                estado = :estado
                 WHERE id = :id";
             
             $stmt = $this->pdo->prepare($sql);
@@ -186,6 +186,7 @@ class RoomingModel {
                 'obs'         => $data['obs'],
                 'cobrado'     => $data['cobrado'],
                 'est_pago'    => $data['est_pago'],
+                'estado'      => $data['estado'] ?? 'activo',
                 'id'          => $id
             ]);
 

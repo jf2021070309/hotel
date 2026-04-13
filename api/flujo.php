@@ -75,6 +75,13 @@ switch ($action) {
         json_response(true, $controller->resumenAlex($fecha));
         break;
 
+    case 'resumen_alex_mensual':
+        if ($method !== 'GET') json_response(false, null, 405, 'Método no permitido');
+        $mes = (int)($_GET['mes'] ?? date('n'));
+        $anio = (int)($_GET['anio'] ?? date('Y'));
+        json_response(true, $controller->resumenAlexMensual($mes, $anio));
+        break;
+
     case 'categorias':
         if ($method !== 'GET') json_response(false, null, 405, 'Método no permitido');
         json_response(true, $controller->categorias());

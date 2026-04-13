@@ -24,6 +24,8 @@ createApp({
       'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'
     ];
 
+    const mesesShort = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
     let pollingTimer = null;
 
     // CARGAR LISTA
@@ -143,8 +145,9 @@ createApp({
 
     return {
       loading, loadingCheck,
-      flujos, filtros, meses,
-      listar, estadoClass, nuevoTurno
+      flujos, filtros, meses, mesesShort,
+      listar, estadoClass, nuevoTurno,
+      FLUJO_ROUTES: window.FLUJO_ROUTES
     };
   }
 }).mount('#app-flujo-index');

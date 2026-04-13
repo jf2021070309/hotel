@@ -109,7 +109,7 @@ include $base . 'includes/sidebar.php';
                 </span>
               </td>
               <td class="text-end">
-                <a :href="window.FLUJO_ROUTES.form + '?id=' + f.id" class="btn btn-sm" :class="f.estado==='borrador'?'btn-primary':'btn-outline-dark'">
+                <a :href="FLUJO_ROUTES.form + '?id=' + f.id" class="btn btn-sm" :class="f.estado==='borrador'?'btn-primary':'btn-outline-dark'">
                   <i class="bi" :class="f.estado==='borrador'?'bi-pencil-square':'bi-eye'"></i>
                   {{ f.estado==='borrador' ? 'Editar' : 'Ver' }}
                 </a>

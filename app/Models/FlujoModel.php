@@ -381,4 +381,71 @@ class FlujoModel {
 
         return $reporte;
     }
+
+    public function getReporteAlexMensual(int $mes, int $anio): array {
+        $reporte = [];
+
+        // 1. Ingresos (Efectivo)
+        $sqlIng = "
+            SELECT f.fecha, f.turno, m.moneda, SUM(m.monto) as total
+            FROM flujo_caja f
+            JOIN flujo_caja_movimientos m ON f.id = m.flujo_id
+            WHERE MONTH(f.fecha) = ? AND YEAR(f.fecha) = ? 
+              AND m.tipo = 'Ingreso' AND m.medio_pago = 'EFECTIVO'
+            GROUP BY f.fecha, f.turno, m.moneda
+            ORDER BY f.fecha ASC
+        ";
+        $stmtIng = $this->pdo->prepare($sqlIng);
+        $stmtIng->execute([$mes, $anio]);
+        while ($row = $stmtIng->fetch(PDO::FETCH_ASSOC)) {
+            $f = $row['fecha'];
+            $t = $row['turno'];
+            if (!isset($reporte[$f])) $reporte[$f] = $this->initDiaAlex();
+            
+            if (isset($reporte[$f][$t])) {
+                $reporte[$f][$t][$row['moneda']] += (float)$row['total'];
+                $reporte[$f]['TOTAL'][$row['moneda']] += (float)$row['total'];
+            }
+        }
+
+        // 2. Egresos (Extracciones de sobre)
+        $sqlEgr = "
+            SELECT 
+                sobre_fecha as fecha, 
+                sobre_turno as turno, 
+                moneda, 
+                SUM(monto) as total,
+                GROUP_CONCAT(CONCAT(categoria, ' (', monto, ')') SEPARATOR ', ') as detalle
+            FROM flujo_caja_movimientos
+            WHERE MONTH(sobre_fecha) = ? AND YEAR(sobre_fecha) = ? 
+              AND tipo = 'Egreso' AND medio_pago = 'EFECTIVO'
+            GROUP BY sobre_fecha, sobre_turno, moneda
+        ";
+        $stmtEgr = $this->pdo->prepare($sqlEgr);
+        $stmtEgr->execute([$mes, $anio]);
+        while ($row = $stmtEgr->fetch(PDO::FETCH_ASSOC)) {
+            $f = $row['fecha'];
+            $t = $row['turno'];
+            if (!isset($reporte[$f])) $reporte[$f] = $this->initDiaAlex();
+            
+            if (isset($reporte[$f][$t])) {
+                $reporte[$f][$t][$row['moneda']] -= (float)$row['total'];
+                $reporte[$f]['TOTAL'][$row['moneda']] -= (float)$row['total'];
+                if (!empty($row['detalle'])) {
+                    $reporte[$f][$t]['egresos_detalle'] = (empty($reporte[$f][$t]['egresos_detalle']) ? '' : $reporte[$f][$t]['egresos_detalle'] . ', ') . $row['detalle'];
+                }
+            }
+        }
+
+        ksort($reporte); // Asegurar orden cronológico
+        return $reporte;
+    }
+
+    private function initDiaAlex(): array {
+        return [
+            'MAÑANA' => ['PEN' => 0, 'USD' => 0, 'CLP' => 0, 'egresos_detalle' => ''],
+            'TARDE'  => ['PEN' => 0, 'USD' => 0, 'CLP' => 0, 'egresos_detalle' => ''],
+            'TOTAL'  => ['PEN' => 0, 'USD' => 0, 'CLP' => 0]
+        ];
+    }
 }

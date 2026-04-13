@@ -72,7 +72,8 @@ createApp({
           Swal.fire('Error', res.data.msg, 'error');
         }
       } catch (e) {
-        Swal.fire('Error', 'No se conectó al servidor', 'error');
+        const msg = e.response && e.response.data && e.response.data.msg ? e.response.data.msg : 'No se conectó al servidor';
+        Swal.fire('Error', msg, 'error');
       } finally {
         guardandoGasto.value = false;
       }
@@ -103,7 +104,8 @@ createApp({
             Swal.fire('Error', res.data.msg, 'error');
           }
         } catch(e) {
-          Swal.fire('Error', 'Fallo de red', 'error');
+          const msg = e.response && e.response.data && e.response.data.msg ? e.response.data.msg : 'Fallo de red';
+          Swal.fire('Error', msg, 'error');
         }
       }
     };
@@ -190,7 +192,8 @@ createApp({
           Swal.fire('Error', res.data.msg, 'error');
         }
       } catch (e) {
-        Swal.fire('Error de red', '', 'error');
+        const msg = e.response && e.response.data && e.response.data.msg ? e.response.data.msg : 'Error de red';
+        Swal.fire('Error', msg, 'error');
       }
     };
 

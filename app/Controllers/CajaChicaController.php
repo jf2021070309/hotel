@@ -152,7 +152,7 @@ class CajaChicaController {
                     ]);
 
                     if (!$okRep) {
-                        throw new Exception("No se pudo registrar la reposición. Asegúrese de tener un turno de Flujo ABIERTO hoy.");
+                        throw new Exception("Debe abrir un nuevo Flujo de Caja para poder registrar la reposición.");
                     }
 
                     // Crear nuevo ciclo de Caja Chica

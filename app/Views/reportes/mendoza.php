@@ -6,7 +6,8 @@ $base = '../../../';
 require_once $base . 'auth/middleware.php';
 protegerPorRol('admin', 'reporte_mendoza');
 
-$page_title = 'Reporte Sr. Mendoza — Hotel Manager';
+$page_title      = 'Reporte Sr. Mendoza — Hotel Manager';
+$export_enabled  = true;
 include $base . 'includes/head.php';
 include $base . 'includes/sidebar.php';
 ?>

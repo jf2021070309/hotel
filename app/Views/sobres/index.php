@@ -21,8 +21,26 @@ $fecha = $_GET['fecha'] ?? date('Y-m-d');
       <h4 class="mb-0 fw-bold text-dark" style="letter-spacing: -0.5px;">Sobre de Alex</h4>
       <span class="text-muted small d-none d-lg-inline ps-2 border-start ms-2">Control de efectivo físico</span>
     </div>
-    <div class="ms-auto d-flex gap-1 align-items-center">
-      <input type="date" class="form-control form-control-sm border-0 bg-light shadow-none" v-model="fechaFiltro" @change="consultar" style="width: 125px; font-size: 13px;">
+    <div class="ms-auto d-flex gap-2 align-items-center">
+      <!-- Selector de Modo -->
+      <div class="btn-group btn-group-sm me-2" role="group">
+        <button type="button" class="btn fw-bold px-3" :class="modo === 'diario' ? 'btn-primary' : 'btn-outline-primary'" @click="setModo('diario')">DIARIO</button>
+        <button type="button" class="btn fw-bold px-3" :class="modo === 'mensual' ? 'btn-primary' : 'btn-outline-primary'" @click="setModo('mensual')">MENSUAL</button>
+      </div>
+
+      <!-- Filtros Dinámicos -->
+      <div v-if="modo === 'diario'" class="d-flex align-items-center">
+        <input type="date" class="form-control form-control-sm border-0 bg-light shadow-none" v-model="fechaFiltro" @change="consultar" style="width: 125px; font-size: 13px;">
+      </div>
+      <div v-else class="d-flex align-items-center gap-1">
+        <select class="form-select form-select-sm border-0 bg-light shadow-none" v-model="mesFiltro" @change="consultar" style="width: 110px; font-size: 13px;">
+          <option v-for="(n, i) in meses" :value="i+1">{{ n }}</option>
+        </select>
+        <select class="form-select form-select-sm border-0 bg-light shadow-none" v-model="anioFiltro" @change="consultar" style="width: 80px; font-size: 13px;">
+          <option v-for="a in anios" :value="a">{{ a }}</option>
+        </select>
+      </div>
+
       <button class="btn btn-success btn-sm fw-bold px-2 px-sm-3 d-flex align-items-center gap-1" @click="imprimirReporte" style="height: 31px; font-size: 11.5px;">
         <i class="bi bi-printer-fill"></i>
         <span class="d-none d-sm-inline">Imprimir</span>
@@ -129,8 +147,11 @@ $fecha = $_GET['fecha'] ?? date('Y-m-d');
 
         <div class="alert alert-warning border-0 shadow-sm py-2 px-3 mb-0 d-flex align-items-center" style="font-size: 11px;">
             <i class="bi bi-info-circle-fill me-2"></i>
-            <div>
-              <strong>Nota:</strong> Los montos deben coincidir con el dinero físico entregado.
+            <div v-if="modo === 'diario'">
+              <strong>Nota:</strong> Los montos mostrados corresponden al cierre de sobres del día seleccionado.
+            </div>
+            <div v-else>
+              <strong>Nota:</strong> Los montos mostrados son el total consolidado del mes seleccionado.
             </div>
         </div>
 

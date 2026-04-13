@@ -180,29 +180,54 @@ createApp({
       }
     };
 
-    const activarReserva = async (s) => {
+    const activarReserva = (s) => {
+        abrirEdicion(s, true);
+    };
+
+    const abrirEdicion = async (s, isActivating = false) => {
       loading.value = true;
       try {
         const res = await axios.get(`../../../api/rooming.php?action=detalle&id=${s.id}`);
         const data = res.data.data;
+        if (!data) return showToast('Registro no encontrado', 'warning');
+        
         resetForm();
         
-        // Cargar datos de la reserva al formulario
-        form.stay.id = data.id;
-        form.stay.habitacion_id = data.habitacion_id;
-        form.stay.fecha_registro = data.fecha_registro;
-        form.stay.noches = data.noches || 1;
-        form.stay.medio_reserva = data.medio_reserva || 'DIRECTO';
-        form.stay.observaciones = data.observaciones;
-        
-        // Mapeo de precios y estados
-        form.stay.monto_original = data.monto_original || 0;
-        form.stay.total_pago = data.total_pago || 0;
-        form.stay.moneda_pago = data.moneda_pago || 'PEN';
-        form.stay.estado_pago = data.estado_pago || 'pendiente';
-        form.stay.tipo_hab_declarado = data.hab_tipo || 'ESTANDAR';
+        // Mapeo exhaustivo de campos
+        Object.assign(form.stay, {
+            id: data.id,
+            habitacion_id: data.habitacion_id,
+            fecha_registro: data.fecha_registro,
+            hora_checkin: data.hora_checkin || '12:00',
+            fecha_checkout: data.fecha_checkout,
+            noches: data.noches || 1,
+            medio_reserva: data.medio_reserva || 'DIRECTO',
+            total_pago: data.total_pago,
+            moneda_pago: data.moneda_pago || 'PEN',
+            monto_original: data.monto_original,
+            tc_aplicado: data.tc_aplicado || 1,
+            metodo_pago: data.metodo_pago || '',
+            tipo_comprobante: data.tipo_comprobante || 'RECIBO',
+            num_comprobante: data.num_comprobante || '',
+            carro: data.carro || 'NO',
+            total_cobrado: data.total_cobrado || 0,
+            estado_pago: data.estado_pago || 'pendiente',
+            observaciones: data.observaciones || '',
+            procedencia: data.procedencia || '',
+            recargo_pos: parseFloat(data.recargo_tarjeta || 0) > 0,
+            estado: isActivating ? 'activo' : data.estado // Si es activar, pasamos a activo, sino conservamos
+        });
 
-        // Cargar PAX (Huéspedes)
+        // Asegurar que la habitación actual aparezca en el selector (aunque sea ocupada)
+        if (!habitacionesLibres.value.some(h => h.id == data.habitacion_id)) {
+            habitacionesLibres.value.push({
+                id: data.habitacion_id,
+                numero: data.hab_numero,
+                tipo: data.hab_tipo || 'ESTANDAR',
+                precio_base: data.hab_precio || 0
+            });
+        }
+
         if (data.pax && data.pax.length > 0) {
             form.pax = data.pax.map(p => ({
                 nombre_completo: p.nombre_completo,
@@ -214,12 +239,13 @@ createApp({
             }));
         }
 
-        calcularNoches();
-        recalcularMoneda();
+        // Configurar UI de cobro según el estado actual
+        form.tipoPago = (data.estado_pago === 'pagado') ? 'completo' : 'adelanto';
+        form.adelanto = data.total_cobrado_orig || 0; 
         
-        bootstrap.Modal.getOrCreateInstance(document.getElementById('modalCheckin')).show();
+        new bootstrap.Modal('#modalCheckin').show();
       } catch (e) {
-        showToast('Error al cargar reserva', 'error');
+        showToast('Error al cargar datos de edición', 'error');
       } finally {
         loading.value = false;
       }
@@ -647,7 +673,7 @@ createApp({
       abrirCheckin, onHabChange, calcularNoches, onNochesChange, recalcularMoneda, 
       onAdelantoChange, agregarPax, setTitular, guardarCheckin, verDetalle, cargarDatos,
       fmtFecha, getPagoClass, getEstadBadge, procederCheckout, abrirPago, recalcularPago, guardarPago,
-      activarReserva, cambiarTipoPago, fmtCur, isEditingAdelanto, adelantoExcede, getMetodoPagoIcon,
+      abrirEdicion, activarReserva, cambiarTipoPago, fmtCur, isEditingAdelanto, adelantoExcede, getMetodoPagoIcon,
       // CONSUMOS
       inventario, inventarioAgrupado, stayParaConsumo, consumosStay, consumoForm,
       abrirConsumo, onProductoChange, calcularTotalConsumo, guardarConsumo,

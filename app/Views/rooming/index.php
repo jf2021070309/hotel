@@ -150,6 +150,9 @@ include $base . 'includes/head.php';
                     <button class="btn btn-white btn-sm border" title="Detalle" @click="verDetalle(s)">
                       <i class="bi bi-eye text-primary"></i>
                     </button>
+                    <button class="btn btn-white btn-sm border" title="Editar" @click="abrirEdicion(s)">
+                      <i class="bi bi-pencil-square text-secondary"></i>
+                    </button>
                     <button v-if="s.estado !== 'reservado'" class="btn btn-white btn-sm border"
                       title="Registrar Consumo" @click="abrirConsumo(s)">
                       <i class="bi bi-cup-straw text-warning"></i>
@@ -181,7 +184,7 @@ include $base . 'includes/head.php';
     <div class="modal-dialog modal-xl modal-dialog-centered">
       <div class="modal-content border-0 shadow" style="border-radius:16px;">
         <div class="modal-header border-0 pb-0 ps-4 pe-4 pt-4">
-          <h5 class="fw-bold mb-0">Registro de Check-in</h5>
+          <h5 class="fw-bold mb-0">{{ form.stay.id ? 'Editar Registro #' + form.stay.id : 'Registro de Check-in' }}</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <form @submit.prevent="guardarCheckin">
@@ -427,7 +430,7 @@ include $base . 'includes/head.php';
             <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancelar</button>
             <button type="submit" class="btn btn-primary px-5 shadow" :disabled="loading || adelantoExcede">
               <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-              Registrar Check-in
+              {{ form.stay.id ? 'Guardar Cambios' : 'Registrar Check-in' }}
             </button>
           </div>
         </form>

@@ -25,7 +25,10 @@ $fecha = $_GET['fecha'] ?? date('Y-m-d');
       <!-- Selector de Modo -->
       <div class="btn-group btn-group-sm me-2" role="group">
         <button type="button" class="btn fw-bold px-3" :class="modo === 'diario' ? 'btn-primary' : 'btn-outline-primary'" @click="setModo('diario')">DIARIO</button>
-        <button type="button" class="btn fw-bold px-3" :class="modo === 'mensual' ? 'btn-primary' : 'btn-outline-primary'" @click="setModo('mensual')">MENSUAL</button>
+        <button type="button" class="btn fw-bold px-3 position-relative" :class="modo === 'mensual' ? 'btn-primary' : 'btn-outline-primary'" @click="setModo('mensual')">
+          MENSUAL
+          <span v-if="modo === 'mensual'" class="badge bg-light text-dark ms-2" style="font-size:11px; vertical-align:middle;">{{ dias.length }} días</span>
+        </button>
       </div>
 
       <!-- Filtros Dinámicos -->
@@ -40,6 +43,11 @@ $fecha = $_GET['fecha'] ?? date('Y-m-d');
           <option v-for="a in anios" :value="a">{{ a }}</option>
         </select>
       </div>
+
+      <button class="btn btn-outline-secondary btn-sm fw-bold px-2 px-sm-3 d-flex align-items-center gap-1 me-1" @click="toggleDebug" style="height: 31px; font-size: 11.5px;">
+        <i class="bi bi-bug-fill"></i>
+        <span class="d-none d-sm-inline">Debug</span>
+      </button>
 
       <button class="btn btn-success btn-sm fw-bold px-2 px-sm-3 d-flex align-items-center gap-1" @click="imprimirReporte" style="height: 31px; font-size: 11.5px;">
         <i class="bi bi-printer-fill"></i>
@@ -56,8 +64,8 @@ $fecha = $_GET['fecha'] ?? date('Y-m-d');
     <div class="row justify-content-center" v-else>
       <div class="col-lg-11">
         
-        <!-- RESUMEN POR TURNO -->
-        <div class="row g-3 mb-4">
+        <!-- RESUMEN POR TURNO (solo DIARIO) -->
+        <div v-if="modo === 'diario'" class="row g-3 mb-4">
           <!-- MAÑANA -->
           <div class="col-md-6">
             <div class="card border-0 shadow-sm h-100" style="border-radius:12px; border-top: 4px solid #0d6efd !important;">
@@ -122,9 +130,36 @@ $fecha = $_GET['fecha'] ?? date('Y-m-d');
             </div>
           </div>
         </div>
+        <!-- RESUMEN MENSUAL (diseño alternativo, aparece abajo en MENSUAL) -->
+        <div v-if="modo === 'mensual'" class="card border-0 shadow-sm mb-2" style="border-radius:10px; border-left:6px solid #1b5e20; background:#ffffff;">
+          <div class="card-body p-3 px-4">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <div>
+                <div class="small text-muted">Resumen Mensual</div>
+                <div class="h6 fw-bold mb-0">Totales del mes seleccionado</div>
+              </div>
+              <div class="text-end small text-muted">{{ meses[mesFiltro-1] }} {{ anioFiltro }}</div>
+            </div>
 
-        <!-- TOTAL CONSOLIDADO -->
-        <div class="card border-0 shadow text-white mb-2" style="border-radius:12px; background: linear-gradient(135deg, #1b5e20, #2e7d32);">
+            <div class="row text-center align-items-center g-0">
+              <div class="col-4">
+                <div class="small text-muted mb-0" style="font-size: 11px;">TOTAL SOLES</div>
+                <h4 class="fw-bold mb-0 text-dark">S/ {{ formatMoney(totalSoles) }}</h4>
+              </div>
+              <div class="col-4 border-start" style="border-left:1px solid rgba(0,0,0,0.05)">
+                <div class="small text-muted mb-0" style="font-size: 11px;">TOTAL DÓLARES</div>
+                <h4 class="fw-bold mb-0 text-primary">$ {{ formatMoney(reporte.MAÑANA.USD + reporte.TARDE.USD) }}</h4>
+              </div>
+              <div class="col-4 border-start" style="border-left:1px solid rgba(0,0,0,0.05)">
+                <div class="small text-muted mb-0" style="font-size: 11px;">TOTAL PESOS</div>
+                <h4 class="fw-bold mb-0 text-success">$ {{ formatMoney(reporte.MAÑANA.CLP + reporte.TARDE.CLP,0) }}</h4>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TOTAL CONSOLIDADO (mostrar arriba sólo en DIARIO) -->
+        <div v-if="modo === 'diario'" class="card border-0 shadow text-white mb-2" style="border-radius:12px; background: linear-gradient(135deg, #1b5e20, #2e7d32);">
           <div class="card-body p-3 px-4">
             <div class="text-center mb-2 opacity-75 fw-bold" style="letter-spacing: 1px; font-size: 10px;">Entrega Consolidada de Efectivo</div>
             
@@ -144,6 +179,49 @@ $fecha = $_GET['fecha'] ?? date('Y-m-d');
             </div>
           </div>
         </div>
+        <!-- Lista de días para vista mensual -->
+        <div v-if="modo === 'mensual'" class="mt-3">
+          <div v-for="dia in dias" :key="dia.fecha" class="mb-3">
+            <div class="card shadow-sm border-0">
+              <div class="card-body p-3">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <div class="fw-bold">{{ formatDate(dia.fecha) }}</div>
+                </div>
+
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <div class="card border-0 h-100" style="border-radius:10px; border-top: 3px solid #0d6efd;">
+                      <div class="card-body p-2 text-center">
+                        <div class="small fw-bold text-muted" style="font-size: 10px;">SOLES</div>
+                        <div class="fs-6 fw-bold">S/ {{ formatMoney(dia.MAÑANA.PEN) }}</div>
+                        <div class="small fw-bold text-secondary mt-2">Extracciones:</div>
+                        <div class="small text-muted" v-html="dia.MAÑANA.egresos_detalle || 'Ninguna'"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="card border-0 h-100" style="border-radius:10px; border-top: 3px solid #e65100;">
+                      <div class="card-body p-2 text-center">
+                        <div class="small fw-bold text-muted" style="font-size: 10px;">SOLES</div>
+                        <div class="fs-6 fw-bold">S/ {{ formatMoney(dia.TARDE.PEN) }}</div>
+                        <div class="small fw-bold text-secondary mt-2">Extracciones:</div>
+                        <div class="small text-muted" v-html="dia.TARDE.egresos_detalle || 'Ninguna'"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="card border-0 shadow text-white mt-3" style="border-radius:8px; background: linear-gradient(135deg, #1b5e20, #2e7d32);">
+                  <div class="card-body p-2 text-center">
+                    <div class="small opacity-75" style="font-size: 10px;">TOTAL DEL DÍA</div>
+                    <div class="fw-bold fs-5">S/ {{ formatMoney(dia.TOTAL.PEN) }} &nbsp; | &nbsp; $ {{ formatMoney(dia.TOTAL.USD) }} &nbsp; | &nbsp; $ {{ formatMoney(dia.TOTAL.CLP,0) }}</div>
+                    <div class="small text-light mt-1">{{ formatDate(dia.fecha) }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
         <div class="alert alert-warning border-0 shadow-sm py-2 px-3 mb-0 d-flex align-items-center" style="font-size: 11px;">
             <i class="bi bi-info-circle-fill me-2"></i>
@@ -153,6 +231,24 @@ $fecha = $_GET['fecha'] ?? date('Y-m-d');
             <div v-else>
               <strong>Nota:</strong> Los montos mostrados son el total consolidado del mes seleccionado.
             </div>
+        </div>
+
+        <!-- Panel de depuración (solo visible con Debug activado) -->
+        <div v-if="debug" class="card mt-3">
+          <div class="card-body p-3" style="font-size:13px;">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <strong>Debug - Respuesta cruda</strong>
+              <div>
+                <span class="small text-muted me-2">[URL]</span>
+                <code class="small">{{ lastUrl }}</code>
+                <button class="btn btn-sm btn-outline-secondary ms-2" @click="debug = false">Cerrar</button>
+              </div>
+            </div>
+            <div class="mb-2 small text-muted">Filtros: Mes {{ mesFiltro }}, Año {{ anioFiltro }}, Modo: {{ modo }}</div>
+            <pre style="max-height:220px; overflow:auto; background:#f8f9fa; padding:10px; border-radius:6px;">{{ lastResponseStr }}</pre>
+            <div class="mt-2"><strong>Consolidado calculado:</strong></div>
+            <pre style="max-height:120px; overflow:auto; background:#f8f9fa; padding:10px; border-radius:6px;">{{ lastConsolidadoStr }}</pre>
+          </div>
         </div>
 
       </div>

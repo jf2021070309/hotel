@@ -199,4 +199,15 @@ class FlujoController {
     public function resumenAlex(string $fecha): array {
         return $this->model->getReporteAlexDiario($fecha);
     }
+
+    /**
+     * Devuelve el reporte consolidado para un mes específico (por días).
+     *
+     * @param int $mes Mes (1-12)
+     * @param int $anio Año (YYYY)
+     * @return array Estructura indexada por fecha con los montos por turno y totales
+     */
+    public function resumenAlexMensual(int $mes, int $anio): array {
+        return $this->model->getReporteAlexMensual($mes, $anio);
+    }
 }

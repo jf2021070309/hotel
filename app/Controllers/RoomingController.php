@@ -89,11 +89,104 @@ class RoomingController {
         try {
             if (!empty($stayData['id'])) {
                 $stay_id = (int)$stayData['id'];
+                
+                // --- CAPTURA DE DATOS PARA AUDITORÍA DE EDICIÓN ---
+                $original = $this->model->getStayDetail($stay_id);
+                
                 $this->model->actualizarStay($stay_id, $mapped, $paxList);
                 $msg = "Registro actualizado correctamente";
+
+                // Comparar cambios (solo campos principales de la estadía)
+                $cambios = [];
+                $labels = [
+                    'habitacion_id'       => 'Habitación',
+                    'fecha_checkout'      => 'Fecha Out',
+                    'noches'              => 'Noches',
+                    'total_pago'          => 'Total Pago',
+                    'observaciones'       => 'Observaciones',
+                    'tipo_hab_declarado'  => 'Tipo Hab.',
+                    'metodo_pago'         => 'Método Pago'
+                ];
+
+                $mapeoOriginal = [
+                    'habitacion_id'      => $original['habitacion_id'],
+                    'fecha_checkout'     => $original['fecha_checkout'],
+                    'noches'             => $original['noches'],
+                    'total_pago'         => (float)$original['total_pago'],
+                    'observaciones'      => $original['observaciones'],
+                    'tipo_hab_declarado' => $original['tipo_hab_declarado'],
+                    'metodo_pago'        => $original['metodo_pago']
+                ];
+
+                $mapeoNuevo = [
+                    'habitacion_id'      => $mapped['hab_id'],
+                    'fecha_checkout'     => $mapped['fecha_out'],
+                    'noches'             => $mapped['noches'],
+                    'total_pago'         => (float)$mapped['total'],
+                    'observaciones'      => $mapped['obs'],
+                    'tipo_hab_declarado' => $mapped['tipo_hab'],
+                    'metodo_pago'        => $mapped['metodo']
+                ];
+
+                $labels = [
+                    'hab_id' => 'Habitación', 
+                    'fecha_out' => 'Salida', 
+                    'noches' => 'Noches', 
+                    'total' => 'Monto Total', 
+                    'obs' => 'Observaciones', 
+                    'metodo' => 'Método Pago'
+                ];
+
+                $originalBase = [
+                    'hab_id' => (string)$original['habitacion_id'],
+                    'fecha_out' => (string)$original['fecha_checkout'],
+                    'noches' => (string)$original['noches'],
+                    'total' => (float)$original['total_pago'],
+                    'obs' => trim($original['observaciones']),
+                    'metodo' => (string)$original['metodo_pago']
+                ];
+
+                $mapeoNuevo = [
+                    'hab_id' => (string)$mapped['hab_id'],
+                    'fecha_out' => (string)$mapped['fecha_out'],
+                    'noches' => (string)$mapped['noches'],
+                    'total' => (float)$mapped['total'],
+                    'obs' => trim($mapped['obs']),
+                    'metodo' => (string)$mapped['metodo']
+                ];
+
+                foreach ($originalBase as $key => $oldVal) {
+                    if ((string)$oldVal !== (string)$mapeoNuevo[$key]) {
+                        $label = $labels[$key] ?? $key;
+                        $cambios[$label] = ['antes' => $oldVal, 'despues' => $mapeoNuevo[$key]];
+                    }
+                }
+
+                // Comparar Huéspedes (Súper importante)
+                $paxOriginales = implode(", ", array_column($original['pax'] ?? [], 'nombre_completo'));
+                $paxNuevos = implode(", ", array_column($paxList, 'nombre_completo'));
+
+                if ($paxOriginales !== $paxNuevos) {
+                    $cambios['Huéspedes'] = [
+                        'antes' => !empty($paxOriginales) ? $paxOriginales : '(ninguno)',
+                        'despues' => !empty($paxNuevos) ? $paxNuevos : '(ninguno)'
+                    ];
+                }
+
+                $numCambios = count($cambios);
+                $paxNuevos = implode(", ", array_column($paxList, 'nombre_completo'));
+                $detalle = json_encode([
+                    'mensaje' => "Actualizó datos de la estadía en Hab #{$mapped['hab_id']} (" . ($numCambios > 0 ? "$numCambios campos modificados" : "Sin cambios detectados") . ")",
+                    'cambios' => $numCambios > 0 ? $cambios : null
+                ], JSON_UNESCAPED_UNICODE);
+
+                $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'] ?? 'Sistema', 'ACTUALIZAR_STAY', 'ROOMING', $detalle);
+
             } else {
                 $stay_id = $this->model->registrarStay($mapped, $paxList);
-                $msg = "Check-in realizado correctamente";
+                $paxTitular = $paxList[0]['nombre_completo'] ?? 'Huésped';
+                $detalle = "Realizó el ingreso (Check-in) del Huésped: $paxTitular en la Habitación #{$mapped['hab_id']}";
+                $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'] ?? 'Sistema', 'CHECKIN_REGISTRADO', 'ROOMING', $detalle);
             }
             
             // Si hay pago inicial, registrarlo como anticipo
@@ -117,8 +210,6 @@ class RoomingController {
                 
                 $this->model->registrarPago($pago, $subtipo);
             }
-
-            $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'CHECKIN_REGISTRADO', 'ROOMING', "Check-in hab #{$mapped['hab_id']}, ID Stay: $stay_id");
             
             return ['ok' => true, 'id' => $stay_id, 'msg' => $msg];
         } catch (Exception $e) {
@@ -139,7 +230,8 @@ class RoomingController {
         }
 
         if ($this->model->finalizarStay($id, date('Y-m-d'), $pago)) {
-            $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'CHECKOUT_REALIZADO', 'ROOMING', "Check-out stay ID: $id");
+            $numHab = $stay['nro_habitacion'] ?? $stay['habitacion_id'];
+            $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'CHECKOUT_REALIZADO', 'ROOMING', "Check-out realizado (Habitación #$numHab)");
             return ['ok' => true, 'msg' => "Check-out realizado"];
         }
         return ['ok' => false, 'msg' => "No se pudo realizar el checkout"];
@@ -181,6 +273,8 @@ class RoomingController {
         }
 
         if ($this->model->registrarPago($input, $subtipo)) {
+            $msgAudit = "Registró pago de S/ " . number_format($input['monto_pen'], 2) . " [{$input['tipo']}] para Estancia #$stayId";
+            $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'REGISTRAR_PAGO', 'ROOMING', $msgAudit);
             return ['ok' => true, 'msg' => "Pago registrado"];
         }
         return ['ok' => false, 'msg' => "Error al registrar pago"];

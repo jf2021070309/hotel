@@ -83,6 +83,19 @@ class CajaChicaController {
                 'observacion' => $obs,
                 'usuario_id' => $_SESSION['auth_id']
             ]);
+
+            $detalle = json_encode([
+                'mensaje' => "Registró un GASTO en Caja Chica",
+                'cambios' => [
+                    'Rubro' => ['antes' => '-', 'despues' => $rubro],
+                    'Monto' => ['antes' => 'S/ 0.00', 'despues' => 'S/ ' . number_format($monto, 2)],
+                    'Doc'   => ['antes' => '-', 'despues' => $documento ?: 'S/D'],
+                    'Obs'   => ['antes' => '-', 'despues' => $obs ?: 'Ninguna']
+                ]
+            ], JSON_UNESCAPED_UNICODE);
+
+            $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'GASTO_CAJA_CHICA', 'FINANZAS', $detalle);
+
             return ['ok' => true, 'msg' => 'Gasto registrado correctamente'];
         } catch (Exception $e) {
             return ['ok' => false, 'msg' => 'Error: ' . $e->getMessage()];

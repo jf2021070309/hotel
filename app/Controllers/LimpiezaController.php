@@ -6,10 +6,13 @@ require_once __DIR__ . '/../Models/LimpiezaModel.php';
 
 class LimpiezaController {
     private LimpiezaModel $model;
+    private AuditoriaModel $audit;
     private PDO $pdo;
 
     public function __construct(PDO $pdo) {
+        require_once __DIR__ . '/../Models/AuditoriaModel.php';
         $this->model = new LimpiezaModel($pdo);
+        $this->audit = new AuditoriaModel($pdo);
         $this->pdo   = $pdo;
     }
 
@@ -69,6 +72,17 @@ class LimpiezaController {
 
         try {
             $this->model->actualizar($id, $data);
+            
+            // Fetch room for audit
+            $stmtHab = $this->pdo->prepare("SELECT h.numero FROM limpieza_registros lr JOIN habitaciones h ON lr.habitacion_id = h.id WHERE lr.id = ?");
+            $stmtHab->execute([$id]);
+            $nroHab = $stmtHab->fetchColumn() ?: 'S/N';
+
+            $msgAudit = "Actualizó tarea de limpieza de Habitación #$nroHab";
+            if ($estado === 'en proceso') $msgAudit = "Inició limpieza de Habitación #$nroHab";
+            if ($estado === 'lista') $msgAudit = "Marcó como LIMPIA la Habitación #$nroHab";
+
+            $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'LIMPIEZA_ESTADO', 'LIMPIEZA', $msgAudit);
             
             // Si la limpieza terminó, liberar la habitación
             if ($estado === 'lista') {

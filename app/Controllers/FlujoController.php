@@ -107,6 +107,14 @@ class FlujoController {
 
         try {
             $newId = $this->model->guardar($data, $input['ingresos'] ?? [], $input['egresos'] ?? []);
+            
+            $accion = ($id === 0) ? 'FLUJO_CREADO' : 'FLUJO_ACTUALIZADO';
+            $msgAudit = ($id === 0) 
+                ? "Abrió un nuevo turno de Caja: $fecha ($turno)" 
+                : "Actualizó movimientos del turno de Caja: $fecha ($turno)";
+            
+            $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], $accion, 'FINANZAS', $msgAudit);
+
             return ['ok' => true, 'msg' => 'Turno guardado correctamente', 'data' => ['id' => $newId]];
         } catch (Exception $e) {
             return ['ok' => false, 'msg' => 'Error al guardar el flujo: ' . $e->getMessage()];

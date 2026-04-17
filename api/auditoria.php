@@ -15,7 +15,11 @@ $controller = new AuditoriaController($pdo);
 
 switch ($action) {
     case 'listar':
-        json_response(true, $controller->index());
+        json_response(true, $controller->index($_GET));
+        break;
+
+    case 'exportar':
+        $controller->export($_GET);
         break;
 
     default:

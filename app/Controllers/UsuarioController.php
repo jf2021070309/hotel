@@ -70,7 +70,16 @@ class UsuarioController {
         $id = $this->model->create($data);
         if ($id) {
             $currentUser = obtenerUsuarioActual();
-            $this->audit->registrar($currentUser['id'], $currentUser['nombre'], 'USUARIO_CREADO', 'USUARIOS', "Creado usuario con ID: " . $id);
+            $detalle = json_encode([
+                'mensaje' => "Registró un nuevo TRABAJADOR",
+                'cambios' => [
+                    'Nombre' => ['antes' => '-', 'despues' => $data['nombre']],
+                    'Usuario' => ['antes' => '-', 'despues' => $data['usuario']],
+                    'Rol' => ['antes' => '-', 'despues' => strtoupper($data['rol'])]
+                ]
+            ], JSON_UNESCAPED_UNICODE);
+
+            $this->audit->registrar($currentUser['id'], $currentUser['nombre'], 'USUARIO_CREADO', 'USUARIOS', $detalle);
             return ['ok' => true, 'msg' => "Usuario creado correctamente", 'id' => $id];
         }
 
@@ -112,6 +121,9 @@ class UsuarioController {
             }
         }
 
+        // --- CAPTURA DE DATOS PARA AUDITORÍA ---
+        $original = $this->model->getById($id);
+        
         if ($this->model->update($id, $data)) {
             // Sincronizar sesión si se edita a sí mismo
             if ($id === $currentUser['id']) {
@@ -121,7 +133,37 @@ class UsuarioController {
                 $_SESSION['auth_rol']     = $data['rol'] ?? $_SESSION['auth_rol'];
             }
 
-            $this->audit->registrar($currentUser['id'], $currentUser['nombre'], 'USUARIO_EDITADO', 'USUARIOS', "Editado usuario con ID: " . $id);
+            // Construir detalle JSON de cambios
+            $cambios = [];
+            $labels = [
+                'usuario' => 'User',
+                'nombre'  => 'Nombre',
+                'rol'     => 'Rol',
+                'estado'  => 'Estado'
+            ];
+
+            foreach ($data as $key => $val) {
+                if (isset($original[$key]) && $original[$key] != $val) {
+                    $antes = $original[$key];
+                    $despues = $val;
+
+                    // Formatear estado para legibilidad
+                    if ($key === 'estado') {
+                        $antes   = ($antes == 1)   ? 'Activo'   : 'Inactivo';
+                        $despues = ($despues == 1) ? 'Activo'   : 'Inactivo';
+                    }
+
+                    $label = $labels[$key] ?? $key;
+                    $cambios[$label] = ['antes' => $antes, 'despues' => $despues];
+                }
+            }
+
+            $detalle = json_encode([
+                'mensaje' => "Actualizó datos del usuario: " . ($original['usuario'] ?? 'N/A'),
+                'cambios' => !empty($cambios) ? $cambios : null
+            ], JSON_UNESCAPED_UNICODE);
+
+            $this->audit->registrar($currentUser['id'], $currentUser['nombre'], 'ACTUALIZAR_USUARIO', 'USUARIOS', $detalle);
             return ['ok' => true, 'msg' => "Usuario actualizado correctamente"];
         }
 
@@ -142,8 +184,9 @@ class UsuarioController {
         if (!$id || empty($password)) return ['ok' => false, 'msg' => "Datos inválidos", 'code' => 400];
 
         if ($this->model->updatePassword($id, $password)) {
+            $target = $this->model->getById($id);
             $currentUser = obtenerUsuarioActual();
-            $this->audit->registrar($currentUser['id'], $currentUser['nombre'], 'PASS_CAMBIADA', 'USUARIOS', "Cambiada pass de usuario ID: " . $id);
+            $this->audit->registrar($currentUser['id'], $currentUser['nombre'], 'PASS_CAMBIADA', 'USUARIOS', "Actualizó la contraseña de: " . ($target['nombre'] ?? 'Usuario'));
             return ['ok' => true, 'msg' => "Contraseña actualizada"];
         }
 

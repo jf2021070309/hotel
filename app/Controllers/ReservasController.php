@@ -4,10 +4,13 @@
  */
 class ReservasController {
     private ReservasModel $model;
+    private AuditoriaModel $audit;
 
     public function __construct(PDO $pdo) {
         require_once __DIR__ . '/../Models/ReservasModel.php';
+        require_once __DIR__ . '/../Models/AuditoriaModel.php';
         $this->model = new ReservasModel($pdo);
+        $this->audit = new AuditoriaModel($pdo);
     }
 
     /**
@@ -48,6 +51,8 @@ class ReservasController {
 
         try {
             $result = $this->model->pagoRapido($stay_id, $monto, $moneda, $metodo, $tc, $uid);
+            $msg = "Registró PAGO de S/ " . number_format($monto * $tc, 2) . " [$metodo] desde Cuadro de Reservas";
+            $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'REGISTRAR_PAGO', 'RESERVAS', $msg);
             return ['ok' => true, 'msg' => 'Pago registrado correctamente', 'data' => $result];
         } catch (Exception $e) {
             return ['ok' => false, 'msg' => 'Error al registrar pago: ' . $e->getMessage()];
@@ -87,6 +92,8 @@ class ReservasController {
 
         try {
             $id = $this->model->registrarReservaRapida($data);
+            $msg = "Creó RESERVA RÁPIDA para: {$data['titular']} (Hab #{$data['hab_id']})";
+            $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'NUEVA_RESERVA', 'RESERVAS', $msg);
             return ['ok' => true, 'msg' => 'Reserva registrada', 'id' => $id];
         } catch (Exception $e) {
             return ['ok' => false, 'msg' => 'Error: ' . $e->getMessage()];
@@ -99,6 +106,7 @@ class ReservasController {
         
         try {
             if ($this->model->activarStay($id)) {
+                $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'CHECKIN_RESERVA', 'RESERVAS', "Activó llegada de Huésped (Check-in desde Reservas)");
                 return ['ok' => true, 'msg' => 'Ingreso (Check-in) registrado'];
             }
             return ['ok' => false, 'msg' => 'No se pudo activar la reserva'];

@@ -6,15 +6,18 @@ class ConsumoController {
     private ConsumoModel $model;
     private InventarioModel $invModel;
     private RoomingModel $roomModel;
+    private AuditoriaModel $audit;
 
     public function __construct(PDO $pdo) {
         require_once __DIR__ . '/../Models/ConsumoModel.php';
         require_once __DIR__ . '/../Models/InventarioModel.php';
         require_once __DIR__ . '/../Models/RoomingModel.php';
+        require_once __DIR__ . '/../Models/AuditoriaModel.php';
         
         $this->model = new ConsumoModel($pdo);
         $this->invModel = new InventarioModel($pdo);
         $this->roomModel = new RoomingModel($pdo);
+        $this->audit = new AuditoriaModel($pdo);
     }
 
     public function registrar(array $input): array {
@@ -74,6 +77,26 @@ class ConsumoController {
                 // Cargo a Habitación: Aumentar deuda del stay
                 $this->roomModel->incrementarTotal($stayId, $total);
             }
+
+            // --- REGISTRO DE AUDITORÍA ESTRUCTURADA ---
+            $metodoDesc = ($metodo === null) ? 'CARGADO A HAB.' : "PAGO ($metodo)";
+            $detalleJson = json_encode([
+                'mensaje' => "Registró consumo de productos",
+                'cambios' => [
+                    'Producto' => ['antes' => '-', 'despues' => $producto['nombre']],
+                    'Cantidad' => ['antes' => '0', 'despues' => $cantidad],
+                    'Total'    => ['antes' => 'S/ 0.00', 'despues' => 'S/ ' . number_format($total, 2)],
+                    'Método'   => ['antes' => '-', 'despues' => $metodoDesc]
+                ]
+            ], JSON_UNESCAPED_UNICODE);
+
+            $this->audit->registrar(
+                $_SESSION['auth_id'], 
+                $_SESSION['auth_nombre'], 
+                'REGISTRAR_CONSUMO', 
+                'ROOMING', 
+                $detalleJson
+            );
 
             return ['ok' => true, 'msg' => 'Consumo registrado exitosamente.'];
         } catch (Exception $e) {

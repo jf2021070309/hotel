@@ -94,7 +94,34 @@ class RoomingModel {
                 :carro, :obs, :uid, 1, :cobrado, :cobrado_orig, :est_pago
             )";
             $stmt = $this->pdo->prepare($sql);
-            $stmt->execute($data);
+            $stmt->execute([
+                'operador'      => $data['operador'],
+                'fecha_reg'     => $data['fecha_reg'],
+                'fecha_out'     => $data['fecha_out'],
+                'hora_in'       => $data['hora_in'],
+                'medio'         => $data['medio'],
+                'hab_id'        => $data['hab_id'],
+                'tipo_hab'      => $data['tipo_hab'],
+                'noches'        => $data['noches'],
+                'pax_total'     => $data['pax_total'],
+                'total'         => $data['total'],
+                'moneda'        => $data['moneda'],
+                'monto_orig'    => $data['monto_orig'],
+                'tc'            => $data['tc'],
+                'recargo'       => $data['recargo'] ?? 0,
+                'metodo'        => $data['metodo'],
+                'comprobante'   => $data['comprobante'],
+                'num_comp'      => $data['num_comp'],
+                'ruc'           => $data['ruc'],
+                'cobrador'      => $data['cobrador'],
+                'procedencia'   => $data['procedencia'],
+                'carro'         => $data['carro'],
+                'obs'           => $data['obs'],
+                'uid'           => $data['uid'],
+                'cobrado'       => $data['cobrado'],
+                'cobrado_orig'  => $data['cobrado_orig'],
+                'est_pago'      => $data['est_pago']
+            ]);
             $stay_id = (int)$this->pdo->lastInsertId();
 
             // Insertar PAX
@@ -224,15 +251,15 @@ class RoomingModel {
         
         $stmt = $this->pdo->prepare($sql);
         $res = $stmt->execute([
-            ':stay_id' => $pago['stay_id'],
-            ':monto'   => $pago['monto'],
-            ':moneda'  => $pago['moneda'],
-            ':monto_pen' => $pago['monto_pen'],
-            ':tc'      => $pago['tc'],
-            ':tipo'    => $pago['tipo'],
-            ':recibo'  => $pago['recibo'],
-            ':fecha'   => $pago['fecha'],
-            ':uid'     => $pago['uid']
+            'stay_id'   => $pago['stay_id'],
+            'monto'     => $pago['monto'],
+            'moneda'    => $pago['moneda'],
+            'monto_pen' => $pago['monto_pen'],
+            'tc'        => $pago['tc'],
+            'tipo'      => $pago['tipo'],
+            'recibo'    => $pago['recibo'] ?? '',
+            'fecha'     => $pago['fecha'] ?? date('Y-m-d'),
+            'uid'       => $pago['uid']
         ]);
 
         if ($res) {

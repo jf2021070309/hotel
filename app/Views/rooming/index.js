@@ -590,6 +590,17 @@ createApp({
     };
 
     const procederCheckout = async (s) => {
+      // VALIDACIÓN: No permitir checkout si el pago no está completo
+      if (s.estado_pago !== 'pagado') {
+        return Swal.fire({
+          title: 'Pago Pendiente',
+          text: `La habitación #${s.hab_numero} tiene un saldo pendiente. Debe completar el pago antes de realizar el checkout.`,
+          icon: 'error',
+          confirmButtonColor: '#3085d6',
+          confirmButtonText: 'Entendido'
+        });
+      }
+
       const res = await Swal.fire({
         title: '¿Confirmar Checkout?',
         text: `Habitación #${s.hab_numero} pasará a limpieza.`,

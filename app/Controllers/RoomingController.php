@@ -122,12 +122,22 @@ class RoomingController {
             
             return ['ok' => true, 'id' => $stay_id, 'msg' => $msg];
         } catch (Exception $e) {
-            file_put_contents(__DIR__ . '/../../tmp/debug_checkin.log', "Error: " . $e->getMessage() . "\n", FILE_APPEND);
+
             return ['ok' => false, 'msg' => "Error: " . $e->getMessage()];
         }
     }
 
     public function checkout(int $id, array $pago = []) {
+        // VALIDACIÓN: No permitir checkout si hay saldo pendiente
+        $stay = $this->model->getStayDetail($id);
+        if (!$stay) {
+            return ['ok' => false, 'msg' => "Estadía no encontrada"];
+        }
+
+        if ($stay['estado_pago'] !== 'pagado' && empty($pago)) {
+            return ['ok' => false, 'msg' => "No se puede realizar el checkout. La habitación tiene un saldo pendiente de: " . ($stay['total_pago'] - $stay['total_cobrado'])];
+        }
+
         if ($this->model->finalizarStay($id, date('Y-m-d'), $pago)) {
             $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'CHECKOUT_REALIZADO', 'ROOMING', "Check-out stay ID: $id");
             return ['ok' => true, 'msg' => "Check-out realizado"];

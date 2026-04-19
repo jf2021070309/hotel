@@ -34,7 +34,6 @@ $userData = $usuario_model->getByUsuario($user);
 
 if ($userData && password_verify($pass, $userData['password'])) {
     iniciarSesion($userData);
-    $audit_model->registrar($userData['id'], $userData['nombre'], 'LOGIN_EXITOSO', 'AUTH');
     
     // Redirigir según rol (Todos al dashboard por ahora)
     $redirect = 'index.php';

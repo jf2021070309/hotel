@@ -7,9 +7,6 @@ require_once 'auth/session.php';
 require_once 'app/Models/AuditoriaModel.php';
 
 if (estaAutenticado()) {
-    $user = obtenerUsuarioActual();
-    $audit = new AuditoriaModel($pdo);
-    $audit->registrar($user['id'], $user['nombre'], 'LOGOUT', 'AUTH');
     cerrarSesion();
 }
 

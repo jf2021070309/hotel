@@ -17,6 +17,7 @@ include 'includes/sidebar.php';
       <div>
         <h4 class="fw-bold" style="color: #111; letter-spacing: -0.5px;">
           <i class="bi bi-grid-1x2-fill me-2" style="color: #d4af37;"></i>Dashboard Ejecutivo
+          <span class="badge rounded-pill ms-2" id="reloj" style="background: #111; color: #d4af37; border: 1px solid #d4af37; font-size: 13px !important; font-weight: 600;"></span>
         </h4>
         <p class="mb-0 small text-muted fw-semibold">Centro de control y KPI Financiero — <?= date('d/m/Y') ?></p>
       </div>

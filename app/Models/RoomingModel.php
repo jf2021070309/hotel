@@ -78,7 +78,8 @@ class RoomingModel {
             throw new Exception("La habitación {$data['hab_id']} aún no ha sido marcada como 'LISTA' por el personal de limpieza.");
         }
 
-        $this->pdo->beginTransaction();
+        $mustCommit = !$this->pdo->inTransaction();
+        if ($mustCommit) $this->pdo->beginTransaction();
         try {
             $sql = "INSERT INTO rooming_stays (
                 operador, fecha_registro, fecha_checkout, hora_checkin, medio_reserva, 
@@ -158,22 +159,24 @@ class RoomingModel {
     }
 
     public function activarReserva(int $id, int $hab_id): bool {
-        $this->pdo->beginTransaction();
+        $mustCommit = !$this->pdo->inTransaction();
+        if ($mustCommit) $this->pdo->beginTransaction();
         try {
             $stmt = $this->pdo->prepare("UPDATE rooming_stays SET estado = 'activo', habitacion_id = ? WHERE id = ?");
             $stmt->execute([$hab_id, $id]);
             $stmtHab = $this->pdo->prepare("UPDATE habitaciones SET estado = 'ocupado' WHERE id = ?");
             $stmtHab->execute([$hab_id]);
-            $this->pdo->commit();
+            if ($mustCommit) $this->pdo->commit();
             return true;
         } catch (Exception $e) {
-            $this->pdo->rollBack();
+            if ($mustCommit) $this->pdo->rollBack();
             throw $e;
         }
     }
 
     public function actualizarStay(int $id, array $data, array $paxList): bool {
-        $this->pdo->beginTransaction();
+        $mustCommit = !$this->pdo->inTransaction();
+        if ($mustCommit) $this->pdo->beginTransaction();
         try {
             // Update stay info
             $sql = "UPDATE rooming_stays SET 
@@ -230,10 +233,10 @@ class RoomingModel {
 
             $this->upsertLimpiezaCheckout((int)$data['hab_id'], $data['fecha_out']);
 
-            $this->pdo->commit();
+            if ($mustCommit) $this->pdo->commit();
             return true;
         } catch (Exception $e) {
-            $this->pdo->rollBack();
+            if ($mustCommit) $this->pdo->rollBack();
             throw $e;
         }
     }
@@ -307,7 +310,8 @@ class RoomingModel {
     }
 
     public function finalizarStay(int $id, string $fechaOut, array $pago = []): bool {
-        $this->pdo->beginTransaction();
+        $mustCommit = !$this->pdo->inTransaction();
+        if ($mustCommit) $this->pdo->beginTransaction();
         try {
             // 1. Registrar pago si se proporciona (Saldo pendiente)
             if (!empty($pago) && (float)($pago['monto'] ?? 0) > 0) {
@@ -344,10 +348,10 @@ class RoomingModel {
             ");
             $stmtLimpieza->execute([$fechaOut, $hab_id, $numHab, $_SESSION['auth_id'] ?? 1]);
 
-            $this->pdo->commit();
+            if ($mustCommit) $this->pdo->commit();
             return true;
         } catch (Exception $e) {
-            $this->pdo->rollBack();
+            if ($mustCommit) $this->pdo->rollBack();
             return false;
         }
     }

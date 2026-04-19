@@ -1,5 +1,17 @@
-# Dependencias de Composer (si las hubiera)
+# Dependencias de Node (Cypress y otros)
+node_modules/
+
+# Dependencias de Composer
 vendor/
+
+# Archivos de Cypress (Solo ignorar resultados de ejecución)
+cypress/screenshots/
+cypress/videos/
+cypress/downloads/
+
+# Binarios y scripts de Composer
+composer.phar
+composer-setup.php
 
 # Variables de entorno locales
 .env
@@ -10,17 +22,20 @@ vendor/
 Thumbs.db
 desktop.ini
 
-# Logs
+# Logs y Temporales
 *.log
-
-# PHP temporales
 *.tmp
 *.cache
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
 # IDEs
 .vscode/
 .idea/
 *.swp
+*.swo
 
-# Archivos de prueba
+# Archivos de prueba huérfanos
 test.php
+full_test_suite.php

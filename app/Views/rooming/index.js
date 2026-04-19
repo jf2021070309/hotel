@@ -122,7 +122,18 @@ createApp({
           axios.get('../../../api/medios_pago.php?action=listar')
         ]);
         stays.value = resStays.data.data || [];
-        habitacionesLibres.value = resHabs.data.data || [];
+        
+        // BUGFIX: Preservar la habitación seleccionada si el usuario está en medio de un check-in
+        const currentId = form.stay.habitacion_id;
+        let newHabs = resHabs.data.data || [];
+        if (currentId && !newHabs.some(h => h.id == currentId)) {
+          const currentObj = habitacionesLibres.value.find(h => h.id == currentId);
+          if (currentObj) {
+            newHabs.push(currentObj);
+          }
+        }
+        habitacionesLibres.value = newHabs;
+
         tcs.value = resTC.data.data;
         mediosPago.value = resMedios.data.data || [];
       } catch (err) {

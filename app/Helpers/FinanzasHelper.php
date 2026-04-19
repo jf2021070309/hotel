@@ -15,8 +15,8 @@ class FinanzasHelper {
      * Mañana: 06:00 - 13:59
      * Tarde: 14:00 - 05:59
      */
-    public static function getTurnoActual(): string {
-        $hora = (int)date('H');
+    public static function getTurnoActual(?int $horaManual = null): string {
+        $hora = $horaManual ?? (int)date('H');
         return ($hora >= 6 && $hora < 14) ? 'MAÑANA' : 'TARDE';
     }
 
@@ -29,7 +29,7 @@ class FinanzasHelper {
 
         $stmt = $this->pdo->prepare("
             SELECT id FROM flujo_caja 
-            WHERE fecha = ? AND turno = ? AND usuario_id = ? AND estado != 'borrador_eliminado'
+            WHERE fecha = ? AND turno = ? AND usuario_id = ? AND estado = 'borrador'
             ORDER BY id DESC LIMIT 1
         ");
         $stmt->execute([$fechaHoy, $turno, $usuarioId]);

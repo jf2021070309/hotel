@@ -70,6 +70,12 @@ function cargarPermisosEnSesion(int $uid): void {
 
 function estaAutenticado(): bool {
     if (!isset($_SESSION['auth_id'])) return false;
+
+    if (!isset($_SESSION['last_activity'])) {
+        $_SESSION['last_activity'] = time();
+        return true;
+    }
+
     if (time() - $_SESSION['last_activity'] > 28800) {
         cerrarSesion();
         return false;

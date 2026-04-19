@@ -195,7 +195,7 @@ include $base . 'includes/head.php';
                 <div class="modal-section-title">1. HABITACIÓN Y ESTADÍA</div>
                 <div class="mb-3">
                   <label class="form-label small fw-bold">Habitación disponible</label>
-                  <select v-model="form.stay.habitacion_id" class="form-select" required @change="onHabChange">
+                  <select v-model="form.stay.habitacion_id" id="inputHabitacion" class="form-select" required @change="onHabChange">
                     <option value="">Seleccione...</option>
                     <option v-for="h in habitacionesLibres" :key="h.id" :value="h.id">
                       #{{ h.numero }} - {{ h.tipo }} (S/ {{ h.precio_base }})
@@ -259,7 +259,7 @@ include $base . 'includes/head.php';
                   <button v-if="idx > 0" type="button" class="btn-close position-absolute top-0 end-0 m-2"
                     style="font-size:10px" @click="form.pax.splice(idx, 1)"></button>
                   <div class="mb-2">
-                    <input type="text" v-model="pax.nombre_completo" class="form-control-sm form-control"
+                    <input type="text" v-model="pax.nombre_completo" id="inputNombreHuesped" class="form-control-sm form-control"
                       placeholder="Nombre completo" required>
                   </div>
                   <div class="row g-2">
@@ -271,7 +271,7 @@ include $base . 'includes/head.php';
                       </select>
                     </div>
                     <div class="col-8 position-relative">
-                      <input type="text" v-model="pax.documento_num" class="form-control form-control-sm"
+                      <input type="text" v-model="pax.documento_num" id="inputDocumentoHuesped" class="form-control form-control-sm"
                         placeholder="Num. documento" required @input="buscarPax(pax, idx)"
                         @blur="ocultarSugerencias(idx)" autocomplete="off">
                       <!-- Dropdown sugerencias -->
@@ -320,7 +320,7 @@ include $base . 'includes/head.php';
                     <label class="form-label micro-text fw-bold mb-1">TOTAL BASE (PEN)</label>
                     <div class="input-group input-group-sm shadow-sm">
                       <span class="input-group-text bg-light fw-bold border-0">S/</span>
-                      <input type="number" v-model="form.stay.total_pago"
+                      <input type="number" v-model="form.stay.total_pago" id="inputMontoPago"
                         class="form-control fw-bold text-dark"
                         step="0.50" min="0"
                         style="border-color:#ffc107;"
@@ -399,7 +399,7 @@ include $base . 'includes/head.php';
                 <!-- Método + Comprobante en fila compacta -->
                 <div class="mb-2">
                   <label class="form-label micro-text fw-bold mb-1">MÉTODO DE PAGO</label>
-                  <select v-model="form.stay.metodo_pago" class="form-select form-select-sm"
+                  <select v-model="form.stay.metodo_pago" id="inputMetodoPago" class="form-select form-select-sm"
                     :required="form.adelanto > 0">
                     <option value="">Seleccione...</option>
                     <option v-for="m in mediosPago" :key="m.id" :value="m.nombre" :disabled="m.activo != 1">{{ m.nombre
@@ -428,7 +428,7 @@ include $base . 'includes/head.php';
           </div>
           <div class="modal-footer border-0 p-4 pt-0">
             <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancelar</button>
-            <button type="submit" class="btn btn-primary px-5 shadow" :disabled="loading || adelantoExcede">
+            <button type="submit" id="btnRegistrarCheckin" class="btn btn-primary px-5 shadow" :disabled="loading || adelantoExcede">
               <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
               {{ form.stay.id ? 'Guardar Cambios' : 'Registrar Check-in' }}
             </button>

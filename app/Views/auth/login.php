@@ -196,9 +196,9 @@ if (estaAutenticado()) {
                 loading.value = true;
                 error.value = '';
                 try {
-                    const res = await axios.post('../../../api/auth/login.php', form);
+                    const res = await axios.post('api/auth/login.php', form);
                     if (res.data.ok) {
-                        window.location.href = '../../../' + res.data.data.redirect;
+                        window.location.href = res.data.data.redirect;
                     }
                 } catch (err) {
                     error.value = err.response?.data?.msg || 'Error de autenticación: Verifique sus credenciales.';

@@ -184,6 +184,7 @@ class RoomingController {
 
             } else {
                 $stay_id = $this->model->registrarStay($mapped, $paxList);
+                $msg = "Registro creado correctamente";
                 $paxTitular = $paxList[0]['nombre_completo'] ?? 'Huésped';
                 $detalle = "Realizó el ingreso (Check-in) del Huésped: $paxTitular en la Habitación #{$mapped['hab_id']}";
                 $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'] ?? 'Sistema', 'CHECKIN_REGISTRADO', 'ROOMING', $detalle);

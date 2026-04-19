@@ -1,0 +1,9 @@
+--- Bootstrap de Pruebas Cargado ---
+PHPUnit 9.6.34 by Sebastian Bergmann and contributors.
+
+Sincronizacion Rooming
+ ✔ Pago sincroniza con flujo caja
+
+Time: 00:00.012, Memory: 6.00 MB
+
+OK (1 test, 5 assertions)

@@ -16,6 +16,7 @@ include 'includes/sidebar.php';
       <div>
         <h4 class="fw-bold" style="color: #111; letter-spacing: -0.5px;">
           ¡Hola, <?= explode(' ', $_SESSION['auth_nombre'] ?? 'Operador')[0] ?>!
+          <span class="badge rounded-pill ms-2" id="reloj" style="background: #111; color: #d4af37; border: 1px solid #d4af37; font-size: 13px !important; font-weight: 600;"></span>
           <span class="fs-6 text-muted fw-normal ms-2">Turno
             <?= (date('H') >= 6 && date('H') < 14) ? 'MAÑANA' : 'TARDE' ?></span>
         </h4>

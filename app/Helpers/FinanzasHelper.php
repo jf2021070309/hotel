@@ -11,13 +11,21 @@ class FinanzasHelper {
     }
 
     /**
+     * Determina el turno actual basado en la hora.
+     * Mañana: 06:00 - 13:59
+     * Tarde: 14:00 - 05:59
+     */
+    public static function getTurnoActual(): string {
+        $hora = (int)date('H');
+        return ($hora >= 6 && $hora < 14) ? 'MAÑANA' : 'TARDE';
+    }
+
+    /**
      * Busca el turno de flujo de caja activo para hoy y el usuario actual.
      */
     public function getFlujoIdActivo(int $usuarioId): ?int {
         $fechaHoy = date('Y-m-d');
-        // El turno depende de la hora actual: Mañana (6am-2pm), Tarde (2pm-10pm)
-        $hora = (int)date('H');
-        $turno = ($hora >= 6 && $hora < 14) ? 'MAÑANA' : 'TARDE';
+        $turno = self::getTurnoActual();
 
         $stmt = $this->pdo->prepare("
             SELECT id FROM flujo_caja 

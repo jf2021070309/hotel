@@ -27,6 +27,7 @@ class ReporteModel {
                 s.medio_reserva AS canal,
                 a.fecha AS pago_fecha,
                 CASE 
+                    -- Sincronizado con FinanzasHelper::getTurnoActual()
                     WHEN HOUR(a.created_at) >= 6 AND HOUR(a.created_at) < 14 THEN 'MAÑANA' 
                     ELSE 'TARDE' 
                 END AS turno,

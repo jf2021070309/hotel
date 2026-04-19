@@ -290,14 +290,18 @@ class RoomingModel {
             $etiqueta = $etiquetas[$subtipo] ?? "pagó $subtipo";
 
             // SINCRONIZACIÓN: Registrar el ingreso en el Flujo de Caja
-            $this->finanzas->registrarMovimientoAutomatico([
+            $syncRes = $this->finanzas->registrarMovimientoAutomatico([
                 'usuario_id'  => $pago['uid'],
                 'categoria'   => $pago['tipo'] ?? 'Alojamiento', 
                 'monto'       => $pago['monto'], 
                 'moneda'      => $pago['moneda'] ?? 'PEN',
                 'medio_pago'  => $pago['tipo'] ?? 'EFECTIVO',
-                'observacion' => "$titular $etiqueta por el Registro #{$pago['stay_id']} (Hab #$habNum)"
+                'observacion' => "HOSPEDAJE: $titular ($etiqueta) - Registro #{$pago['stay_id']} (Hab #$habNum)"
             ]);
+
+            if (!$syncRes) {
+                throw new Exception("Error de sincronización: No se encontró un TURNO DE CAJA abierto para registrar este pago. Por favor, abra su turno antes de continuar.");
+            }
         }
         return $res;
     }

@@ -263,6 +263,19 @@ class RoomingController {
         $stmt->execute([$stayId]);
         $stay = $stmt->fetch(PDO::FETCH_ASSOC);
 
+        if ($stay) {
+            $saldoPendiente = (float)$stay['total_pago'] - (float)$stay['total_cobrado'];
+            $montoIngresado = (float)($input['monto_pen'] ?? $input['monto'] ?? 0);
+            
+            // Validación estricta para evitar negativos
+            if ($montoIngresado > $saldoPendiente + 0.05) {
+                return [
+                    'ok' => false, 
+                    'msg' => "El monto ingresado (S/ ".number_format($montoIngresado, 2).") supera el saldo pendiente (S/ ".number_format($saldoPendiente, 2).")."
+                ];
+            }
+        }
+
         $subtipo = 'adelanto';
         if ($stay) {
             $saldoPendiente = (float)$stay['total_pago'] - (float)$stay['total_cobrado'];

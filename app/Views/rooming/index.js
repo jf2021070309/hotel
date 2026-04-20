@@ -14,6 +14,7 @@ createApp({
     const habitacionesLibres = ref([]);
     const tcs = ref({ USD: 3.75, CLP: 0.0038 });
     const loading = ref(false);
+    const loadingConsumo = ref(false);
     const busqueda = ref('');
     const isEditingAdelanto = ref(false);
     const adelantoExcede = ref(false);
@@ -484,9 +485,10 @@ createApp({
     };
 
     const verDetalle = async (sOrId) => {
+      selectedStay.value = null;
       loading.value = true;
-      const id = typeof sOrId === 'object' ? sOrId.id : sOrId;
       try {
+        const id = typeof sOrId === 'object' ? sOrId.id : sOrId;
         const [resDet, resCons] = await Promise.all([
           axios.get(`../../../api/rooming.php?action=detalle&id=${id}`),
           axios.get(`../../../api/consumos.php?action=listar&stay_id=${id}`)
@@ -505,9 +507,9 @@ createApp({
     };
 
     const abrirConsumo = async (s) => {
-      loading.value = true;
+      loadingConsumo.value = true;
       if (!(await validarCajaAbierta())) {
-        loading.value = false;
+        loadingConsumo.value = false;
         return mostrarModalCajaCerrada();
       }
       stayParaConsumo.value = s;
@@ -523,6 +525,7 @@ createApp({
       // Recargar inventario para tener stock fresco
       const resInv = await axios.get('../../../api/inventario.php?action=listar');
       inventario.value = resInv.data.data || [];
+      loadingConsumo.value = false;
       new bootstrap.Modal('#modalConsumo').show();
     };
 
@@ -555,21 +558,36 @@ createApp({
     };
 
     const guardarConsumo = async () => {
-      if (!consumoForm.producto_id || consumoForm.cantidad <= 0) return;
-      loading.value = true;
+      // Validaciones preventivas con avisos al usuario
+      if (!consumoForm.producto_id) {
+        return showToast('Por favor, seleccione un producto de la lista.', 'warning');
+      }
+      if (consumoForm.cantidad <= 0) {
+        return showToast('La cantidad debe ser al menos 1.', 'warning');
+      }
+      
+      // Validación previa para pagos al contado
+      if (consumoForm.pago_inmediato && !consumoForm.metodo_pago) {
+        return showToast('Debe seleccionar un medio de pago para el cobro al contado.', 'warning');
+      }
+
+      loadingConsumo.value = true;
       try {
         const res = await axios.post('../../../api/consumos.php?action=registrar', consumoForm);
         if (res.data.ok) {
           showToast(res.data.msg, 'success');
-          bootstrap.Modal.getInstance('#modalConsumo').hide();
+          const modalElem = document.getElementById('modalConsumo');
+          const modal = bootstrap.Modal.getInstance(modalElem);
+          if (modal) modal.hide();
           cargarDatos(true);
         } else {
           showToast(res.data.msg, 'error');
         }
       } catch (err) {
-        showToast('Error al registrar consumo', 'error');
+        const msg = err.response?.data?.msg || 'Error al registrar consumo';
+        showToast(msg, 'error');
       } finally {
-        loading.value = false;
+        loadingConsumo.value = false;
       }
     };
 

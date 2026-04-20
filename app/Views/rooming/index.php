@@ -314,8 +314,8 @@ include $base . 'includes/head.php';
               <div class="col-md-3">
                 <div class="modal-section-title">3. PAGO Y REGISTRO</div>
 
-                <!-- Total + Divisa en una fila -->
-                <div class="d-flex align-items-center gap-2 mb-2">
+                <!-- TOTAL BASE (PEN) + DIVISA en una fila -->
+                <div class="d-flex align-items-center gap-2 mb-3">
                   <div class="flex-grow-1">
                     <label class="form-label micro-text fw-bold mb-1">TOTAL BASE (PEN)</label>
                     <div class="input-group input-group-sm shadow-sm">
@@ -338,9 +338,9 @@ include $base . 'includes/head.php';
                   </div>
                 </div>
 
-                <!-- TC + Equiv compacto inline -->
+                <!-- TC compacto (solo si divisa != PEN) -->
                 <div v-if="form.stay.moneda_pago !== 'PEN'"
-                  class="d-flex align-items-center gap-2 mb-2 px-2 py-1 rounded border bg-light" style="font-size:12px;">
+                  class="d-flex align-items-center gap-2 mb-3 px-2 py-1 rounded border bg-light" style="font-size:12px;">
                   <span class="fw-bold text-muted text-nowrap">T.C.</span>
                   <input type="number" v-model="tcs[form.stay.moneda_pago]"
                     class="form-control form-control-sm border-0 bg-white fw-bold text-center shadow-sm"
@@ -352,61 +352,16 @@ include $base . 'includes/head.php';
                   </span>
                 </div>
 
-                <!-- POS toggle compacto -->
-                <div
-                  class="d-flex align-items-center justify-content-between mb-2 py-1 px-2 bg-info bg-opacity-10 rounded border border-info border-opacity-25">
-                  <div class="form-check form-switch mb-0 ps-0 d-flex align-items-center gap-2">
-                    <input class="form-check-input m-0" type="checkbox" id="checkPos" v-model="form.stay.recargo_pos"
-                      @change="recalcularMoneda(true)" style="cursor:pointer;">
-                    <label class="form-check-label small fw-bold text-info mb-0" for="checkPos">POS (+5%)</label>
-                  </div>
-                  <span v-if="form.stay.recargo_pos" class="badge bg-danger" style="font-size:11px;">
-                    {{ form.stay.moneda_pago }} {{ fmtCur(parseFloat(form.stay.monto_original) * 1.05) }}
-                  </span>
-                </div>
-
-                <!-- Tipo de pago -->
-                <div class="mb-2">
-                  <label class="form-label micro-text fw-bold mb-1">TIPO DE PAGO</label>
-                  <div class="btn-group w-100 btn-group-sm shadow-sm" role="group">
-                    <button type="button" class="btn btn-sm"
-                      :class="form.tipoPago === 'completo' ? 'btn-primary' : 'btn-outline-primary'"
-                      @click="cambiarTipoPago('completo')">COMPLETO</button>
-                    <button type="button" class="btn btn-sm"
-                      :class="form.tipoPago === 'adelanto' ? 'btn-primary' : 'btn-outline-primary'"
-                      @click="cambiarTipoPago('adelanto')">ADELANTO</button>
-                  </div>
-                </div>
-
-                <!-- Monto a cobrar -->
-                <div class="mb-2">
-                  <div class="d-flex justify-content-between align-items-baseline mb-1">
-                    <label class="form-label micro-text fw-bold mb-0">{{ form.tipoPago === 'completo' ? 'MONTO A COBRAR'
-                      : 'MONTO DE ADELANTO' }} ({{ form.stay.moneda_pago }})</label>
-                    <span v-if="form.adelanto > 0 && form.stay.moneda_pago !== 'PEN'" class="badge bg-success" style="font-size:9px;">PEN {{
-                      fmtCur(form.stay.total_cobrado) }}</span>
-                  </div>
-                  <input type="text" :value="isEditingAdelanto ? form.adelanto : fmtCur(form.adelanto)"
-                    class="form-control form-control-sm fw-bold text-dark" :readonly="form.tipoPago === 'completo'"
-                    :class="{ 'is-invalid': adelantoExcede }"
-                    style="background-color:#fff9c4;" @focus="isEditingAdelanto = true"
-                    @blur="isEditingAdelanto = false" @input="form.adelanto = $event.target.value; onAdelantoChange()">
-                  <div v-if="adelantoExcede" class="text-danger mt-1" style="font-size: 10px; line-height: 1.1;">
-                    <i class="bi bi-exclamation-triangle-fill"></i> El adelanto no puede superar el total base.
-                  </div>
-                </div>
-
-                <!-- Método + Comprobante en fila compacta -->
-                <div class="mb-2">
+                <!-- MÉTODO DE PAGO -->
+                <div class="mb-3">
                   <label class="form-label micro-text fw-bold mb-1">MÉTODO DE PAGO</label>
-                  <select v-model="form.stay.metodo_pago" id="inputMetodoPago" class="form-select form-select-sm"
-                    :required="form.adelanto > 0">
+                  <select v-model="form.stay.metodo_pago" id="inputMetodoPago" class="form-select form-select-sm">
                     <option value="">Seleccione...</option>
-                    <option v-for="m in mediosPago" :key="m.id" :value="m.nombre" :disabled="m.activo != 1">{{ m.nombre
-                      }}</option>
+                    <option v-for="m in mediosPago" :key="m.id" :value="m.nombre" :disabled="m.activo != 1">{{ m.nombre }}</option>
                   </select>
                 </div>
 
+                <!-- COMPROBANTE + N° RECIBO -->
                 <div class="row g-1">
                   <div class="col-7">
                     <label class="form-label micro-text fw-bold mb-1">COMPROBANTE</label>
@@ -417,7 +372,7 @@ include $base . 'includes/head.php';
                     </select>
                   </div>
                   <div class="col-5">
-                    <label class="form-label micro-text fw-bold mb-1">N° COMP.</label>
+                    <label class="form-label micro-text fw-bold mb-1">RECIBO</label>
                     <input type="text" v-model="form.stay.num_comprobante" class="form-control form-control-sm"
                       placeholder="1372">
                   </div>

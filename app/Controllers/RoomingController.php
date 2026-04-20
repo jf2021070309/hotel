@@ -86,6 +86,7 @@ class RoomingController {
             'estado'       => $stayData['estado'] ?? 'activo'
         ];
         
+        $this->pdo->beginTransaction();
         try {
             if (!empty($stayData['id'])) {
                 $stay_id = (int)$stayData['id'];
@@ -127,7 +128,6 @@ class RoomingController {
                     'tipo_hab_declarado' => $mapped['tipo_hab'],
                     'metodo_pago'        => $mapped['metodo']
                 ];
-
                 $labels = [
                     'hab_id' => 'Habitación', 
                     'fecha_out' => 'Salida', 
@@ -155,6 +155,7 @@ class RoomingController {
                     'metodo' => (string)$mapped['metodo']
                 ];
 
+                $cambios = [];
                 foreach ($originalBase as $key => $oldVal) {
                     if ((string)$oldVal !== (string)$mapeoNuevo[$key]) {
                         $label = $labels[$key] ?? $key;
@@ -162,7 +163,7 @@ class RoomingController {
                     }
                 }
 
-                // Comparar Huéspedes (Súper importante)
+                // Comparar Huéspedes
                 $paxOriginales = implode(", ", array_column($original['pax'] ?? [], 'nombre_completo'));
                 $paxNuevos = implode(", ", array_column($paxList, 'nombre_completo'));
 
@@ -174,7 +175,6 @@ class RoomingController {
                 }
 
                 $numCambios = count($cambios);
-                $paxNuevos = implode(", ", array_column($paxList, 'nombre_completo'));
                 $detalle = json_encode([
                     'mensaje' => "Actualizó datos de la estadía en Hab #{$mapped['hab_id']} (" . ($numCambios > 0 ? "$numCambios campos modificados" : "Sin cambios detectados") . ")",
                     'cambios' => $numCambios > 0 ? $cambios : null
@@ -212,9 +212,12 @@ class RoomingController {
                 $this->model->registrarPago($pago, $subtipo);
             }
             
+            $this->pdo->commit();
             return ['ok' => true, 'id' => $stay_id, 'msg' => $msg];
         } catch (Exception $e) {
-
+            if ($this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
             return ['ok' => false, 'msg' => "Error: " . $e->getMessage()];
         }
     }

@@ -103,13 +103,14 @@ describe('Flujo Completo de Check-in e Integración Financiera', () => {
         // Esperamos un segundo a que Vue termine de renderizar los datos del API
         cy.wait(2000);
 
-        // Verificamos que el nombre del huésped aparezca en algún lugar de la tabla (como texto o valor de input)
+        // Verificamos que el nombre del huésped aparezca en algún lugar de la tabla (como texto o valor de campo)
         cy.get('table').then(($table) => {
             const html = $table.text();
-            const inputs = $table.find('input').toArray().map(i => i.value).join(' ');
-            const allContent = (html + ' ' + inputs).toUpperCase();
+            // Capturamos valores de inputs Y textareas
+            const fields = $table.find('input, textarea').toArray().map(f => f.value).join(' ');
+            const allContent = (html + ' ' + fields).toUpperCase();
             
-            cy.log('Contenido encontrado:', allContent);
+            cy.log('Contenido total detectado:', allContent);
             
             expect(allContent, `Buscando ${GUEST_NAME} en el contenido de la tabla`).to.include(GUEST_NAME.toUpperCase());
             expect(allContent, 'Buscando el monto de 150').to.match(/150(\.00)?/);

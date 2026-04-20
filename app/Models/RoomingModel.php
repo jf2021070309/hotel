@@ -150,10 +150,10 @@ class RoomingModel {
 
             $this->upsertLimpiezaCheckout((int)$data['hab_id'], $data['fecha_out']);
 
-            $this->pdo->commit();
+            if ($mustCommit) $this->pdo->commit();
             return $stay_id;
         } catch (Exception $e) {
-            $this->pdo->rollBack();
+            if ($mustCommit) $this->pdo->rollBack();
             throw $e;
         }
     }

@@ -7,11 +7,8 @@
  * además de la gestión multidivisa y sincronización con otros módulos financieros.
  */
 class FlujoController {
-    /** @var FlujoModel Instancia del modelo de flujo de caja. */
-    private FlujoModel $model;
-    
-    /** @var AuditoriaModel Instancia del modelo de auditoría para registro de eventos. */
-    private AuditoriaModel $audit;
+    /** @var PDO Conexión a la base de datos. */
+    private PDO $pdo;
 
     /**
      * Constructor del controlador.
@@ -22,6 +19,7 @@ class FlujoController {
         require_once __DIR__ . '/../Models/FlujoModel.php';
         require_once __DIR__ . '/../Models/AuditoriaModel.php';
         
+        $this->pdo = $pdo;
         $this->model = new FlujoModel($pdo);
         $this->audit = new AuditoriaModel($pdo);
     }
@@ -215,7 +213,21 @@ class FlujoController {
      * @param int $anio Año (YYYY)
      * @return array Estructura indexada por fecha con los montos por turno y totales
      */
-    public function resumenAlexMensual(int $mes, int $anio): array {
-        return $this->model->getReporteAlexMensual($mes, $anio);
+    /**
+     * Verifica preventivamente si el usuario actual tiene un turno de caja abierto para hoy.
+     * Útil para bloqueos en la interfaz (ej: check-ins).
+     * 
+     * @return array ['ok' => bool, 'flujo_id' => int|null]
+     */
+    public function verificarApertura(): array {
+        require_once __DIR__ . '/../Helpers/FinanzasHelper.php';
+        $helper = new FinanzasHelper($this->pdo);
+        
+        $flujoId = $helper->getFlujoIdActivo($_SESSION['auth_id']);
+        
+        return [
+            'ok' => ($flujoId !== null),
+            'flujo_id' => $flujoId
+        ];
     }
 }

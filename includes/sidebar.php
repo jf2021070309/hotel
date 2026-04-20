@@ -86,10 +86,10 @@ function isActive(string $page, string $folder_): string {
     </div>
     <?php endif; ?>
 
-    <?php if (tieneAccesoModulo('habitaciones')): ?>
+    <?php if (tieneAccesoModulo('flujo')): ?>
     <div class="nav-item">
-      <a href="<?= route('habitaciones/index.php', $base) ?>" class="<?= isActive('index.php','habitaciones') ?>" onclick="closeSidebarOnMobile()">
-        <i class="bi bi-door-open-fill"></i> <span>Habitaciones</span>
+      <a href="<?= route('flujo/index.php', $base) ?>" class="<?= isActive('index.php','flujo') ?>" onclick="closeSidebarOnMobile()">
+        <i class="bi bi-cash-stack text-success"></i> <span>Flujo de Caja</span>
       </a>
     </div>
     <?php endif; ?>
@@ -110,18 +110,18 @@ function isActive(string $page, string $folder_): string {
     </div>
     <?php endif; ?>
 
-    <?php if (tieneAccesoModulo('flujo')): ?>
-    <div class="nav-item">
-      <a href="<?= route('flujo/index.php', $base) ?>" class="<?= isActive('index.php','flujo') ?>" onclick="closeSidebarOnMobile()">
-        <i class="bi bi-cash-stack text-success"></i> <span>Flujo de Caja</span>
-      </a>
-    </div>
-    <?php endif; ?>
-
     <?php if (tieneAccesoModulo('caja_chica')): ?>
     <div class="nav-item">
       <a href="<?= route('caja_chica/index.php', $base) ?>" class="<?= isActive('index.php','caja_chica') ?>" onclick="closeSidebarOnMobile()">
         <i class="bi bi-box2-heart text-danger"></i> <span>Caja Chica</span>
+      </a>
+    </div>
+    <?php endif; ?>
+
+    <?php if (tieneAccesoModulo('habitaciones')): ?>
+    <div class="nav-item">
+      <a href="<?= route('habitaciones/index.php', $base) ?>" class="<?= isActive('index.php','habitaciones') ?>" onclick="closeSidebarOnMobile()">
+        <i class="bi bi-door-open-fill"></i> <span>Habitaciones</span>
       </a>
     </div>
     <?php endif; ?>
@@ -182,7 +182,6 @@ function isActive(string $page, string $folder_): string {
     </div>
     <?php endif; ?>
 
-
       <?php if (tieneAccesoModulo('gestion_usuarios') || tieneAccesoModulo('medios_pago') || tieneAccesoModulo('auditoria')): ?>
       <div class="nav-label mt-2">Configuración</div>
       <?php endif; ?>
@@ -210,7 +209,6 @@ function isActive(string $page, string $folder_): string {
         </a>
       </div>
       <?php endif; ?>
-
 
     <?php if (tieneAccesoModulo('reporte_mendoza') || tieneAccesoModulo('reporte_alex')): ?>
     <div class="nav-label mt-2">Reportes (Altogerencia)</div>
@@ -359,4 +357,3 @@ window.toggleSidebar = function() {
   }
 })();
 </script>
-

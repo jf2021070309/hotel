@@ -191,12 +191,13 @@ if (estaAutenticado()) {
             const form = reactive({ usuario: '', password: '' });
             const loading = ref(false);
             const error = ref('');
+            const baseUrl = '<?php echo project_base_url(); ?>';
 
             const handleSubmit = async () => {
                 loading.value = true;
                 error.value = '';
                 try {
-                    const res = await axios.post('api/auth/login.php', form);
+                    const res = await axios.post(baseUrl + 'api/auth/login.php', form);
                     if (res.data.ok) {
                         window.location.href = res.data.data.redirect;
                     }

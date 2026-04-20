@@ -6,6 +6,7 @@ require_once '../../config/db.php';
 require_once '../../app/Models/UsuarioModel.php';
 require_once '../../app/Models/AuditoriaModel.php';
 require_once '../../auth/session.php';
+require_once '../../rutas.php';
 
 $usuario_model = new UsuarioModel($pdo);
 $audit_model   = new AuditoriaModel($pdo);
@@ -36,7 +37,7 @@ if ($userData && password_verify($pass, $userData['password'])) {
     iniciarSesion($userData);
     
     // Redirigir según rol (Todos al dashboard por ahora)
-    $redirect = 'index.php';
+    $redirect = route('index.php');
 
     json_response(true, ['redirect' => $redirect], 200, "Login exitoso");
 } else {

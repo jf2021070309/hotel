@@ -57,7 +57,7 @@ createApp({
         estado_pago: 'pendiente',
         procedencia: '',
         observaciones: '',
-        recargo_pos: false // Nuevo: +5% sobre moneda extranjera
+        recargo_pos: false
       },
       pax: [{
         nombre_completo: '',
@@ -67,8 +67,9 @@ createApp({
         ciudad: '',
         es_titular: true
       }],
+      // Adelanto fijo = total completo (pago directo siempre)
       adelanto: 0,
-      tipoPago: 'completo' // 'completo' o 'adelanto'
+      tipoPago: 'completo'
     });
 
     const pagoForm = reactive({
@@ -143,7 +144,39 @@ createApp({
       }
     };
 
-    const abrirCheckin = () => {
+    const validarCajaAbierta = async () => {
+      try {
+        const res = await axios.get('../../../api/flujo.php?action=verificar_apertura');
+        return res.data.ok;
+      } catch (e) {
+        return false;
+      }
+    };
+
+    const mostrarModalCajaCerrada = () => {
+      Swal.fire({
+        title: '¡Caja Cerrada!',
+        text: 'No puedes realizar check-ins ni registrar pagos sin un turno de caja abierto para hoy.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: '<i class="bi bi-cash-stack"></i> IR A ABRIR CAJA',
+        cancelButtonText: 'Cancelar'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          window.location.href = '../flujo/index.php';
+        }
+      });
+    };
+
+    const abrirCheckin = async () => {
+      loading.value = true;
+      if (!(await validarCajaAbierta())) {
+        loading.value = false;
+        return mostrarModalCajaCerrada();
+      }
+      loading.value = false;
       resetForm();
       calcularNoches();
       new bootstrap.Modal('#modalCheckin').show();
@@ -197,6 +230,10 @@ createApp({
 
     const abrirEdicion = async (s, isActivating = false) => {
       loading.value = true;
+      if (!(await validarCajaAbierta())) {
+        loading.value = false;
+        return mostrarModalCajaCerrada();
+      }
       try {
         const res = await axios.get(`../../../api/rooming.php?action=detalle&id=${s.id}`);
         const data = res.data.data;
@@ -282,99 +319,29 @@ createApp({
       calcularNoches();
     };
 
-    const recalcularMoneda = (fromSurchargeToggle = false) => {
+    const recalcularMoneda = () => {
       const tc = form.stay.moneda_pago === 'PEN' ? 1 : parseFloat(tcs.value[form.stay.moneda_pago]) || 1;
       form.stay.tc_aplicado = tc;
-      
-      let totalPen = parseFloat(form.stay.total_pago) || 0;
 
-      // Solo ajustamos el total_pago si la función fue llamada por el evento del checkbox
-      if (fromSurchargeToggle === true) {
-        if (form.stay.recargo_pos) {
-          totalPen = totalPen * 1.05;
-        } else {
-          totalPen = totalPen / 1.05;
-        }
-        form.stay.total_pago = totalPen.toFixed(2);
-      }
+      const totalPen = parseFloat(form.stay.total_pago) || 0;
 
+      // Calcular equivalente en moneda extranjera
       let foreign = totalPen;
       if (form.stay.moneda_pago === 'USD') {
         foreign = totalPen / tc;
       } else if (form.stay.moneda_pago === 'CLP') {
         foreign = totalPen * tc;
       }
-      
       form.stay.monto_original = foreign.toFixed(2);
-      
-      // Si el pago es completo, sincronizamos el monto a cobrar con el total calculado
-      if (form.tipoPago === 'completo') {
-        form.adelanto = foreign.toFixed(2);
-        // Forzamos el recalculo del abono en soles y estado de pago
-        onAdelantoChange();
-      }
 
-      // ── Auto-selección de Método de Pago para POS ──────────────────
-      if (form.stay.recargo_pos) {
-        // Palabras clave por moneda para buscar el POS correcto
-        const posKeywords = {
-          'USD': ['dolar', 'usd', 'dollar'],
-          'CLP': ['peso', 'clp', 'chile', 'pesos'],
-          'PEN': ['sol', 'soles', 'pen']
-        };
-        const kwList = posKeywords[form.stay.moneda_pago] || [];
-
-        // 1° intento: POS específico para la moneda
-        let posMatch = mediosPago.value.find(m =>
-          m.activo == 1 &&
-          m.nombre.toLowerCase().includes('pos') &&
-          kwList.some(kw => m.nombre.toLowerCase().includes(kw))
-        );
-
-        // 2° intento: cualquier POS activo
-        if (!posMatch) {
-          posMatch = mediosPago.value.find(m =>
-            m.activo == 1 && m.nombre.toLowerCase().includes('pos')
-          );
-        }
-
-        if (posMatch) form.stay.metodo_pago = posMatch.nombre;
-
-      } else {
-        // Si se desactiva POS y el método actual era un POS, limpiarlo
-        if (form.stay.metodo_pago && form.stay.metodo_pago.toLowerCase().includes('pos')) {
-          form.stay.metodo_pago = '';
-        }
-      }
-      // ───────────────────────────────────────────────────────────────
-
-      onAdelantoChange();
+      // El adelanto siempre es el total completo (pago directo)
+      form.adelanto = foreign.toFixed(2);
+      form.stay.total_cobrado = totalPen.toFixed(2);
+      form.stay.estado_pago = totalPen > 0 ? 'pagado' : 'pendiente';
     };
 
     const onAdelantoChange = () => {
-      const tc = parseFloat(form.stay.tc_aplicado) || 1;
-      const amountEntered = parseFloat(form.adelanto) || 0;
-      
-      let cobradoPen = amountEntered;
-      if (form.stay.moneda_pago === 'USD') {
-        cobradoPen = amountEntered * tc;
-      } else if (form.stay.moneda_pago === 'CLP') {
-        cobradoPen = tc > 0 ? (amountEntered / tc) : 0;
-      }
-      
-      if (isNaN(cobradoPen)) cobradoPen = 0;
-      form.stay.total_cobrado = cobradoPen.toFixed(2);
-      
-      const totalPen = parseFloat(form.stay.total_pago) || 0;
-      const diffBase = totalPen - cobradoPen;
-      form.stay.estado_pago = diffBase <= 0.05 ? 'pagado' : (amountEntered > 0 ? 'parcial' : 'pendiente');
-
-      // ── Validación: adelanto no debe superar el monto base en la divisa ──
-      // monto_original ya está en la moneda del pago (USD, CLP o PEN)
-      const montoMaxEnMoneda = parseFloat(form.stay.monto_original) || totalPen;
-      // Si hay POS, el tope incluye el 5% de recargo
-      const tope = form.stay.recargo_pos ? montoMaxEnMoneda * 1.05 : montoMaxEnMoneda;
-      adelantoExcede.value = form.tipoPago === 'adelanto' && amountEntered > tope + 0.01;
+      // No-op: adelanto is now always the full total (managed by recalcularMoneda)
     };
 
     const cambiarTipoPago = (tipo) => {
@@ -422,9 +389,6 @@ createApp({
     // ────────────────────────────────────────────────────────
 
     const guardarCheckin = async () => {
-      if (form.tipoPago === 'adelanto' && adelantoExcede.value) {
-        return showToast('El adelanto no puede superar el costo total.', 'warning');
-      }
       loading.value = true;
       try {
         const res = await axios.post('../../../api/rooming.php?action=checkin', form);
@@ -436,9 +400,11 @@ createApp({
           showToast(res.data.msg || 'Error al procesar check-in', 'error');
         }
       } catch (err) {
-        const errorMsg = err.response && err.response.data && err.response.data.msg 
-                       ? err.response.data.msg 
-                       : 'Error al procesar check-in';
+        console.error('=== ERROR CHECKIN ===');
+        console.error('Status:', err.response?.status);
+        console.error('Data:', err.response?.data);
+        console.error('Full error:', err);
+        const errorMsg = err.response?.data?.msg || 'Error al procesar check-in';
         showToast(errorMsg, 'error');
       } finally {
         loading.value = false;
@@ -467,6 +433,11 @@ createApp({
     };
 
     const abrirConsumo = async (s) => {
+      loading.value = true;
+      if (!(await validarCajaAbierta())) {
+        loading.value = false;
+        return mostrarModalCajaCerrada();
+      }
       stayParaConsumo.value = s;
       Object.assign(consumoForm, {
         stay_id: s.id,
@@ -530,7 +501,13 @@ createApp({
       }
     };
 
-    const abrirPago = (stay) => {
+    const abrirPago = async (stay) => {
+      loading.value = true;
+      if (!(await validarCajaAbierta())) {
+        loading.value = false;
+        return mostrarModalCajaCerrada();
+      }
+      loading.value = false;
       pagoForm.stay_id = stay.id;
       pagoForm.monto = (parseFloat(stay.total_pago) - parseFloat(stay.total_cobrado)).toFixed(2);
       pagoForm.moneda = stay.moneda_pago;

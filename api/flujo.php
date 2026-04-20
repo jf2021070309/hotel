@@ -87,6 +87,11 @@ switch ($action) {
         json_response(true, $controller->categorias());
         break;
 
+    case 'verificar_apertura':
+        if ($method !== 'GET') json_response(false, null, 405, 'Método no permitido');
+        json_response(true, $controller->verificarApertura());
+        break;
+
     default:
         json_response(false, null, 400, 'Acción no válida');
         break;

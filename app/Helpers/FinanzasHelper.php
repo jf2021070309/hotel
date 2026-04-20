@@ -27,13 +27,39 @@ class FinanzasHelper {
         $fechaHoy = date('Y-m-d');
         $turno = self::getTurnoActual();
 
+        // 1. Intentar coincidencia exacta (Fecha + Turno + Usuario)
         $stmt = $this->pdo->prepare("
             SELECT id FROM flujo_caja 
             WHERE fecha = ? AND turno = ? AND usuario_id = ? AND estado = 'borrador'
             ORDER BY id DESC LIMIT 1
         ");
         $stmt->execute([$fechaHoy, $turno, $usuarioId]);
-        return $stmt->fetchColumn() ?: null;
+        $id = $stmt->fetchColumn();
+
+        if ($id) return (int)$id;
+
+        // 2. Fallback: Buscar cualquier caja abierta para el usuario el día de hoy 
+        // (Evita fallos por discrepancias de minutos en el cambio de turno)
+        $stmtFallback = $this->pdo->prepare("
+            SELECT id FROM flujo_caja 
+            WHERE fecha = ? AND usuario_id = ? AND estado = 'borrador'
+            ORDER BY id DESC LIMIT 1
+        ");
+        $stmtFallback->execute([$fechaHoy, $usuarioId]);
+        $resFallback = $stmtFallback->fetch(PDO::FETCH_ASSOC);
+        if ($resFallback) return (int)$resFallback['id'];
+
+        // 3. Buscador Global: Si no tiene caja propia, buscar CUALQUIER caja abierta del hotel hoy
+        // Esto permite que el Admin o un compañero use la caja abierta por otro en el mismo turno.
+        $stmtGlobal = $this->pdo->prepare("
+            SELECT id FROM flujo_caja 
+            WHERE fecha = ? AND estado = 'borrador'
+            ORDER BY id DESC LIMIT 1
+        ");
+        $stmtGlobal->execute([$fechaHoy]);
+        $resGlobal = $stmtGlobal->fetch(PDO::FETCH_ASSOC);
+        
+        return $resGlobal ? (int)$resGlobal['id'] : null;
     }
 
     /**
@@ -43,7 +69,10 @@ class FinanzasHelper {
     public function registrarMovimientoAutomatico(array $data): bool {
         $flujoId = $data['flujo_id'] ?? $this->getFlujoIdActivo($data['usuario_id']);
         
-        if (!$flujoId) return false; 
+        if (!$flujoId) {
+            error_log("FINANZAS_DEBUG: No se encontro flujo para Usuario ID: " . ($data['usuario_id'] ?? 'NULL') . " | Fecha: " . date('Y-m-d') . " | Turno: " . self::getTurnoActual());
+            return false; 
+        }
 
         $tipo = $data['tipo'] ?? 'Ingreso';
         $moneda = strtoupper($data['moneda'] ?? 'PEN');

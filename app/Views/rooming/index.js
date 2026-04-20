@@ -6,7 +6,7 @@
  * 
  * @module Rooming/FrontDeskJS
  */
-const { createApp, ref, reactive, computed, onMounted, onUnmounted } = Vue;
+const { createApp, ref, reactive, computed, watch, onMounted, onUnmounted } = Vue;
 
 createApp({
   setup() {
@@ -110,6 +110,10 @@ createApp({
       });
       return groups;
     });
+
+    const habitacionSeleccionada = computed(() =>
+      habitacionesLibres.value.find(x => String(x.id) === String(form.stay.habitacion_id)) || null
+    );
 
     const adelantoInvalido = computed(() => {
       if (form.tipoPago !== 'adelanto') return false;
@@ -228,10 +232,12 @@ createApp({
     };
 
     const onHabChange = () => {
-      const h = habitacionesLibres.value.find(x => x.id == form.stay.habitacion_id);
+      const h = habitacionSeleccionada.value;
       if (h) {
         // En rooming el precio base siempre es PEN
-        let base = h.precio_base * (form.stay.noches || 1);
+        const precioBase = parseFloat(h.precio_base) || 0;
+        const noches = Math.max(1, parseInt(form.stay.noches) || 1);
+        let base = precioBase * noches;
         
         // Si el POS está activo, aplicamos el recargo al nuevo precio base
         if (form.stay.recargo_pos) {
@@ -724,6 +730,10 @@ createApp({
       if (stayId) {
         verDetalle(stayId);
       }
+    });
+
+    watch(() => form.stay.habitacion_id, () => {
+      if (form.stay.habitacion_id) onHabChange();
     });
 
     onUnmounted(() => {

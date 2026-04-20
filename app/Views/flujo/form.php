@@ -2,14 +2,15 @@
 /**
  * app/Views/flujo/form.php
  */
-$base = '../../../';
-require_once $base . 'auth/middleware.php';
-require_once $base . 'rutas.php';
+$_projectRoot = dirname(__DIR__, 2);
+require_once $_projectRoot . '/auth/middleware.php';
+require_once $_projectRoot . '/rutas.php';
 protegerPorRol('cajera', 'flujo');
+require_once $_projectRoot . '/config/db.php';
 
 $page_title = 'Turno Flujo de Caja — Hotel Manager';
-include $base . 'includes/head.php';
-include $base . 'includes/sidebar.php';
+include $_projectRoot . '/includes/head.php';
+include $_projectRoot . '/includes/sidebar.php';
 
 $id = $_GET['id'] ?? 'null';
 $nuevo = $_GET['nuevo'] ?? '0';

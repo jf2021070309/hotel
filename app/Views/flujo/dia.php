@@ -2,14 +2,14 @@
 /**
  * app/Views/flujo/dia.php
  */
-$base = '../../../';
-require_once $base . 'auth/middleware.php';
-require_once $base . 'rutas.php';
+$_projectRoot = dirname(__DIR__, 2);
+require_once $_projectRoot . '/auth/middleware.php';
+require_once $_projectRoot . '/rutas.php';
 protegerPorRol('cajera', 'flujo');
 
 $page_title = 'Resumen del Día — Flujo de Caja';
-include $base . 'includes/head.php';
-include $base . 'includes/sidebar.php';
+include $_projectRoot . '/includes/head.php';
+include $_projectRoot . '/includes/sidebar.php';
 
 $fecha = $_GET['fecha'] ?? date('Y-m-d');
 ?>

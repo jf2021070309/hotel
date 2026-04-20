@@ -3,15 +3,16 @@
  * app/Views/flujo/index.php
  */
 $base = '../../../';
-require_once $base . 'auth/middleware.php';
-require_once $base . 'rutas.php';
+$_projectRoot = dirname(__DIR__, 2);
+require_once $_projectRoot . '/auth/middleware.php';
+require_once $_projectRoot . '/rutas.php';
 protegerPorRol('cajera', 'flujo');
-require_once $base . 'config/db.php'; // Asegurar PDO
+require_once $_projectRoot . '/config/db.php'; // Asegurar PDO
 
 // AUTO-REDIRECT: Si hay un turno abierto (borrador), entrar directo.
 // Se permite bypass con ?noredirect=1 para ver el listado histórico.
 if (!isset($_GET['noredirect'])) {
-    require_once $base . 'app/Models/FlujoModel.php';
+    require_once $_projectRoot . '/app/Models/FlujoModel.php';
     $fm = new FlujoModel($pdo);
     $activoId = $fm->getTurnoActivo();
     if ($activoId) {

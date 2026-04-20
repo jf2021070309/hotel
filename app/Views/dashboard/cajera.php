@@ -357,7 +357,7 @@ include 'includes/sidebar.php';
   }
 </style>
 
-<script src="<?= project_base_url() ?>app/Views/dashboard/cajera.js"></script>
+<script src="<?= $_root ?>app/Views/dashboard/cajera.js"></script>
 
 
 <?php include 'includes/footer.php'; ?>

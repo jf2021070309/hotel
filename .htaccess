@@ -1,5 +1,5 @@
 RewriteEngine On
-RewriteBase /hotel/
+# RewriteBase /hotel/
 
 # Mantener acceso normal a archivos y carpetas reales
 RewriteCond %{REQUEST_FILENAME} -f [OR]

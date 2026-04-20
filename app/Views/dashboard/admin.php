@@ -308,7 +308,7 @@ include 'includes/sidebar.php';
   }
 </style>
 
-<script src="<?= project_base_url() ?>app/Views/dashboard/admin.js"></script>
+<script src="<?= $_root ?>app/Views/dashboard/admin.js"></script>
 
 <?php include 'includes/footer.php'; ?>
 

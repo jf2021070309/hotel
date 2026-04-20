@@ -1,16 +1,15 @@
 <?php
 // ============================================================
 // includes/head.php — Head compartido con Bootstrap 5 + Vue 3
-// Requerir: $base ('' | '../' | '../../') y $page_title antes de incluir
 // ============================================================
 $page_title      = $page_title      ?? 'Hotel Manager';
-$base            = $base            ?? '';
+$base            = $base            ?? '';   // Prefijo del filesystem — lo define cada vista
 $export_enabled  = $export_enabled  ?? false;
 $chartjs_enabled = $chartjs_enabled ?? false;
 
 require_once dirname(__DIR__) . '/rutas.php';
+$_root          = project_base_url(); // URL raíz del proyecto — SOLO para assets web
 $view_base_href = view_base_href_for_request();
-$_root = project_base_url();
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -32,8 +31,8 @@ $_root = project_base_url();
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <!-- Estilos personalizados -->
   <link rel="stylesheet" href="<?= $_root ?>style.css?v=<?= time() ?>">
-  <!-- Vue 3 CDN (Global Build) -->
-  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <!-- Vue 3 CDN (Production Build) -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <!-- Axios CDN -->
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <?php if ($export_enabled): ?>

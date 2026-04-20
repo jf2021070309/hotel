@@ -19,7 +19,7 @@ if (!function_exists('project_base_url')) {
             $docRoot = str_replace('\\', '/', $docRoot);
             $projectRoot = str_replace('\\', '/', $projectRoot);
 
-            if (strpos($projectRoot, $docRoot) === 0) {
+            if (stripos($projectRoot, $docRoot) === 0) {
                 $relative = trim(substr($projectRoot, strlen($docRoot)), '/');
                 return '/' . ($relative !== '' ? $relative . '/' : '');
             }
@@ -64,44 +64,52 @@ if (!function_exists('clean_route_map')) {
 
 if (!function_exists('view_base_href_for_request')) {
     /**
-     * Calcula el base href correcto para la vista actual cuando se accede
-     * mediante URL limpia o mediante la ruta física de app/Views.
+     * Calcula el base href correcto para la vista actual.
+     * Funciona en localhost (/hotel/modulo) y en producción (/modulo).
+     *
+     * Si la vista fue incluida desde un subdirectorio (app/Views/modulo/archivo.php),
+     * devuelve la URL absoluta de ese directorio para que los scripts relativos
+     * (como "index.js") puedan resolverse correctamente en el navegador.
      */
     function view_base_href_for_request(): ?string {
-        $requestPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
-        $projectBase = project_base_url();
+        $projectBase = project_base_url(); // e.g. "/hotel/" o "/"
+        $requestUri  = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
 
-        if (strpos($requestPath, $projectBase) === 0) {
-            $requestPath = substr($requestPath, strlen($projectBase));
+        // Quitar el prefijo del proyecto para obtener la ruta relativa
+        if (stripos($requestUri, $projectBase) === 0) {
+            $relative = substr($requestUri, strlen($projectBase));
+        } else {
+            $relative = ltrim($requestUri, '/');
         }
-        $requestPath = trim((string)$requestPath, '/');
+        $relative = trim((string)$relative, '/');
 
-        if ($requestPath === '') {
+        // Si accedemos a la raíz (dashboard) no necesitamos base href
+        if ($relative === '' || $relative === 'index.php') {
             return null;
         }
 
-        if (strpos($requestPath, 'app/Views/') === 0) {
-            $dir = trim(dirname($requestPath), '.\\/');
-            return $projectBase . ($dir !== '' ? $dir . '/' : '');
+        // Buscar en el mapa de rutas limpias cuál archivo físico sirve esta URL
+        $map = clean_route_map();
+        foreach ($map as $physicalPath => $cleanPath) {
+            if (trim($cleanPath, '/') === $relative) {
+                // Calculamos el directorio del archivo físico
+                $dir = dirname($physicalPath);
+                $dir = ltrim(str_replace('\\', '/', $dir), './');
+                if ($dir === '' || $dir === '.') {
+                    return null;
+                }
+                // Si es un path en app/Views/... usarlo directamente
+                if (strpos($physicalPath, 'app/Views/') !== 0) {
+                    $dir = 'app/Views/' . $dir;
+                }
+                return $projectBase . $dir . '/';
+            }
         }
 
-        foreach (clean_route_map() as $target => $clean) {
-            if (trim($clean, '/') !== $requestPath) {
-                continue;
-            }
-
-            $target = ltrim($target, '/');
-            if ($target === 'index.php' || $target === 'logout.php') {
-                return null;
-            }
-
-            if (strpos($target, 'app/Views/') === 0) {
-                $dir = trim(dirname($target), '.\\/');
-            } else {
-                $dir = trim(BASE_VIEWS . dirname($target), '.\\/');
-            }
-
-            return $projectBase . ($dir !== '' ? $dir . '/' : '');
+        // Fallback: si la URL ya parece un path físico (acceso directo sin clean URL)
+        if (strpos($relative, 'app/Views/') === 0) {
+            $dir = trim(dirname($relative), './');
+            return $projectBase . $dir . '/';
         }
 
         return null;

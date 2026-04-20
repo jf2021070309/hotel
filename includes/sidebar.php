@@ -7,18 +7,6 @@
 $_projectRoot = dirname(__DIR__);
 require_once $_projectRoot . '/rutas.php';
 
-// Calcular $base para enlaces relativos si es necesario (principalmente para assets)
-$_selfPath  = str_replace('\\', '/', $_SERVER['PHP_SELF']);
-$_dirParts  = array_filter(explode('/', dirname($_selfPath)), 'strlen');
-$_dirParts  = array_values($_dirParts);
-
-// Intentar detectar si estamos en un subdirectorio comparando con project_base_url()
-$_pBaseUrl = trim(project_base_url(), '/');
-if (!empty($_dirParts) && !empty($_pBaseUrl) && $_dirParts[0] === $_pBaseUrl) {
-    array_shift($_dirParts);
-}
-$base = str_repeat('../', count($_dirParts));
-
 // Determine la ruta activa considerando URLs limpias y rutas físicas
 $requestPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
 $projectBase = project_base_url();

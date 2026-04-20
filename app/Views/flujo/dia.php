@@ -2,7 +2,8 @@
 /**
  * app/Views/flujo/dia.php
  */
-$_projectRoot = dirname(__DIR__, 2);
+$base = '../../../';
+$_projectRoot = dirname(__DIR__, 3);
 require_once $_projectRoot . '/auth/middleware.php';
 require_once $_projectRoot . '/rutas.php';
 protegerPorRol('cajera', 'flujo');

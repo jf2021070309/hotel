@@ -2,7 +2,8 @@
 /**
  * app/Views/flujo/form.php
  */
-$_projectRoot = dirname(__DIR__, 2);
+$base = '../../../';
+$_projectRoot = dirname(__DIR__, 3);
 require_once $_projectRoot . '/auth/middleware.php';
 require_once $_projectRoot . '/rutas.php';
 protegerPorRol('cajera', 'flujo');
@@ -232,7 +233,7 @@ $turnoQuery = $_GET['turno'] ?? 'MAÑANA';
 
       <!-- PANEL LATERAL RESUMEN -->
       <div class="col-lg-4 col-xl-3">
-        <div class="card border-0 shadow-sm sticky-top" style="top: 80px; border-radius:12px;">
+        <div class="card border-0 shadow-sm sticky-top" style="top: 15px; border-radius:12px;">
           <div class="card-header bg-dark text-white border-0 text-center py-3" style="border-radius:12px 12px 0 0;">
             <h5 class="mb-0"><i class="bi bi-calculator me-2"></i>RESUMEN</h5>
           </div>

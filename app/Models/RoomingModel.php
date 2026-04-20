@@ -188,7 +188,7 @@ class RoomingModel {
                 tc_aplicado = :tc, metodo_pago = :metodo, 
                 tipo_comprobante = :comprobante, num_comprobante = :num_comp, 
                 ruc_factura = :ruc, observaciones = :obs, 
-                total_cobrado = :cobrado, estado_pago = :est_pago,
+                total_cobrado = :cobrado, total_cobrado_orig = :cobrado_orig, estado_pago = :est_pago,
                 estado = :estado
                 WHERE id = :id";
             
@@ -215,6 +215,7 @@ class RoomingModel {
                 'ruc'         => $data['ruc'],
                 'obs'         => $data['obs'],
                 'cobrado'     => $data['cobrado'],
+                'cobrado_orig'=> $data['cobrado_orig'],
                 'est_pago'    => $data['est_pago'],
                 'estado'      => $data['estado'] ?? 'activo',
                 'id'          => $id

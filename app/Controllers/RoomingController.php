@@ -81,7 +81,7 @@ class RoomingController {
             'obs'          => $stayData['observaciones'] ?? '',
             'uid'          => $_SESSION['auth_id'],
             'cobrado'      => $stayData['total_cobrado'] ?? 0,
-            'cobrado_orig' => isset($input['adelanto']) && (float)$input['adelanto'] > 0 ? (float)$input['adelanto'] : (float)($stayData['monto_original'] ?? 0),
+            'cobrado_orig' => isset($input['adelanto']) ? (float)$input['adelanto'] : (float)($stayData['monto_original'] ?? 0),
             'est_pago'     => $stayData['estado_pago'] ?? 'pendiente',
             'estado'       => $stayData['estado'] ?? 'activo'
         ];
@@ -193,7 +193,8 @@ class RoomingController {
             // Si hay pago inicial, registrarlo como anticipo
             if ($mapped['cobrado'] > 0) {
                 $adelantoVal = isset($input['adelanto']) ? (float)$input['adelanto'] : 0;
-                $monto_pago = ($adelantoVal > 0) ? $adelantoVal : $mapped['monto_orig'];
+                $esPagoCompleto = ($input['tipoPago'] ?? 'completo') === 'completo';
+                $monto_pago = $esPagoCompleto ? (float)$mapped['monto_orig'] : $adelantoVal;
                 
                 $pago = [
                     'stay_id'   => $stay_id,

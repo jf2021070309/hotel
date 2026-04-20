@@ -67,7 +67,6 @@ createApp({
         ciudad: '',
         es_titular: true
       }],
-      // Adelanto fijo = total completo (pago directo siempre)
       adelanto: 0,
       tipoPago: 'completo'
     });
@@ -110,6 +109,26 @@ createApp({
         groups[p.categoria].push(p);
       });
       return groups;
+    });
+
+    const adelantoInvalido = computed(() => {
+      if (form.tipoPago !== 'adelanto') return false;
+      const adelanto = parseFloat(form.adelanto) || 0;
+      return adelanto <= 0 || adelantoExcede.value;
+    });
+
+    const totalOriginal = computed(() => {
+      const totalPen = parseFloat(form.stay.total_pago) || 0;
+      const tc = parseFloat(form.stay.tc_aplicado) || 1;
+      if (form.stay.moneda_pago === 'USD') return tc > 0 ? totalPen / tc : 0;
+      if (form.stay.moneda_pago === 'CLP') return totalPen * tc;
+      return totalPen;
+    });
+
+    const saldoPendienteOriginal = computed(() => {
+      const total = totalOriginal.value;
+      const adelanto = parseFloat(form.adelanto) || 0;
+      return Math.max(0, total - adelanto);
     });
 
     // MÉTODOS
@@ -205,6 +224,7 @@ createApp({
       form.pax = [{ nombre_completo: '', documento_tipo: 'DNI', documento_num: '', nacionalidad: 'Peruana', ciudad: '', es_titular: true }];
       form.adelanto = 0;
       form.tipoPago = 'completo';
+      adelantoExcede.value = false;
     };
 
     const onHabChange = () => {
@@ -288,8 +308,11 @@ createApp({
         }
 
         // Configurar UI de cobro según el estado actual
-        form.tipoPago = (data.estado_pago === 'pagado') ? 'completo' : 'adelanto';
-        form.adelanto = data.total_cobrado_orig || 0; 
+        const totalOriginalStay = parseFloat(data.monto_original) || 0;
+        const cobradoOriginalStay = parseFloat(data.total_cobrado_orig) || 0;
+        form.tipoPago = (cobradoOriginalStay > 0 && cobradoOriginalStay < totalOriginalStay) ? 'adelanto' : 'completo';
+        form.adelanto = form.tipoPago === 'adelanto' ? cobradoOriginalStay : totalOriginalStay;
+        onAdelantoChange();
         
         new bootstrap.Modal('#modalCheckin').show();
       } catch (e) {
@@ -333,20 +356,48 @@ createApp({
         foreign = totalPen * tc;
       }
       form.stay.monto_original = foreign.toFixed(2);
-
-      // El adelanto siempre es el total completo (pago directo)
-      form.adelanto = foreign.toFixed(2);
-      form.stay.total_cobrado = totalPen.toFixed(2);
-      form.stay.estado_pago = totalPen > 0 ? 'pagado' : 'pendiente';
+      if (form.tipoPago === 'completo') {
+        form.adelanto = foreign.toFixed(2);
+      }
+      onAdelantoChange();
     };
 
     const onAdelantoChange = () => {
-      // No-op: adelanto is now always the full total (managed by recalcularMoneda)
+      const totalPen = parseFloat(form.stay.total_pago) || 0;
+      const totalOrig = totalOriginal.value;
+      let adelantoOrig = parseFloat(form.adelanto) || 0;
+
+      if (form.tipoPago === 'completo') {
+        adelantoOrig = totalOrig;
+      }
+
+      adelantoExcede.value = adelantoOrig > totalOrig + 0.0001;
+
+      const tc = parseFloat(form.stay.tc_aplicado) || 1;
+      let cobradoPen = adelantoOrig;
+      if (form.stay.moneda_pago === 'USD') cobradoPen = adelantoOrig * tc;
+      else if (form.stay.moneda_pago === 'CLP') cobradoPen = tc > 0 ? adelantoOrig / tc : 0;
+
+      if (form.tipoPago === 'adelanto' && adelantoOrig <= 0) {
+        cobradoPen = 0;
+      }
+
+      cobradoPen = Math.min(cobradoPen, totalPen);
+      form.stay.total_cobrado = cobradoPen.toFixed(2);
+
+      if (cobradoPen <= 0) form.stay.estado_pago = 'pendiente';
+      else if (cobradoPen >= totalPen - 0.01) form.stay.estado_pago = 'pagado';
+      else form.stay.estado_pago = 'adelanto';
     };
 
     const cambiarTipoPago = (tipo) => {
       form.tipoPago = tipo;
-      recalcularMoneda();
+      if (tipo === 'completo') {
+        form.adelanto = totalOriginal.value.toFixed(2);
+      } else if ((parseFloat(form.adelanto) || 0) <= 0) {
+        form.adelanto = '0.00';
+      }
+      onAdelantoChange();
     };
 
     const agregarPax = () => {
@@ -389,6 +440,18 @@ createApp({
     // ────────────────────────────────────────────────────────
 
     const guardarCheckin = async () => {
+      if (form.tipoPago === 'adelanto') {
+        const adelanto = parseFloat(form.adelanto) || 0;
+        if (adelanto <= 0) {
+          showToast('El adelanto debe ser mayor a 0.', 'warning');
+          return;
+        }
+        if (adelantoExcede.value) {
+          showToast('El adelanto no puede superar el monto total.', 'warning');
+          return;
+        }
+      }
+
       loading.value = true;
       try {
         const res = await axios.post('../../../api/rooming.php?action=checkin', form);
@@ -616,6 +679,7 @@ createApp({
     const fmtFecha = (f) => f;
     const getPagoClass = (p) => {
        if (p === 'pagado') return 'bg-success';
+       if (p === 'adelanto') return 'bg-info text-dark';
        if (p === 'parcial') return 'bg-warning text-dark';
        return 'bg-danger';
     };
@@ -673,6 +737,7 @@ createApp({
       onAdelantoChange, agregarPax, setTitular, guardarCheckin, verDetalle, cargarDatos,
       fmtFecha, getPagoClass, getEstadBadge, procederCheckout, abrirPago, recalcularPago, guardarPago,
       abrirEdicion, activarReserva, cambiarTipoPago, fmtCur, isEditingAdelanto, adelantoExcede, getMetodoPagoIcon,
+      saldoPendienteOriginal, adelantoInvalido,
       // CONSUMOS
       inventario, inventarioAgrupado, stayParaConsumo, consumosStay, consumoForm,
       abrirConsumo, onProductoChange, calcularTotalConsumo, guardarConsumo,

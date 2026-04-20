@@ -52,6 +52,7 @@ include $_projectRoot . '/includes/head.php';
               <select class="form-select form-select-sm fw-bold text-secondary shadow-sm" style="font-size: 11px;" v-model="filtroPago">
                 <option value="">Pagos: Todos</option>
                 <option value="pendiente">Pendiente</option>
+                <option value="adelanto">Adelanto</option>
                 <option value="parcial">Parcial</option>
                 <option value="pagado">Pagado</option>
               </select>
@@ -362,6 +363,44 @@ include $_projectRoot . '/includes/head.php';
                   </select>
                 </div>
 
+                <div class="mb-3">
+                  <label class="form-label micro-text fw-bold mb-2 d-block">TIPO DE COBRO</label>
+                  <div class="row g-2">
+                    <div class="col-6">
+                      <button type="button"
+                        class="btn btn-sm w-100 fw-bold"
+                        :class="form.tipoPago === 'completo' ? 'btn-primary' : 'btn-outline-primary'"
+                        @click="cambiarTipoPago('completo')">
+                        Pagar Completo
+                      </button>
+                    </div>
+                    <div class="col-6">
+                      <button type="button"
+                        class="btn btn-sm w-100 fw-bold"
+                        :class="form.tipoPago === 'adelanto' ? 'btn-warning text-dark' : 'btn-outline-warning'"
+                        @click="cambiarTipoPago('adelanto')">
+                        Dejar Adelanto
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mb-3" v-if="form.tipoPago === 'adelanto'">
+                  <label class="form-label micro-text fw-bold mb-1">ADELANTO ({{ form.stay.moneda_pago }})</label>
+                  <input type="number"
+                    v-model="form.adelanto"
+                    class="form-control form-control-sm"
+                    min="0.01"
+                    step="0.01"
+                    @input="onAdelantoChange"
+                    placeholder="0.00">
+                  <div class="small mt-1" :class="adelantoExcede ? 'text-danger fw-bold' : 'text-muted'">
+                    <span v-if="adelantoExcede">El adelanto no puede superar el total.</span>
+                    <span v-else-if="(parseFloat(form.adelanto) || 0) <= 0">El adelanto debe ser mayor a 0.</span>
+                    <span v-else>Saldo pendiente: {{ form.stay.moneda_pago }} {{ fmtCur(saldoPendienteOriginal) }}</span>
+                  </div>
+                </div>
+
                 <!-- COMPROBANTE + N° RECIBO -->
                 <div class="row g-1">
                   <div class="col-7">
@@ -384,7 +423,7 @@ include $_projectRoot . '/includes/head.php';
           </div>
           <div class="modal-footer border-0 p-4 pt-0">
             <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancelar</button>
-            <button type="submit" id="btnRegistrarCheckin" class="btn btn-primary px-5 shadow" :disabled="loading || adelantoExcede">
+            <button type="submit" id="btnRegistrarCheckin" class="btn btn-primary px-5 shadow" :disabled="loading || adelantoInvalido">
               <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
               {{ form.stay.id ? 'Guardar Cambios' : 'Registrar Check-in' }}
             </button>

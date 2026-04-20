@@ -9,6 +9,8 @@
 class FlujoController {
     /** @var PDO Conexión a la base de datos. */
     private PDO $pdo;
+    private FlujoModel $model;
+    private AuditoriaModel $audit;
 
     /**
      * Constructor del controlador.
@@ -111,7 +113,7 @@ class FlujoController {
                 ? "Abrió un nuevo turno de Caja: $fecha ($turno)" 
                 : "Actualizó movimientos del turno de Caja: $fecha ($turno)";
             
-            $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], $accion, 'FINANZAS', $msgAudit);
+            $this->registrarAuditoriaSeguro($accion, 'FINANZAS', $msgAudit);
 
             return ['ok' => true, 'msg' => 'Turno guardado correctamente', 'data' => ['id' => $newId]];
         } catch (Exception $e) {
@@ -133,7 +135,7 @@ class FlujoController {
         if ($actual['estado'] !== 'borrador') return ['ok' => false, 'msg' => 'El flujo ya no está en borrador'];
 
         if ($this->model->cambiarEstado($id, 'cerrado')) {
-            $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'FLUJO_CERRADO', 'FINANZAS', "Flujo ID $id cerrado.");
+            $this->registrarAuditoriaSeguro('FLUJO_CERRADO', 'FINANZAS', "Flujo ID $id cerrado.");
             return ['ok' => true, 'msg' => 'Turno cerrado correctamente'];
         }
         return ['ok' => false, 'msg' => 'No se pudo cerrar el turno'];
@@ -153,7 +155,7 @@ class FlujoController {
         if ($actual['estado'] !== 'cerrado') return ['ok' => false, 'msg' => 'Solo flujos cerrados se pueden depositar'];
 
         if ($this->model->cambiarEstado($id, 'depositado')) {
-            $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'FLUJO_DEPOSITADO', 'FINANZAS', "Flujo ID $id marcado depositado.");
+            $this->registrarAuditoriaSeguro('FLUJO_DEPOSITADO', 'FINANZAS', "Flujo ID $id marcado depositado.");
             return ['ok' => true, 'msg' => 'Dinero del turno depositado correctamente'];
         }
         return ['ok' => false, 'msg' => 'No se pudo depositar el turno'];
@@ -174,10 +176,27 @@ class FlujoController {
         }
 
         if ($this->model->cambiarEstado($id, 'borrador')) {
-            $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'FLUJO_REABIERTO', 'FINANZAS', "Flujo ID $id reabierto a borrador.");
+            $this->registrarAuditoriaSeguro('FLUJO_REABIERTO', 'FINANZAS', "Flujo ID $id reabierto a borrador.");
             return ['ok' => true, 'msg' => 'Turno reabierto correctamente (ahora es editable)'];
         }
         return ['ok' => false, 'msg' => 'No se pudo reabrir el turno'];
+    }
+
+    /**
+     * La auditoría nunca debe romper la operación principal del flujo.
+     */
+    private function registrarAuditoriaSeguro(string $accion, string $modulo, string $detalle): void {
+        try {
+            $this->audit->registrar(
+                $_SESSION['auth_id'] ?? null,
+                $_SESSION['auth_nombre'] ?? null,
+                $accion,
+                $modulo,
+                $detalle
+            );
+        } catch (Throwable $e) {
+            error_log('Auditoria FlujoController: ' . $e->getMessage());
+        }
     }
 
     /**

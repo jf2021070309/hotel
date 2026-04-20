@@ -128,7 +128,10 @@ createApp({
         }
       } catch (e) {
         console.error(e);
-        Swal.fire('Error', 'No se pudo crear el turno. Es posible que ya exista uno abierto para esta fecha.', 'error');
+        const msg =
+          e?.response?.data?.msg ||
+          'No se pudo crear el turno. Es posible que ya exista uno abierto para esta fecha.';
+        Swal.fire('Error', msg, 'error');
       } finally {
         loadingCheck.value = false;
       }

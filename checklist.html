@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Checklist Sistema Hotelero</title>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .progress {
+            width: 100%;
+            background: #ddd;
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .progress-bar {
+            height: 20px;
+            width: 0%;
+            background: #4CAF50;
+            transition: 0.3s;
+        }
+
+        .modulo {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        label {
+            display: block;
+            padding: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        label:hover {
+            background: #f5f5f5;
+        }
+
+        input[type="checkbox"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+
+        .checked {
+            text-decoration: line-through;
+            color: gray;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>✅ Checklist Sistema Hotelero</h1>
+
+    <div class="progress">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <div class="modulo">
+        <h2>🔐 Login</h2>
+        <label><input type="checkbox"> Login admin correcto</label>
+        <label><input type="checkbox"> Login recepcionista</label>
+        <label><input type="checkbox"> Validar error de credenciales</label>
+        <label><input type="checkbox"> Cerrar sesión</label>
+    </div>
+
+    <div class="modulo">
+        <h2>📊 Dashboard</h2>
+        <label><input type="checkbox"> Ver KPIs</label>
+        <label><input type="checkbox"> Navegación entre módulos</label>
+        <label><input type="checkbox"> Datos coherentes</label>
+    </div>
+
+    <div class="modulo">
+        <h2>🛏️ Habitaciones</h2>
+        <label><input type="checkbox"> Ver listado</label>
+        <label><input type="checkbox"> Cambiar estado</label>
+        <label><input type="checkbox"> Crear habitación</label>
+        <label><input type="checkbox"> Editar habitación</label>
+    </div>
+
+    <div class="modulo">
+        <h2>📋 Reservas</h2>
+        <label><input type="checkbox"> Crear reserva</label>
+        <label><input type="checkbox"> Buscar reserva</label>
+        <label><input type="checkbox"> Editar reserva</label>
+        <label><input type="checkbox"> Cancelar reserva</label>
+    </div>
+
+    <div class="modulo">
+        <h2>🏨 Check-in / Check-out</h2>
+        <label><input type="checkbox"> Realizar check-in</label>
+        <label><input type="checkbox"> Realizar check-out</label>
+        <label><input type="checkbox"> Ver resumen de estadía</label>
+    </div>
+
+    <div class="modulo">
+        <h2>💳 Pagos</h2>
+        <label><input type="checkbox"> Registrar pago completo</label>
+        <label><input type="checkbox"> Registrar pago parcial</label>
+        <label><input type="checkbox"> Ver historial de pagos</label>
+    </div>
+
+    <div class="modulo">
+        <h2>💰 Caja</h2>
+        <label><input type="checkbox"> Ver ingresos del día</label>
+        <label><input type="checkbox"> Registrar egreso</label>
+        <label><input type="checkbox"> Ver balance</label>
+    </div>
+
+    <script>
+        const checkboxes = document.querySelectorAll("input[type='checkbox']");
+        const progressBar = document.getElementById("progressBar");
+
+        checkboxes.forEach(cb => {
+            cb.addEventListener("change", updateProgress);
+        });
+
+        function updateProgress() {
+            let total = checkboxes.length;
+            let checked = document.querySelectorAll("input[type='checkbox']:checked").length;
+
+            let percent = (checked / total) * 100;
+            progressBar.style.width = percent + "%";
+
+            checkboxes.forEach(cb => {
+                if (cb.checked) {
+                    cb.parentElement.classList.add("checked");
+                } else {
+                    cb.parentElement.classList.remove("checked");
+                }
+            });
+        }
+    </script>
+
+</body>
+
+</html>

@@ -130,8 +130,8 @@ include $_projectRoot . '/includes/head.php';
                   <div class="text-muted mt-1" style="font-size: 11px;">🛏️ {{ s.noches }} noches</div>
                 </td>
                 <td class="text-end fw-bold">
-                  <div class="text-dark">{{ s.moneda_pago }} {{ fmtCur(s.monto_original) }}</div>
-                  <div class="text-success small" style="font-size: 10px;">Abono S/ {{ s.total_cobrado }}</div>
+                  <div class="text-dark">{{ s.moneda_pago == 'USD' ? '$' : (s.moneda_pago == 'CLP' ? 'P$' : 'S/') }} {{ fmtCur(s.monto_original) }}</div>
+                  <div class="text-success small" style="font-size: 10px;">Abono {{ s.moneda_pago == 'USD' ? '$' : (s.moneda_pago == 'CLP' ? 'P$' : 'S/') }} {{ s.total_cobrado_orig || s.total_cobrado }}</div>
                 </td>
                 <td class="text-center">
                   <span class="badge" :class="getPagoClass(s.estado_pago)" style="font-size: 9px;">{{ s.estado_pago.toUpperCase() }}</span>
@@ -519,11 +519,11 @@ include $_projectRoot . '/includes/head.php';
                     <tbody>
                       <tr>
                         <td class="text-muted py-2">Monto Estancia</td>
-                        <td class="text-end fw-bold py-2 text-dark">{{ selectedStay.moneda_pago }} {{ parseFloat(selectedStay.total_pago).toFixed(2) }}</td>
+                        <td class="text-end fw-bold py-2 text-dark">{{ selectedStay.moneda_pago == 'USD' ? '$' : (selectedStay.moneda_pago == 'CLP' ? 'P$' : 'S/') }} {{ parseFloat(selectedStay.monto_original || selectedStay.total_pago).toFixed(2) }}</td>
                       </tr>
                       <tr class="border-bottom">
                         <td class="text-muted py-2">Monto Abonado</td>
-                        <td class="text-end fw-bold py-2 text-success">S/ {{ parseFloat(selectedStay.total_cobrado).toFixed(2) }}</td>
+                        <td class="text-end fw-bold py-2 text-success">{{ selectedStay.moneda_pago == 'USD' ? '$' : (selectedStay.moneda_pago == 'CLP' ? 'P$' : 'S/') }} {{ parseFloat(selectedStay.total_cobrado_orig || selectedStay.total_cobrado).toFixed(2) }}</td>
                       </tr>
                       <tr>
                         <td class="py-2 fw-bold text-dark" style="font-size: 15px;">SALDO PENDIENTE</td>
@@ -532,7 +532,7 @@ include $_projectRoot . '/includes/head.php';
                               <i class="bi bi-check-circle-fill me-1"></i> PAGADO
                            </span>
                            <span v-else>
-                              S/ {{ (selectedStay.total_pago - selectedStay.total_cobrado).toFixed(2) }}
+                              {{ selectedStay.moneda_pago == 'USD' ? '$' : (selectedStay.moneda_pago == 'CLP' ? 'P$' : 'S/') }} {{ (parseFloat(selectedStay.monto_original || selectedStay.total_pago) - parseFloat(selectedStay.total_cobrado_orig || selectedStay.total_cobrado)).toFixed(2) }}
                            </span>
                         </td>
                       </tr>
@@ -690,8 +690,8 @@ include $_projectRoot . '/includes/head.php';
               </div>
               <div class="text-end">
                 <div class="small text-muted fw-bold text-uppercase">Saldo Pendiente</div>
-                <div class="fw-bold text-danger fs-5">PEN {{ (stayParaPago.total_pago -
-                  stayParaPago.total_cobrado).toFixed(2) }}</div>
+                <div class="fw-bold text-danger fs-5">{{ stayParaPago.moneda_pago == 'USD' ? '$' : (stayParaPago.moneda_pago == 'CLP' ? 'P$' : 'PEN') }} {{ (stayParaPago.monto_original -
+                  stayParaPago.total_cobrado_orig).toFixed(2) }}</div>
               </div>
             </div>
           </div>

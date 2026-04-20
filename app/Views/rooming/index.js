@@ -222,6 +222,7 @@ createApp({
         num_comprobante: '',
         carro: 'NO',
         total_cobrado: 0,
+        total_cobrado_orig: 0,
         estado_pago: 'pendiente',
         recargo_pos: false
       });
@@ -285,6 +286,7 @@ createApp({
             num_comprobante: data.num_comprobante || '',
             carro: data.carro || 'NO',
             total_cobrado: data.total_cobrado || 0,
+            total_cobrado_orig: data.total_cobrado_orig || data.total_cobrado || 0,
             estado_pago: data.estado_pago || 'pendiente',
             observaciones: data.observaciones || '',
             procedencia: data.procedencia || '',
@@ -390,6 +392,7 @@ createApp({
 
       cobradoPen = Math.min(cobradoPen, totalPen);
       form.stay.total_cobrado = cobradoPen.toFixed(2);
+      form.stay.total_cobrado_orig = adelantoOrig.toFixed(2);
 
       if (cobradoPen <= 0) form.stay.estado_pago = 'pendiente';
       else if (cobradoPen >= totalPen - 0.01) form.stay.estado_pago = 'pagado';
@@ -579,7 +582,7 @@ createApp({
       loading.value = false;
       stayParaPago.value = stay; // IMPORTANTE: Para validaciones posteriores
       pagoForm.stay_id = stay.id;
-      pagoForm.monto = (parseFloat(stay.total_pago) - parseFloat(stay.total_cobrado)).toFixed(2);
+      pagoForm.monto = (parseFloat(stay.monto_original || stay.total_pago) - parseFloat(stay.total_cobrado_orig || stay.total_cobrado)).toFixed(2);
       pagoForm.moneda = stay.moneda_pago;
       pagoForm.recargo_pos = false;
       pagoForm.tipo = '';

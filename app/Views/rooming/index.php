@@ -528,7 +528,12 @@ include $_projectRoot . '/includes/head.php';
                       <tr>
                         <td class="py-2 fw-bold text-dark" style="font-size: 15px;">SALDO PENDIENTE</td>
                         <td class="text-end fw-bold py-2 h4 mb-0" :class="(selectedStay.total_pago - selectedStay.total_cobrado) > 0 ? 'text-danger' : 'text-success'">
-                           S/ {{ (selectedStay.total_pago - selectedStay.total_cobrado).toFixed(2) }}
+                           <span v-if="(selectedStay.total_pago - selectedStay.total_cobrado) <= 0.01">
+                              <i class="bi bi-check-circle-fill me-1"></i> PAGADO
+                           </span>
+                           <span v-else>
+                              S/ {{ (selectedStay.total_pago - selectedStay.total_cobrado).toFixed(2) }}
+                           </span>
                         </td>
                       </tr>
                     </tbody>

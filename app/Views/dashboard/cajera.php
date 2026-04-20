@@ -11,16 +11,21 @@ include 'includes/sidebar.php';
 
 <div class="main-content">
   <div class="topbar border-bottom-0 shadow-sm" style="background: linear-gradient(to right, #ffffff, #f8f9fa);">
-    <div class="d-flex align-items-center gap-3">
-      <button class="btn-burger" onclick="handleMenuClick()"><i class="bi bi-list fs-4"></i></button>
-      <div>
-        <h4 class="fw-bold" style="color: #111; letter-spacing: -0.5px;">
-          ¡Hola, <?= explode(' ', $_SESSION['auth_nombre'] ?? 'Operador')[0] ?>!
-          <span class="badge rounded-pill ms-2" id="reloj" style="background: #111; color: #d4af37; border: 1px solid #d4af37; font-size: 13px !important; font-weight: 600;"></span>
-          <span class="fs-6 text-muted fw-normal ms-2">Turno
-            <?= (date('H') >= 6 && date('H') < 14) ? 'MAÑANA' : 'TARDE' ?></span>
-        </h4>
-        <p class="mb-0 small text-muted fw-semibold">Panel de control operativo — <?= date('d/m/Y') ?></p>
+    <div class="d-flex align-items-center justify-content-between w-100">
+      <div class="d-flex align-items-center gap-3">
+        <button class="btn-burger" onclick="handleMenuClick()"><i class="bi bi-list fs-4"></i></button>
+        <div>
+          <h4 class="fw-bold mb-0" style="color: #111; letter-spacing: -0.5px;">
+            ¡Hola, <?= explode(' ', $_SESSION['auth_nombre'] ?? 'Operador')[0] ?>!
+            <span class="fs-6 text-muted fw-normal ms-2">Turno
+              <?= (date('H') >= 6 && date('H') < 14) ? 'MAÑANA' : 'TARDE' ?></span>
+          </h4>
+          <p class="mb-0 small text-muted fw-semibold">Panel de control operativo</p>
+        </div>
+      </div>
+      <div class="text-end pe-3 pe-sm-4">
+        <div class="small text-muted fw-bold text-uppercase" style="letter-spacing: 1px; font-size: 9px;">Hoy es</div>
+        <div class="fw-bold text-dark" style="font-size: 13px;"><?= date('d/m/Y') ?></div>
       </div>
     </div>
   </div>
@@ -354,10 +359,7 @@ include 'includes/sidebar.php';
 
 <script src="app/Views/dashboard/cajera.js"></script>
 
-<script>
-  // Clock logic independent of Vue
-  function tick() { document.getElementById('reloj').textContent = new Date().toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit'}); }
-  tick(); setInterval(tick, 1000);
-</script>
+
+<?php include 'includes/footer.php'; ?>
 
 <?php include 'includes/footer.php'; ?>

@@ -19,16 +19,21 @@ include $base . 'includes/sidebar.php';
 
 <div class="main-content">
   <div class="topbar border-bottom-0 shadow-sm" style="background: linear-gradient(to right, #ffffff, #f8f9fa);">
-    <button class="btn-burger" onclick="handleMenuClick()"><i class="bi bi-list fs-4"></i></button>
-    <div class="d-flex align-items-center gap-1">
-      <i class="bi bi-wallet2 fs-5 d-none d-sm-block" style="color: #d4af37;"></i>
-      <div class="text-nowrap">
-        <h5 class="fw-bold mb-0" style="color: #111; letter-spacing: -0.5px; font-size: 1.15rem;">Gastos Yape</h5>
-        <p class="mb-0 small text-muted d-none d-sm-block" style="font-size: 10px;">Gestión de compras con Yape</p>
+    <div class="d-flex align-items-center justify-content-between w-100">
+      <div class="d-flex align-items-center gap-3">
+        <button class="btn-burger" onclick="handleMenuClick()"><i class="bi bi-list fs-4"></i></button>
+        <div class="d-flex align-items-center gap-1">
+          <i class="bi bi-wallet2 fs-5 d-none d-sm-block" style="color: #d4af37;"></i>
+          <div class="text-nowrap">
+            <h5 class="fw-bold mb-0" style="color: #111; letter-spacing: -0.5px; font-size: 1.15rem;">Gastos Yape</h5>
+            <p class="mb-0 small text-muted d-none d-sm-block" style="font-size: 10px;">Gestión de compras con Yape</p>
+          </div>
+        </div>
       </div>
-    </div>
-    <div class="ms-auto d-flex align-items-center">
-       <span class="badge px-3 py-2 fs-6 rounded-pill shadow-sm" id="reloj" style="background: #111; color: #d4af37; border: 1px solid #d4af37; font-size: 12px !important;"></span>
+      <div class="text-end pe-3 pe-sm-4">
+        <div class="small text-muted fw-bold text-uppercase" style="letter-spacing: 1px; font-size: 9px;">Hoy es</div>
+        <div class="fw-bold text-dark" style="font-size: 13px;"><?= date('d/m/Y') ?></div>
+      </div>
     </div>
   </div>
 

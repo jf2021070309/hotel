@@ -143,9 +143,7 @@ if (estaAutenticado()) {
         <p class="subtitle">Use sus credenciales corporativas para acceder al sistema.</p>
 
         <form @submit.prevent="handleSubmit">
-            <div v-if="error" class="alert alert-danger bg-danger bg-opacity-10 border-0 text-danger small mb-4 p-3 rounded-0">
-                <i class="bi bi-exclamation-circle me-2"></i> {{ error }}
-            </div>
+            <!-- Alerta SweetAlert manejada por JS -->
 
             <div class="mb-4">
                 <label class="form-label">Usuario</label>
@@ -182,6 +180,7 @@ if (estaAutenticado()) {
 
 <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
     const { createApp, reactive, ref } = Vue;
@@ -199,10 +198,30 @@ if (estaAutenticado()) {
                 try {
                     const res = await axios.post(baseUrl + 'api/auth/login.php', form);
                     if (res.data.ok) {
-                        window.location.href = res.data.data.redirect;
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Acceso Exitoso',
+                            text: 'Bienvenido al sistema PLATINIUM...',
+                            timer: 1500,
+                            showConfirmButton: false,
+                            timerProgressBar: true,
+                            willClose: () => {
+                                window.location.href = res.data.data.redirect;
+                            }
+                        });
+                    } else {
+                        throw new Error(res.data.msg || 'Error de autenticación');
                     }
                 } catch (err) {
-                    error.value = err.response?.data?.msg || 'Error de autenticación: Verifique sus credenciales.';
+                    const msg = err.response?.data?.msg || err.message || 'Error de autenticación: Verifique sus credenciales.';
+                    error.value = msg;
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Acceso Denegado',
+                        text: msg,
+                        confirmButtonColor: '#A68966',
+                        confirmButtonText: 'Entendido'
+                    });
                 } finally {
                     loading.value = false;
                 }

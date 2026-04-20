@@ -325,7 +325,7 @@ $turnoQuery = $_GET['turno'] ?? 'MAÑANA';
 <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="<?= $base ?>app/Views/flujo/form.js?v=<?= time() ?>"></script>
+<script src="<?= project_base_url() ?>app/Views/flujo/form.js?v=<?= time() ?>"></script>
 
 <style>
   /* Forzar que las glosas se vean rojas incluso si el campo está deshabilitado */

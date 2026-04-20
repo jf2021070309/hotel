@@ -141,4 +141,4 @@ $fecha = $_GET['fecha'] ?? date('Y-m-d');
 </script>
 <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-<script src="<?= $base ?>app/Views/flujo/dia.js"></script>
+<script src="<?= project_base_url() ?>app/Views/flujo/dia.js"></script>

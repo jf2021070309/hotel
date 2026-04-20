@@ -148,4 +148,4 @@ include $base . 'includes/sidebar.php';
     dia: <?= json_encode(route('flujo/dia.php')) ?>
   };
 </script>
-<script src="<?= $base ?>app/Views/flujo/index.js?v=<?= time() ?>"></script>
+<script src="<?= project_base_url() ?>app/Views/flujo/index.js?v=<?= time() ?>"></script>

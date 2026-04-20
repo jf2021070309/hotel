@@ -10,6 +10,7 @@ $chartjs_enabled = $chartjs_enabled ?? false;
 
 require_once dirname(__DIR__) . '/rutas.php';
 $view_base_href = view_base_href_for_request();
+$_root = project_base_url();
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -22,15 +23,15 @@ $view_base_href = view_base_href_for_request();
 <?php endif; ?>
 
   <!-- Favicon -->
-  <link rel="icon" type="image/jpeg" href="<?= $base ?>assets/img/logo.jpg">
-  <link rel="shortcut icon" type="image/jpeg" href="<?= $base ?>assets/img/logo.jpg">
+  <link rel="icon" type="image/jpeg" href="<?= $_root ?>assets/img/logo.jpg">
+  <link rel="shortcut icon" type="image/jpeg" href="<?= $_root ?>assets/img/logo.jpg">
 
   <!-- Bootstrap 5 CSS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
   <!-- Bootstrap Icons -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <!-- Estilos personalizados -->
-  <link rel="stylesheet" href="<?= $base ?>style.css?v=<?= time() ?>">
+  <link rel="stylesheet" href="<?= $_root ?>style.css?v=<?= time() ?>">
   <!-- Vue 3 CDN (Global Build) -->
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
   <!-- Axios CDN -->
@@ -42,7 +43,7 @@ $view_base_href = view_base_href_for_request();
   <!-- Exportación Excel -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <!-- Utilidades de exportación -->
-  <script src="<?= $base ?>app/exportar.js"></script>
+  <script src="<?= $_root ?>app/exportar.js"></script>
 <?php endif; ?>
 <?php if ($chartjs_enabled): ?>
   <!-- Chart.js -->

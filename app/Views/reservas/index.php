@@ -3,12 +3,13 @@
  * app/Views/cuadro_reservas/index.php
  */
 $base = '../../../';
-require_once $base . 'auth/middleware.php';
+$_projectRoot = dirname(__DIR__, 3);
+require_once $_projectRoot . '/auth/middleware.php';
 protegerPorRol('cajera', 'reservas');
 
 $page_title = 'Cuadro de Reservas — Hotel Manager';
-include $base . 'includes/head.php';
-include $base . 'includes/sidebar.php';
+include $_projectRoot . '/includes/head.php';
+include $_projectRoot . '/includes/sidebar.php';
 ?>
 
 <style>

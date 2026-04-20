@@ -22,8 +22,8 @@ if (!isset($_GET['noredirect'])) {
 }
 
 $page_title = 'Flujo de Caja — Hotel Manager';
-include $base . 'includes/head.php';
-include $base . 'includes/sidebar.php';
+include $_projectRoot . '/includes/head.php';
+include $_projectRoot . '/includes/sidebar.php';
 ?>
 
 <div class="main-content" id="app-flujo-index">

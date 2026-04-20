@@ -10,6 +10,29 @@
 
 $uri = urldecode(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH));
 
+/**
+ * Ejecuta un script PHP usando su propio directorio como current working directory.
+ *
+ * Esto mantiene compatibilidad con vistas legacy que usan include/require relativos
+ * como '../../../includes/head.php', algo que falla cuando el router las carga desde
+ * la raíz del proyecto con php -S.
+ */
+function requireFromTargetDirectory(string $target): void
+{
+    $previousCwd = getcwd();
+    $targetDir = dirname($target);
+
+    if ($previousCwd !== false && $previousCwd !== $targetDir) {
+        chdir($targetDir);
+    }
+
+    require $target;
+
+    if ($previousCwd !== false && $previousCwd !== $targetDir) {
+        chdir($previousCwd);
+    }
+}
+
 // 1. Si el archivo o carpeta existe realmente, servirlo directamente (assets, CSS, JS, etc.)
 $filePath = __DIR__ . $uri;
 if ($uri !== '/' && file_exists($filePath) && !is_dir($filePath)) {
@@ -53,7 +76,7 @@ $cleanUri = rtrim($uri, '/') ?: '/';
 if (isset($routeMap[$cleanUri])) {
     $target = __DIR__ . '/' . $routeMap[$cleanUri];
     if (file_exists($target)) {
-        require $target;
+        requireFromTargetDirectory($target);
         exit;
     }
 }
@@ -64,7 +87,7 @@ foreach ($passThroughPrefixes as $prefix) {
     if (strpos($uri, $prefix) === 0) {
         $target = __DIR__ . $uri;
         if (file_exists($target)) {
-            require $target;
+            requireFromTargetDirectory($target);
             exit;
         }
     }

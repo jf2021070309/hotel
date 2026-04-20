@@ -75,7 +75,10 @@ class RoomingModel {
         $limpieza = $stmtClean->fetchColumn();
 
         if ($limpieza && $limpieza !== 'lista') {
-            throw new Exception("La habitación {$data['hab_id']} aún no ha sido marcada como 'LISTA' por el personal de limpieza.");
+            $stmtNum = $this->pdo->prepare("SELECT numero FROM habitaciones WHERE id = ?");
+            $stmtNum->execute([$habId]);
+            $numReal = $stmtNum->fetchColumn() ?: $habId;
+            throw new Exception("La habitación $numReal aún no ha sido marcada como 'LISTA' por el personal de limpieza.");
         }
 
         $mustCommit = !$this->pdo->inTransaction();

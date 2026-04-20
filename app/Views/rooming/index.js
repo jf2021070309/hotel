@@ -577,6 +577,7 @@ createApp({
         return mostrarModalCajaCerrada();
       }
       loading.value = false;
+      stayParaPago.value = stay; // IMPORTANTE: Para validaciones posteriores
       pagoForm.stay_id = stay.id;
       pagoForm.monto = (parseFloat(stay.total_pago) - parseFloat(stay.total_cobrado)).toFixed(2);
       pagoForm.moneda = stay.moneda_pago;
@@ -624,8 +625,15 @@ createApp({
       if (s) {
         const saldo = parseFloat(s.total_pago) - parseFloat(s.total_cobrado);
         const montoPen = parseFloat(pagoForm.monto_pen) || 0;
-        if (montoPen > saldo + 0.10) {
-          return showToast('El monto ingresado (' + pagoForm.monto + ') supera el saldo pendiente de la habitación.', 'warning');
+        
+        // Validar si el monto excede el saldo (con margen de error de 0.05 por redondeos)
+        if (montoPen > (saldo + 0.05)) {
+          return Swal.fire({
+            title: 'Monto Excedido',
+            text: `El monto a pagar (S/ ${montoPen.toFixed(2)}) supera el saldo pendiente de la habitación (S/ ${saldo.toFixed(2)}). Por favor, ajuste el monto.`,
+            icon: 'warning',
+            confirmButtonColor: '#3085d6'
+          });
         }
       }
 

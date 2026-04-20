@@ -708,7 +708,12 @@ include $_projectRoot . '/includes/head.php';
               <div class="col-md-6">
                 <label class="form-label small fw-bold">Equivalente PEN</label>
                 <input type="number" class="form-control form-control-sm bg-light fw-bold text-secondary"
+                  :class="stayParaPago && parseFloat(pagoForm.monto_pen) > (parseFloat(stayParaPago.total_pago - stayParaPago.total_cobrado) + 0.05) ? 'border-danger text-danger' : ''"
                   v-model="pagoForm.monto_pen" readonly>
+                <div v-if="stayParaPago && parseFloat(pagoForm.monto_pen) > (parseFloat(stayParaPago.total_pago - stayParaPago.total_cobrado) + 0.05)" 
+                     class="text-danger fw-bold mt-1" style="font-size: 10px;">
+                  <i class="bi bi-exclamation-triangle-fill"></i> El monto excede el saldo pendiente.
+                </div>
               </div>
             </div>
 

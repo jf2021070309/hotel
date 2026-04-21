@@ -197,6 +197,75 @@ if (estaAutenticado()) {
                 transform: translateX(0);
             }
         }
+
+        .time-stop {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, transparent 18%, rgba(0, 0, 0, 0.96) 100%);
+            backdrop-filter: blur(6px);
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity .2s ease;
+        }
+
+        .time-text {
+            color: white;
+            font-size: clamp(44px, 8vw, 84px);
+            font-weight: 800;
+            letter-spacing: 6px;
+            opacity: 0;
+            transform: scale(0.5);
+            text-shadow: 0 0 18px rgba(255, 255, 255, .35);
+        }
+
+        .time-stop.active {
+            opacity: 1;
+            pointer-events: all;
+            animation: aura 1.8s infinite linear;
+        }
+
+        .time-stop.active .time-text {
+            animation: aparecer 0.45s forwards;
+        }
+
+        @keyframes aura {
+            0% { filter: hue-rotate(0deg) brightness(1); }
+            50% { filter: hue-rotate(180deg) brightness(1.45); }
+            100% { filter: hue-rotate(360deg) brightness(1); }
+        }
+
+        @keyframes aparecer {
+            to {
+                opacity: 1;
+                transform: scale(1.15);
+            }
+        }
+
+        .flash {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            opacity: 0;
+            z-index: 10000;
+            pointer-events: none;
+        }
+
+        .flash.active {
+            animation: flashAnim 0.32s;
+        }
+
+        @keyframes flashAnim {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
     </style>
 </head>
 
@@ -254,6 +323,11 @@ if (estaAutenticado()) {
         </div>
     </div>
 
+    <div class="time-stop" id="overlay">
+        <div class="time-text">THE WORLD</div>
+    </div>
+    <div class="flash" id="flash"></div>
+
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -267,8 +341,28 @@ if (estaAutenticado()) {
                 const loading = ref(false);
                 const error = ref('');
                 const baseUrl = '<?php echo project_base_url(); ?>';
+                const overlay = document.getElementById('overlay');
+                const flash = document.getElementById('flash');
                 const loginAudio = new Audio(baseUrl + 'assets/audio/jotaro.mp3');
                 loginAudio.preload = 'auto';
+
+                const ejecutarTheWorldEffect = async () => {
+                    flash.classList.add('active');
+                    loginAudio.currentTime = 0;
+                    loginAudio.play().catch(() => { });
+
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                    flash.classList.remove('active');
+                    overlay.classList.add('active');
+                    document.body.style.pointerEvents = 'none';
+                    overlay.style.pointerEvents = 'all';
+
+                    await new Promise(resolve => setTimeout(resolve, 3000));
+
+                    overlay.classList.remove('active');
+                    document.body.style.pointerEvents = 'auto';
+                    overlay.style.pointerEvents = 'none';
+                };
 
                 const handleSubmit = async () => {
                     loading.value = true;
@@ -276,16 +370,7 @@ if (estaAutenticado()) {
                     try {
                         const res = await axios.post(baseUrl + 'api/auth/login.php', form);
                         if (res.data.ok) {
-                            loginAudio.currentTime = 0;
-                            loginAudio.play().catch(() => { });
-                            await Swal.fire({
-                                icon: 'success',
-                                title: 'Acceso Exitoso',
-                                text: 'Bienvenido al sistema PLATINIUM...',
-                                timer: 3000,
-                                showConfirmButton: false,
-                                timerProgressBar: true
-                            });
+                            await ejecutarTheWorldEffect();
                             window.location.href = res.data.data.redirect;
                         } else {
                             throw new Error(res.data.msg || 'Error de autenticación');

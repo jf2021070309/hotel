@@ -669,7 +669,7 @@ createApp({
       loadingConsumo.value = true;
       try {
         const res = await axios.post('../../../api/consumos.php?action=registrar', consumoForm);
-        if (res.data.ok) {
+      if (res.data.ok) {
           showToast(res.data.msg, 'success');
           const modalElem = document.getElementById('modalConsumo');
           const modal = bootstrap.Modal.getInstance(modalElem);
@@ -693,23 +693,29 @@ createApp({
         return mostrarModalCajaCerrada();
       }
       loading.value = false;
-      stayParaPago.value = stay; // IMPORTANTE: Para validaciones posteriores
+      stayParaPago.value = stay;
       pagoForm.stay_id = stay.id;
-      pagoForm.monto = (parseFloat(stay.monto_original || stay.total_pago) - parseFloat(stay.total_cobrado_orig || stay.total_cobrado)).toFixed(2);
+      // Saldo pendiente en moneda original
+      const saldoOrig = parseFloat(stay.monto_original) - parseFloat(stay.total_cobrado_orig || 0);
+      pagoForm.monto = saldoOrig.toFixed(2);
       pagoForm.moneda = stay.moneda_pago;
       pagoForm.recargo_pos = false;
       pagoForm.tipo = '';
       pagoForm.recibo = 'ABONO-' + new Date().getTime().toString().substr(-6);
+      pagoForm.fecha = new Date().toISOString().split('T')[0];
       recalcularPago();
       new bootstrap.Modal('#modalPago').show();
     };
 
     const recalcularPago = (fromToggle = false) => {
-      const tc = pagoForm.moneda === 'PEN' ? 1 : parseFloat(tcs.value[pagoForm.moneda]) || 1;
-      pagoForm.tc = tc;
+      if (!stayParaPago.value) return;
+
+      const tcPago = pagoForm.moneda === 'PEN' ? 1 : parseFloat(tcs.value[pagoForm.moneda]) || 1;
+      pagoForm.tc = tcPago;
       
       let amount = parseFloat(pagoForm.monto) || 0;
       
+      // Manejo de recargo POS del 5%
       if (fromToggle === true) {
         if (pagoForm.recargo_pos) {
           amount *= 1.05;
@@ -719,19 +725,53 @@ createApp({
         pagoForm.monto = amount.toFixed(2);
       }
 
+      // 1. Convertir pago a PEN (Base de caja)
       let pen = amount;
-      if (pagoForm.moneda === 'USD') pen = amount * tc;
-      else if (pagoForm.moneda === 'CLP') pen = tc > 0 ? (amount / tc) : 0;
-      
+      if (pagoForm.moneda === 'USD') pen = amount * tcPago;
+      else if (pagoForm.moneda === 'CLP') pen = tcPago > 0 ? (amount / tcPago) : 0;
       pagoForm.monto_pen = pen.toFixed(2);
 
-      // Auto-selección de método POS
+      // 2. Determinar cuánto deduce de la MONEDA ORIGINAL de la estadía
+      const monedaStay = stayParaPago.value.moneda_pago;
+      const tcStay = monedaStay === 'PEN' ? 1 : parseFloat(tcs.value[monedaStay]) || 1;
+      
+      let deduction = pen;
+      if (monedaStay === 'USD') deduction = pen / tcStay;
+      else if (monedaStay === 'CLP') deduction = pen * tcStay;
+      
+      pagoForm.monto_orig_deducir = deduction.toFixed(2);
+
       if (pagoForm.recargo_pos) {
         if (!pagoForm.tipo || !pagoForm.tipo.toLowerCase().includes('pos')) {
           const mPos = mediosPago.value.find(m => m.nombre.toLowerCase().includes('pos'));
           if (mPos) pagoForm.tipo = mPos.nombre;
         }
       }
+    };
+
+    const cambiarMonedaPago = (nuevaMoneda) => {
+      if (!stayParaPago.value) return;
+      
+      pagoForm.moneda = nuevaMoneda;
+      const stay = stayParaPago.value;
+      
+      // Saldo pendiente en SU MONEDA ORIGINAL
+      const saldoPendOrig = parseFloat(stay.monto_original) - parseFloat(stay.total_cobrado_orig || 0);
+      
+      // Convertir ese saldo pendiente original a PEN primeramente
+      const tcStay = stay.moneda_pago === 'PEN' ? 1 : parseFloat(tcs.value[stay.moneda_pago]) || 1;
+      let saldoEnPen = saldoPendOrig;
+      if (stay.moneda_pago === 'USD') saldoEnPen = saldoPendOrig * tcStay;
+      else if (stay.moneda_pago === 'CLP') saldoEnPen = tcStay > 0 ? (saldoPendOrig / tcStay) : 0;
+      
+      // Ahora convertir esos Soles a la NUEVA MONEDA de pago seleccionada
+      const tcNueva = nuevaMoneda === 'PEN' ? 1 : parseFloat(tcs.value[nuevaMoneda]) || 1;
+      let nuevoMonto = saldoEnPen;
+      if (nuevaMoneda === 'USD') nuevoMonto = tcNueva > 0 ? (saldoEnPen / tcNueva) : 0;
+      else if (nuevaMoneda === 'CLP') nuevoMonto = saldoEnPen * tcNueva;
+      
+      pagoForm.monto = nuevoMonto.toFixed(2);
+      recalcularPago();
     };
 
     const guardarPago = async () => {
@@ -1032,7 +1072,7 @@ createApp({
       staysFiltrados, selectedStay, stayParaPago, mediosPago, pagoForm,
       abrirCheckin, onHabChange, calcularNoches, onNochesChange, recalcularMoneda, 
       onAdelantoChange, agregarPax, setTitular, guardarCheckin, verDetalle, cargarDatos,
-      fmtFecha, getPagoClass, getEstadBadge, procederCheckout, abrirPago, recalcularPago, guardarPago,
+      fmtFecha, getPagoClass, getEstadBadge, procederCheckout, abrirPago, recalcularPago, cambiarMonedaPago, guardarPago,
       abrirEdicion, activarReserva, cambiarTipoPago, fmtCur, isEditingAdelanto, adelantoExcede, getMetodoPagoIcon,
       saldoPendienteOriginal, adelantoInvalido,
       // CONSUMOS

@@ -273,50 +273,52 @@ class RoomingController {
     }
 
     public function registrarPago(array $input) {
-        $input['uid'] = $_SESSION['auth_id'];
-        $stayId = (int)($input['stay_id'] ?? 0);
-        
-        if ($stayId <= 0 || (float)($input['monto'] ?? 0) <= 0) {
-            return ['ok' => false, 'msg' => 'ID o monto inválido.'];
-        }
-
-        $stmt = $this->pdo->prepare("SELECT total_pago, total_cobrado FROM rooming_stays WHERE id = ?");
-        $stmt->execute([$stayId]);
-        $stay = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if ($stay) {
-            $saldoPendiente = (float)$stay['total_pago'] - (float)$stay['total_cobrado'];
-            $montoIngresado = (float)($input['monto_pen'] ?? $input['monto'] ?? 0);
+        try {
+            $input['uid'] = $_SESSION['auth_id'];
+            $stayId = (int)($input['stay_id'] ?? 0);
             
-            // Validación estricta para evitar negativos
-            if ($montoIngresado > $saldoPendiente + 0.05) {
-                return [
-                    'ok' => false, 
-                    'msg' => "El monto ingresado (S/ ".number_format($montoIngresado, 2).") supera el saldo pendiente (S/ ".number_format($saldoPendiente, 2).")."
-                ];
-            }
-        }
-
-        $subtipo = 'adelanto';
-        if ($stay) {
-            $saldoPendiente = (float)$stay['total_pago'] - (float)$stay['total_cobrado'];
-            // Si hay recargo del POS, el saldo que el usuario DEBE pagar 
-            // para completar es Saldo + 5%, ya que el total_pago aumentará en esa proporción.
-            if (!empty($input['recargo_pos'])) {
-                $saldoPendiente *= 1.05;
+            if ($stayId <= 0 || (float)($input['monto'] ?? 0) <= 0) {
+                return ['ok' => false, 'msg' => 'ID o monto inválido.'];
             }
 
-            if ((float)$input['monto_pen'] >= $saldoPendiente - 0.05) {
-                $subtipo = 'completo';
-            }
-        }
+            $stmt = $this->pdo->prepare("SELECT total_pago, total_cobrado FROM rooming_stays WHERE id = ?");
+            $stmt->execute([$stayId]);
+            $stay = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($this->model->registrarPago($input, $subtipo)) {
-            $msgAudit = "Registró pago de S/ " . number_format($input['monto_pen'], 2) . " [{$input['tipo']}] para Estancia #$stayId";
-            $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'REGISTRAR_PAGO', 'ROOMING', $msgAudit);
-            return ['ok' => true, 'msg' => "Pago registrado"];
+            if ($stay) {
+                $saldoPendiente = (float)$stay['total_pago'] - (float)$stay['total_cobrado'];
+                $montoIngresado = (float)($input['monto_pen'] ?? $input['monto'] ?? 0);
+                
+                if ($montoIngresado > $saldoPendiente + 0.05) {
+                    return [
+                        'ok' => false, 
+                        'msg' => "El monto ingresado (S/ ".number_format($montoIngresado, 2).") supera el saldo pendiente (S/ ".number_format($saldoPendiente, 2).")."
+                    ];
+                }
+            }
+
+            $subtipo = 'adelanto';
+            if ($stay) {
+                $saldoPendiente = (float)$stay['total_pago'] - (float)$stay['total_cobrado'];
+                if (!empty($input['recargo_pos'])) {
+                    $saldoPendiente *= 1.05;
+                }
+
+                if ((float)($input['monto_pen'] ?? 0) >= $saldoPendiente - 0.05) {
+                    $subtipo = 'completo';
+                }
+            }
+
+            if ($this->model->registrarPago($input, $subtipo)) {
+                $montoAudit = (float)($input['monto_pen'] ?? 0);
+                $msgAudit = "Registró pago de S/ " . number_format($montoAudit, 2) . " [{$input['tipo']}] para Estancia #$stayId";
+                $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'REGISTRAR_PAGO', 'ROOMING', $msgAudit);
+                return ['ok' => true, 'msg' => "Pago registrado"];
+            }
+            return ['ok' => false, 'msg' => "Error al registrar pago"];
+        } catch (Exception $e) {
+            return ['ok' => false, 'msg' => $e->getMessage()];
         }
-        return ['ok' => false, 'msg' => "Error al registrar pago"];
     }
 
     /**

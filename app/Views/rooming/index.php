@@ -924,12 +924,14 @@ include $_projectRoot . '/includes/head.php';
                         <tbody>
                           <tr v-for="pag in selectedStay.pagos" :key="pag.id">
                             <td class="ps-2">
-                              <div class="fw-bold text-dark text-uppercase small">{{ pag.tipo_pago }}</div>
-                              <div class="text-muted mini" style="font-size: 9px;">{{ pag.created_at.split(' ')[1] }} |
-                                {{ pag.cajero_nom }}</div>
+                              <div class="fw-bold text-dark text-uppercase small" style="font-size: 10px;">{{ pag.tipo_pago }}</div>
+                              <div class="text-muted mini" style="font-size: 9px;">{{ pag.created_at.split(' ')[1] }} | {{ pag.cajero_nom }}</div>
                             </td>
                             <td class="text-end pe-2 align-middle">
-                              <span class="fw-bold text-success">+ {{ parseFloat(pag.monto).toFixed(2) }}</span>
+                                <span class="badge bg-light text-dark border me-1" style="font-size: 9px;">{{ pag.moneda }}</span>
+                                <span class="fw-bold text-success" style="font-size: 13px;">
+                                    {{ pag.moneda == 'USD' ? '$' : (pag.moneda == 'CLP' ? 'P$' : 'S/') }} {{ parseFloat(pag.monto).toFixed(2) }}
+                                </span>
                             </td>
                           </tr>
                         </tbody>
@@ -1080,63 +1082,91 @@ include $_projectRoot . '/includes/head.php';
           </div>
 
           <form @submit.prevent="guardarPago">
+            <!-- Botones de Acceso Rápido de Moneda -->
+            <div class="d-flex gap-2 mb-3">
+                <button type="button" class="btn btn-sm flex-fill fw-bold border shadow-sm" 
+                    :class="pagoForm.moneda === 'PEN' ? 'btn-primary' : 'btn-light'"
+                    @click="cambiarMonedaPago('PEN')">
+                    <i class="bi bi-cash me-1"></i> SOLES
+                </button>
+                <button type="button" class="btn btn-sm flex-fill fw-bold border shadow-sm" 
+                    :class="pagoForm.moneda === 'USD' ? 'btn-success' : 'btn-light'"
+                    @click="cambiarMonedaPago('USD')">
+                    <i class="bi bi-currency-dollar me-1"></i> DÓLARES
+                </button>
+                <button type="button" class="btn btn-sm flex-fill fw-bold border shadow-sm" 
+                    :class="pagoForm.moneda === 'CLP' ? 'btn-info text-white' : 'btn-light'"
+                    @click="cambiarMonedaPago('CLP')">
+                    <i class="bi bi-coin me-1"></i> PESOS
+                </button>
+            </div>
+
             <div class="row g-3 mb-3">
               <div class="col-md-6">
                 <label class="form-label small fw-bold">Monto a Pagar</label>
                 <div class="input-group input-group-sm">
-                  <select v-model="pagoForm.moneda" class="form-select border-primary" @change="recalcularPago"
-                    style="max-width: 80px;">
+                  <select v-model="pagoForm.moneda" class="form-select border-primary fw-bold" @change="recalcularPago"
+                    style="max-width: 85px;">
                     <option value="PEN">S/</option>
                     <option value="USD">$</option>
+                    <option value="CLP">P$</option>
                   </select>
-                  <input type="number" class="form-control border-primary" v-model="pagoForm.monto" step="0.01" required
+                  <input type="number" class="form-control border-primary fw-bold" v-model="pagoForm.monto" step="1" required
                     @input="recalcularPago">
+                </div>
+                <!-- Indicador de lectura de millar para montos grandes -->
+                <div v-if="pagoForm.moneda === 'CLP' && parseFloat(pagoForm.monto) > 0" 
+                     class="mt-1 mini fw-bold text-primary animate__animated animate__fadeIn">
+                    Lectura: P$ {{ parseInt(pagoForm.monto).toLocaleString('es-CL') }}
                 </div>
               </div>
               <div class="col-md-6">
-                <label class="form-label small fw-bold">Equivalente PEN</label>
-                <input type="number" class="form-control form-control-sm bg-light fw-bold text-secondary"
-                  :class="stayParaPago && parseFloat(pagoForm.monto_pen) > (parseFloat(stayParaPago.total_pago - stayParaPago.total_cobrado) + 0.05) ? 'border-danger text-danger' : ''"
-                  v-model="pagoForm.monto_pen" readonly>
-                <div
-                  v-if="stayParaPago && parseFloat(pagoForm.monto_pen) > (parseFloat(stayParaPago.total_pago - stayParaPago.total_cobrado) + 0.05)"
-                  class="text-danger fw-bold mt-1" style="font-size: 10px;">
-                  <i class="bi bi-exclamation-triangle-fill"></i> El monto excede el saldo pendiente.
+                <label class="form-label small fw-bold text-muted">
+                    Equivalente en PEN (Soles)
+                </label>
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-light fw-bold border-0">S/</span>
+                    <input type="number" class="form-control form-control-sm bg-light fw-bold text-secondary"
+                    v-model="pagoForm.monto_pen" readonly>
                 </div>
               </div>
             </div>
 
-            <div class="mb-3">
-              <div
-                class="d-flex justify-content-between align-items-center mb-2 px-2 py-1 bg-info bg-opacity-10 rounded border border-info border-opacity-25">
-                <div class="form-check form-switch mb-0 ps-0 d-flex align-items-center gap-2">
-                  <input class="form-check-input m-0" type="checkbox" id="checkPosPago" v-model="pagoForm.recargo_pos"
-                    @change="recalcularPago(true)" style="cursor:pointer;">
-                  <label class="form-check-label small fw-bold text-info mb-0" for="checkPosPago">POS (+5%)</label>
-                </div>
-                <span v-if="pagoForm.recargo_pos" class="badge bg-danger" style="font-size:10px;">
-                  + {{ pagoForm.moneda }} {{ (parseFloat(pagoForm.monto) * 0.05 / 1.05).toFixed(2) }}
-                </span>
-              </div>
-              <label class="form-label small fw-bold">Método de Pago</label>
-              <select class="form-select form-select-sm" v-model="pagoForm.tipo" required>
-                <option value="">Seleccione...</option>
-                <option v-for="m in mediosPago" :key="m.id" :value="m.nombre" :disabled="m.activo != 1">
-                  {{ m.nombre }}
-                </option>
-              </select>
-            </div>
+            <!-- Sección de configuración de pago con aire lateral -->
+            <div class="px-2">
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3 px-3 py-2 bg-info bg-opacity-10 rounded border border-info border-opacity-25">
+                        <div class="form-check form-switch mb-0 ps-0 d-flex align-items-center gap-2">
+                        <input class="form-check-input m-0" type="checkbox" id="checkPosPago" v-model="pagoForm.recargo_pos"
+                            @change="recalcularPago(true)" style="cursor:pointer;">
+                        <label class="form-check-label small fw-bold text-info mb-0" for="checkPosPago">POS (+5%)</label>
+                        </div>
+                        <span v-if="pagoForm.recargo_pos" class="badge bg-danger" style="font-size:10px;">
+                        + {{ pagoForm.moneda }} {{ (parseFloat(pagoForm.monto) * 0.05 / 1.05).toFixed(2) }}
+                        </span>
+                    </div>
 
-            <div class="row g-3 mb-4">
-              <div class="col-6">
-                <label class="form-label small fw-bold">Fecha</label>
-                <input type="date" class="form-control form-control-sm" v-model="pagoForm.fecha" required>
-              </div>
-              <div class="col-6">
-                <label class="form-label small fw-bold">N° Recibo / Ref.</label>
-                <input type="text" class="form-control form-control-sm" v-model="pagoForm.recibo"
-                  placeholder="Ref. opcional">
-              </div>
+                    <div class="mt-4">
+                        <label class="form-label small fw-bold text-muted text-uppercase" style="font-size: 10px; letter-spacing: 0.5px;">Método de Pago</label>
+                        <select class="form-select border-light shadow-sm" v-model="pagoForm.tipo" required style="border-radius: 8px;">
+                            <option value="">Seleccione...</option>
+                            <option v-for="m in mediosPago" :key="m.id" :value="m.nombre" :disabled="m.activo != 1">
+                            {{ m.nombre }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4 mt-3">
+                    <div class="col-6">
+                        <label class="form-label small fw-bold text-muted text-uppercase" style="font-size: 10px; letter-spacing: 0.5px;">Fecha</label>
+                        <input type="date" class="form-control border-light shadow-sm" v-model="pagoForm.fecha" required style="border-radius: 8px;">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label small fw-bold text-muted text-uppercase" style="font-size: 10px; letter-spacing: 0.5px;">N° Recibo / Ref.</label>
+                        <input type="text" class="form-control border-light shadow-sm" v-model="pagoForm.recibo" placeholder="Ref. opcional" style="border-radius: 8px;">
+                    </div>
+                </div>
             </div>
 
             <div class="mt-2 d-grid">

@@ -1,0 +1,227 @@
+```html
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>THE WORLD PRO</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial;
+            overflow: hidden;
+            transition: transform 0.6s ease;
+        }
+
+        /* CONTENIDO */
+        .content {
+            height: 200vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* BOTÓN */
+        button {
+            padding: 20px 40px;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        /* OVERLAY */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle, transparent 10%, rgba(0, 0, 0, 0.95) 90%);
+            backdrop-filter: blur(8px);
+            opacity: 0;
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
+        }
+
+        /* TEXTO */
+        .text {
+            color: white;
+            font-size: 70px;
+            letter-spacing: 8px;
+            transform: scale(0.5);
+            opacity: 0;
+        }
+
+        /* PARTICULAS */
+        canvas {
+            position: fixed;
+            inset: 0;
+            z-index: 9998;
+            pointer-events: none;
+        }
+
+        /* FLASH */
+        .flash {
+            position: fixed;
+            inset: 0;
+            background: white;
+            opacity: 0;
+            z-index: 10000;
+        }
+
+        /* ACTIVOS */
+        .overlay.active {
+            opacity: 1;
+            pointer-events: all;
+            animation: aura 2s infinite;
+        }
+
+        .text.show {
+            animation: showText 0.6s forwards;
+        }
+
+        .flash.active {
+            animation: flash 0.25s;
+        }
+
+        /* ANIMACIONES */
+        @keyframes aura {
+            0% {
+                filter: hue-rotate(0deg) brightness(1);
+            }
+
+            50% {
+                filter: hue-rotate(200deg) brightness(1.7);
+            }
+
+            100% {
+                filter: hue-rotate(360deg) brightness(1);
+            }
+        }
+
+        @keyframes showText {
+            to {
+                opacity: 1;
+                transform: scale(1.2);
+            }
+        }
+
+        @keyframes flash {
+            0% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="content">
+        <button onclick="timeStop()">🕒 THE WORLD PRO</button>
+    </div>
+
+    <div class="overlay" id="overlay">
+        <div class="text" id="text">THE WORLD</div>
+    </div>
+
+    <div class="flash" id="flash"></div>
+    <canvas id="particles"></canvas>
+
+    <audio id="sound" src="https://www.myinstants.com/media/sounds/za-warudo.mp3"></audio>
+
+    <script>
+        const overlay = document.getElementById("overlay");
+        const text = document.getElementById("text");
+        const flash = document.getElementById("flash");
+        const sound = document.getElementById("sound");
+
+        /* PARTICULAS */
+        const canvas = document.getElementById("particles");
+        const ctx = canvas.getContext("2d");
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let particles = [];
+
+        for (let i = 0; i < 120; i++) {
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                size: Math.random() * 3,
+                speed: Math.random() * 0.3
+            });
+        }
+
+        function drawParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "white";
+
+            particles.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+
+        /* congelar partículas */
+        let freezeParticles = false;
+
+        function animateParticles() {
+            if (!freezeParticles) {
+                particles.forEach(p => p.y += p.speed);
+            }
+            drawParticles();
+            requestAnimationFrame(animateParticles);
+        }
+
+        animateParticles();
+
+        /* EFECTO PRINCIPAL */
+        function timeStop() {
+
+            // flash
+            flash.classList.add("active");
+
+            // sonido
+            sound.currentTime = 0;
+            sound.play();
+
+            // zoom dramático
+            document.body.style.transform = "scale(1.05)";
+
+            setTimeout(() => {
+                flash.classList.remove("active");
+
+                overlay.classList.add("active");
+                text.classList.add("show");
+
+                // congelar todo
+                freezeParticles = true;
+                document.body.style.pointerEvents = "none";
+                overlay.style.pointerEvents = "all";
+
+            }, 200);
+
+            // reanudar
+            setTimeout(() => {
+                overlay.classList.remove("active");
+                text.classList.remove("show");
+
+                document.body.style.transform = "scale(1)";
+                document.body.style.pointerEvents = "auto";
+
+                freezeParticles = false;
+
+            }, 6000);
+        }
+    </script>
+
+</body>
+
+</html>
+```

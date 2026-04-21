@@ -289,6 +289,70 @@ class ReservasModel {
     }
 
     /**
+     * Update a quick reservation while it is still reserved.
+     */
+    public function actualizarReservaRapida(int $id, array $data): bool {
+        $fecha_fin = date('Y-m-d', strtotime($data['fecha_inicio'] . " + {$data['noches']} days"));
+
+        $mustCommit = !$this->pdo->inTransaction();
+        if ($mustCommit) {
+            $this->pdo->beginTransaction();
+        }
+
+        try {
+            $stmtStay = $this->pdo->prepare("SELECT id FROM rooming_stays WHERE id = ? AND estado = 'reservado' FOR UPDATE");
+            $stmtStay->execute([$id]);
+
+            if (!$stmtStay->fetchColumn()) {
+                throw new Exception('Solo se pueden editar reservas en estado reservado');
+            }
+
+            $stmt = $this->pdo->prepare("
+                UPDATE rooming_stays
+                SET fecha_registro = ?,
+                    fecha_checkout = ?,
+                    noches = ?,
+                    medio_reserva = ?,
+                    observaciones = ?
+                WHERE id = ?
+            ");
+            $stmt->execute([
+                $data['fecha_inicio'],
+                $fecha_fin,
+                $data['noches'],
+                $data['canal'],
+                $data['observaciones'] ?? '',
+                $id
+            ]);
+
+            $stmtPax = $this->pdo->prepare("
+                UPDATE rooming_pax
+                SET nombre_completo = ?
+                WHERE stay_id = ? AND es_titular = 1
+            ");
+            $stmtPax->execute([$data['titular'], $id]);
+
+            if ($stmtPax->rowCount() === 0) {
+                $stmtInsertPax = $this->pdo->prepare("
+                    INSERT INTO rooming_pax (stay_id, nombre_completo, documento_num, es_titular)
+                    VALUES (?, ?, '---', 1)
+                ");
+                $stmtInsertPax->execute([$id, $data['titular']]);
+            }
+
+            if ($mustCommit) {
+                $this->pdo->commit();
+            }
+            return true;
+        } catch (Exception $e) {
+            if ($mustCommit && $this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
+            throw $e;
+        }
+    }
+
+    /**
      * Reject a reservation and free the room if it was still blocked as reserved.
      */
     public function rechazarStay(int $id): bool {

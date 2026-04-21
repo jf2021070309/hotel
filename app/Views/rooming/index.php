@@ -23,11 +23,13 @@ include $_projectRoot . '/includes/head.php';
         <p class="mb-0 small text-muted fw-semibold">Gestión de estadías activas y registro de ingresos</p>
       </div>
       <div class="ms-auto d-flex gap-2 align-items-center">
-        <button class="btn btn-sm btn-outline-secondary shadow-sm px-2 px-sm-3" @click="abrirReportePax" style="font-weight: 700; font-size: 11px; border-color: #555;">
+        <button class="btn btn-sm btn-outline-secondary shadow-sm px-2 px-sm-3" @click="abrirReportePax"
+          style="font-weight: 700; font-size: 11px; border-color: #555;">
           <i class="bi bi-file-earmark-person me-1" style="color:#6c757d;"></i>
           <span>REGISTRO PAX</span>
         </button>
-        <button class="btn btn-sm btn-primary shadow-sm px-2 px-sm-3" @click="abrirCheckin" style="border: 1px solid #111; font-weight: 700; font-size: 11px;">
+        <button class="btn btn-sm btn-primary shadow-sm px-2 px-sm-3" @click="abrirCheckin"
+          style="border: 1px solid #111; font-weight: 700; font-size: 11px;">
           <i class="bi bi-plus-lg text-warning me-1"></i>
           <span>NUEVO</span>
         </button>
@@ -42,18 +44,20 @@ include $_projectRoot . '/includes/head.php';
             <div class="col-12 col-md-4">
               <div class="input-group input-group-sm rounded shadow-sm">
                 <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
-                <input type="text" class="form-control border-start-0 bg-white fw-bold text-secondary" style="font-size: 12px;" v-model="busqueda"
-                  placeholder="Buscar huésped / hab...">
+                <input type="text" class="form-control border-start-0 bg-white fw-bold text-secondary"
+                  style="font-size: 12px;" v-model="busqueda" placeholder="Buscar huésped / hab...">
               </div>
             </div>
             <div class="col-6 col-md-2">
-              <select class="form-select form-select-sm fw-bold text-secondary shadow-sm" style="font-size: 11px;" v-model="filtroPiso">
+              <select class="form-select form-select-sm fw-bold text-secondary shadow-sm" style="font-size: 11px;"
+                v-model="filtroPiso">
                 <option value="">Pisos: Todos</option>
                 <option v-for="p in [2,3,4,5,6]" :key="p" :value="p">Piso {{ p }}</option>
               </select>
             </div>
             <div class="col-6 col-md-2">
-              <select class="form-select form-select-sm fw-bold text-secondary shadow-sm" style="font-size: 11px;" v-model="filtroPago">
+              <select class="form-select form-select-sm fw-bold text-secondary shadow-sm" style="font-size: 11px;"
+                v-model="filtroPago">
                 <option value="">Pagos: Todos</option>
                 <option value="pendiente">Pendiente</option>
                 <option value="adelanto">Adelanto</option>
@@ -97,7 +101,7 @@ include $_projectRoot . '/includes/head.php';
                 <th class="text-end pe-4" style="width: 120px;">ACCIONES</th>
               </tr>
             </thead>
-                        <tbody>
+            <tbody>
               <tr v-if="loading">
                 <td colspan="7" class="text-center py-5">
                   <div class="spinner-border text-primary"></div>
@@ -114,7 +118,8 @@ include $_projectRoot . '/includes/head.php';
                   <div class="text-muted small fw-semibold" style="letter-spacing: 0.5px;">{{ s.hab_tipo }}</div>
                 </td>
                 <td style="width: 250px; max-width: 250px;">
-                  <div class="fw-bold" style="white-space: normal; line-height: 1.2; word-break: break-word;">{{ s.titular_nombre || '---' }}</div>
+                  <div class="fw-bold" style="white-space: normal; line-height: 1.2; word-break: break-word;">{{
+                    s.titular_nombre || '---' }}</div>
                   <div class="text-muted small">Pax: {{ s.pax_total }} personas</div>
                   <div class="mt-1">
                     <span
@@ -134,11 +139,15 @@ include $_projectRoot . '/includes/head.php';
                   <div class="text-muted mt-1" style="font-size: 11px;">🛏️ {{ s.noches }} noches</div>
                 </td>
                 <td class="text-end fw-bold">
-                  <div class="text-dark">{{ s.moneda_pago == 'USD' ? '$' : (s.moneda_pago == 'CLP' ? 'P$' : 'S/') }} {{ fmtCur(s.total_pago) }}</div>
-                  <div class="text-success small" style="font-size: 10px;">Abono {{ s.moneda_pago == 'USD' ? '$' : (s.moneda_pago == 'CLP' ? 'P$' : 'S/') }} {{ fmtCur(s.total_cobrado_orig || s.total_cobrado) }}</div>
+                  <div class="text-dark">{{ s.moneda_pago == 'USD' ? '$' : (s.moneda_pago == 'CLP' ? 'P$' : 'S/') }} {{
+                    fmtCur(s.total_pago) }}</div>
+                  <div class="text-success small" style="font-size: 10px;">Abono {{ s.moneda_pago == 'USD' ? '$' :
+                    (s.moneda_pago == 'CLP' ? 'P$' : 'S/') }} {{ fmtCur(s.total_cobrado_orig || s.total_cobrado) }}
+                  </div>
                 </td>
                 <td class="text-center">
-                  <span class="badge" :class="getPagoClass(s.estado_pago)" style="font-size: 9px;">{{ s.estado_pago.toUpperCase() }}</span>
+                  <span class="badge" :class="getPagoClass(s.estado_pago)" style="font-size: 9px;">{{
+                    s.estado_pago.toUpperCase() }}</span>
                 </td>
                 <td class="text-center">
                   <span v-if="s.metodo_pago" class="badge bg-light text-dark border fw-bold"
@@ -156,19 +165,20 @@ include $_projectRoot . '/includes/head.php';
                     <button class="btn btn-white btn-sm border" title="Detalle" @click="verDetalle(s)">
                       <i class="bi bi-eye text-primary"></i>
                     </button>
-                    <button v-if="s.estado !== 'cancelado'" class="btn btn-white btn-sm border" title="Editar" @click="abrirEdicion(s)">
+                    <button v-if="s.estado !== 'cancelado'" class="btn btn-white btn-sm border" title="Editar"
+                      @click="abrirEdicion(s)">
                       <i class="bi bi-pencil-square text-secondary"></i>
                     </button>
-                    <button v-if="s.estado !== 'reservado' && s.estado !== 'cancelado'" class="btn btn-white btn-sm border"
-                      title="Registrar Consumo" @click="abrirConsumo(s)">
+                    <button v-if="s.estado !== 'reservado' && s.estado !== 'cancelado'"
+                      class="btn btn-white btn-sm border" title="Registrar Consumo" @click="abrirConsumo(s)">
                       <i class="bi bi-cup-straw text-warning"></i>
                     </button>
-                    <button v-if="s.estado !== 'reservado' && s.estado !== 'cancelado'" class="btn btn-white btn-sm border" title="Registrar Pago"
-                      @click="abrirPago(s)">
+                    <button v-if="s.estado !== 'reservado' && s.estado !== 'cancelado'"
+                      class="btn btn-white btn-sm border" title="Registrar Pago" @click="abrirPago(s)">
                       <i class="bi bi-wallet2 text-success"></i>
                     </button>
-                    <button v-if="s.estado !== 'reservado' && s.estado !== 'cancelado'" class="btn btn-white btn-sm border" title="Checkout"
-                      @click="procederCheckout(s)">
+                    <button v-if="s.estado !== 'reservado' && s.estado !== 'cancelado'"
+                      class="btn btn-white btn-sm border" title="Checkout" @click="procederCheckout(s)">
                       <i class="bi bi-door-closed text-danger"></i>
                     </button>
                   </div>
@@ -192,13 +202,16 @@ include $_projectRoot . '/includes/head.php';
     <div class="modal-dialog modal-fullscreen modal-dialog-scrollable">
       <div class="modal-content border-0" style="background:#f4f6fb;">
         <!-- Header -->
-        <div class="modal-header border-0 py-3 px-4" style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 60%,#0f3460 100%);">
+        <div class="modal-header border-0 py-3 px-4"
+          style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 60%,#0f3460 100%);">
           <div class="d-flex align-items-center gap-3">
-            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:40px;height:40px;background:rgba(255,255,255,0.12);">
+            <div class="rounded-circle d-flex align-items-center justify-content-center"
+              style="width:40px;height:40px;background:rgba(255,255,255,0.12);">
               <i class="bi bi-file-earmark-person text-white fs-5"></i>
             </div>
             <div>
-              <h5 class="modal-title fw-bold text-white mb-0" id="modalReportePaxLabel">Registro PAX — Reporte Mensual</h5>
+              <h5 class="modal-title fw-bold text-white mb-0" id="modalReportePaxLabel">Registro PAX — Reporte Mensual
+              </h5>
               <small class="text-white opacity-60">Listado de check-ins por mes para control de huéspedes</small>
             </div>
           </div>
@@ -209,8 +222,10 @@ include $_projectRoot . '/includes/head.php';
         <div class="px-4 pt-3 pb-2" style="background:white; border-bottom:1px solid #e9ecef;">
           <div class="d-flex flex-wrap gap-3 align-items-end">
             <div>
-              <label class="form-label small fw-bold text-muted text-uppercase mb-1" style="font-size:10px;letter-spacing:.5px;">Mes</label>
-              <select v-model="reportePax.mes" class="form-select form-select-sm fw-bold" style="width:140px;" @change="cargarReportePax">
+              <label class="form-label small fw-bold text-muted text-uppercase mb-1"
+                style="font-size:10px;letter-spacing:.5px;">Mes</label>
+              <select v-model="reportePax.mes" class="form-select form-select-sm fw-bold" style="width:140px;"
+                @change="cargarReportePax">
                 <option value="1">Enero</option>
                 <option value="2">Febrero</option>
                 <option value="3">Marzo</option>
@@ -226,16 +241,20 @@ include $_projectRoot . '/includes/head.php';
               </select>
             </div>
             <div>
-              <label class="form-label small fw-bold text-muted text-uppercase mb-1" style="font-size:10px;letter-spacing:.5px;">Año</label>
-              <select v-model="reportePax.anio" class="form-select form-select-sm fw-bold" style="width:100px;" @change="cargarReportePax">
+              <label class="form-label small fw-bold text-muted text-uppercase mb-1"
+                style="font-size:10px;letter-spacing:.5px;">Año</label>
+              <select v-model="reportePax.anio" class="form-select form-select-sm fw-bold" style="width:100px;"
+                @change="cargarReportePax">
                 <option v-for="y in reportePax.anios" :key="y" :value="y">{{ y }}</option>
               </select>
             </div>
             <div class="ms-auto d-flex gap-2">
-              <span class="badge bg-primary align-self-center px-3 py-2" style="font-size:11px;" v-if="!reportePax.cargando">
+              <span class="badge bg-primary align-self-center px-3 py-2" style="font-size:11px;"
+                v-if="!reportePax.cargando">
                 <i class="bi bi-people-fill me-1"></i>{{ reportePax.filas.length }} registros
               </span>
-              <button class="btn btn-sm btn-success fw-bold px-3" @click="exportarReportePax" :disabled="reportePax.filas.length === 0">
+              <button class="btn btn-sm btn-success fw-bold px-3" @click="exportarReportePax"
+                :disabled="reportePax.filas.length === 0">
                 <i class="bi bi-file-earmark-excel me-1"></i>Exportar Excel
               </button>
             </div>
@@ -258,7 +277,8 @@ include $_projectRoot . '/includes/head.php';
 
           <!-- Tabla -->
           <div v-else class="table-responsive" style="overflow-x:auto;">
-            <table id="tablaPaxReporte" class="table table-bordered table-hover mb-0 align-middle" style="font-size:11px; white-space:nowrap; min-width:2400px;">
+            <table id="tablaPaxReporte" class="table table-bordered table-hover mb-0 align-middle"
+              style="font-size:11px; white-space:nowrap; min-width:2400px;">
               <thead style="background:#1a1a2e; color:white; position:sticky; top:0; z-index:10;">
                 <tr>
                   <th class="px-3 py-2 text-center" style="min-width:80px;">OPERADOR</th>
@@ -288,10 +308,13 @@ include $_projectRoot . '/includes/head.php';
               <tbody>
                 <template v-for="(fila, idx) in reportePax.filas" :key="idx">
                   <!-- Fila por cada PAX -->
-                  <tr :class="fila.es_titular ? 'table-light fw-semibold' : ''" :style="fila.es_titular ? 'border-top:2px solid #dee2e6;' : 'background:#fafafa;'">
+                  <tr :class="fila.es_titular ? 'table-light fw-semibold' : ''"
+                    :style="fila.es_titular ? 'border-top:2px solid #dee2e6;' : 'background:#fafafa;'">
                     <!-- OPERADOR -->
                     <td class="px-2 text-center">
-                      <span v-if="fila.es_titular" class="badge" style="background:#e8f4fd;color:#0369a1;font-size:10px;font-weight:700;">{{ fila.operador }}</span>
+                      <span v-if="fila.es_titular" class="badge"
+                        style="background:#e8f4fd;color:#0369a1;font-size:10px;font-weight:700;">{{ fila.operador
+                        }}</span>
                       <span v-else class="text-muted" style="font-size:10px;">—</span>
                     </td>
                     <!-- FECHA REGISTRO -->
@@ -306,17 +329,21 @@ include $_projectRoot . '/includes/head.php';
                     </td>
                     <!-- TIPO HAB -->
                     <td class="px-2">
-                      <span v-if="fila.es_titular" class="text-uppercase" style="font-size:10px;font-weight:600;">{{ fila.tipo_hab_declarado }}</span>
+                      <span v-if="fila.es_titular" class="text-uppercase" style="font-size:10px;font-weight:600;">{{
+                        fila.tipo_hab_declarado }}</span>
                       <span v-else class="text-muted">—</span>
                     </td>
                     <!-- PAX -->
                     <td class="px-2 text-center">
-                      <span v-if="fila.es_titular" class="badge bg-secondary" style="font-size:10px;">{{ fila.pax_total }}</span>
+                      <span v-if="fila.es_titular" class="badge bg-secondary" style="font-size:10px;">{{ fila.pax_total
+                        }}</span>
                       <span v-else class="text-muted">—</span>
                     </td>
                     <!-- MEDIO RESERVA -->
                     <td class="px-2 text-center">
-                      <span v-if="fila.es_titular" class="badge" style="background:#f0fdf4;color:#166534;font-size:9px;font-weight:700;">{{ fila.medio_reserva }}</span>
+                      <span v-if="fila.es_titular" class="badge"
+                        style="background:#f0fdf4;color:#166534;font-size:9px;font-weight:700;">{{ fila.medio_reserva
+                        }}</span>
                       <span v-else class="text-muted">—</span>
                     </td>
                     <!-- HORA CHECK IN -->
@@ -338,37 +365,43 @@ include $_projectRoot . '/includes/head.php';
                     <td class="px-2 text-center">{{ fila.ciudad || '—' }}</td>
                     <!-- CHECK IN FECHA -->
                     <td class="px-2 text-center">
-                      <span v-if="fila.es_titular" class="text-success fw-bold">{{ fmtFecha(fila.fecha_registro) }}</span>
+                      <span v-if="fila.es_titular" class="text-success fw-bold">{{ fmtFecha(fila.fecha_registro)
+                        }}</span>
                       <span v-else class="text-muted">—</span>
                     </td>
                     <!-- CHECK OUT FECHA -->
                     <td class="px-2 text-center">
-                      <span v-if="fila.es_titular" class="text-danger fw-bold">{{ fmtFecha(fila.fecha_checkout) }}</span>
+                      <span v-if="fila.es_titular" class="text-danger fw-bold">{{ fmtFecha(fila.fecha_checkout)
+                        }}</span>
                       <span v-else class="text-muted">—</span>
                     </td>
                     <!-- PAGO TOTAL -->
                     <td class="px-2 text-end fw-bold" style="color:#0f3460;">
                       <span v-if="fila.es_titular">
-                        {{ fila.moneda_pago == 'USD' ? '$' : (fila.moneda_pago == 'CLP' ? 'P$' : 'S/') }} {{ fmtCur(fila.total_pago) }}
+                        {{ fila.moneda_pago == 'USD' ? '$' : (fila.moneda_pago == 'CLP' ? 'P$' : 'S/') }} {{
+                        fmtCur(fila.total_pago) }}
                       </span>
                       <span v-else class="text-muted">—</span>
                     </td>
                     <!-- LATE CHECK OUT -->
                     <td class="px-2 text-center">
                       <span v-if="fila.es_titular">
-                        <span v-if="fila.estado === 'late_checkout'" class="badge bg-warning text-dark" style="font-size:9px;">SÍ</span>
+                        <span v-if="fila.estado === 'late_checkout'" class="badge bg-warning text-dark"
+                          style="font-size:9px;">SÍ</span>
                         <span v-else class="text-muted" style="font-size:10px;">NO</span>
                       </span>
                       <span v-else class="text-muted">—</span>
                     </td>
                     <!-- MEDIO PAGO -->
                     <td class="px-2 text-center">
-                      <span v-if="fila.es_titular" class="badge bg-light text-dark border fw-bold" style="font-size:9px;">{{ fila.metodo_pago || '—' }}</span>
+                      <span v-if="fila.es_titular" class="badge bg-light text-dark border fw-bold"
+                        style="font-size:9px;">{{ fila.metodo_pago || '—' }}</span>
                       <span v-else class="text-muted">—</span>
                     </td>
                     <!-- COMPROBANTE DE PAGO -->
                     <td class="px-2 text-center">
-                      <span v-if="fila.es_titular" class="fw-semibold text-uppercase" style="font-size:10px;">{{ fila.tipo_comprobante || '—' }}</span>
+                      <span v-if="fila.es_titular" class="fw-semibold text-uppercase" style="font-size:10px;">{{
+                        fila.tipo_comprobante || '—' }}</span>
                       <span v-else class="text-muted">—</span>
                     </td>
                     <!-- NÚMERO COMPROBANTE -->
@@ -378,20 +411,24 @@ include $_projectRoot . '/includes/head.php';
                     </td>
                     <!-- QUIEN COBRÓ -->
                     <td class="px-2 text-center">
-                      <span v-if="fila.es_titular" class="badge" style="background:#fef3c7;color:#92400e;font-size:9px;font-weight:700;">{{ fila.cobrador || '—' }}</span>
+                      <span v-if="fila.es_titular" class="badge"
+                        style="background:#fef3c7;color:#92400e;font-size:9px;font-weight:700;">{{ fila.cobrador || '—'
+                        }}</span>
                       <span v-else class="text-muted">—</span>
                     </td>
                     <!-- CARRO -->
                     <td class="px-2 text-center">
                       <span v-if="fila.es_titular">
-                        <span v-if="fila.carro === 'SI'" class="badge bg-info text-dark" style="font-size:9px;"><i class="bi bi-car-front-fill"></i> SÍ</span>
+                        <span v-if="fila.carro === 'SI'" class="badge bg-info text-dark" style="font-size:9px;"><i
+                            class="bi bi-car-front-fill"></i> SÍ</span>
                         <span v-else class="text-muted" style="font-size:10px;">NO</span>
                       </span>
                       <span v-else class="text-muted">—</span>
                     </td>
                     <!-- OBSERVACIONES -->
                     <td class="px-2" style="max-width:200px; white-space:normal;">
-                      <span v-if="fila.es_titular" class="text-muted" style="font-size:10px;">{{ fila.observaciones || '' }}</span>
+                      <span v-if="fila.es_titular" class="text-muted" style="font-size:10px;">{{ fila.observaciones ||
+                        '' }}</span>
                     </td>
                   </tr>
                 </template>
@@ -404,7 +441,8 @@ include $_projectRoot . '/includes/head.php';
         <div class="modal-footer border-0 bg-white py-2 px-4">
           <small class="text-muted me-auto">
             <i class="bi bi-info-circle me-1"></i>
-            Reporte generado a partir de los check-ins confirmados del mes seleccionado. Una fila por cada huésped registrado.
+            Reporte generado a partir de los check-ins confirmados del mes seleccionado. Una fila por cada huésped
+            registrado.
           </small>
           <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cerrar</button>
         </div>
@@ -429,7 +467,8 @@ include $_projectRoot . '/includes/head.php';
                 <div class="modal-section-title">1. HABITACIÓN Y ESTADÍA</div>
                 <div class="mb-3">
                   <label class="form-label small fw-bold">Habitación disponible</label>
-                  <select v-model="form.stay.habitacion_id" id="inputHabitacion" class="form-select" required @change="onHabChange">
+                  <select v-model="form.stay.habitacion_id" id="inputHabitacion" class="form-select" required
+                    @change="onHabChange">
                     <option value="">Seleccione...</option>
                     <option v-for="h in habitacionesLibres" :key="h.id" :value="h.id">
                       #{{ h.numero }} - {{ h.tipo }} (S/ {{ h.precio_base }})
@@ -473,9 +512,7 @@ include $_projectRoot . '/includes/head.php';
                     <i class="bi bi-sticky text-warning"></i> Observaciones
                     <span class="text-muted fw-normal" style="font-size:10px;">(opcional)</span>
                   </label>
-                  <textarea v-model="form.stay.observaciones"
-                    class="form-control form-control-sm"
-                    rows="2"
+                  <textarea v-model="form.stay.observaciones" class="form-control form-control-sm" rows="2"
                     placeholder="Ej: Precio ajustado — hab. superior cedida a tarifa económica"
                     style="resize:none; font-size:12px;"></textarea>
                 </div>
@@ -493,8 +530,8 @@ include $_projectRoot . '/includes/head.php';
                   <button v-if="idx > 0" type="button" class="btn-close position-absolute top-0 end-0 m-2"
                     style="font-size:10px" @click="form.pax.splice(idx, 1)"></button>
                   <div class="mb-2">
-                    <input type="text" v-model="pax.nombre_completo" id="inputNombreHuesped" class="form-control-sm form-control"
-                      placeholder="Nombre completo" required>
+                    <input type="text" v-model="pax.nombre_completo" id="inputNombreHuesped"
+                      class="form-control-sm form-control" placeholder="Nombre completo" required>
                   </div>
                   <div class="row g-2">
                     <div class="col-4">
@@ -505,9 +542,9 @@ include $_projectRoot . '/includes/head.php';
                       </select>
                     </div>
                     <div class="col-8 position-relative">
-                      <input type="text" v-model="pax.documento_num" id="inputDocumentoHuesped" class="form-control form-control-sm"
-                        placeholder="Num. documento" required @input="buscarPax(pax, idx)"
-                        @blur="ocultarSugerencias(idx)" autocomplete="off">
+                      <input type="text" v-model="pax.documento_num" id="inputDocumentoHuesped"
+                        class="form-control form-control-sm" placeholder="Num. documento" required
+                        @input="buscarPax(pax, idx)" @blur="ocultarSugerencias(idx)" autocomplete="off">
                       <!-- Dropdown sugerencias -->
                       <div v-if="sugerencias[idx] && sugerencias[idx].length"
                         class="position-absolute bg-white border rounded shadow-sm w-100 z-3"
@@ -555,9 +592,7 @@ include $_projectRoot . '/includes/head.php';
                     <div class="input-group input-group-sm shadow-sm">
                       <span class="input-group-text bg-light fw-bold border-0">S/</span>
                       <input type="number" v-model="form.stay.total_pago" id="inputMontoPago"
-                        class="form-control fw-bold text-dark"
-                        step="0.50" min="0"
-                        style="border-color:#ffc107;"
+                        class="form-control fw-bold text-dark" step="0.50" min="0" style="border-color:#ffc107;"
                         @input="recalcularMoneda">
                     </div>
                   </div>
@@ -574,12 +609,12 @@ include $_projectRoot . '/includes/head.php';
 
                 <!-- TC compacto (solo si divisa != PEN) -->
                 <div v-if="form.stay.moneda_pago !== 'PEN'"
-                  class="d-flex align-items-center gap-2 mb-3 px-2 py-1 rounded border bg-light" style="font-size:12px;">
+                  class="d-flex align-items-center gap-2 mb-3 px-2 py-1 rounded border bg-light"
+                  style="font-size:12px;">
                   <span class="fw-bold text-muted text-nowrap">T.C.</span>
                   <input type="number" v-model="tcs[form.stay.moneda_pago]"
                     class="form-control form-control-sm border-0 bg-white fw-bold text-center shadow-sm"
-                    style="width:58px; font-size:12px; height:28px;"
-                    step="0.0001" @input="recalcularMoneda">
+                    style="width:58px; font-size:12px; height:28px;" step="0.0001" @input="recalcularMoneda">
                   <i class="bi bi-caret-right-fill text-secondary" style="font-size:10px;"></i>
                   <span class="fw-bold text-primary ms-auto text-nowrap" style="font-size:13px;">
                     {{ form.stay.moneda_pago == 'USD' ? '$' : 'CLP' }} {{ fmtCur(form.stay.monto_original) }}
@@ -591,7 +626,8 @@ include $_projectRoot . '/includes/head.php';
                   <label class="form-label micro-text fw-bold mb-1">MÉTODO DE PAGO</label>
                   <select v-model="form.stay.metodo_pago" id="inputMetodoPago" class="form-select form-select-sm">
                     <option value="">Seleccione...</option>
-                    <option v-for="m in mediosPago" :key="m.id" :value="m.nombre" :disabled="m.activo != 1">{{ m.nombre }}</option>
+                    <option v-for="m in mediosPago" :key="m.id" :value="m.nombre" :disabled="m.activo != 1">{{ m.nombre
+                      }}</option>
                   </select>
                 </div>
 
@@ -599,16 +635,14 @@ include $_projectRoot . '/includes/head.php';
                   <label class="form-label micro-text fw-bold mb-2 d-block">TIPO DE COBRO</label>
                   <div class="row g-2">
                     <div class="col-6">
-                      <button type="button"
-                        class="btn btn-sm w-100 fw-bold"
+                      <button type="button" class="btn btn-sm w-100 fw-bold"
                         :class="form.tipoPago === 'completo' ? 'btn-primary' : 'btn-outline-primary'"
                         @click="cambiarTipoPago('completo')">
                         Pagar Completo
                       </button>
                     </div>
                     <div class="col-6">
-                      <button type="button"
-                        class="btn btn-sm w-100 fw-bold"
+                      <button type="button" class="btn btn-sm w-100 fw-bold"
                         :class="form.tipoPago === 'adelanto' ? 'btn-warning text-dark' : 'btn-outline-warning'"
                         @click="cambiarTipoPago('adelanto')">
                         Dejar Adelanto
@@ -619,17 +653,13 @@ include $_projectRoot . '/includes/head.php';
 
                 <div class="mb-3" v-if="form.tipoPago === 'adelanto'">
                   <label class="form-label micro-text fw-bold mb-1">ADELANTO ({{ form.stay.moneda_pago }})</label>
-                  <input type="number"
-                    v-model="form.adelanto"
-                    class="form-control form-control-sm"
-                    min="0.01"
-                    step="0.01"
-                    @input="onAdelantoChange"
-                    placeholder="0.00">
+                  <input type="number" v-model="form.adelanto" class="form-control form-control-sm" min="0.01"
+                    step="0.01" @input="onAdelantoChange" placeholder="0.00">
                   <div class="small mt-1" :class="adelantoExcede ? 'text-danger fw-bold' : 'text-muted'">
                     <span v-if="adelantoExcede">El adelanto no puede superar el total.</span>
                     <span v-else-if="(parseFloat(form.adelanto) || 0) <= 0">El adelanto debe ser mayor a 0.</span>
-                    <span v-else>Saldo pendiente: {{ form.stay.moneda_pago }} {{ fmtCur(saldoPendienteOriginal) }}</span>
+                    <span v-else>Saldo pendiente: {{ form.stay.moneda_pago }} {{ fmtCur(saldoPendienteOriginal)
+                      }}</span>
                   </div>
                 </div>
 
@@ -655,7 +685,8 @@ include $_projectRoot . '/includes/head.php';
           </div>
           <div class="modal-footer border-0 p-4 pt-0">
             <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancelar</button>
-            <button type="submit" id="btnRegistrarCheckin" class="btn btn-primary px-5 shadow" :disabled="loading || adelantoInvalido">
+            <button type="submit" id="btnRegistrarCheckin" class="btn btn-primary px-5 shadow"
+              :disabled="loading || adelantoInvalido">
               <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
               {{ form.stay.id ? 'Guardar Cambios' : 'Registrar Check-in' }}
             </button>
@@ -678,7 +709,8 @@ include $_projectRoot . '/includes/head.php';
                   <h4 class="mb-0 fw-bold">Habitación #{{ selectedStay.hab_numero }}</h4>
                   <p class="mb-0 opacity-75 small text-uppercase fw-bold">{{ selectedStay.tipo_hab_declarado }}</p>
                 </div>
-                <span class="badge bg-white text-primary px-3 fs-6 shadow-sm">{{ selectedStay.estado.toUpperCase() }}</span>
+                <span class="badge bg-white text-primary px-3 fs-6 shadow-sm">{{ selectedStay.estado.toUpperCase()
+                  }}</span>
               </div>
             </div>
 
@@ -687,7 +719,8 @@ include $_projectRoot . '/includes/head.php';
               <div class="row g-3 mb-4 pb-4 border-bottom">
                 <div class="col-md-3">
                   <div class="text-muted text-uppercase fw-bold mb-1" style="font-size: 11px;">Check-in</div>
-                  <div class="text-dark fw-semibold">{{ selectedStay.fecha_registro }} <small class="text-muted">({{ selectedStay.hora_checkin }})</small></div>
+                  <div class="text-dark fw-semibold">{{ selectedStay.fecha_registro }} <small class="text-muted">({{
+                      selectedStay.hora_checkin }})</small></div>
                 </div>
                 <div class="col-md-3">
                   <div class="text-muted text-uppercase fw-bold mb-1" style="font-size: 11px;">Check-out</div>
@@ -710,18 +743,24 @@ include $_projectRoot . '/includes/head.php';
                     <h6 class="fw-bold text-dark border-bottom pb-2 mb-3" style="font-size: 13px;">HUÉSPEDES</h6>
                     <div v-for="p in selectedStay.pax" :key="p.id" class="d-flex align-items-center mb-3">
                       <div class="me-3">
-                        <i class="bi" :class="p.es_titular ? 'bi-person-fill-check text-primary' : 'bi-person text-muted'" style="font-size: 18px;"></i>
+                        <i class="bi"
+                          :class="p.es_titular ? 'bi-person-fill-check text-primary' : 'bi-person text-muted'"
+                          style="font-size: 18px;"></i>
                       </div>
                       <div>
                         <div class="fw-bold text-dark" style="font-size: 13px;">{{ p.nombre_completo }}</div>
-                        <div class="text-muted small">{{ p.documento_tipo }}: {{ p.documento_num }} | {{ p.nacionalidad }}</div>
+                        <div class="text-muted small">{{ p.documento_tipo }}: {{ p.documento_num }} | {{ p.nacionalidad
+                          }}</div>
                       </div>
                     </div>
                   </div>
 
                   <div>
-                    <h6 class="fw-bold text-dark border-bottom pb-2 mb-3" style="font-size: 13px;">CONSUMOS ADICIONALES</h6>
-                    <div v-if="consumosStay.length === 0" class="text-muted small py-2 italic text-center bg-light rounded">No hay consumos registrados.</div>
+                    <h6 class="fw-bold text-dark border-bottom pb-2 mb-3" style="font-size: 13px;">CONSUMOS ADICIONALES
+                    </h6>
+                    <div v-if="consumosStay.length === 0"
+                      class="text-muted small py-2 italic text-center bg-light rounded">No hay consumos registrados.
+                    </div>
                     <div v-else class="table-responsive">
                       <table class="table table-sm align-middle" style="font-size: 13px;">
                         <thead>
@@ -746,44 +785,55 @@ include $_projectRoot . '/includes/head.php';
                 <!-- Columna Derecha -->
                 <div class="col-md-6 ps-4">
                   <h6 class="fw-bold text-dark border-bottom pb-2 mb-3" style="font-size: 13px;">RESUMEN DE CUENTA</h6>
-                  
+
                   <table class="table table-sm table-borderless mb-4" style="font-size: 14px;">
                     <tbody>
                       <tr>
                         <td class="text-muted py-1">Monto Hospedaje</td>
-                        <td class="text-end fw-bold py-1 text-dark">{{ selectedStay.moneda_pago == 'USD' ? '$' : (selectedStay.moneda_pago == 'CLP' ? 'P$' : 'S/') }} {{ parseFloat(selectedStay.monto_original).toFixed(2) }}</td>
+                        <td class="text-end fw-bold py-1 text-dark">{{ selectedStay.moneda_pago == 'USD' ? '$' :
+                          (selectedStay.moneda_pago == 'CLP' ? 'P$' : 'S/') }} {{
+                          parseFloat(selectedStay.monto_original).toFixed(2) }}</td>
                       </tr>
                       <tr>
                         <td class="text-muted py-1">Consumo Adicional</td>
-                        <td class="text-end fw-bold py-1 text-primary">{{ selectedStay.moneda_pago == 'USD' ? '$' : (selectedStay.moneda_pago == 'CLP' ? 'P$' : 'S/') }} {{ (parseFloat(selectedStay.total_pago) - parseFloat(selectedStay.monto_original)).toFixed(2) }}</td>
+                        <td class="text-end fw-bold py-1 text-primary">{{ selectedStay.moneda_pago == 'USD' ? '$' :
+                          (selectedStay.moneda_pago == 'CLP' ? 'P$' : 'S/') }} {{ (parseFloat(selectedStay.total_pago) -
+                          parseFloat(selectedStay.monto_original)).toFixed(2) }}</td>
                       </tr>
                       <tr class="border-bottom">
                         <td class="text-muted py-1">Monto Abonado</td>
-                        <td class="text-end fw-bold py-1 text-success">{{ selectedStay.moneda_pago == 'USD' ? '$' : (selectedStay.moneda_pago == 'CLP' ? 'P$' : 'S/') }} {{ parseFloat(selectedStay.total_cobrado_orig || selectedStay.total_cobrado).toFixed(2) }}</td>
+                        <td class="text-end fw-bold py-1 text-success">{{ selectedStay.moneda_pago == 'USD' ? '$' :
+                          (selectedStay.moneda_pago == 'CLP' ? 'P$' : 'S/') }} {{
+                          parseFloat(selectedStay.total_cobrado_orig || selectedStay.total_cobrado).toFixed(2) }}</td>
                       </tr>
                       <tr>
                         <td class="py-2 fw-bold text-dark" style="font-size: 15px;">SALDO PENDIENTE</td>
-                        <td class="text-end fw-bold py-2 h4 mb-0" :class="(selectedStay.total_pago - selectedStay.total_cobrado) > 0 ? 'text-danger' : 'text-success'">
-                           <span v-if="(selectedStay.total_pago - selectedStay.total_cobrado) <= 0.05">
-                              <i class="bi bi-check-circle-fill me-1"></i> PAGADO
-                           </span>
-                           <span v-else>
-                              {{ selectedStay.moneda_pago == 'USD' ? '$' : (selectedStay.moneda_pago == 'CLP' ? 'P$' : 'S/') }} {{ (parseFloat(selectedStay.total_pago) - parseFloat(selectedStay.total_cobrado_orig || selectedStay.total_cobrado)).toFixed(2) }}
-                           </span>
+                        <td class="text-end fw-bold py-2 h4 mb-0"
+                          :class="(selectedStay.total_pago - selectedStay.total_cobrado) > 0 ? 'text-danger' : 'text-success'">
+                          <span v-if="(selectedStay.total_pago - selectedStay.total_cobrado) <= 0.05">
+                            <i class="bi bi-check-circle-fill me-1"></i> PAGADO
+                          </span>
+                          <span v-else>
+                            {{ selectedStay.moneda_pago == 'USD' ? '$' : (selectedStay.moneda_pago == 'CLP' ? 'P$' :
+                            'S/') }} {{ (parseFloat(selectedStay.total_pago) -
+                            parseFloat(selectedStay.total_cobrado_orig || selectedStay.total_cobrado)).toFixed(2) }}
+                          </span>
                         </td>
                       </tr>
                     </tbody>
                   </table>
 
                   <div v-if="selectedStay.pagos.length > 0">
-                    <h6 class="fw-bold text-muted mb-2 ps-1" style="font-size: 11px; letter-spacing: 0.3px;">HISTORIAL DE PAGOS</h6>
+                    <h6 class="fw-bold text-muted mb-2 ps-1" style="font-size: 11px; letter-spacing: 0.3px;">HISTORIAL
+                      DE PAGOS</h6>
                     <div class="border rounded p-1 shadow-sm bg-white" style="max-height: 200px; overflow-y: auto;">
                       <table class="table table-sm table-hover mb-0" style="font-size: 12px;">
                         <tbody>
                           <tr v-for="pag in selectedStay.pagos" :key="pag.id">
                             <td class="ps-2">
-                               <div class="fw-bold text-dark text-uppercase small">{{ pag.tipo_pago }}</div>
-                               <div class="text-muted mini" style="font-size: 9px;">{{ pag.created_at.split(' ')[1] }} | {{ pag.cajero_nom }}</div>
+                              <div class="fw-bold text-dark text-uppercase small">{{ pag.tipo_pago }}</div>
+                              <div class="text-muted mini" style="font-size: 9px;">{{ pag.created_at.split(' ')[1] }} |
+                                {{ pag.cajero_nom }}</div>
                             </td>
                             <td class="text-end pe-2 align-middle">
                               <span class="fw-bold text-success">+ {{ parseFloat(pag.monto).toFixed(2) }}</span>
@@ -796,14 +846,16 @@ include $_projectRoot . '/includes/head.php';
                 </div>
               </div>
             </div>
-            
+
             <div class="modal-footer bg-light border-0 px-4 py-3" style="border-radius:0 0 16px 16px;">
               <div class="w-100 d-flex justify-content-between align-items-center">
                 <div class="d-flex gap-2">
-                  <button type="button" class="btn btn-sm btn-outline-warning fw-bold px-3" @click="abrirConsumo(selectedStay)">
+                  <button type="button" class="btn btn-sm btn-outline-warning fw-bold px-3"
+                    @click="abrirConsumo(selectedStay)">
                     <i class="bi bi-plus-lg me-1"></i> CONSUMO
                   </button>
-                  <button type="button" class="btn btn-sm btn-outline-success fw-bold px-3" @click="abrirPago(selectedStay)">
+                  <button type="button" class="btn btn-sm btn-outline-success fw-bold px-3"
+                    @click="abrirPago(selectedStay)">
                     <i class="bi bi-wallet2 me-1"></i> REGISTRAR PAGO
                   </button>
                 </div>
@@ -879,10 +931,11 @@ include $_projectRoot . '/includes/head.php';
             </div>
 
             <div v-if="consumoForm.pago_inmediato" class="mb-3 animate__animated animate__fadeIn">
-              <div class="d-flex justify-content-between align-items-center mb-2 px-2 py-1 bg-info bg-opacity-10 rounded border border-info border-opacity-25">
+              <div
+                class="d-flex justify-content-between align-items-center mb-2 px-2 py-1 bg-info bg-opacity-10 rounded border border-info border-opacity-25">
                 <div class="form-check form-switch mb-0 ps-0 d-flex align-items-center gap-2">
-                  <input class="form-check-input m-0" type="checkbox" id="checkPosConsumo" v-model="consumoForm.recargo_pos"
-                    @change="calcularTotalConsumo" style="cursor:pointer;">
+                  <input class="form-check-input m-0" type="checkbox" id="checkPosConsumo"
+                    v-model="consumoForm.recargo_pos" @change="calcularTotalConsumo" style="cursor:pointer;">
                   <label class="form-check-label small fw-bold text-info mb-0" for="checkPosConsumo">POS (+5%)</label>
                 </div>
                 <span v-if="consumoForm.recargo_pos" class="badge bg-danger" style="font-size:10px;">
@@ -926,7 +979,8 @@ include $_projectRoot . '/includes/head.php';
               </div>
               <div class="text-end">
                 <div class="small text-muted fw-bold text-uppercase">Saldo Pendiente</div>
-                <div class="fw-bold text-danger fs-5">{{ stayParaPago.moneda_pago == 'USD' ? '$' : (stayParaPago.moneda_pago == 'CLP' ? 'P$' : 'PEN') }} {{ (stayParaPago.monto_original -
+                <div class="fw-bold text-danger fs-5">{{ stayParaPago.moneda_pago == 'USD' ? '$' :
+                  (stayParaPago.moneda_pago == 'CLP' ? 'P$' : 'PEN') }} {{ (stayParaPago.monto_original -
                   stayParaPago.total_cobrado_orig).toFixed(2) }}</div>
               </div>
             </div>
@@ -951,15 +1005,17 @@ include $_projectRoot . '/includes/head.php';
                 <input type="number" class="form-control form-control-sm bg-light fw-bold text-secondary"
                   :class="stayParaPago && parseFloat(pagoForm.monto_pen) > (parseFloat(stayParaPago.total_pago - stayParaPago.total_cobrado) + 0.05) ? 'border-danger text-danger' : ''"
                   v-model="pagoForm.monto_pen" readonly>
-                <div v-if="stayParaPago && parseFloat(pagoForm.monto_pen) > (parseFloat(stayParaPago.total_pago - stayParaPago.total_cobrado) + 0.05)" 
-                     class="text-danger fw-bold mt-1" style="font-size: 10px;">
+                <div
+                  v-if="stayParaPago && parseFloat(pagoForm.monto_pen) > (parseFloat(stayParaPago.total_pago - stayParaPago.total_cobrado) + 0.05)"
+                  class="text-danger fw-bold mt-1" style="font-size: 10px;">
                   <i class="bi bi-exclamation-triangle-fill"></i> El monto excede el saldo pendiente.
                 </div>
               </div>
             </div>
 
             <div class="mb-3">
-              <div class="d-flex justify-content-between align-items-center mb-2 px-2 py-1 bg-info bg-opacity-10 rounded border border-info border-opacity-25">
+              <div
+                class="d-flex justify-content-between align-items-center mb-2 px-2 py-1 bg-info bg-opacity-10 rounded border border-info border-opacity-25">
                 <div class="form-check form-switch mb-0 ps-0 d-flex align-items-center gap-2">
                   <input class="form-check-input m-0" type="checkbox" id="checkPosPago" v-model="pagoForm.recargo_pos"
                     @change="recalcularPago(true)" style="cursor:pointer;">
@@ -1013,12 +1069,18 @@ include $_projectRoot . '/includes/head.php';
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 <script src="index.js?v=<?= time() ?>"></script>
 
 
 <style>
-  .btn-white { background: white; }
-  .btn-white:hover { background: #f8f9fa; }
+  .btn-white {
+    background: white;
+  }
+
+  .btn-white:hover {
+    background: #f8f9fa;
+  }
 
   .badge {
     padding: 8px 12px;
@@ -1037,7 +1099,8 @@ include $_projectRoot . '/includes/head.php';
     text-transform: uppercase;
   }
 
-  .form-control, .form-select {
+  .form-control,
+  .form-select {
     border-radius: 8px;
     border: 1px solid #e0e0e0;
   }
@@ -1054,13 +1117,36 @@ include $_projectRoot . '/includes/head.php';
   }
 
   @media (max-width: 768px) {
-    .main-content { padding: 8px !important; }
-    .topbar h4 { font-size: 1.1rem; }
-    .topbar p { display: none; }
-    .table td { font-size: 12.5px; padding: 10px 8px !important; }
-    .btn-group-sm > .btn, .btn-sm { font-size: 11px; }
-    .modal-body { padding: 15px !important; }
-    .modal-section-title { font-size: 11px; margin-bottom: 12px; }
+    .main-content {
+      padding: 8px !important;
+    }
+
+    .topbar h4 {
+      font-size: 1.1rem;
+    }
+
+    .topbar p {
+      display: none;
+    }
+
+    .table td {
+      font-size: 12.5px;
+      padding: 10px 8px !important;
+    }
+
+    .btn-group-sm>.btn,
+    .btn-sm {
+      font-size: 11px;
+    }
+
+    .modal-body {
+      padding: 15px !important;
+    }
+
+    .modal-section-title {
+      font-size: 11px;
+      margin-bottom: 12px;
+    }
   }
 </style>
 

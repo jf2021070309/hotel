@@ -32,7 +32,16 @@ createApp({
     const viewMode      = ref('normal');   // 'compacto' | 'normal' | 'ampliado'
     const staySeleccionado = ref(null);
     const ctxMenu = reactive({ visible: false, x: 0, y: 0, stay: null });
-    const formQuick = reactive({ hab: null, fecha: '', titular: '', noches: 1, observaciones: '', canal: 'DIRECTO' });
+    const formQuick = reactive({
+      id: null,
+      editando: false,
+      hab: null,
+      fecha: '',
+      titular: '',
+      noches: 1,
+      observaciones: '',
+      canal: 'DIRECTO'
+    });
 
     const pagoRapido = reactive({ monto: 0, moneda: 'PEN', metodo: 'efectivo' });
 
@@ -201,6 +210,8 @@ createApp({
     };
 
     const abrirQuickReserva = (hab, dia) => {
+      formQuick.id      = null;
+      formQuick.editando = false;
       formQuick.hab     = hab;
       formQuick.fecha   = `${anioActual.value}-${String(mesActual.value).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
       formQuick.titular = '';
@@ -210,23 +221,52 @@ createApp({
       bootstrap.Modal.getOrCreateInstance(document.getElementById('modalQuickReserva')).show();
     };
 
+    const editarQuickReserva = (stay) => {
+      cerrarDetalle();
+      formQuick.id = stay.id;
+      formQuick.editando = true;
+      formQuick.hab = {
+        id: stay.habitacion_id || stay.hab_id || null,
+        numero: stay.hab_numero,
+        tipo: stay.tipo_hab_declarado || stay.hab_tipo || 'RESERVA'
+      };
+      formQuick.fecha = stay.fecha_inicio;
+      formQuick.titular = stay.titular || '';
+      formQuick.noches = stay.noches || 1;
+      formQuick.observaciones = stay.observaciones || '';
+      formQuick.canal = stay.canal || 'DIRECTO';
+      bootstrap.Modal.getOrCreateInstance(document.getElementById('modalQuickReserva')).show();
+    };
+
     const guardarQuickReserva = async () => {
       if (!formQuick.titular) return;
       loading.value = true;
       try {
-        const res = await axios.post(`${BASE}quick_reserva`, {
+        const action = formQuick.editando ? 'editar_quick_reserva' : 'quick_reserva';
+        const payload = {
+          id:      formQuick.id,
           hab_id:  formQuick.hab.id,
           fecha:   formQuick.fecha,
           titular: formQuick.titular,
           noches:  formQuick.noches,
           observaciones: formQuick.observaciones,
           canal:   formQuick.canal
-        });
+        };
+        const res = await axios.post(`${BASE}${action}`, payload);
         if (res.data.ok) {
           bootstrap.Modal.getInstance(document.getElementById('modalQuickReserva'))?.hide();
-          Swal.fire({ icon: 'success', title: 'Reserva registrada', timer: 1500, showConfirmButton: false });
+          if (staySeleccionado.value?.id === formQuick.id) {
+            cerrarDetalle();
+          }
+          Swal.fire({
+            icon: 'success',
+            title: formQuick.editando ? 'Reserva actualizada' : 'Reserva registrada',
+            timer: 1500,
+            showConfirmButton: false
+          });
           await cargarDatos();
           habitaciones.value = enrichHabs(habitaciones.value);
+          scrollToToday();
         } else {
           Swal.fire('Error', res.data.msg, 'error');
         }
@@ -510,7 +550,7 @@ createApp({
       getDiaSemana, onCeldaClick, abrirDetalle,
       openContextMenu, handleCtxAction, ctxMenu,
       guardarPagoRapido, checkout,
-      formQuick, abrirQuickReserva, guardarQuickReserva,
+      formQuick, abrirQuickReserva, editarQuickReserva, guardarQuickReserva,
       getTipoClass,
       badgeClass, barClass, porcentajePago,
       viewMode, colWidth, rowHeight, formatNumber,

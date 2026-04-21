@@ -539,7 +539,7 @@ include $_projectRoot . '/includes/sidebar.php';
             <div class="mt-4 d-grid">
               <button type="submit" class="btn btn-dark py-2 fw-bold" :disabled="loading">
                 <span v-if="loading" class="spinner-border spinner-border-sm me-1"></span>
-                Confirmar Reserva
+                {{ formQuick.editando ? 'Guardar Cambios' : 'Confirmar Reserva' }}
               </button>
             </div>
           </form>
@@ -647,6 +647,16 @@ include $_projectRoot . '/includes/sidebar.php';
 
             <!-- ACCIÓN: CHECK-IN RÁPIDO (SOLO SI ESTÁ RESERVADO) -->
             <div class="col-12 mt-3" v-if="staySeleccionado.estado === 'reservado'">
+              <button class="btn btn-outline-dark w-100 py-3 rounded-4 shadow-sm d-flex align-items-center justify-content-center gap-3 mb-3"
+                      @click="editarQuickReserva(staySeleccionado)">
+                <div class="rounded-circle p-2 d-flex align-items-center justify-content-center border bg-white" style="width: 40px; height: 40px;">
+                  <i class="bi bi-pencil-square text-dark h5 mb-0"></i>
+                </div>
+                <div class="text-start">
+                  <div class="fw-bold fs-5 text-dark">EDITAR RESERVA</div>
+                  <div class="small text-muted">Modificar los mismos datos del registro rapido</div>
+                </div>
+              </button>
               <button class="btn btn-primary w-100 py-3 rounded-4 shadow-lg d-flex align-items-center justify-content-center gap-3 border-0" 
                       @click="confirmarReserva(staySeleccionado)" 
                       style="background: linear-gradient(135deg, #0288D1 0%, #01579B 100%);">

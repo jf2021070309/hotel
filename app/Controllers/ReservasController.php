@@ -100,6 +100,30 @@ class ReservasController {
         }
     }
 
+    public function editarQuickReserva(array $input): array {
+        $id = (int)($input['id'] ?? 0);
+        $data = [
+            'fecha_inicio'  => $input['fecha'] ?? date('Y-m-d'),
+            'noches'        => (int)($input['noches'] ?? 1),
+            'titular'       => trim($input['titular'] ?? 'RESERVADO'),
+            'observaciones' => $input['observaciones'] ?? '',
+            'canal'         => $input['canal'] ?? 'DIRECTO'
+        ];
+
+        if (!$id || empty($data['titular']) || $data['noches'] < 1) {
+            return ['ok' => false, 'msg' => 'Datos incompletos'];
+        }
+
+        try {
+            $this->model->actualizarReservaRapida($id, $data);
+            $msg = "Editó RESERVA RÁPIDA #{$id} para: {$data['titular']}";
+            $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'EDITAR_RESERVA', 'RESERVAS', $msg);
+            return ['ok' => true, 'msg' => 'Reserva actualizada'];
+        } catch (Exception $e) {
+            return ['ok' => false, 'msg' => 'Error: ' . $e->getMessage()];
+        }
+    }
+
     public function checkin(array $input): array {
         $id = (int)($input['id'] ?? 0);
         if (!$id) return ['ok' => false, 'msg' => 'ID no válido'];

@@ -74,4 +74,32 @@ class ReservasControllerTest extends TestCase {
         $this->assertSame('cancelado', $estadoStay);
         $this->assertSame('libre', $estadoHab);
     }
+
+    public function testPuedeEditarReservaDesdeReservas(): void {
+        $stayId = $this->crearReservaBase(111, 'libre');
+
+        $response = $this->controller->editarQuickReserva([
+            'id' => $stayId,
+            'fecha' => '2026-04-25',
+            'titular' => 'EMPRESA EDITADA SAC',
+            'noches' => 3,
+            'observaciones' => 'Cliente llega tarde',
+            'canal' => 'BOOKING'
+        ]);
+
+        $this->assertTrue($response['ok'], $response['msg'] ?? 'No se pudo editar');
+
+        $stay = $this->pdo->query("SELECT fecha_registro, fecha_checkout, noches, medio_reserva, observaciones, estado FROM rooming_stays WHERE id = {$stayId}")
+            ->fetch(PDO::FETCH_ASSOC);
+        $titular = $this->pdo->query("SELECT nombre_completo FROM rooming_pax WHERE stay_id = {$stayId} AND es_titular = 1 LIMIT 1")
+            ->fetchColumn();
+
+        $this->assertSame('2026-04-25', $stay['fecha_registro']);
+        $this->assertSame('2026-04-28', $stay['fecha_checkout']);
+        $this->assertSame('3', (string)$stay['noches']);
+        $this->assertSame('BOOKING', $stay['medio_reserva']);
+        $this->assertSame('Cliente llega tarde', $stay['observaciones']);
+        $this->assertSame('reservado', $stay['estado']);
+        $this->assertSame('EMPRESA EDITADA SAC', $titular);
+    }
 }

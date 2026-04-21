@@ -74,7 +74,6 @@ include $_projectRoot . '/includes/head.php';
         </div>
       </div>
 
-      <style>
         .row-unpaid {
           background-color: #e8f5e9 !important;
         }
@@ -426,8 +425,9 @@ include $_projectRoot . '/includes/head.php';
                     <!-- CARRO -->
                     <td class="px-2 text-center">
                       <span v-if="fila.es_titular">
-                        <span v-if="fila.carro === 'SI'" class="badge bg-info text-dark" style="font-size:9px;"><i
-                            class="bi bi-car-front-fill"></i> SÍ</span>
+                        <span v-if="fila.carro" class="badge bg-info text-dark" style="font-size:9px;">
+                          <i class="bi bi-car-front-fill me-1"></i> {{ fila.carro }}
+                        </span>
                         <span v-else class="text-muted" style="font-size:10px;">NO</span>
                       </span>
                       <span v-else class="text-muted">—</span>
@@ -497,290 +497,336 @@ include $_projectRoot . '/includes/head.php';
 
   <!-- Registro de Check-in -->
   <div class="modal fade" id="modalCheckin" tabindex="-1">
-    <div class="modal-dialog modal-xl modal-dialog-centered">
-      <div class="modal-content border-0 shadow" style="border-radius:16px;">
-        <div class="modal-header border-0 pb-0 ps-4 pe-4 pt-4">
-          <h5 class="fw-bold mb-0">{{ form.stay.id ? 'Editar Registro #' + form.stay.id : 'Registro de Check-in' }}</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <div class="modal-dialog modal-dialog-centered modal-extra-wide">
+      <div class="modal-content border-0 shadow-lg" style="border-radius:16px; overflow: hidden;">
+        <!-- Header del Modal Estilo Detalle -->
+        <div class="bg-primary p-3 text-white position-relative">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h4 class="mb-0 fw-bold"><i class="bi bi-person-badge me-2"></i>{{ form.stay.id ? 'Editar Registro #' + form.stay.id : 'Registro de Check-in' }}</h4>
+              <p class="mb-0 opacity-75 small text-uppercase fw-bold"><i class="bi bi-house-door me-1"></i> Formulario de ingreso de huéspedes</p>
+            </div>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
         </div>
-        <form @submit.prevent="guardarCheckin">
-          <div class="modal-body p-4">
-            <div class="row g-4">
+
+        <form @submit.prevent="guardarCheckin" class="bg-light">
+          <div class="modal-body p-3">
+            <div class="row g-3">
               <!-- SECCIÓN 1: HABITACIÓN Y ESTADÍA -->
-              <div class="col-md-4 border-end">
-                <div class="modal-section-title">1. HABITACIÓN Y ESTADÍA</div>
-                <div class="mb-3">
-                  <label class="form-label small fw-bold">Habitación disponible</label>
-                  <select v-model="form.stay.habitacion_id" id="inputHabitacion" class="form-select" required
-                    @change="onHabChange">
-                    <option value="">Seleccione...</option>
-                    <option v-for="h in habitacionesLibres" :key="h.id" :value="h.id">
-                      #{{ h.numero }} - {{ h.tipo }} (S/ {{ h.precio_base }})
-                    </option>
-                  </select>
-                </div>
-                <div class="row g-2 mb-3">
-                  <div class="col-6">
-                    <label class="form-label small fw-bold">Check-in</label>
-                    <input type="date" v-model="form.stay.fecha_registro" class="form-control" required
-                      @change="calcularNoches">
-                  </div>
-                  <div class="col-6">
-                    <label class="form-label small fw-bold">Hora</label>
-                    <input type="time" v-model="form.stay.hora_checkin" class="form-control" required>
-                  </div>
-                </div>
-                <div class="row g-2 mb-3">
-                  <div class="col-6">
-                    <label class="form-label small fw-bold">Noches</label>
-                    <input type="number" v-model="form.stay.noches" class="form-control" min="1" required
-                      @input="onNochesChange">
-                  </div>
-                  <div class="col-6">
-                    <label class="form-label small fw-bold">Check-out Est.</label>
-                    <input type="date" v-model="form.stay.fecha_checkout" class="form-control" readonly>
-                  </div>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label small fw-bold">Canal de Reserva</label>
-                  <select v-model="form.stay.medio_reserva" class="form-select" required>
-                    <option value="DIRECTO">DIRECTO</option>
-                    <option value="LLAMADA">LLAMADA</option>
-                    <option value="WHATSAPP">WHATSAPP</option>
-                    <option value="BOOKING">BOOKING</option>
-                    <option value="CORREO">CORREO</option>
-                  </select>
-                </div>
-                <div class="mb-2">
-                  <label class="form-label small fw-bold d-flex align-items-center gap-1">
-                    <i class="bi bi-sticky text-warning"></i> Observaciones
-                    <span class="text-muted fw-normal" style="font-size:10px;">(opcional)</span>
-                  </label>
-                  <textarea v-model="form.stay.observaciones" class="form-control form-control-sm" rows="2"
-                    placeholder="Ej: Precio ajustado — hab. superior cedida a tarifa económica"
-                    style="resize:none; font-size:12px;"></textarea>
-                </div>
-              </div>
-              <!-- SECCIÓN 2: HUÉSPEDES (PAX) -->
-              <div class="col-md-5 border-end">
-                <div class="modal-section-title d-flex justify-content-between">
-                  2. HUÉSPEDES (PAX)
-                  <button type="button" class="btn btn-outline-primary btn-sm py-0" @click="agregarPax">
-                    <i class="bi bi-person-plus"></i> Añadir
-                  </button>
-                </div>
-                <div v-for="(pax, idx) in form.pax" :key="idx"
-                  class="p-3 bg-light rounded-3 mb-3 position-relative shadow-sm" style="border: 1px solid #eee;">
-                  <button v-if="idx > 0" type="button" class="btn-close position-absolute top-0 end-0 m-2"
-                    style="font-size:10px" @click="form.pax.splice(idx, 1)"></button>
-                  <div class="mb-2">
-                    <input type="text" v-model="pax.nombre_completo" id="inputNombreHuesped"
-                      class="form-control-sm form-control" placeholder="Nombre completo" required>
-                  </div>
-                  <div class="row g-2">
-                    <div class="col-4">
-                      <select v-model="pax.documento_tipo" class="form-select form-select-sm">
-                        <option value="DNI">DNI</option>
-                        <option value="CE">CE</option>
-                        <option value="PASA">PASAPORTE</option>
+              <div class="col-md-4">
+                <div class="card border-0 shadow-sm rounded-4 h-100">
+                  <div class="card-body p-3">
+                    <div class="modal-section-title text-primary border-primary border-opacity-25 pb-2 mb-4">
+                      <i class="bi bi-calendar-check me-1"></i> 1. HABITACIÓN Y ESTADÍA
+                    </div>
+                    
+                    <div class="mb-4">
+                      <label class="form-label small fw-bold text-muted">HABITACIÓN DISPONIBLE</label>
+                      <select v-model="form.stay.habitacion_id" id="inputHabitacion" class="form-select border-light shadow-sm" required
+                        @change="onHabChange" style="border-radius: 10px;">
+                        <option value="">Seleccione...</option>
+                        <option v-for="h in habitacionesLibres" :key="h.id" :value="h.id">
+                          #{{ h.numero }} - {{ h.tipo }} (S/ {{ h.precio_base }})
+                        </option>
                       </select>
                     </div>
-                    <div class="col-8 position-relative">
-                      <input type="text" v-model="pax.documento_num" id="inputDocumentoHuesped"
-                        class="form-control form-control-sm" placeholder="Num. documento" required
-                        @input="buscarPax(pax, idx)" @blur="ocultarSugerencias(idx)" autocomplete="off">
-                      <!-- Dropdown sugerencias -->
-                      <div v-if="sugerencias[idx] && sugerencias[idx].length"
-                        class="position-absolute bg-white border rounded shadow-sm w-100 z-3"
-                        style="top:100%; left:0; max-height:200px; overflow-y:auto;">
-                        <div v-for="s in sugerencias[idx]" :key="s.documento_num"
-                          class="px-3 py-2 cursor-pointer border-bottom d-flex align-items-center gap-2"
-                          style="cursor:pointer; font-size:12px;" @mousedown.prevent="aplicarSugerencia(pax, idx, s)">
-                          <span class="badge bg-secondary" style="font-size:9px;">{{ s.documento_tipo }}</span>
-                          <span class="fw-bold text-primary">{{ s.documento_num }}</span>
-                          <span class="text-muted">{{ s.nombre_completo }}</span>
+
+                    <div class="row g-2 mb-4">
+                      <div class="col-6">
+                        <label class="form-label small fw-bold text-muted">CHECK-IN</label>
+                        <input type="date" v-model="form.stay.fecha_registro" class="form-control border-light shadow-sm" required
+                          @change="calcularNoches" style="border-radius: 10px;">
+                      </div>
+                      <div class="col-6">
+                        <label class="form-label small fw-bold text-muted">HORA</label>
+                        <input type="time" v-model="form.stay.hora_checkin" class="form-control border-light shadow-sm" required style="border-radius: 10px;">
+                      </div>
+                    </div>
+
+                    <div class="row g-2 mb-4">
+                      <div class="col-6">
+                        <label class="form-label small fw-bold text-muted">NOCHES</label>
+                        <input type="number" v-model="form.stay.noches" class="form-control border-light shadow-sm" min="1" required
+                          @input="onNochesChange" style="border-radius: 10px;">
+                      </div>
+                      <div class="col-6">
+                        <label class="form-label small fw-bold text-muted">CHECK-OUT EST.</label>
+                        <div class="p-2 bg-light rounded-3 fw-bold text-center border" style="font-size: 14px;">
+                           {{ form.stay.fecha_checkout || '—' }}
                         </div>
                       </div>
                     </div>
-                  </div>
-                  <div class="row g-2 mt-2">
-                    <div class="col-6">
-                      <label class="micro-text fw-bold">NACIONALIDAD</label>
-                      <input type="text" v-model="pax.nacionalidad" class="form-control form-control-sm"
-                        placeholder="Peruana">
-                    </div>
-                    <div class="col-6">
-                      <label class="micro-text fw-bold">CIUDAD</label>
-                      <input type="text" v-model="pax.ciudad" class="form-control form-control-sm" placeholder="Lima">
-                    </div>
-                  </div>
 
-
-
-                  <!-- Campos solo para TITULAR -->
-                  <div v-if="pax.es_titular" class="border-top pt-2 mt-3">
-                    <div class="row g-2 mb-2">
-                      <div class="col-6">
-                        <label class="micro-text fw-bold">CELULAR</label>
-                        <input type="text" v-model="pax.celular" class="form-control form-control-sm"
-                          placeholder="999888777">
-                      </div>
-                      <div class="col-6">
-                        <label class="micro-text fw-bold">EMAIL</label>
-                        <input type="email" v-model="pax.email" class="form-control form-control-sm"
-                          placeholder="correo@ejemplo.com">
-                      </div>
+                    <div class="mb-4">
+                      <label class="form-label small fw-bold text-muted">CANAL DE RESERVA</label>
+                      <select v-model="form.stay.medio_reserva" class="form-select border-light shadow-sm" required style="border-radius: 10px;">
+                        <option value="DIRECTO">DIRECTO</option>
+                        <option value="LLAMADA">LLAMADA</option>
+                        <option value="WHATSAPP">WHATSAPP</option>
+                        <option value="BOOKING">BOOKING</option>
+                        <option value="CORREO">CORREO</option>
+                      </select>
                     </div>
-                    <div class="form-check mb-2">
-                      <input class="form-check-input" type="checkbox" v-model="pax.es_corporativo"
-                        :id="'checkCorp'+idx">
-                      <label class="form-check-label small fw-bold text-primary" :for="'checkCorp'+idx">
-                        <i class="bi bi-briefcase-fill me-1"></i>¿Pasajero corporativo?
+
+                    <div class="mb-2">
+                      <label class="form-label small fw-bold d-flex align-items-center gap-1 text-muted">
+                        <i class="bi bi-sticky text-warning"></i> OBSERVACIONES
+                        <span class="text-muted fw-normal" style="font-size:10px;">(opcional)</span>
                       </label>
-                    </div>
-                    <div v-if="pax.es_corporativo" class="animate__animated animate__fadeIn bg-light p-2 rounded border">
-                      <div class="row g-2">
-                        <div class="col-4">
-                          <label class="micro-text fw-bold text-dark">RUC</label>
-                          <input type="text" v-model="pax.ruc_empresa" class="form-control form-control-sm border-primary"
-                            placeholder="2060..." maxlength="11" @input="form.stay.ruc_factura = pax.ruc_empresa">
-                        </div>
-                        <div class="col-8">
-                          <label class="micro-text fw-bold text-dark">EMPRESA / RAZÓN SOCIAL</label>
-                          <input type="text" v-model="pax.empresa" class="form-control form-control-sm border-primary"
-                            placeholder="Nombre de la empresa" :required="pax.es_corporativo" @input="form.stay.razon_social = pax.empresa">
-                        </div>
-                      </div>
+                      <textarea v-model="form.stay.observaciones" class="form-control form-control-sm border-light shadow-sm" rows="3"
+                        placeholder="Nota interna de la estancia..."
+                        style="resize:none; font-size:12px; border-radius: 10px;"></textarea>
                     </div>
                   </div>
-
-                  <div class="row g-2 mt-2">
-                    <div class="col-6 d-flex align-items-center">
-                      <div class="form-check">
-                        <input class="form-check-input" type="radio" name="titular_radio" :id="'tit'+idx"
-                          :checked="pax.es_titular" @change="setTitular(idx)">
-                        <label class="form-check-label small fw-bold" :for="'tit'+idx">Titular</label>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="p-3 bg-white rounded-3 border">
-                  <label class="form-label small fw-bold">Trae vehiculo</label>
-                  <select v-model="form.stay.carro" class="form-select form-select-sm">
-                    <option value="NO">NO</option>
-                    <option value="SI">SI</option>
-                  </select>
                 </div>
               </div>
+
+              <!-- SECCIÓN 2: HUÉSPEDES (PAX) -->
+              <div class="col-md-5">
+                <div class="card border-0 shadow-sm rounded-4 h-100">
+                  <div class="card-body p-3">
+                    <div class="modal-section-title text-success border-success border-opacity-25 pb-2 mb-4 d-flex justify-content-between align-items-center">
+                      <span><i class="bi bi-people me-1"></i> 2. HUÉSPEDES (PAX)</span>
+                      <button type="button" class="btn btn-success btn-sm px-3 shadow-sm" @click="agregarPax" style="border-radius: 8px;">
+                        <i class="bi bi-plus-lg"></i> Añadir
+                      </button>
+                    </div>
+
+                    <div v-for="(pax, idx) in form.pax" :key="idx"
+                      class="p-3 bg-white rounded-4 mb-4 position-relative border border-opacity-50" 
+                      :class="pax.es_titular ? 'border-primary' : 'border-light'"
+                      style="box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+                      
+                      <!-- Switch Titular en esquina superior derecha -->
+                      <div class="position-absolute" style="top: 12px; right: 12px; z-index: 2;">
+                        <div class="form-check form-switch m-0 d-flex align-items-center gap-2 bg-light px-2 py-1 rounded-pill border shadow-sm">
+                          <input class="form-check-input m-0 cursor-pointer" type="checkbox" role="switch" :id="'switchTit'+idx"
+                            :checked="pax.es_titular" @change="setTitular(idx)">
+                          <label class="form-check-label micro-text fw-bold text-dark cursor-pointer mb-0" :for="'switchTit'+idx">TITULAR</label>
+                        </div>
+                      </div>
+
+                      <button v-if="idx > 0" type="button" class="btn-close position-absolute"
+                        style="font-size:10px; top: -10px; right: -10px; background-color: white; border: 1px solid #ddd; padding: 8px; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" 
+                        @click="form.pax.splice(idx, 1)"></button>
+                      
+                      <div class="mb-3 mt-3">
+                        <label class="micro-text fw-bold text-muted mb-1">NOMBRE COMPLETO</label>
+                        <input type="text" v-model="pax.nombre_completo" id="inputNombreHuesped"
+                          class="form-control form-control-sm border-light bg-light fw-bold" placeholder="Escriba aquí..." required>
+                      </div>
+
+                      <div class="row g-2 mb-3">
+                        <div class="col-4">
+                          <label class="micro-text fw-bold text-muted mb-1">TIPO DOC</label>
+                          <select v-model="pax.documento_tipo" class="form-select form-select-sm border-light bg-light" style="border-radius: 8px;">
+                            <option value="DNI">DNI</option>
+                            <option value="CE">CE</option>
+                            <option value="PASA">PASAPORTE</option>
+                          </select>
+                        </div>
+                        <div class="col-8 position-relative">
+                          <label class="micro-text fw-bold text-muted mb-1">NÚMERO</label>
+                          <input type="text" v-model="pax.documento_num" id="inputDocumentoHuesped"
+                            class="form-control form-control-sm border-light bg-light fw-bold" placeholder="Documento..." required
+                            @input="buscarPax(pax, idx)" @blur="ocultarSugerencias(idx)" autocomplete="off">
+                          <!-- Dropdown sugerencias -->
+                          <div v-if="sugerencias[idx] && sugerencias[idx].length"
+                            class="position-absolute bg-white border rounded shadow-lg w-100 z-3 mt-1"
+                            style="top:100%; left:0; max-height:200px; overflow-y:auto; border-radius: 10px;">
+                            <div v-for="s in sugerencias[idx]" :key="s.documento_num"
+                              class="px-3 py-2 cursor-pointer border-bottom d-flex align-items-center justify-content-between hover-light"
+                              style="cursor:pointer; font-size:12px;" @mousedown.prevent="aplicarSugerencia(pax, idx, s)">
+                              <div class="d-flex align-items-center gap-2">
+                                <span class="badge bg-primary bg-opacity-10 text-primary">{{ s.documento_tipo }}</span>
+                                <span class="fw-bold">{{ s.documento_num }}</span>
+                              </div>
+                              <span class="text-muted small ps-2 overflow-hidden text-nowrap" style="max-width: 150px;">{{ s.nombre_completo }}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="row g-2 mb-3">
+                        <div class="col-6">
+                          <label class="micro-text fw-bold text-muted mb-1">NACIONALIDAD</label>
+                          <input type="text" v-model="pax.nacionalidad" class="form-control form-control-sm border-light bg-light"
+                            placeholder="Ej: Peruana">
+                        </div>
+                        <div class="col-6">
+                          <label class="micro-text fw-bold text-muted mb-1">CIUDAD</label>
+                          <input type="text" v-model="pax.ciudad" class="form-control form-control-sm border-light bg-light" placeholder="Ej: Lima">
+                        </div>
+                      </div>
+
+                      <!-- Campos solo para TITULAR -->
+                      <div v-if="pax.es_titular" class="border-top pt-3 mt-2">
+                        <div class="row g-2 mb-3">
+                          <div class="col-6">
+                            <label class="micro-text fw-bold text-muted mb-1">CELULAR</label>
+                            <input type="text" v-model="pax.celular" class="form-control form-control-sm border-primary border-opacity-25 bg-light"
+                              placeholder="999 888 777">
+                          </div>
+                          <div class="col-6">
+                            <label class="micro-text fw-bold text-muted mb-1">EMAIL</label>
+                            <input type="email" v-model="pax.email" class="form-control form-control-sm border-primary border-opacity-25 bg-light"
+                              placeholder="ejemplo@correo.com">
+                          </div>
+                        </div>
+                        <div class="form-check form-switch mb-2">
+                          <input class="form-check-input" type="checkbox" v-model="pax.es_corporativo"
+                            :id="'checkCorp'+idx">
+                          <label class="form-check-label small fw-bold text-primary ms-2" :for="'checkCorp'+idx" style="cursor:pointer;">
+                            <i class="bi bi-briefcase-fill me-1"></i>¿Es una empresa? (Corporativo)
+                          </label>
+                        </div>
+                        <div v-if="pax.es_corporativo" class="animate__animated animate__fadeIn bg-primary bg-opacity-10 p-3 rounded-4 border border-primary border-opacity-25">
+                          <div class="row g-2">
+                            <div class="col-5">
+                              <label class="micro-text fw-bold text-primary mb-1">RUC</label>
+                              <input type="text" v-model="pax.ruc_empresa" class="form-control form-control-sm border-primary"
+                                placeholder="RUC..." maxlength="11" @input="form.stay.ruc_factura = pax.ruc_empresa">
+                            </div>
+                            <div class="col-7">
+                              <label class="micro-text fw-bold text-primary mb-1">RAZÓN SOCIAL</label>
+                              <input type="text" v-model="pax.empresa" class="form-control form-control-sm border-primary"
+                                placeholder="..." :required="pax.es_corporativo" @input="form.stay.razon_social = pax.empresa">
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      </div>
+
+                    <div class="p-4 rounded-4 border-dashed bg-white border border-secondary border-opacity-25">
+                      <label class="form-label small fw-bold text-secondary mb-2 d-flex align-items-center gap-2">
+                        <i class="bi bi-car-front-fill"></i> TRAE VEHÍCULO - ANOTA TU PLACA
+                      </label>
+                      <input type="text" v-model="form.stay.carro" class="form-control border-light bg-light fw-bold" 
+                        placeholder="Escriba la placa aquí... (opcional)">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <!-- SECCIÓN 3: PAGO Y REGISTRO -->
               <div class="col-md-3">
-                <div class="modal-section-title">3. PAGO Y REGISTRO</div>
-
-                <!-- TOTAL BASE (PEN) + DIVISA en una fila -->
-                <div class="d-flex align-items-center gap-2 mb-3">
-                  <div class="flex-grow-1">
-                    <label class="form-label micro-text fw-bold mb-1">TOTAL BASE (PEN)</label>
-                    <div class="input-group input-group-sm shadow-sm">
-                      <span class="input-group-text bg-light fw-bold border-0">S/</span>
-                      <input type="number" v-model="form.stay.total_pago" id="inputMontoPago"
-                        class="form-control fw-bold text-dark" step="0.50" min="0" style="border-color:#ffc107;"
-                        @input="recalcularMoneda">
+                <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
+                  <div class="card-body p-3 bg-white">
+                    <div class="modal-section-title text-dark border-dark border-opacity-25 pb-2 mb-4">
+                      <i class="bi bi-cash-coin me-1"></i> 3. PAGO Y REGISTRO
                     </div>
-                  </div>
-                  <div>
-                    <label class="form-label micro-text fw-bold mb-1">DIVISA</label>
-                    <select v-model="form.stay.moneda_pago" class="form-select form-select-sm"
-                      @change="recalcularMoneda" style="width:90px;">
-                      <option value="PEN">S/ Soles</option>
-                      <option value="USD">$ USD</option>
-                      <option value="CLP">P$ CLP</option>
-                    </select>
-                  </div>
-                </div>
 
-                <!-- TC compacto (solo si divisa != PEN) -->
-                <div v-if="form.stay.moneda_pago !== 'PEN'"
-                  class="d-flex align-items-center gap-2 mb-3 px-2 py-1 rounded border bg-light"
-                  style="font-size:12px;">
-                  <span class="fw-bold text-muted text-nowrap">T.C.</span>
-                  <input type="number" v-model="tcs[form.stay.moneda_pago]"
-                    class="form-control form-control-sm border-0 bg-white fw-bold text-center shadow-sm"
-                    style="width:58px; font-size:12px; height:28px;" step="0.0001" @input="recalcularMoneda">
-                  <i class="bi bi-caret-right-fill text-secondary" style="font-size:10px;"></i>
-                  <span class="fw-bold text-primary ms-auto text-nowrap" style="font-size:13px;">
-                    {{ form.stay.moneda_pago == 'USD' ? '$' : 'CLP' }} {{ fmtCur(form.stay.monto_original) }}
-                  </span>
-                </div>
-
-                <!-- MÉTODO DE PAGO -->
-                <div class="mb-3">
-                  <label class="form-label micro-text fw-bold mb-1">MÉTODO DE PAGO</label>
-                  <select v-model="form.stay.metodo_pago" id="inputMetodoPago" class="form-select form-select-sm">
-                    <option value="">Seleccione...</option>
-                    <option v-for="m in mediosPago" :key="m.id" :value="m.nombre" :disabled="m.activo != 1">{{ m.nombre
-                      }}</option>
-                  </select>
-                </div>
-
-                <div class="mb-3">
-                  <label class="form-label micro-text fw-bold mb-2 d-block">TIPO DE COBRO</label>
-                  <div class="row g-2">
-                    <div class="col-6">
-                      <button type="button" class="btn btn-sm w-100 fw-bold"
-                        :class="form.tipoPago === 'completo' ? 'btn-primary' : 'btn-outline-primary'"
-                        @click="cambiarTipoPago('completo')">
-                        Pagar Completo
-                      </button>
+                    <!-- TOTAL BASE (PEN) + DIVISA -->
+                    <div class="bg-light p-3 rounded-4 border border-secondary border-opacity-25 mb-4 shadow-sm">
+                      <div class="d-flex align-items-center gap-2 mb-1">
+                         <div class="flex-grow-1">
+                           <label class="form-label micro-text fw-bold text-secondary mb-1">TOTAL BASE (PEN)</label>
+                           <div class="d-flex align-items-baseline gap-1">
+                              <span class="fw-bold text-dark" style="font-size: 20px;">S/</span>
+                              <input type="number" v-model="form.stay.total_pago" id="inputMontoPago"
+                                class="form-control form-control-lg border-0 bg-transparent fw-bold text-dark p-0" step="0.50" min="0"
+                                @input="recalcularMoneda" style="font-size: 24px; box-shadow: none;">
+                           </div>
+                         </div>
+                      </div>
+                      <div class="border-top border-secondary border-opacity-25 pt-2 mt-2">
+                        <label class="form-label micro-text fw-bold text-muted mb-1">DIVISA DE COBRO</label>
+                        <select v-model="form.stay.moneda_pago" class="form-select form-select-sm border-0 bg-transparent fw-bold text-secondary"
+                          @change="recalcularMoneda">
+                          <option value="PEN">S/ Soles (PEN)</option>
+                          <option value="USD">$ Dólares (USD)</option>
+                          <option value="CLP">P$ Pesos (CLP)</option>
+                        </select>
+                      </div>
                     </div>
-                    <div class="col-6">
-                      <button type="button" class="btn btn-sm w-100 fw-bold"
-                        :class="form.tipoPago === 'adelanto' ? 'btn-warning text-dark' : 'btn-outline-warning'"
-                        @click="cambiarTipoPago('adelanto')">
-                        Dejar Adelanto
-                      </button>
+
+                    <!-- TC compacto (solo si divisa != PEN) -->
+                    <div v-if="form.stay.moneda_pago !== 'PEN'"
+                      class="mb-4 p-3 rounded-4 border border-primary border-opacity-25 bg-primary bg-opacity-10 animate__animated animate__fadeIn">
+                      <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="micro-text fw-bold text-primary">TIPO DE CAMBIO</span>
+                        <input type="number" v-model="tcs[form.stay.moneda_pago]"
+                          class="form-control form-control-sm fw-bold text-center border-primary border-opacity-50"
+                          style="width:75px;" step="0.0001" @input="recalcularMoneda">
+                      </div>
+                      <div class="text-center py-2 bg-white rounded-3 border border-white shadow-sm fw-bold text-primary" style="font-size: 18px;">
+                        {{ form.stay.moneda_pago == 'USD' ? '$' : 'CLP' }} {{ fmtCur(form.stay.monto_original) }}
+                      </div>
                     </div>
+
+                    <!-- MÉTODO DE PAGO -->
+                    <div class="mb-4">
+                      <label class="form-label small fw-bold text-muted mb-2">MÉTODO DE PAGO</label>
+                      <select v-model="form.stay.metodo_pago" id="inputMetodoPago" class="form-select border-light shadow-sm" style="border-radius: 10px;">
+                        <option value="">Seleccione...</option>
+                        <option v-for="m in mediosPago" :key="m.id" :value="m.nombre" :disabled="m.activo != 1">{{ m.nombre }}</option>
+                      </select>
+                    </div>
+
+                    <div class="mb-4">
+                      <label class="form-label small fw-bold text-muted mb-2">MODALIDAD DE COBRO</label>
+                      <div class="row g-2">
+                        <div class="col-6">
+                          <div class="p-2 border rounded-3 text-center cursor-pointer transition-all h-100 d-flex flex-column align-items-center justify-content-center"
+                            :class="form.tipoPago === 'completo' ? 'bg-primary text-white border-primary shadow' : 'bg-white text-muted'"
+                            @click="cambiarTipoPago('completo')" style="cursor:pointer; min-height: 50px;">
+                            <i class="bi bi-wallet2 mb-1"></i>
+                            <span class="mini fw-bold">TOTAL</span>
+                          </div>
+                        </div>
+                        <div class="col-6">
+                          <div class="p-2 border rounded-3 text-center cursor-pointer transition-all h-100 d-flex flex-column align-items-center justify-content-center"
+                            :class="form.tipoPago === 'adelanto' ? 'bg-dark text-white border-dark shadow' : 'bg-white text-muted'"
+                            @click="cambiarTipoPago('adelanto')" style="cursor:pointer; min-height: 50px;">
+                            <i class="bi bi-credit-card-2-front mb-1"></i>
+                            <span class="mini fw-bold">ADELANTO</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="mb-4 animate__animated animate__fadeIn" v-if="form.tipoPago === 'adelanto'">
+                      <label class="form-label small fw-bold text-dark mb-1">MONTO ADELANTADO ({{ form.stay.moneda_pago }})</label>
+                      <input type="number" v-model="form.adelanto" class="form-control form-control-sm border-dark fw-bold" min="0.01"
+                        step="0.01" @input="onAdelantoChange" placeholder="0.00" style="font-size: 16px;">
+                      <div class="small mt-1" :class="adelantoExcede ? 'text-danger fw-bold' : 'text-muted'">
+                        <span v-if="adelantoExcede">Supera el total.</span>
+                        <span v-else>Saldo: {{ form.stay.moneda_pago }} {{ fmtCur(saldoPendienteOriginal) }}</span>
+                      </div>
+                    </div>
+
+                    <!-- COMPROBANTE -->
+                    <div class="bg-light p-3 rounded-4 border">
+                      <div class="row g-2">
+                        <div class="col-7">
+                          <label class="form-label micro-text fw-bold text-muted mb-1">COMPROBANTE</label>
+                          <select v-model="form.stay.tipo_comprobante" class="form-select form-select-sm border-0 fw-bold bg-transparent">
+                            <option value="RECIBO">RECIBO</option>
+                            <option value="BOLETA">BOLETA</option>
+                            <option value="FACTURA">FACTURA</option>
+                          </select>
+                        </div>
+                        <div class="col-5">
+                          <label class="form-label micro-text fw-bold text-muted mb-1">N° REF.</label>
+                          <input type="text" v-model="form.stay.num_comprobante" class="form-control form-control-sm border-0 bg-transparent fw-bold"
+                            placeholder="1372">
+                        </div>
+                      </div>
+                    </div>
+
                   </div>
                 </div>
-
-                <div class="mb-3" v-if="form.tipoPago === 'adelanto'">
-                  <label class="form-label micro-text fw-bold mb-1">ADELANTO ({{ form.stay.moneda_pago }})</label>
-                  <input type="number" v-model="form.adelanto" class="form-control form-control-sm" min="0.01"
-                    step="0.01" @input="onAdelantoChange" placeholder="0.00">
-                  <div class="small mt-1" :class="adelantoExcede ? 'text-danger fw-bold' : 'text-muted'">
-                    <span v-if="adelantoExcede">El adelanto no puede superar el total.</span>
-                    <span v-else-if="(parseFloat(form.adelanto) || 0) <= 0">El adelanto debe ser mayor a 0.</span>
-                    <span v-else>Saldo pendiente: {{ form.stay.moneda_pago }} {{ fmtCur(saldoPendienteOriginal)
-                      }}</span>
-                  </div>
-                </div>
-
-                <!-- COMPROBANTE + N° RECIBO -->
-                <div class="row g-1">
-                  <div class="col-7">
-                    <label class="form-label micro-text fw-bold mb-1">COMPROBANTE</label>
-                    <select v-model="form.stay.tipo_comprobante" class="form-select form-select-sm">
-                      <option value="RECIBO">RECIBO</option>
-                      <option value="BOLETA">BOLETA</option>
-                      <option value="FACTURA">FACTURA</option>
-                    </select>
-                  </div>
-                  <div class="col-5">
-                    <label class="form-label micro-text fw-bold mb-1">N° COMP.</label>
-                    <input type="text" v-model="form.stay.num_comprobante" class="form-control form-control-sm"
-                      placeholder="1372">
-                  </div>
-                </div>
-
-
-
               </div>
             </div>
           </div>
-          <div class="modal-footer border-0 p-4 pt-0">
-            <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancelar</button>
-            <button type="submit" id="btnRegistrarCheckin" class="btn btn-primary px-5 shadow"
+          <div class="modal-footer border-0 p-4 pt-0 bg-light d-flex justify-content-between align-items-center">
+            <button type="button" class="btn btn-link text-muted text-decoration-none fw-bold" data-bs-dismiss="modal">Cerrar sin guardar</button>
+            <button type="submit" id="btnRegistrarCheckin" class="btn btn-primary px-5 py-2 rounded-pill shadow-lg fw-bold"
               :disabled="loading || adelantoInvalido">
               <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
+              <i class="bi bi-check-circle-fill me-2"></i>
               {{ form.stay.id ? 'Guardar Cambios' : 'Registrar Check-in' }}
             </button>
           </div>
@@ -1195,8 +1241,27 @@ include $_projectRoot . '/includes/head.php';
 <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 <script src="index.js?v=<?= time() ?>"></script>
 
-
 <style>
+  .modal-extra-wide {
+    max-width: 95% !important;
+    width: 1350px !important;
+  }
+
+  .modal-extra-wide .modal-body {
+    max-height: 75vh;
+    overflow-y: auto;
+  }
+
+  .text-dark-gray { color: #343a40 !important; }
+  .bg-dark-gray { background-color: #343a40 !important; }
+  .border-dark-gray { border-color: #343a40 !important; }
+
+  .border-dashed { border-style: dashed !important; }
+  .hover-light:hover { background-color: #f8f9fa !important; }
+  .transition-all { transition: all 0.2s ease-in-out; }
+  .cursor-pointer { cursor: pointer; }
+  .hover-scale:hover { transform: scale(1.02); }
+
   .btn-white {
     background: white;
   }

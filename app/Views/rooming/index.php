@@ -22,7 +22,11 @@ include $_projectRoot . '/includes/head.php';
         </h4>
         <p class="mb-0 small text-muted fw-semibold">Gestión de estadías activas y registro de ingresos</p>
       </div>
-      <div class="ms-auto">
+      <div class="ms-auto d-flex gap-2 align-items-center">
+        <button class="btn btn-sm btn-outline-secondary shadow-sm px-2 px-sm-3" @click="abrirReportePax" style="font-weight: 700; font-size: 11px; border-color: #555;">
+          <i class="bi bi-file-earmark-person me-1" style="color:#6c757d;"></i>
+          <span>REGISTRO PAX</span>
+        </button>
         <button class="btn btn-sm btn-primary shadow-sm px-2 px-sm-3" @click="abrirCheckin" style="border: 1px solid #111; font-weight: 700; font-size: 11px;">
           <i class="bi bi-plus-lg text-warning me-1"></i>
           <span>NUEVO</span>
@@ -85,15 +89,15 @@ include $_projectRoot . '/includes/head.php';
               <tr>
                 <th class="ps-4" style="width: 60px;">ID</th>
                 <th style="width: 100px;">HAB.</th>
-                <th style="min-width: 220px;">HUÉSPED TITULAR</th>
-                <th>FECHAS</th>
+                <th style="width: 250px; max-width: 250px;">HUÉSPED TITULAR</th>
+                <th style="width: 160px;">FECHAS</th>
                 <th class="text-end">MONTO</th>
                 <th class="text-center">PAGO</th>
                 <th class="text-center">MEDIO</th>
                 <th class="text-end pe-4" style="width: 120px;">ACCIONES</th>
               </tr>
             </thead>
-            <tbody>
+                        <tbody>
               <tr v-if="loading">
                 <td colspan="7" class="text-center py-5">
                   <div class="spinner-border text-primary"></div>
@@ -109,8 +113,8 @@ include $_projectRoot . '/includes/head.php';
                     s.estado.toUpperCase() }}</span>
                   <div class="text-muted small fw-semibold" style="letter-spacing: 0.5px;">{{ s.hab_tipo }}</div>
                 </td>
-                <td>
-                  <div class="fw-bold">{{ s.titular_nombre || '---' }}</div>
+                <td style="width: 250px; max-width: 250px;">
+                  <div class="fw-bold" style="white-space: normal; line-height: 1.2; word-break: break-word;">{{ s.titular_nombre || '---' }}</div>
                   <div class="text-muted small">Pax: {{ s.pax_total }} personas</div>
                   <div class="mt-1">
                     <span
@@ -152,18 +156,18 @@ include $_projectRoot . '/includes/head.php';
                     <button class="btn btn-white btn-sm border" title="Detalle" @click="verDetalle(s)">
                       <i class="bi bi-eye text-primary"></i>
                     </button>
-                    <button class="btn btn-white btn-sm border" title="Editar" @click="abrirEdicion(s)">
+                    <button v-if="s.estado !== 'cancelado'" class="btn btn-white btn-sm border" title="Editar" @click="abrirEdicion(s)">
                       <i class="bi bi-pencil-square text-secondary"></i>
                     </button>
-                    <button v-if="s.estado !== 'reservado'" class="btn btn-white btn-sm border"
+                    <button v-if="s.estado !== 'reservado' && s.estado !== 'cancelado'" class="btn btn-white btn-sm border"
                       title="Registrar Consumo" @click="abrirConsumo(s)">
                       <i class="bi bi-cup-straw text-warning"></i>
                     </button>
-                    <button v-if="s.estado !== 'reservado'" class="btn btn-white btn-sm border" title="Registrar Pago"
+                    <button v-if="s.estado !== 'reservado' && s.estado !== 'cancelado'" class="btn btn-white btn-sm border" title="Registrar Pago"
                       @click="abrirPago(s)">
                       <i class="bi bi-wallet2 text-success"></i>
                     </button>
-                    <button v-if="s.estado !== 'reservado'" class="btn btn-white btn-sm border" title="Checkout"
+                    <button v-if="s.estado !== 'reservado' && s.estado !== 'cancelado'" class="btn btn-white btn-sm border" title="Checkout"
                       @click="procederCheckout(s)">
                       <i class="bi bi-door-closed text-danger"></i>
                     </button>
@@ -180,6 +184,234 @@ include $_projectRoot . '/includes/head.php';
     </div>
 
   </div> <!-- end of main-content -->
+
+  <!-- ╔══════════════════════════════════════════════════════╗ -->
+  <!-- ║          MODAL REGISTRO PAX (Reporte Mensual)       ║ -->
+  <!-- ╚══════════════════════════════════════════════════════╝ -->
+  <div class="modal fade" id="modalReportePax" tabindex="-1" aria-labelledby="modalReportePaxLabel" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen modal-dialog-scrollable">
+      <div class="modal-content border-0" style="background:#f4f6fb;">
+        <!-- Header -->
+        <div class="modal-header border-0 py-3 px-4" style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 60%,#0f3460 100%);">
+          <div class="d-flex align-items-center gap-3">
+            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:40px;height:40px;background:rgba(255,255,255,0.12);">
+              <i class="bi bi-file-earmark-person text-white fs-5"></i>
+            </div>
+            <div>
+              <h5 class="modal-title fw-bold text-white mb-0" id="modalReportePaxLabel">Registro PAX — Reporte Mensual</h5>
+              <small class="text-white opacity-60">Listado de check-ins por mes para control de huéspedes</small>
+            </div>
+          </div>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+
+        <!-- Filtros -->
+        <div class="px-4 pt-3 pb-2" style="background:white; border-bottom:1px solid #e9ecef;">
+          <div class="d-flex flex-wrap gap-3 align-items-end">
+            <div>
+              <label class="form-label small fw-bold text-muted text-uppercase mb-1" style="font-size:10px;letter-spacing:.5px;">Mes</label>
+              <select v-model="reportePax.mes" class="form-select form-select-sm fw-bold" style="width:140px;" @change="cargarReportePax">
+                <option value="1">Enero</option>
+                <option value="2">Febrero</option>
+                <option value="3">Marzo</option>
+                <option value="4">Abril</option>
+                <option value="5">Mayo</option>
+                <option value="6">Junio</option>
+                <option value="7">Julio</option>
+                <option value="8">Agosto</option>
+                <option value="9">Septiembre</option>
+                <option value="10">Octubre</option>
+                <option value="11">Noviembre</option>
+                <option value="12">Diciembre</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label small fw-bold text-muted text-uppercase mb-1" style="font-size:10px;letter-spacing:.5px;">Año</label>
+              <select v-model="reportePax.anio" class="form-select form-select-sm fw-bold" style="width:100px;" @change="cargarReportePax">
+                <option v-for="y in reportePax.anios" :key="y" :value="y">{{ y }}</option>
+              </select>
+            </div>
+            <div class="ms-auto d-flex gap-2">
+              <span class="badge bg-primary align-self-center px-3 py-2" style="font-size:11px;" v-if="!reportePax.cargando">
+                <i class="bi bi-people-fill me-1"></i>{{ reportePax.filas.length }} registros
+              </span>
+              <button class="btn btn-sm btn-success fw-bold px-3" @click="exportarReportePax" :disabled="reportePax.filas.length === 0">
+                <i class="bi bi-file-earmark-excel me-1"></i>Exportar Excel
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cuerpo -->
+        <div class="modal-body p-0">
+          <!-- Loader -->
+          <div v-if="reportePax.cargando" class="d-flex justify-content-center align-items-center py-5">
+            <div class="spinner-border text-primary me-3"></div>
+            <span class="text-muted fw-semibold">Cargando reporte...</span>
+          </div>
+
+          <!-- Sin datos -->
+          <div v-else-if="reportePax.filas.length === 0" class="text-center py-5 text-muted">
+            <i class="bi bi-inbox fs-1 opacity-25 d-block mb-2"></i>
+            <span class="fw-semibold">No se encontraron check-ins para este período.</span>
+          </div>
+
+          <!-- Tabla -->
+          <div v-else class="table-responsive" style="overflow-x:auto;">
+            <table id="tablaPaxReporte" class="table table-bordered table-hover mb-0 align-middle" style="font-size:11px; white-space:nowrap; min-width:2400px;">
+              <thead style="background:#1a1a2e; color:white; position:sticky; top:0; z-index:10;">
+                <tr>
+                  <th class="px-3 py-2 text-center" style="min-width:80px;">OPERADOR</th>
+                  <th class="px-3 py-2 text-center" style="min-width:90px;">FECHA<br>REGISTRO</th>
+                  <th class="px-3 py-2 text-center" style="min-width:60px;">HAB</th>
+                  <th class="px-3 py-2 text-center" style="min-width:130px;">TIPO DE HAB</th>
+                  <th class="px-3 py-2 text-center" style="min-width:45px;">PAX</th>
+                  <th class="px-3 py-2 text-center" style="min-width:110px;">MEDIO DE<br>RESERVA</th>
+                  <th class="px-3 py-2 text-center" style="min-width:90px;">HORA DE<br>CHECK IN</th>
+                  <th class="px-3 py-2 text-center" style="min-width:200px;">NOMBRE Y APELLIDO</th>
+                  <th class="px-3 py-2 text-center" style="min-width:130px;">DOCUMENTO<br>DE IDENTIDAD</th>
+                  <th class="px-3 py-2 text-center" style="min-width:110px;">NÚMERO</th>
+                  <th class="px-3 py-2 text-center" style="min-width:100px;">NACIONALIDAD</th>
+                  <th class="px-3 py-2 text-center" style="min-width:90px;">CIUDAD</th>
+                  <th class="px-3 py-2 text-center" style="min-width:100px;">CHECK IN<br>FECHA</th>
+                  <th class="px-3 py-2 text-center" style="min-width:100px;">CHECK OUT<br>FECHA</th>
+                  <th class="px-3 py-2 text-center" style="min-width:100px;">PAGO TOTAL</th>
+                  <th class="px-3 py-2 text-center" style="min-width:90px;">LATE<br>CHECK OUT</th>
+                  <th class="px-3 py-2 text-center" style="min-width:120px;">MEDIO DE<br>PAGO</th>
+                  <th class="px-3 py-2 text-center" style="min-width:130px;">COMPROBANTE<br>DE PAGO</th>
+                  <th class="px-3 py-2 text-center" style="min-width:110px;">NÚMERO DE<br>COMPROBANTE</th>
+                  <th class="px-3 py-2 text-center" style="min-width:90px;">QUIEN COBRO</th>
+                  <th class="px-3 py-2 text-center" style="min-width:65px;">CARRO</th>
+                  <th class="px-3 py-2 text-center" style="min-width:180px;">OBSERVACIONES</th>
+                </tr>
+              </thead>
+              <tbody>
+                <template v-for="(fila, idx) in reportePax.filas" :key="idx">
+                  <!-- Fila por cada PAX -->
+                  <tr :class="fila.es_titular ? 'table-light fw-semibold' : ''" :style="fila.es_titular ? 'border-top:2px solid #dee2e6;' : 'background:#fafafa;'">
+                    <!-- OPERADOR -->
+                    <td class="px-2 text-center">
+                      <span v-if="fila.es_titular" class="badge" style="background:#e8f4fd;color:#0369a1;font-size:10px;font-weight:700;">{{ fila.operador }}</span>
+                      <span v-else class="text-muted" style="font-size:10px;">—</span>
+                    </td>
+                    <!-- FECHA REGISTRO -->
+                    <td class="px-2 text-center">
+                      <span v-if="fila.es_titular">{{ fmtFecha(fila.fecha_registro) }}</span>
+                      <span v-else class="text-muted">—</span>
+                    </td>
+                    <!-- HAB -->
+                    <td class="px-2 text-center fw-bold" style="color:#1a1a2e;">
+                      <span v-if="fila.es_titular">#{{ fila.hab_numero }}</span>
+                      <span v-else class="text-muted">—</span>
+                    </td>
+                    <!-- TIPO HAB -->
+                    <td class="px-2">
+                      <span v-if="fila.es_titular" class="text-uppercase" style="font-size:10px;font-weight:600;">{{ fila.tipo_hab_declarado }}</span>
+                      <span v-else class="text-muted">—</span>
+                    </td>
+                    <!-- PAX -->
+                    <td class="px-2 text-center">
+                      <span v-if="fila.es_titular" class="badge bg-secondary" style="font-size:10px;">{{ fila.pax_total }}</span>
+                      <span v-else class="text-muted">—</span>
+                    </td>
+                    <!-- MEDIO RESERVA -->
+                    <td class="px-2 text-center">
+                      <span v-if="fila.es_titular" class="badge" style="background:#f0fdf4;color:#166534;font-size:9px;font-weight:700;">{{ fila.medio_reserva }}</span>
+                      <span v-else class="text-muted">—</span>
+                    </td>
+                    <!-- HORA CHECK IN -->
+                    <td class="px-2 text-center">
+                      <span v-if="fila.es_titular" class="fw-bold text-dark">{{ fila.hora_checkin || '—' }}</span>
+                      <span v-else class="text-muted">—</span>
+                    </td>
+                    <!-- NOMBRE Y APELLIDO -->
+                    <td class="px-2 fw-bold" style="color:#0f3460;">{{ fila.nombre_completo }}</td>
+                    <!-- DOCUMENTO TIPO -->
+                    <td class="px-2 text-center">
+                      <span class="badge bg-dark" style="font-size:9px;">{{ fila.documento_tipo }}</span>
+                    </td>
+                    <!-- NÚMERO DOC -->
+                    <td class="px-2 text-center fw-bold">{{ fila.documento_num }}</td>
+                    <!-- NACIONALIDAD -->
+                    <td class="px-2 text-center">{{ fila.nacionalidad || '—' }}</td>
+                    <!-- CIUDAD -->
+                    <td class="px-2 text-center">{{ fila.ciudad || '—' }}</td>
+                    <!-- CHECK IN FECHA -->
+                    <td class="px-2 text-center">
+                      <span v-if="fila.es_titular" class="text-success fw-bold">{{ fmtFecha(fila.fecha_registro) }}</span>
+                      <span v-else class="text-muted">—</span>
+                    </td>
+                    <!-- CHECK OUT FECHA -->
+                    <td class="px-2 text-center">
+                      <span v-if="fila.es_titular" class="text-danger fw-bold">{{ fmtFecha(fila.fecha_checkout) }}</span>
+                      <span v-else class="text-muted">—</span>
+                    </td>
+                    <!-- PAGO TOTAL -->
+                    <td class="px-2 text-end fw-bold" style="color:#0f3460;">
+                      <span v-if="fila.es_titular">
+                        {{ fila.moneda_pago == 'USD' ? '$' : (fila.moneda_pago == 'CLP' ? 'P$' : 'S/') }} {{ fmtCur(fila.total_pago) }}
+                      </span>
+                      <span v-else class="text-muted">—</span>
+                    </td>
+                    <!-- LATE CHECK OUT -->
+                    <td class="px-2 text-center">
+                      <span v-if="fila.es_titular">
+                        <span v-if="fila.estado === 'late_checkout'" class="badge bg-warning text-dark" style="font-size:9px;">SÍ</span>
+                        <span v-else class="text-muted" style="font-size:10px;">NO</span>
+                      </span>
+                      <span v-else class="text-muted">—</span>
+                    </td>
+                    <!-- MEDIO PAGO -->
+                    <td class="px-2 text-center">
+                      <span v-if="fila.es_titular" class="badge bg-light text-dark border fw-bold" style="font-size:9px;">{{ fila.metodo_pago || '—' }}</span>
+                      <span v-else class="text-muted">—</span>
+                    </td>
+                    <!-- COMPROBANTE DE PAGO -->
+                    <td class="px-2 text-center">
+                      <span v-if="fila.es_titular" class="fw-semibold text-uppercase" style="font-size:10px;">{{ fila.tipo_comprobante || '—' }}</span>
+                      <span v-else class="text-muted">—</span>
+                    </td>
+                    <!-- NÚMERO COMPROBANTE -->
+                    <td class="px-2 text-center fw-bold">
+                      <span v-if="fila.es_titular">{{ fila.num_comprobante || '—' }}</span>
+                      <span v-else class="text-muted">—</span>
+                    </td>
+                    <!-- QUIEN COBRÓ -->
+                    <td class="px-2 text-center">
+                      <span v-if="fila.es_titular" class="badge" style="background:#fef3c7;color:#92400e;font-size:9px;font-weight:700;">{{ fila.cobrador || '—' }}</span>
+                      <span v-else class="text-muted">—</span>
+                    </td>
+                    <!-- CARRO -->
+                    <td class="px-2 text-center">
+                      <span v-if="fila.es_titular">
+                        <span v-if="fila.carro === 'SI'" class="badge bg-info text-dark" style="font-size:9px;"><i class="bi bi-car-front-fill"></i> SÍ</span>
+                        <span v-else class="text-muted" style="font-size:10px;">NO</span>
+                      </span>
+                      <span v-else class="text-muted">—</span>
+                    </td>
+                    <!-- OBSERVACIONES -->
+                    <td class="px-2" style="max-width:200px; white-space:normal;">
+                      <span v-if="fila.es_titular" class="text-muted" style="font-size:10px;">{{ fila.observaciones || '' }}</span>
+                    </td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="modal-footer border-0 bg-white py-2 px-4">
+          <small class="text-muted me-auto">
+            <i class="bi bi-info-circle me-1"></i>
+            Reporte generado a partir de los check-ins confirmados del mes seleccionado. Una fila por cada huésped registrado.
+          </small>
+          <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- / MODAL REGISTRO PAX -->
 
   <!-- Registro de Check-in -->
   <div class="modal fade" id="modalCheckin" tabindex="-1">

@@ -149,7 +149,10 @@ class ReservasModel {
     public function pagoRapido(int $stay_id, float $monto, string $moneda, string $metodo, float $tc, int $uid): array {
         $monto_pen = $moneda === 'PEN' ? $monto : round($monto * $tc, 2);
 
-        $this->pdo->beginTransaction();
+        $mustCommit = !$this->pdo->inTransaction();
+        if ($mustCommit) {
+            $this->pdo->beginTransaction();
+        }
         try {
             $stmt = $this->pdo->prepare(
                 "INSERT INTO anticipos (stay_id, monto, moneda, monto_pen, tc_aplicado, tipo_pago, recibo, fecha, usuario_id)
@@ -200,7 +203,10 @@ class ReservasModel {
     public function registrarReservaRapida(array $data): int {
         $fecha_fin = date('Y-m-d', strtotime($data['fecha_inicio'] . " + {$data['noches']} days"));
         
-        $this->pdo->beginTransaction();
+        $mustCommit = !$this->pdo->inTransaction();
+        if ($mustCommit) {
+            $this->pdo->beginTransaction();
+        }
         try {
             $sql = "INSERT INTO rooming_stays (
                 operador, fecha_registro, fecha_checkout, medio_reserva, 
@@ -233,10 +239,14 @@ class ReservasModel {
             $stmtPax = $this->pdo->prepare("INSERT INTO rooming_pax (stay_id, nombre_completo, documento_num, es_titular) VALUES (?, ?, '---', 1)");
             $stmtPax->execute([$stay_id, $data['titular']]);
             
-            $this->pdo->commit();
+            if ($mustCommit) {
+                $this->pdo->commit();
+            }
             return $stay_id;
         } catch (Exception $e) {
-            $this->pdo->rollBack();
+            if ($mustCommit && $this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
             throw $e;
         }
     }
@@ -246,7 +256,10 @@ class ReservasModel {
      * Changes status to 'activo' and marks room as 'ocupado'.
      */
     public function activarStay(int $id): bool {
-        $this->pdo->beginTransaction();
+        $mustCommit = !$this->pdo->inTransaction();
+        if ($mustCommit) {
+            $this->pdo->beginTransaction();
+        }
         try {
             // 1. Update stay status
             $stmt = $this->pdo->prepare("UPDATE rooming_stays SET estado = 'activo' WHERE id = ?");
@@ -263,10 +276,53 @@ class ReservasModel {
                 $stmtRoom->execute([$habId]);
             }
 
-            $this->pdo->commit();
+            if ($mustCommit) {
+                $this->pdo->commit();
+            }
             return true;
         } catch (Exception $e) {
-            $this->pdo->rollBack();
+            if ($mustCommit && $this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
+            throw $e;
+        }
+    }
+
+    /**
+     * Reject a reservation and free the room if it was still blocked as reserved.
+     */
+    public function rechazarStay(int $id): bool {
+        $mustCommit = !$this->pdo->inTransaction();
+        if ($mustCommit) {
+            $this->pdo->beginTransaction();
+        }
+        try {
+            $stmtStay = $this->pdo->prepare("SELECT habitacion_id, estado FROM rooming_stays WHERE id = ? FOR UPDATE");
+            $stmtStay->execute([$id]);
+            $stay = $stmtStay->fetch(PDO::FETCH_ASSOC);
+
+            if (!$stay) {
+                throw new Exception('Reserva no encontrada');
+            }
+
+            if ($stay['estado'] !== 'reservado') {
+                throw new Exception('Solo se pueden rechazar reservas en estado reservado');
+            }
+
+            $stmt = $this->pdo->prepare("UPDATE rooming_stays SET estado = 'cancelado' WHERE id = ?");
+            $stmt->execute([$id]);
+
+            $stmtRoom = $this->pdo->prepare("UPDATE habitaciones SET estado = 'libre' WHERE id = ? AND estado = 'reservado'");
+            $stmtRoom->execute([(int)$stay['habitacion_id']]);
+
+            if ($mustCommit) {
+                $this->pdo->commit();
+            }
+            return true;
+        } catch (Exception $e) {
+            if ($mustCommit && $this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
             throw $e;
         }
     }

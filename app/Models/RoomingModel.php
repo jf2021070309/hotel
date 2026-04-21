@@ -30,7 +30,7 @@ class RoomingModel {
                 (SELECT nombre_completo FROM rooming_pax WHERE stay_id = s.id AND es_titular = 1 LIMIT 1) as titular_nombre
                 FROM rooming_stays s 
                 JOIN habitaciones h ON s.habitacion_id = h.id 
-                WHERE s.estado IN ('activo', 'reservado', 'late_checkout') 
+                WHERE s.estado IN ('activo', 'reservado', 'late_checkout', 'cancelado') 
                 ORDER BY s.id DESC";
         return $this->pdo->query($sql)->fetchAll();
     }
@@ -419,5 +419,56 @@ class RoomingModel {
                 ON DUPLICATE KEY UPDATE tipo_limpieza = 'salida', prioridad = 'alta'";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([$fecha_out, $hab_id, $numHab, $_SESSION['auth_id'] ?? 1]);
+    }
+
+    /**
+     * Genera el reporte PAX mensual.
+     * Retorna una fila por cada huésped (PAX) de los check-ins del mes/año indicados.
+     * Los campos del stay (hab, fechas, pago, etc.) se incluyen en todas las filas
+     * pero el frontend solo las muestra en la fila del titular (es_titular = 1).
+     *
+     * @param int $mes  Mes (1-12)
+     * @param int $anio Año (ej. 2025)
+     * @return array
+     */
+    public function getReportePax(int $mes, int $anio): array {
+        $sql = "
+            SELECT
+                s.id            AS stay_id,
+                s.operador,
+                s.fecha_registro,
+                s.fecha_checkout,
+                s.hora_checkin,
+                h.numero        AS hab_numero,
+                s.tipo_hab_declarado,
+                s.pax_total,
+                s.medio_reserva,
+                s.total_pago,
+                s.moneda_pago,
+                s.monto_original,
+                s.estado,
+                s.metodo_pago,
+                s.tipo_comprobante,
+                s.num_comprobante,
+                s.cobrador,
+                s.carro,
+                s.observaciones,
+                p.nombre_completo,
+                p.documento_tipo,
+                p.documento_num,
+                p.nacionalidad,
+                p.ciudad,
+                p.es_titular
+            FROM rooming_stays s
+            JOIN habitaciones h  ON h.id = s.habitacion_id
+            JOIN rooming_pax p   ON p.stay_id = s.id
+            WHERE MONTH(s.fecha_registro) = :mes
+              AND YEAR(s.fecha_registro)  = :anio
+              AND s.checkin_realizado = 1
+            ORDER BY s.fecha_registro ASC, s.id ASC, p.es_titular DESC, p.id ASC
+        ";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute(['mes' => $mes, 'anio' => $anio]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }

@@ -194,8 +194,8 @@ class RoomingController {
                 $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'] ?? 'Sistema', 'CHECKIN_REGISTRADO', 'ROOMING', $detalle);
             }
             
-            // Si hay pago inicial, registrarlo como anticipo
-            if ($mapped['cobrado'] > 0) {
+            // Si es un REGISTRO NUEVO y hay pago inicial, registrarlo como anticipo
+            if (empty($stayData['id']) && $mapped['cobrado'] > 0) {
                 $adelantoVal = isset($input['adelanto']) ? (float)$input['adelanto'] : 0;
                 $esPagoCompleto = ($input['tipoPago'] ?? 'completo') === 'completo';
                 $monto_pago = $esPagoCompleto ? (float)$mapped['monto_orig'] : $adelantoVal;
@@ -304,5 +304,16 @@ class RoomingController {
             return ['ok' => true, 'msg' => "Pago registrado"];
         }
         return ['ok' => false, 'msg' => "Error al registrar pago"];
+    }
+
+    /**
+     * Genera el reporte mensual de PAX (huéspedes) para el mes y año indicados.
+     *
+     * @param int $mes  Número de mes (1-12)
+     * @param int $anio Año (ej. 2025)
+     * @return array Filas del reporte, una por cada PAX de cada check-in.
+     */
+    public function reportePax(int $mes, int $anio): array {
+        return $this->model->getReportePax($mes, $anio);
     }
 }

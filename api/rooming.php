@@ -37,6 +37,11 @@ switch ($action) {
     case 'late_checkout':
         json_response_obj($controller->lateCheckout((int)$input['id']));
         break;
+    case 'reporte_pax':
+        $mes  = (int)($_GET['mes']  ?? date('n'));
+        $anio = (int)($_GET['anio'] ?? date('Y'));
+        json_response(true, $controller->reportePax($mes, $anio));
+        break;
     default:
         json_response(false, null, 400, "Acción no válida");
         break;

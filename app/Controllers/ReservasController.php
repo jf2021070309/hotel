@@ -114,4 +114,25 @@ class ReservasController {
             return ['ok' => false, 'msg' => $e->getMessage()];
         }
     }
+
+    public function rechazar(array $input): array {
+        $id = (int)($input['id'] ?? 0);
+        if (!$id) return ['ok' => false, 'msg' => 'ID no vÃ¡lido'];
+
+        try {
+            if ($this->model->rechazarStay($id)) {
+                $this->audit->registrar(
+                    $_SESSION['auth_id'],
+                    $_SESSION['auth_nombre'],
+                    'RECHAZAR_RESERVA',
+                    'RESERVAS',
+                    "RechazÃ³ una reserva desde el cuadro de reservas (Stay #$id)"
+                );
+                return ['ok' => true, 'msg' => 'Reserva rechazada'];
+            }
+            return ['ok' => false, 'msg' => 'No se pudo rechazar la reserva'];
+        } catch (Exception $e) {
+            return ['ok' => false, 'msg' => $e->getMessage()];
+        }
+    }
 }

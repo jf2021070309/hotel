@@ -648,14 +648,25 @@ include $_projectRoot . '/includes/sidebar.php';
             <!-- ACCIÓN: CHECK-IN RÁPIDO (SOLO SI ESTÁ RESERVADO) -->
             <div class="col-12 mt-3" v-if="staySeleccionado.estado === 'reservado'">
               <button class="btn btn-primary w-100 py-3 rounded-4 shadow-lg d-flex align-items-center justify-content-center gap-3 border-0" 
-                      @click="realizarCheckin(staySeleccionado)" 
+                      @click="confirmarReserva(staySeleccionado)" 
                       style="background: linear-gradient(135deg, #0288D1 0%, #01579B 100%);">
                 <div class="bg-white text-primary rounded-circle p-2 d-flex align-items-center justify-content-center shadow-sm" style="width: 40px; height: 40px;">
                    <i class="bi bi-person-check-fill h4 mb-0"></i>
                 </div>
                 <div class="text-start text-white">
-                   <div class="fw-bold fs-5">REGISTRAR INGRESO</div>
+                   <div class="fw-bold fs-5">CONFIRMAR RESERVA</div>
                    <div class="small opacity-75">Marcar entrada del huésped (Check-in)</div>
+                </div>
+              </button>
+              <button class="btn btn-danger w-100 py-3 rounded-4 shadow-lg d-flex align-items-center justify-content-center gap-3 border-0 mt-3"
+                      @click="rechazarReserva(staySeleccionado)"
+                      style="background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%);">
+                <div class="bg-white text-danger rounded-circle p-2 d-flex align-items-center justify-content-center shadow-sm" style="width: 40px; height: 40px;">
+                   <i class="bi bi-x-circle-fill h4 mb-0"></i>
+                </div>
+                <div class="text-start text-white">
+                   <div class="fw-bold fs-5">RECHAZAR RESERVA</div>
+                   <div class="small opacity-75">Cancelar la reserva sin ir a Rooming</div>
                 </div>
               </button>
             </div>

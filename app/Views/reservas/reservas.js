@@ -245,6 +245,10 @@ createApp({
       bootstrap.Modal.getOrCreateInstance(document.getElementById('modalDetalleReservas')).show();
     };
 
+    const cerrarDetalle = () => {
+      bootstrap.Modal.getInstance(document.getElementById('modalDetalleReservas'))?.hide();
+    };
+
     const irARooming = (stay) => {
       if (!stay.hab_numero) {
         Swal.fire('Error', 'No se pudo identificar la habitación', 'error');
@@ -373,6 +377,66 @@ createApp({
     };
 
     // ─── Badge / bar helpers ──────────────────────────────────────────
+    const confirmarReserva = async (stay) => {
+      const confirm = await Swal.fire({
+        title: 'Confirmar reserva',
+        text: `Se registrara el ingreso de ${stay.titular} en la habitacion ${stay.hab_numero}.`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Si, confirmar',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#0288D1'
+      });
+      if (!confirm.isConfirmed) return;
+
+      loading.value = true;
+      try {
+        const res = await axios.post(`${BASE}checkin`, { id: stay.id });
+        if (res.data.ok) {
+          cerrarDetalle();
+          await cargarDatos();
+          habitaciones.value = enrichHabs(habitaciones.value);
+          Swal.fire({ icon: 'success', title: 'Reserva confirmada', timer: 1800, showConfirmButton: false });
+        } else {
+          Swal.fire('Error', res.data.msg, 'error');
+        }
+      } catch (e) {
+        Swal.fire('Error', 'No se pudo confirmar la reserva', 'error');
+      } finally {
+        loading.value = false;
+      }
+    };
+
+    const rechazarReserva = async (stay) => {
+      const confirm = await Swal.fire({
+        title: 'Rechazar reserva',
+        text: `La reserva de ${stay.titular} quedara como rechazada y saldra del cuadro activo.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Si, rechazar',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#dc3545'
+      });
+      if (!confirm.isConfirmed) return;
+
+      loading.value = true;
+      try {
+        const res = await axios.post(`${BASE}rechazar`, { id: stay.id });
+        if (res.data.ok) {
+          cerrarDetalle();
+          await cargarDatos();
+          habitaciones.value = enrichHabs(habitaciones.value);
+          Swal.fire({ icon: 'success', title: 'Reserva rechazada', timer: 1800, showConfirmButton: false });
+        } else {
+          Swal.fire('Error', res.data.msg, 'error');
+        }
+      } catch (e) {
+        Swal.fire('Error', 'No se pudo rechazar la reserva', 'error');
+      } finally {
+        loading.value = false;
+      }
+    };
+
     const badgeClass = (estado) => ({
       'bg-danger':  estado === 'pendiente',
       'bg-warning text-dark': estado === 'adelanto',
@@ -450,7 +514,8 @@ createApp({
       getTipoClass,
       badgeClass, barClass, porcentajePago,
       viewMode, colWidth, rowHeight, formatNumber,
-      irARooming, getStayColorClass, getColorPago
+      irARooming, getStayColorClass, getColorPago,
+      confirmarReserva, rechazarReserva
     };
   }
 }).mount('#app-reservas');

@@ -24,6 +24,16 @@ createApp({
     const stayParaPago = ref(null);
     const mediosPago = ref([]);
     let pollingTimer = null;
+
+    // ── REPORTE PAX ────────────────────────────────────────────
+    const hoy = new Date();
+    const reportePax = reactive({
+      cargando: false,
+      mes: hoy.getMonth() + 1,
+      anio: hoy.getFullYear(),
+      anios: Array.from({ length: 5 }, (_, i) => hoy.getFullYear() - i),
+      filas: []
+    });
     
     // CONSUMOS
     const inventario = ref([]);
@@ -258,10 +268,10 @@ createApp({
 
     const abrirEdicion = async (s, isActivating = false) => {
       loading.value = true;
-      if (!(await validarCajaAbierta())) {
-        loading.value = false;
-        return mostrarModalCajaCerrada();
-      }
+
+
+
+
       try {
         const res = await axios.get(`../../../api/rooming.php?action=detalle&id=${s.id}`);
         const data = res.data.data;
@@ -704,6 +714,81 @@ createApp({
       }
     };
 
+    // ── REPORTE PAX ────────────────────────────────────────────
+    const abrirReportePax = () => {
+      new bootstrap.Modal('#modalReportePax').show();
+      cargarReportePax();
+    };
+
+    const cargarReportePax = async () => {
+      reportePax.cargando = true;
+      reportePax.filas = [];
+      try {
+        const res = await axios.get(
+          `../../../api/rooming.php?action=reporte_pax&mes=${reportePax.mes}&anio=${reportePax.anio}`
+        );
+        reportePax.filas = res.data.data || [];
+      } catch (e) {
+        showToast('Error al cargar reporte PAX', 'error');
+      } finally {
+        reportePax.cargando = false;
+      }
+    };
+
+    const exportarReportePax = () => {
+      if (reportePax.filas.length === 0) return;
+
+      const meses = ['','Enero','Febrero','Marzo','Abril','Mayo','Junio',
+                     'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+      const cols = [
+        'OPERADOR','FECHA REGISTRO','HAB','TIPO DE HAB','PAX','MEDIO DE RESERVA',
+        'HORA DE CHECK IN','NOMBRE Y APELLIDO','DOCUMENTO DE IDENTIDAD','NÚMERO',
+        'NACIONALIDAD','CIUDAD','CHECK IN FECHA','CHECK OUT FECHA','PAGO TOTAL',
+        'LATE CHECK OUT','MEDIO DE PAGO','COMPROBANTE DE PAGO','NUMERO DE COMPROBANTE',
+        'QUIEN COBRO','CARRO','OBSERVACIONES'
+      ];
+
+      const simbolo = (m) => m === 'USD' ? '$' : (m === 'CLP' ? 'P$' : 'S/');
+
+      const rows = reportePax.filas.map(f => [
+        f.es_titular ? (f.operador || '') : '',
+        f.es_titular ? (f.fecha_registro || '') : '',
+        f.es_titular ? ('#' + (f.hab_numero || '')) : '',
+        f.es_titular ? (f.tipo_hab_declarado || '') : '',
+        f.es_titular ? (f.pax_total || '') : '',
+        f.es_titular ? (f.medio_reserva || '') : '',
+        f.es_titular ? (f.hora_checkin || '') : '',
+        f.nombre_completo || '',
+        f.documento_tipo || '',
+        f.documento_num || '',
+        f.nacionalidad || '',
+        f.ciudad || '',
+        f.es_titular ? (f.fecha_registro || '') : '',
+        f.es_titular ? (f.fecha_checkout || '') : '',
+        f.es_titular ? `${simbolo(f.moneda_pago)} ${parseFloat(f.total_pago || 0).toFixed(2)}` : '',
+        f.es_titular ? (f.estado === 'late_checkout' ? 'SI' : 'NO') : '',
+        f.es_titular ? (f.metodo_pago || '') : '',
+        f.es_titular ? (f.tipo_comprobante || '') : '',
+        f.es_titular ? (f.num_comprobante || '') : '',
+        f.es_titular ? (f.cobrador || '') : '',
+        f.es_titular ? (f.carro || '') : '',
+        f.es_titular ? (f.observaciones || '') : ''
+      ]);
+
+      const escape = (v) => `"${String(v).replace(/"/g, '""')}"`;
+      const csv = [cols, ...rows].map(r => r.map(escape).join(',')).join('\r\n');
+      const bom = '\uFEFF';
+      const blob = new Blob([bom + csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Registro_PAX_${meses[reportePax.mes]}_${reportePax.anio}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    };
+    // ────────────────────────────────────────────────────────────
+
     // HELPERS
     const fmtCur = (val) => {
       const n = parseFloat(val);
@@ -720,6 +805,7 @@ createApp({
     };
     const getEstadBadge = (e) => {
        if (e === 'reservado') return 'bg-info text-dark fw-bold';
+       if (e === 'cancelado') return 'bg-danger text-white fw-bold';
        if (e === 'late_checkout') return 'bg-dark text-white';
        return 'bg-success text-white';
     };
@@ -781,7 +867,9 @@ createApp({
       inventario, inventarioAgrupado, stayParaConsumo, consumosStay, consumoForm,
       abrirConsumo, onProductoChange, calcularTotalConsumo, guardarConsumo,
       // AUTOCOMPLETE PAX
-      sugerencias, buscarPax, aplicarSugerencia, ocultarSugerencias
+      sugerencias, buscarPax, aplicarSugerencia, ocultarSugerencias,
+      // REPORTE PAX
+      reportePax, abrirReportePax, cargarReportePax, exportarReportePax
     };
   }
 }).mount('#app-rooming');

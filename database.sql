@@ -409,20 +409,43 @@ CREATE TABLE IF NOT EXISTS `rooming_consumos` (
 
 -- Volcando estructura para tabla hotel_db.rooming_pax
 CREATE TABLE IF NOT EXISTS `rooming_pax` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `stay_id` int(10) unsigned NOT NULL,
+  `id`             int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `stay_id`        int(10) unsigned NOT NULL,
+
+  -- Identificación del pasajero (sin cambios)
   `nombre_completo` varchar(255) NOT NULL,
-  `documento_tipo` varchar(20) DEFAULT 'DNI',
-  `documento_num` varchar(30) NOT NULL,
-  `nacionalidad` varchar(50) DEFAULT 'Peruana',
-  `ciudad` varchar(80) DEFAULT NULL,
-  `es_titular` tinyint(1) DEFAULT 0,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `documento_tipo`  varchar(20)  DEFAULT 'DNI',
+  `documento_num`   varchar(30)  NOT NULL,
+
+  -- Procedencia (sin cambios + nuevo)
+  `nacionalidad`   varchar(50)  DEFAULT 'Peruana',
+  `pais_origen`    varchar(60)  DEFAULT NULL,      
+  `ciudad`         varchar(80)  DEFAULT NULL,
+
+  -- Contacto y marketing (nuevos)
+  `celular`        varchar(20)  DEFAULT NULL,     
+  `email`          varchar(150) DEFAULT NULL,      
+
+  -- Empresa / corporativo (nuevos)
+  `empresa`        varchar(200) DEFAULT NULL,       
+
+  -- Flags
+  `es_titular`     tinyint(1)   DEFAULT 0,
+  `es_corporativo` tinyint(1)   DEFAULT 0,
+
+  `created_at`     timestamp NOT NULL DEFAULT current_timestamp(),
+
   PRIMARY KEY (`id`),
-  KEY `idx_stay` (`stay_id`),
-  KEY `idx_documento` (`documento_num`),
-  CONSTRAINT `rooming_pax_ibfk_1` FOREIGN KEY (`stay_id`) REFERENCES `rooming_stays` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=64 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  KEY `idx_stay`           (`stay_id`),
+  KEY `idx_documento`      (`documento_num`),        
+  KEY `idx_pais_origen`    (`pais_origen`),          
+  KEY `idx_es_corporativo` (`es_corporativo`),       
+
+  CONSTRAINT `rooming_pax_ibfk_1`
+    FOREIGN KEY (`stay_id`) REFERENCES `rooming_stays` (`id`) ON DELETE CASCADE
+
+) ENGINE=InnoDB AUTO_INCREMENT=64
+  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- La exportación de datos fue deseleccionada.
 
@@ -454,6 +477,7 @@ CREATE TABLE IF NOT EXISTS `rooming_stays` (
   `estado_pago` enum('pendiente','adelanto','parcial','pagado') DEFAULT 'pendiente',
   `total_cobrado` decimal(10,2) DEFAULT 0.00,
   `checkin_realizado` tinyint(1) DEFAULT 0,
+  `razon_social` varchar(200) DEFAULT NULL,
   `observaciones` text DEFAULT NULL,
   `usuario_id` int(10) unsigned NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),

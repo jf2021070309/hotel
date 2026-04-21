@@ -28,13 +28,26 @@ class DesayunoController {
     }
 
     public function getHoy(): array {
-        $fecha = $_GET['fecha'] ?? date('Y-m-d');
+        $fecha = trim($_GET['fecha'] ?? date('Y-m-d'));
         try {
             // Verificar si ya existe
             $existente = $this->model->getPorFecha($fecha);
             if ($existente) {
-                $existente['detalles'] = $this->model->getDetalle($existente['id']);
+                $detalles = $this->model->getDetalle($existente['id']);
+                // Tipar los valores para Vue (convertir strings de DB a booleans/ints)
+                foreach ($detalles as &$det) {
+                    $det['incluye_desayuno'] = (bool)$det['incluye_desayuno'];
+                    $det['pax'] = (int)$det['pax'];
+                    $det['habitacion_id'] = (int)$det['habitacion_id'];
+                }
+                $existente['detalles'] = $detalles;
                 $existente['ya_existe'] = true;
+                
+                // Castear cabecera también
+                $existente['id'] = (int)$existente['id'];
+                $existente['pax_calculado'] = (int)$existente['pax_calculado'];
+                $existente['pax_ajustado'] = (int)$existente['pax_ajustado'];
+
                 return ['ok' => true, 'data' => $existente];
             }
 
@@ -78,7 +91,7 @@ class DesayunoController {
     }
 
     public function guardar(array $input): array {
-        $fecha = $input['fecha'] ?? date('Y-m-d');
+        $fecha = trim($input['fecha'] ?? date('Y-m-d'));
         
         // Regla de Negocio: 12:00 PM
         if ($fecha === date('Y-m-d')) {

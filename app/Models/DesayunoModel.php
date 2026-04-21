@@ -76,11 +76,12 @@ class DesayunoModel {
             }
 
             // Insertar detalles
-            $stmtDet = $this->pdo->prepare("INSERT INTO desayunos_detalle (desayuno_id, habitacion_id, titular, pax, incluye_desayuno) VALUES (?, ?, ?, ?, ?)");
+            $stmtDet = $this->pdo->prepare("INSERT INTO desayunos_detalle (desayuno_id, habitacion_id, habitacion, titular, pax, incluye_desayuno) VALUES (?, ?, ?, ?, ?, ?)");
             foreach ($detalles as $det) {
                 $stmtDet->execute([
                     $id,
                     $det['habitacion_id'],
+                    $det['habitacion'],
                     $det['titular'] ?? '---',
                     $det['pax'],
                     ($det['incluye_desayuno'] ? 1 : 0)

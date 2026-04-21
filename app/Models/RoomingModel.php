@@ -138,6 +138,7 @@ class RoomingModel {
                 'comprobante'   => $data['comprobante'],
                 'num_comp'      => $data['num_comp'],
                 'ruc'           => $data['ruc'],
+                'razon_social'  => $data['razon_social'] ?? '',
                 'cobrador'      => $data['cobrador'],
                 'procedencia'   => $data['procedencia'],
                 'carro'         => $data['carro'],
@@ -150,8 +151,8 @@ class RoomingModel {
             $stay_id = (int)$this->pdo->lastInsertId();
 
             // Insertar PAX
-            $sqlPax = "INSERT INTO rooming_pax (stay_id, nombre_completo, documento_tipo, documento_num, nacionalidad, pais_origen, ciudad, celular, email, empresa, es_titular, es_corporativo) 
-                       VALUES (:stay_id, :nombre_completo, :documento_tipo, :documento_num, :nacionalidad, :pais_origen, :ciudad, :celular, :email, :empresa, :es_titular, :es_corporativo)";
+            $sqlPax = "INSERT INTO rooming_pax (stay_id, nombre_completo, documento_tipo, documento_num, nacionalidad, ciudad, celular, email, empresa, es_titular, es_corporativo) 
+                       VALUES (:stay_id, :nombre_completo, :documento_tipo, :documento_num, :nacionalidad, :ciudad, :celular, :email, :empresa, :es_titular, :es_corporativo)";
             $stmtPax = $this->pdo->prepare($sqlPax);
             foreach ($paxList as $pax) {
                 // Asegurar que stay_id esté presente
@@ -164,7 +165,11 @@ class RoomingModel {
                     'documento_num'   => $pax['documento_num'] ?? '',
                     'nacionalidad'    => $pax['nacionalidad'] ?? '',
                     'ciudad'          => $pax['ciudad'] ?? '',
-                    'es_titular'      => $pax['es_titular'] ? 1 : 0
+                    'celular'         => $pax['celular'] ?? '',
+                    'email'           => $pax['email'] ?? '',
+                    'empresa'         => $pax['empresa'] ?? '',
+                    'es_titular'      => $pax['es_titular'] ? 1 : 0,
+                    'es_corporativo'  => !empty($pax['es_corporativo']) ? 1 : 0
                 ]);
             }
 
@@ -237,6 +242,7 @@ class RoomingModel {
                 'comprobante' => $data['comprobante'],
                 'num_comp'    => $data['num_comp'],
                 'ruc'         => $data['ruc'],
+                'razon_social'=> $data['razon_social'] ?? '',
                 'obs'         => $data['obs'],
                 'cobrado'     => $data['cobrado'],
                 'cobrado_orig'=> $data['cobrado_orig'],
@@ -251,7 +257,7 @@ class RoomingModel {
 
             // Replace PAX
             $this->pdo->prepare("DELETE FROM rooming_pax WHERE stay_id = ?")->execute([$id]);
-            $stmtPax = $this->pdo->prepare("INSERT INTO rooming_pax (stay_id, nombre_completo, documento_tipo, documento_num, nacionalidad, pais_origen, ciudad, celular, email, empresa, es_titular, es_corporativo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmtPax = $this->pdo->prepare("INSERT INTO rooming_pax (stay_id, nombre_completo, documento_tipo, documento_num, nacionalidad, ciudad, celular, email, empresa, es_titular, es_corporativo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             foreach ($paxList as $p) {
                 $stmtPax->execute([
                     $id, 
@@ -259,7 +265,6 @@ class RoomingModel {
                     $p['documento_tipo'], 
                     $p['documento_num'],
                     $p['nacionalidad'] ?? '',
-                    $p['pais_origen'] ?? null,
                     $p['ciudad'] ?? '',
                     $p['celular'] ?? null,
                     $p['email'] ?? null,

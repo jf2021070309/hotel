@@ -39,7 +39,7 @@ class ReportesController {
      */
     public function corporativasExtranjeras() {
         $sql = "SELECT 
-                    rp.empresa, rp.pais_origen, rp.nombre_completo AS contacto_referencia,
+                    rp.empresa, rp.nacionalidad, rp.nombre_completo AS contacto_referencia,
                     rp.celular, rp.email,
                     COUNT(DISTINCT rs.id) AS total_estadias,
                     MAX(rs.fecha_registro) AS ultima_visita,
@@ -47,9 +47,8 @@ class ReportesController {
                 FROM rooming_pax rp
                 INNER JOIN rooming_stays rs ON rp.stay_id = rs.id
                 WHERE rp.es_corporativo = 1
-                  AND rp.nacionalidad != 'Peruana'
                   AND rp.empresa IS NOT NULL
-                GROUP BY rp.empresa, rp.pais_origen
+                GROUP BY rp.empresa, rp.nacionalidad, rp.nombre_completo, rp.celular, rp.email
                 ORDER BY total_estadias DESC";
         
         return $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
@@ -60,17 +59,15 @@ class ReportesController {
      */
     public function extranjerosRecurrentes($minVisitas = 2) {
         $sql = "SELECT 
-                    rp.nombre_completo, rp.documento_num AS pasaporte, rp.pais_origen,
+                    rp.nombre_completo, rp.documento_num AS pasaporte,
                     rp.nacionalidad, rp.celular, rp.email,
                     COUNT(DISTINCT rs.id) AS total_visitas,
                     MIN(rs.fecha_registro) AS primera_visita,
                     MAX(rs.fecha_registro) AS ultima_visita
                 FROM rooming_pax rp
                 INNER JOIN rooming_stays rs ON rp.stay_id = rs.id
-                WHERE rp.nacionalidad != 'Peruana'
-                  AND rp.es_corporativo = 0
-                  AND rp.es_titular = 1
-                GROUP BY rp.documento_num
+                WHERE rp.es_titular = 1
+                GROUP BY rp.documento_num, rp.nacionalidad, rp.nombre_completo, rp.celular, rp.email
                 HAVING total_visitas >= ?
                 ORDER BY total_visitas DESC";
         

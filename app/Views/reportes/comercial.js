@@ -39,7 +39,7 @@ createApp({
       const b = busqueda.value.corporativas.toLowerCase();
       return corporativas.value.filter(c => 
         c.empresa.toLowerCase().includes(b) || 
-        (c.pais_origen && c.pais_origen.toLowerCase().includes(b))
+        (c.nacionalidad && c.nacionalidad.toLowerCase().includes(b))
       );
     });
 
@@ -47,7 +47,7 @@ createApp({
       const b = busqueda.value.recurrentes.toLowerCase();
       return recurrentes.value.filter(r => 
         r.nombre_completo.toLowerCase().includes(b) || 
-        (r.pais_origen && r.pais_origen.toLowerCase().includes(b))
+        (r.nacionalidad && r.nacionalidad.toLowerCase().includes(b))
       );
     });
 
@@ -148,16 +148,16 @@ createApp({
 
     const exportarCorporativas = () => {
       const data = corpFiltradas.value.map(c => [
-        c.empresa, c.pais_origen, c.contacto_referencia, c.celular, c.email, c.total_estadias, c.primera_visita, c.ultima_visita
+        c.empresa, c.nacionalidad, c.contacto_referencia, c.celular, c.email, c.total_estadias, c.primera_visita, c.ultima_visita
       ]);
-      exportarExcel('Reporte Empresas Corporativas Extranjeras', ['Empresa', 'País', 'Contacto', 'Celular', 'Email', 'Visitas', 'Primera', 'Última'], data, 'Corporativas_Extranjeras');
+      exportarExcel('Reporte Empresas Corporativas Extranjeras', ['Empresa', 'Nacionalidad', 'Contacto', 'Celular', 'Email', 'Visitas', 'Primera', 'Última'], data, 'Corporativas_Extranjeras');
     };
 
     const exportarRecurrentes = () => {
       const data = recFiltrados.value.map(r => [
-        r.nombre_completo, r.pasaporte, r.pais_origen, r.nacionalidad, r.celular, r.email, r.total_visitas, r.primera_visita, r.ultima_visita
+        r.nombre_completo, r.pasaporte, r.nacionalidad, r.celular, r.email, r.total_visitas, r.primera_visita, r.ultima_visita
       ]);
-      exportarExcel('Reporte Pasajeros Extranjeros Recurrentes', ['Nombre', 'Pasaporte', 'País', 'Nacionalidad', 'Celular', 'Email', 'Visitas', 'Primera', 'Última'], data, 'Pasajeros_Recurrentes');
+      exportarExcel('Reporte Pasajeros Extranjeros Recurrentes', ['Nombre', 'Pasaporte', 'Nacionalidad', 'Celular', 'Email', 'Visitas', 'Primera', 'Última'], data, 'Pasajeros_Recurrentes');
     };
 
     onMounted(() => {

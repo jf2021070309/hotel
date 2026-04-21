@@ -75,6 +75,7 @@ class RoomingController {
             'comprobante'  => $stayData['tipo_comprobante'],
             'num_comp'     => $stayData['num_comprobante'] ?? '',
             'ruc'          => $stayData['ruc_factura'] ?? '',
+            'razon_social' => $stayData['razon_social'] ?? '',
             'cobrador'     => $_SESSION['auth_nombre'] ?? '',
             'procedencia'  => $stayData['procedencia'] ?? '',
             'carro'        => $stayData['carro'] ?? 'NO',

@@ -126,7 +126,7 @@ include $_projectRoot . '/includes/head.php';
                 <thead class="table-dark text-uppercase" style="font-size:10px;">
                   <tr>
                     <th class="px-3">Empresa</th>
-                    <th class="text-center">País</th>
+                    <th class="text-center">Nacionalidad</th>
                     <th>Contacto Ref.</th>
                     <th class="text-center">Celular / Email</th>
                     <th class="text-center">Visitas</th>
@@ -138,7 +138,7 @@ include $_projectRoot . '/includes/head.php';
                   <tr v-for="c in corpFiltradas" :key="c.empresa">
                     <td class="px-3 fw-bold text-primary">{{ c.empresa }}</td>
                     <td class="text-center">
-                      <span class="badge bg-info text-dark">{{ c.pais_origen || '—' }}</span>
+                      <span class="badge bg-info text-dark">{{ c.nacionalidad || '—' }}</span>
                     </td>
                     <td>{{ c.contacto_referencia }}</td>
                     <td class="text-center small">
@@ -176,7 +176,7 @@ include $_projectRoot . '/includes/head.php';
                   <tr>
                     <th class="px-3">Nombre Completo</th>
                     <th class="text-center">Pasaporte</th>
-                    <th class="text-center">Procedencia</th>
+                    <th class="text-center">Nacionalidad</th>
                     <th class="text-center">Celular / Email</th>
                     <th class="text-center">Total Visitas</th>
                     <th class="text-center">Primera Visita</th>
@@ -188,8 +188,7 @@ include $_projectRoot . '/includes/head.php';
                     <td class="px-3 fw-bold">{{ r.nombre_completo }}</td>
                     <td class="text-center text-muted fw-bold">{{ r.pasaporte }}</td>
                     <td class="text-center">
-                      <div class="fw-bold">{{ r.pais_origen || '—' }}</div>
-                      <div class="text-muted small" style="font-size:10px;">{{ r.nacionalidad }}</div>
+                      <div class="badge bg-light text-dark border">{{ r.nacionalidad || '—' }}</div>
                     </td>
                     <td class="text-center small">
                        <div>{{ r.celular || '—' }}</div>

@@ -615,13 +615,7 @@ include $_projectRoot . '/includes/head.php';
                     </div>
                   </div>
 
-                  <!-- Campos condicionales para extranjeros -->
-                  <div v-if="(pax.nacionalidad && pax.nacionalidad.toLowerCase() !== 'peruana') || pax.documento_tipo === 'PASA'"
-                    class="mt-2 animate__animated animate__fadeIn border-start border-danger border-3 ps-2">
-                    <label class="micro-text fw-bold text-danger">PAÍS DE ORIGEN</label>
-                    <input type="text" v-model="pax.pais_origen" class="form-control form-control-sm border-danger"
-                      placeholder="Indique país" required>
-                  </div>
+
 
                   <!-- Campos solo para TITULAR -->
                   <div v-if="pax.es_titular" class="border-top pt-2 mt-3">
@@ -777,24 +771,7 @@ include $_projectRoot . '/includes/head.php';
                   </div>
                 </div>
 
-                <!-- DATOS DE FACTURACIÓN (Dinamico) -->
-                <div v-if="form.stay.tipo_comprobante === 'FACTURA'" 
-                  class="mt-3 p-3 rounded bg-primary bg-opacity-10 border border-primary animate__animated animate__zoomIn"
-                  style="border-style: dashed !important;">
-                  <div class="mb-2">
-                    <label class="form-label micro-text fw-bold text-primary mb-1"><i class="bi bi-hash"></i> RUC DE LA EMPRESA</label>
-                    <input type="text" v-model="form.stay.ruc_factura" class="form-control form-control-sm border-primary" 
-                      placeholder="Escriba el RUC..." required maxlength="11">
-                  </div>
-                  <div>
-                    <label class="form-label micro-text fw-bold text-primary mb-1"><i class="bi bi-building"></i> RAZÓN SOCIAL</label>
-                    <input type="text" v-model="form.stay.razon_social" class="form-control form-control-sm border-primary" 
-                      placeholder="Nombre legal de la empresa..." required>
-                  </div>
-                  <div class="mt-1 small text-primary fw-bold" style="font-size:10px;">
-                    <i class="bi bi-info-circle"></i> Datos requeridos para el reporte de facturas.
-                  </div>
-                </div>
+
 
               </div>
             </div>

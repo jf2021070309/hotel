@@ -112,6 +112,11 @@ createApp({
         documento_num: '',
         nacionalidad: 'Peruana',
         ciudad: '',
+        celular: '',
+        email: '',
+        es_corporativo: false,
+        empresa: '',
+        ruc_empresa: '',
         es_titular: true
       }],
       adelanto: 0,
@@ -287,7 +292,12 @@ createApp({
         estado_pago: 'pendiente',
         recargo_pos: false
       });
-      form.pax = [{ nombre_completo: '', documento_tipo: 'DNI', documento_num: '', nacionalidad: 'Peruana', ciudad: '', es_titular: true }];
+      form.pax = [{ 
+        nombre_completo: '', documento_tipo: 'DNI', documento_num: '', 
+        nacionalidad: 'Peruana', ciudad: '', 
+        celular: '', email: '', es_corporativo: false, 
+        empresa: '', ruc_empresa: '', es_titular: true 
+      }];
       form.adelanto = 0;
       form.tipoPago = 'completo';
       adelantoExcede.value = false;
@@ -492,7 +502,13 @@ createApp({
       acTimer = setTimeout(async () => {
         try {
           const res = await axios.get(`../../../api/clientes.php?action=buscar_pax&q=${encodeURIComponent(q)}`);
-          sugerencias.value[idx] = res.data.data || [];
+          const results = res.data.data || [];
+          sugerencias.value[idx] = results;
+
+          // Si hay un match exacto con el DNI, auto-aplicar
+          if (results.length === 1 && results[0].documento_num === q) {
+            aplicarSugerencia(pax, idx, results[0]);
+          }
         } catch (e) { /* silencio */ }
       }, 280);
     };
@@ -503,6 +519,23 @@ createApp({
       pax.nombre_completo = s.nombre_completo;
       pax.nacionalidad    = s.nacionalidad || pax.nacionalidad;
       pax.ciudad          = s.ciudad       || pax.ciudad;
+      
+      // Nuevos campos auto-completados
+      pax.celular         = s.celular || '';
+      pax.email           = s.email || '';
+      pax.empresa         = s.empresa || '';
+      pax.es_corporativo  = !!(s.es_corporativo == 1 || s.ruc_factura);
+      pax.ruc_empresa     = s.ruc_factura || '';
+
+      // Si es el titular, auto-llenar también la sección de Facturación
+      if (pax.es_titular) {
+        form.stay.ruc_factura  = s.ruc_factura || '';
+        form.stay.razon_social = s.razon_social || s.empresa || '';
+        if (s.ruc_factura) {
+          form.stay.tipo_comprobante = 'FACTURA';
+        }
+      }
+
       sugerencias.value[idx] = [];
     };
 

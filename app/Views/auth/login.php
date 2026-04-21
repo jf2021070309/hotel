@@ -341,37 +341,14 @@ if (estaAutenticado()) {
                 const loading = ref(false);
                 const error = ref('');
                 const baseUrl = '<?php echo project_base_url(); ?>';
-                const overlay = document.getElementById('overlay');
-                const flash = document.getElementById('flash');
-                const loginAudio = new Audio(baseUrl + 'assets/audio/jotaro.mp3');
-                loginAudio.preload = 'auto';
-
-                const ejecutarTheWorldEffect = async () => {
-                    flash.classList.add('active');
-                    loginAudio.currentTime = 0;
-                    loginAudio.play().catch(() => { });
-
-                    await new Promise(resolve => setTimeout(resolve, 200));
-                    flash.classList.remove('active');
-                    overlay.classList.add('active');
-                    document.body.style.pointerEvents = 'none';
-                    overlay.style.pointerEvents = 'all';
-
-                    await new Promise(resolve => setTimeout(resolve, 3000));
-
-                    overlay.classList.remove('active');
-                    document.body.style.pointerEvents = 'auto';
-                    overlay.style.pointerEvents = 'none';
-                };
-
                 const handleSubmit = async () => {
                     loading.value = true;
                     error.value = '';
                     try {
                         const res = await axios.post(baseUrl + 'api/auth/login.php', form);
                         if (res.data.ok) {
-                            await ejecutarTheWorldEffect();
-                            window.location.href = res.data.data.redirect;
+                            const next = encodeURIComponent(res.data.data.redirect);
+                            window.location.href = `${baseUrl}theworld.html?next=${next}`;
                         } else {
                             throw new Error(res.data.msg || 'Error de autenticación');
                         }

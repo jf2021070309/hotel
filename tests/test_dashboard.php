@@ -4,7 +4,10 @@
  * Ubicación: c:\xampp\htdocs\hotel\test_dashboard.php
  */
 
-require_once __DIR__ . '/config/db.php';
+require_once dirname(__DIR__) . '/config/db.php';
+
+// Asegurar que estamos trabajando sobre la raíz del proyecto para que shell_exec y paths funcionen
+chdir(dirname(__DIR__));
 
 if (session_status() === PHP_SESSION_NONE) session_start();
 

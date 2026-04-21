@@ -10,6 +10,6 @@ Finanzas Helper
  ✔ Get turno actual with data set #5
  ✔ Get turno actual with data set #6
 
-Time: 00:00.005, Memory: 6.00 MB
+Time: 00:00.004, Memory: 6.00 MB
 
 OK (7 tests, 7 assertions)

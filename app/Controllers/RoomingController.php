@@ -86,7 +86,11 @@ class RoomingController {
             'estado'       => $stayData['estado'] ?? 'activo'
         ];
         
-        $this->pdo->beginTransaction();
+        $transactionStarted = false;
+        if (!$this->pdo->inTransaction()) {
+            $this->pdo->beginTransaction();
+            $transactionStarted = true;
+        }
         try {
             if (!empty($stayData['id'])) {
                 $stay_id = (int)$stayData['id'];
@@ -213,12 +217,16 @@ class RoomingController {
                 $this->model->registrarPago($pago, $subtipo);
             }
             
-            $this->pdo->commit();
+            if ($transactionStarted) {
+                $this->pdo->commit();
+            }
             return ['ok' => true, 'id' => $stay_id, 'msg' => $msg];
         } catch (Exception $e) {
-            if ($this->pdo->inTransaction()) {
+            if ($transactionStarted && $this->pdo->inTransaction()) {
                 $this->pdo->rollBack();
             }
+            // rethrow the exception if the transaction was started by the outer scope (tests) to ensure rollbacks happen properly upstream if needed,
+            // or just return the usual failure so the controller continues its API pattern. Let's return failure pattern.
             return ['ok' => false, 'msg' => "Error: " . $e->getMessage()];
         }
     }

@@ -27,7 +27,10 @@ class RoomingControllerTest extends TestCase {
         // 1. Preparar datos de entrada simulando el JSON que enviaría el Front-end
         $habitacionId = 1;
         // Asegurar que la habitación existe
-        $this->pdo->prepare("INSERT IGNORE INTO habitaciones (id, numero, tipo, estado) VALUES (?, '101', 'SIMPLE', 'libre')")->execute([$habitacionId]);
+        $this->pdo->prepare("INSERT INTO habitaciones (id, numero, tipo, estado) VALUES (?, '101', 'SIMPLE', 'libre') ON DUPLICATE KEY UPDATE estado = 'libre', numero = '101'")->execute([$habitacionId]);
+
+        // Limpiar cualquier registro de limpieza de hoy para esta hab para que el guard no bloquee el check-in
+        $this->pdo->prepare("DELETE FROM limpieza_registros WHERE habitacion_id = ? AND fecha = CURDATE()")->execute([$habitacionId]);
 
         $input = [
             'stay' => [

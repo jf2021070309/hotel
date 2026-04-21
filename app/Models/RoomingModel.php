@@ -109,13 +109,13 @@ class RoomingModel {
                 operador, fecha_registro, fecha_checkout, hora_checkin, medio_reserva, 
                 habitacion_id, tipo_hab_declarado, noches, pax_total, total_pago, 
                 moneda_pago, monto_original, tc_aplicado, recargo_tarjeta, metodo_pago, 
-                tipo_comprobante, num_comprobante, ruc_factura, cobrador, procedencia, 
+                tipo_comprobante, num_comprobante, ruc_factura, razon_social, cobrador, procedencia, 
                 carro, observaciones, usuario_id, checkin_realizado, total_cobrado, total_cobrado_orig, estado_pago
             ) VALUES (
                 :operador, :fecha_reg, :fecha_out, :hora_in, :medio, 
                 :hab_id, :tipo_hab, :noches, :pax_total, :total, 
                 :moneda, :monto_orig, :tc, :recargo, :metodo, 
-                :comprobante, :num_comp, :ruc, :cobrador, :procedencia, 
+                :comprobante, :num_comp, :ruc, :razon_social, :cobrador, :procedencia, 
                 :carro, :obs, :uid, 1, :cobrado, :cobrado_orig, :est_pago
             )";
             $stmt = $this->pdo->prepare($sql);
@@ -150,8 +150,8 @@ class RoomingModel {
             $stay_id = (int)$this->pdo->lastInsertId();
 
             // Insertar PAX
-            $sqlPax = "INSERT INTO rooming_pax (stay_id, nombre_completo, documento_tipo, documento_num, nacionalidad, ciudad, es_titular) 
-                       VALUES (:stay_id, :nombre_completo, :documento_tipo, :documento_num, :nacionalidad, :ciudad, :es_titular)";
+            $sqlPax = "INSERT INTO rooming_pax (stay_id, nombre_completo, documento_tipo, documento_num, nacionalidad, pais_origen, ciudad, celular, email, empresa, es_titular, es_corporativo) 
+                       VALUES (:stay_id, :nombre_completo, :documento_tipo, :documento_num, :nacionalidad, :pais_origen, :ciudad, :celular, :email, :empresa, :es_titular, :es_corporativo)";
             $stmtPax = $this->pdo->prepare($sqlPax);
             foreach ($paxList as $pax) {
                 // Asegurar que stay_id esté presente
@@ -211,7 +211,7 @@ class RoomingModel {
                 moneda_pago = :moneda, monto_original = :monto_orig, 
                 tc_aplicado = :tc, metodo_pago = :metodo, 
                 tipo_comprobante = :comprobante, num_comprobante = :num_comp, 
-                ruc_factura = :ruc, observaciones = :obs, 
+                ruc_factura = :ruc, razon_social = :razon_social, observaciones = :obs, 
                 total_cobrado = :cobrado, total_cobrado_orig = :cobrado_orig, estado_pago = :est_pago,
                 estado = :estado
                 WHERE id = :id";
@@ -251,9 +251,22 @@ class RoomingModel {
 
             // Replace PAX
             $this->pdo->prepare("DELETE FROM rooming_pax WHERE stay_id = ?")->execute([$id]);
-            $stmtPax = $this->pdo->prepare("INSERT INTO rooming_pax (stay_id, nombre_completo, documento_tipo, documento_num, es_titular) VALUES (?, ?, ?, ?, ?)");
+            $stmtPax = $this->pdo->prepare("INSERT INTO rooming_pax (stay_id, nombre_completo, documento_tipo, documento_num, nacionalidad, pais_origen, ciudad, celular, email, empresa, es_titular, es_corporativo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             foreach ($paxList as $p) {
-                $stmtPax->execute([$id, $p['nombre_completo'], $p['documento_tipo'], $p['documento_num'], $p['es_titular'] ? 1 : 0]);
+                $stmtPax->execute([
+                    $id, 
+                    $p['nombre_completo'], 
+                    $p['documento_tipo'], 
+                    $p['documento_num'],
+                    $p['nacionalidad'] ?? '',
+                    $p['pais_origen'] ?? null,
+                    $p['ciudad'] ?? '',
+                    $p['celular'] ?? null,
+                    $p['email'] ?? null,
+                    $p['empresa'] ?? null,
+                    $p['es_titular'] ? 1 : 0,
+                    !empty($p['es_corporativo']) ? 1 : 0
+                ]);
             }
 
             $this->upsertLimpiezaCheckout((int)$data['hab_id'], $data['fecha_out']);

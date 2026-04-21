@@ -364,8 +364,7 @@ include $_projectRoot . '/includes/head.php';
                     <!-- DOCUMENTO TIPO -->
                     <td class="px-2 text-center">
                       <span class="badge bg-dark" style="font-size:9px;">{{ fila.documento_tipo }}</span>
-                    </td>
-                    <!-- NÚMERO DOC -->
+                    </td>  <!-- NÚMERO DOC -->
                     <td class="px-2 text-center fw-bold">{{ fila.documento_num }}</td>
                     <!-- NACIONALIDAD -->
                     <td class="px-2 text-center">{{ fila.nacionalidad || '—' }}</td>
@@ -604,16 +603,69 @@ include $_projectRoot . '/includes/head.php';
                       </div>
                     </div>
                   </div>
-                  <div class="row g-2 mt-1">
+                  <div class="row g-2 mt-2">
                     <div class="col-6">
+                      <label class="micro-text fw-bold">NACIONALIDAD</label>
                       <input type="text" v-model="pax.nacionalidad" class="form-control form-control-sm"
-                        placeholder="Nacionalidad">
+                        placeholder="Peruana">
                     </div>
+                    <div class="col-6">
+                      <label class="micro-text fw-bold">CIUDAD</label>
+                      <input type="text" v-model="pax.ciudad" class="form-control form-control-sm" placeholder="Lima">
+                    </div>
+                  </div>
+
+                  <!-- Campos condicionales para extranjeros -->
+                  <div v-if="(pax.nacionalidad && pax.nacionalidad.toLowerCase() !== 'peruana') || pax.documento_tipo === 'PASA'"
+                    class="mt-2 animate__animated animate__fadeIn border-start border-danger border-3 ps-2">
+                    <label class="micro-text fw-bold text-danger">PAÍS DE ORIGEN</label>
+                    <input type="text" v-model="pax.pais_origen" class="form-control form-control-sm border-danger"
+                      placeholder="Indique país" required>
+                  </div>
+
+                  <!-- Campos solo para TITULAR -->
+                  <div v-if="pax.es_titular" class="border-top pt-2 mt-3">
+                    <div class="row g-2 mb-2">
+                      <div class="col-6">
+                        <label class="micro-text fw-bold">CELULAR</label>
+                        <input type="text" v-model="pax.celular" class="form-control form-control-sm"
+                          placeholder="999888777">
+                      </div>
+                      <div class="col-6">
+                        <label class="micro-text fw-bold">EMAIL</label>
+                        <input type="email" v-model="pax.email" class="form-control form-control-sm"
+                          placeholder="correo@ejemplo.com">
+                      </div>
+                    </div>
+                    <div class="form-check mb-2">
+                      <input class="form-check-input" type="checkbox" v-model="pax.es_corporativo"
+                        :id="'checkCorp'+idx">
+                      <label class="form-check-label small fw-bold text-primary" :for="'checkCorp'+idx">
+                        <i class="bi bi-briefcase-fill me-1"></i>¿Pasajero corporativo?
+                      </label>
+                    </div>
+                    <div v-if="pax.es_corporativo" class="animate__animated animate__fadeIn bg-light p-2 rounded border">
+                      <div class="row g-2">
+                        <div class="col-4">
+                          <label class="micro-text fw-bold text-dark">RUC</label>
+                          <input type="text" v-model="pax.ruc_empresa" class="form-control form-control-sm border-primary"
+                            placeholder="2060..." maxlength="11" @input="form.stay.ruc_factura = pax.ruc_empresa">
+                        </div>
+                        <div class="col-8">
+                          <label class="micro-text fw-bold text-dark">EMPRESA / RAZÓN SOCIAL</label>
+                          <input type="text" v-model="pax.empresa" class="form-control form-control-sm border-primary"
+                            placeholder="Nombre de la empresa" :required="pax.es_corporativo" @input="form.stay.razon_social = pax.empresa">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row g-2 mt-2">
                     <div class="col-6 d-flex align-items-center">
                       <div class="form-check">
-                        <input class="form-check-input" type="radio" :name="'titular'" :id="'tit'+idx"
+                        <input class="form-check-input" type="radio" name="titular_radio" :id="'tit'+idx"
                           :checked="pax.es_titular" @change="setTitular(idx)">
-                        <label class="form-check-label small" :for="'tit'+idx">Titular</label>
+                        <label class="form-check-label small fw-bold" :for="'tit'+idx">Titular</label>
                       </div>
                     </div>
                   </div>
@@ -719,9 +771,28 @@ include $_projectRoot . '/includes/head.php';
                     </select>
                   </div>
                   <div class="col-5">
-                    <label class="form-label micro-text fw-bold mb-1">RECIBO</label>
+                    <label class="form-label micro-text fw-bold mb-1">N° COMP.</label>
                     <input type="text" v-model="form.stay.num_comprobante" class="form-control form-control-sm"
                       placeholder="1372">
+                  </div>
+                </div>
+
+                <!-- DATOS DE FACTURACIÓN (Dinamico) -->
+                <div v-if="form.stay.tipo_comprobante === 'FACTURA'" 
+                  class="mt-3 p-3 rounded bg-primary bg-opacity-10 border border-primary animate__animated animate__zoomIn"
+                  style="border-style: dashed !important;">
+                  <div class="mb-2">
+                    <label class="form-label micro-text fw-bold text-primary mb-1"><i class="bi bi-hash"></i> RUC DE LA EMPRESA</label>
+                    <input type="text" v-model="form.stay.ruc_factura" class="form-control form-control-sm border-primary" 
+                      placeholder="Escriba el RUC..." required maxlength="11">
+                  </div>
+                  <div>
+                    <label class="form-label micro-text fw-bold text-primary mb-1"><i class="bi bi-building"></i> RAZÓN SOCIAL</label>
+                    <input type="text" v-model="form.stay.razon_social" class="form-control form-control-sm border-primary" 
+                      placeholder="Nombre legal de la empresa..." required>
+                  </div>
+                  <div class="mt-1 small text-primary fw-bold" style="font-size:10px;">
+                    <i class="bi bi-info-circle"></i> Datos requeridos para el reporte de facturas.
                   </div>
                 </div>
 

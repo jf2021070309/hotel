@@ -4,27 +4,32 @@
  */
 require_once '../config/db.php';
 require_once '../auth/session.php';
-require_once '../app/Controllers/ReporteController.php';
+require_once '../auth/middleware.php';
+require_once '../app/Controllers/ReportesController.php';
 
-header('Content-Type: application/json; charset=utf-8');
+protegerPorRol('cajera', 'reportes');
 
-$action = $_GET['action'] ?? 'resumen';
-$controller = new ReporteController($pdo);
+$action = $_GET['action'] ?? '';
+$controller = new ReportesController($pdo);
 
 switch ($action) {
-    case 'mendoza':
-        echo json_encode($controller->mendoza());
-        break;
-    
-    case 'alex':
-        echo json_encode($controller->alex());
+    case 'facturas':
+        $desde  = $_GET['desde']  ?? date('Y-m-d');
+        $hasta  = $_GET['hasta']  ?? date('Y-m-d');
+        $estado = $_GET['estado'] ?? null;
+        json_response(true, $controller->facturas($desde, $hasta, $estado));
         break;
 
-    case 'resumen':
-        echo json_encode($controller->resumenPL());
+    case 'corporativas':
+        json_response(true, $controller->corporativasExtranjeras());
+        break;
+
+    case 'recurrentes':
+        $min = (int)($_GET['min'] ?? 2);
+        json_response(true, $controller->extranjerosRecurrentes($min));
         break;
 
     default:
-        echo json_encode(['ok' => false, 'msg' => 'Acción no reconocida']);
+        json_response(false, null, 400, "Acción no válida");
         break;
 }

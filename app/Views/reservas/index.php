@@ -303,17 +303,107 @@ include $_projectRoot . '/includes/sidebar.php';
   /* ── Custom Modal Design ──────────────────────────────── */
   .modal-info-card {
     background: #f8f9fa;
-    border-radius: 12px;
-    padding: 12px;
+    border-radius: 8px;
+    padding: 7px 8px;
     border: 1px solid #edf2f7;
     height: 100%;
     transition: transform 0.2s;
   }
   .modal-info-card:hover { transform: translateY(-2px); }
-  .modal-info-label { font-size: 10px; font-weight: 800; color: #a0aec0; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
-  .modal-info-value { font-size: 14px; font-weight: 700; color: #2d3748; }
+  .modal-info-label { font-size: 8px; font-weight: 800; color: #a0aec0; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 2px; }
+  .modal-info-value { font-size: 12px; font-weight: 700; color: #2d3748; }
   
-  .payment-section { background: #fff; border-radius: 16px; border: 1.5px solid #e2e8f0; padding: 20px; margin-top: 15px; }
+  .payment-section { background: #fff; border-radius: 12px; border: 1.5px solid #e2e8f0; padding: 10px; margin-top: 8px; }
+  #modalDetalleReservas .btn { font-size: 12px; }
+  #modalDetalleReservas .btn .fs-5,
+  #modalDetalleReservas .btn .h4,
+  #modalDetalleReservas .btn .h5 { font-size: 1rem !important; }
+  .reserva-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .reserva-action-btn {
+    min-height: 74px;
+    border-radius: 14px;
+    border: 1px solid #dbe3ef;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-weight: 800;
+    font-size: 11px;
+    line-height: 1.1;
+    transition: transform .15s ease, box-shadow .15s ease, background .15s ease, border-color .15s ease;
+  }
+  .reserva-action-btn:hover {
+    transform: translateY(-1px);
+  }
+  .reserva-action-btn .icon-wrap {
+    width: 30px;
+    height: 30px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,.95);
+  }
+  .reserva-action-btn.action-edit {
+    background: #fff;
+    color: #1f2937;
+  }
+  .reserva-action-btn.action-edit:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    color: #111827;
+  }
+  .reserva-action-btn.action-confirm {
+    background: linear-gradient(135deg, #0288D1 0%, #01579B 100%);
+    color: #fff;
+    border-color: transparent;
+  }
+  .reserva-action-btn.action-reject {
+    background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%);
+    color: #fff;
+    border-color: transparent;
+  }
+  .reserva-stay-actions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .reserva-stay-actions > .btn {
+    width: 100% !important;
+    margin: 0 !important;
+    min-height: 70px;
+    border-radius: 14px;
+    padding: 8px 6px !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 6px !important;
+  }
+  .reserva-stay-actions > .btn .text-start {
+    text-align: center !important;
+  }
+  .reserva-stay-actions > .btn .small {
+    display: none;
+  }
+  .reserva-stay-actions > .btn .fw-bold {
+    font-size: 10px;
+    letter-spacing: .2px;
+  }
+  .reserva-stay-actions > .btn > div:first-child {
+    width: 30px !important;
+    height: 30px !important;
+  }
+  .reserva-stay-actions > .btn.btn-outline-dark:hover {
+    background: #f8fafc;
+    color: #111827;
+    border-color: #cbd5e1;
+  }
   .quick-pay-card { background: #1a202c; border-radius: 12px; padding: 15px; color: #fff; margin-top: 15px; }
   .quick-pay-card input, .quick-pay-card select { background: rgba(255,255,255,0.1) !important; border: 1px solid rgba(255,255,255,0.2) !important; color: #fff !important; }
   .quick-pay-card input::placeholder { color: rgba(255,255,255,0.5); }
@@ -550,12 +640,12 @@ include $_projectRoot . '/includes/sidebar.php';
 
   <!-- ─── MODAL DETALLE PREMIUM ────────────────────────────── -->
   <div class="modal fade" id="modalDetalleReservas" tabindex="-1">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 460px;">
       <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;" v-if="staySeleccionado">
-        <div class="modal-header border-0 p-4 pb-2" :class="staySeleccionado.estado_pago === 'pagado' ? 'bg-success text-white' : 'bg-dark text-white'">
-          <div class="d-flex align-items-center gap-3">
-            <div class="bg-white bg-opacity-25 rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
-              <i class="bi bi-info-circle fs-4"></i>
+        <div class="modal-header border-0 p-2" :class="staySeleccionado.estado_pago === 'pagado' ? 'bg-success text-white' : 'bg-dark text-white'">
+          <div class="d-flex align-items-center gap-2">
+            <div class="bg-white bg-opacity-25 rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+              <i class="bi bi-info-circle"></i>
             </div>
             <div>
               <h5 class="modal-title fw-bold mb-0">Estadía #{{ staySeleccionado.id }}</h5>
@@ -565,13 +655,13 @@ include $_projectRoot . '/includes/sidebar.php';
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
 
-        <div class="modal-body p-4 pt-4">
+        <div class="modal-body p-2">
           <!-- Bloque Info Principal -->
-          <div class="row g-3">
+          <div class="row g-1">
             <div class="col-md-6">
               <div class="modal-info-card">
                 <div class="modal-info-label"><i class="bi bi-person-fill me-1"></i> Huésped Titular</div>
-                <div class="modal-info-value fs-5">{{ staySeleccionado.titular }}</div>
+                <div class="modal-info-value" style="font-size: 11px;">{{ staySeleccionado.titular }}</div>
               </div>
             </div>
             <div class="col-md-3 col-6">
@@ -610,32 +700,32 @@ include $_projectRoot . '/includes/sidebar.php';
             </div>
 
             <!-- SECCIÓN DE PAGO (Regla de Oro) -->
-            <div class="col-12 mt-4">
+            <div class="col-12 mt-3">
               <div class="payment-section">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                    <h6 class="fw-bold mb-0 text-uppercase small" style="letter-spacing: 1px;">Estado Financiero</h6>
-                   <span class="badge rounded-pill px-3 py-2 fs-6 shadow-sm" :class="badgeClass(staySeleccionado.estado_pago)">
+                   <span class="badge rounded-pill px-2 py-1 shadow-sm" :class="badgeClass(staySeleccionado.estado_pago)">
                      {{ staySeleccionado.estado_pago.toUpperCase() }}
                    </span>
                 </div>
                 
-                <div class="row align-items-center g-3">
+                 <div class="row align-items-center g-2">
                   <div class="col-md-4 text-center">
                     <div class="small text-muted mb-1">Pagado</div>
-                    <div class="h5 fw-bold text-success mb-0">{{ staySeleccionado.moneda_pago }} {{ formatNumber(staySeleccionado.total_cobrado) }}</div>
+                    <div class="fw-bold text-success mb-0" style="font-size: .9rem;">{{ staySeleccionado.moneda_pago }} {{ formatNumber(staySeleccionado.total_cobrado) }}</div>
                   </div>
                   <div class="col-md-4 text-center border-start border-end">
                      <div class="small text-muted mb-1">Por cobrar</div>
-                     <div class="h5 fw-bold text-danger mb-0">{{ staySeleccionado.moneda_pago }} {{ formatNumber(staySeleccionado.total_pago - staySeleccionado.total_cobrado) }}</div>
+                      <div class="fw-bold text-danger mb-0" style="font-size: .9rem;">{{ staySeleccionado.moneda_pago }} {{ formatNumber(staySeleccionado.total_pago - staySeleccionado.total_cobrado) }}</div>
                   </div>
                   <div class="col-md-4 text-center">
                     <div class="small text-muted mb-1">Total Reserva</div>
-                    <div class="h5 fw-bold text-dark mb-0">{{ staySeleccionado.moneda_pago }} {{ formatNumber(staySeleccionado.total_pago) }}</div>
+                    <div class="fw-bold text-dark mb-0" style="font-size: .9rem;">{{ staySeleccionado.moneda_pago }} {{ formatNumber(staySeleccionado.total_pago) }}</div>
                   </div>
                 </div>
 
-                <div class="mt-4">
-                  <div class="progress rounded-pill shadow-sm" style="height: 12px; background: #edf2f7;">
+                <div class="mt-2">
+                  <div class="progress rounded-pill shadow-sm" style="height: 9px; background: #edf2f7;">
                     <div class="progress-bar progress-bar-striped progress-bar-animated" 
                          :class="barClass(staySeleccionado.estado_pago)"
                          :style="{ width: porcentajePago(staySeleccionado) + '%' }"></div>
@@ -646,36 +736,36 @@ include $_projectRoot . '/includes/sidebar.php';
             </div>
 
             <!-- ACCIÓN: CHECK-IN RÁPIDO (SOLO SI ESTÁ RESERVADO) -->
-            <div class="col-12 mt-3" v-if="staySeleccionado.estado === 'reservado'">
-              <button class="btn btn-outline-dark w-100 py-3 rounded-4 shadow-sm d-flex align-items-center justify-content-center gap-3 mb-3"
+            <div class="col-12 mt-3 reserva-stay-actions" v-if="staySeleccionado.estado === 'reservado'">
+              <button class="btn btn-outline-dark w-100 py-2 rounded-4 shadow-sm d-flex align-items-center justify-content-center gap-2 mb-2"
                       @click="editarQuickReserva(staySeleccionado)">
-                <div class="rounded-circle p-2 d-flex align-items-center justify-content-center border bg-white" style="width: 40px; height: 40px;">
+                <div class="rounded-circle p-2 d-flex align-items-center justify-content-center border bg-white" style="width: 34px; height: 34px;">
                   <i class="bi bi-pencil-square text-dark h5 mb-0"></i>
                 </div>
                 <div class="text-start">
-                  <div class="fw-bold fs-5 text-dark">EDITAR RESERVA</div>
+                  <div class="fw-bold text-dark">EDITAR RESERVA</div>
                   <div class="small text-muted">Modificar los mismos datos del registro rapido</div>
                 </div>
               </button>
-              <button class="btn btn-primary w-100 py-3 rounded-4 shadow-lg d-flex align-items-center justify-content-center gap-3 border-0" 
+              <button class="btn btn-primary w-100 py-2 rounded-4 shadow-lg d-flex align-items-center justify-content-center gap-2 border-0" 
                       @click="confirmarReserva(staySeleccionado)" 
                       style="background: linear-gradient(135deg, #0288D1 0%, #01579B 100%);">
-                <div class="bg-white text-primary rounded-circle p-2 d-flex align-items-center justify-content-center shadow-sm" style="width: 40px; height: 40px;">
+                <div class="bg-white text-primary rounded-circle p-2 d-flex align-items-center justify-content-center shadow-sm" style="width: 34px; height: 34px;">
                    <i class="bi bi-person-check-fill h4 mb-0"></i>
                 </div>
                 <div class="text-start text-white">
-                   <div class="fw-bold fs-5">CONFIRMAR RESERVA</div>
+                   <div class="fw-bold">CONFIRMAR RESERVA</div>
                    <div class="small opacity-75">Marcar entrada del huésped (Check-in)</div>
                 </div>
               </button>
-              <button class="btn btn-danger w-100 py-3 rounded-4 shadow-lg d-flex align-items-center justify-content-center gap-3 border-0 mt-3"
+              <button class="btn btn-danger w-100 py-2 rounded-4 shadow-lg d-flex align-items-center justify-content-center gap-2 border-0 mt-2"
                       @click="rechazarReserva(staySeleccionado)"
                       style="background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%);">
-                <div class="bg-white text-danger rounded-circle p-2 d-flex align-items-center justify-content-center shadow-sm" style="width: 40px; height: 40px;">
+                <div class="bg-white text-danger rounded-circle p-2 d-flex align-items-center justify-content-center shadow-sm" style="width: 34px; height: 34px;">
                    <i class="bi bi-x-circle-fill h4 mb-0"></i>
                 </div>
                 <div class="text-start text-white">
-                   <div class="fw-bold fs-5">RECHAZAR RESERVA</div>
+                   <div class="fw-bold">RECHAZAR RESERVA</div>
                    <div class="small opacity-75">Cancelar la reserva sin ir a Rooming</div>
                 </div>
               </button>
@@ -699,7 +789,7 @@ include $_projectRoot . '/includes/sidebar.php';
           </div>
         </div>
 
-        <div class="modal-footer border-0 p-4 pt-0 gap-2">
+        <div class="modal-footer border-0 p-2 pt-0 gap-1">
           <button class="btn btn-danger rounded-pill px-4 shadow-sm" @click="checkout(staySeleccionado)">
             <i class="bi bi-door-open-fill me-2"></i>Check Out
           </button>

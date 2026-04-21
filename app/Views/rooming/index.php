@@ -253,7 +253,7 @@ include $_projectRoot . '/includes/head.php';
                 v-if="!reportePax.cargando">
                 <i class="bi bi-people-fill me-1"></i>{{ reportePax.filas.length }} registros
               </span>
-              <button class="btn btn-sm btn-success fw-bold px-3" @click="exportarReportePax"
+              <button class="btn btn-sm btn-success fw-bold px-3" @click="abrirConfigExportar"
                 :disabled="reportePax.filas.length === 0">
                 <i class="bi bi-file-earmark-excel me-1"></i>Exportar Excel
               </button>
@@ -276,11 +276,12 @@ include $_projectRoot . '/includes/head.php';
           </div>
 
           <!-- Tabla -->
-          <div v-else class="table-responsive" style="overflow-x:auto;">
+          <div v-else id="containerReportePax" class="table-responsive" style="overflow-x:auto; cursor: grab;">
             <table id="tablaPaxReporte" class="table table-bordered table-hover mb-0 align-middle"
               style="font-size:11px; white-space:nowrap; min-width:2400px;">
               <thead style="background:#1a1a2e; color:white; position:sticky; top:0; z-index:10;">
                 <tr>
+                  <th class="px-2 py-2 text-center" style="width:40px;"><i class="bi bi-eye-slash"></i></th>
                   <th class="px-3 py-2 text-center" style="min-width:80px;">OPERADOR</th>
                   <th class="px-3 py-2 text-center" style="min-width:90px;">FECHA<br>REGISTRO</th>
                   <th class="px-3 py-2 text-center" style="min-width:60px;">HAB</th>
@@ -308,8 +309,15 @@ include $_projectRoot . '/includes/head.php';
               <tbody>
                 <template v-for="(fila, idx) in reportePax.filas" :key="idx">
                   <!-- Fila por cada PAX -->
-                  <tr :class="fila.es_titular ? 'table-light fw-semibold' : ''"
+                  <tr :class="[fila.es_titular ? 'table-light fw-semibold' : '', fila.excluir ? 'opacity-50 bg-light-subtle' : '']"
                     :style="fila.es_titular ? 'border-top:2px solid #dee2e6;' : 'background:#fafafa;'">
+                    <!-- CHECK BOX EXCLUIR -->
+                    <td class="text-center px-1">
+                      <input v-if="fila.es_titular" type="checkbox" v-model="fila.excluir" class="form-check-input" 
+                        @change="toggleStayExclusion(fila)"
+                        title="Marcar para ocultar en Excel" style="cursor:pointer; width:16px; height:16px;">
+                      <span v-else class="text-muted opacity-25">•</span>
+                    </td>
                     <!-- OPERADOR -->
                     <td class="px-2 text-center">
                       <span v-if="fila.es_titular" class="badge"
@@ -445,6 +453,43 @@ include $_projectRoot . '/includes/head.php';
             registrado.
           </small>
           <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Selector de Columnas para Excel -->
+  <div class="modal fade" id="modalExportConfig" tabindex="-1" style="z-index: 1060;">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg" style="border-radius:16px;">
+        <div class="modal-header border-0 bg-success text-white py-3 px-4" style="border-radius: 16px 16px 0 0;">
+          <h5 class="modal-title fw-bold"><i class="bi bi-gear-fill me-2"></i>Configurar Exportación</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <p class="text-muted small mb-4">Selecciona las columnas que deseas incluir en tu reporte Excel:</p>
+          
+          <div class="row g-2">
+            <div v-for="(col, idx) in selColumnas" :key="idx" class="col-6">
+              <div class="form-check p-2 border rounded hover-bg-light" style="cursor:pointer;" @click="col.checked = !col.checked">
+                <input class="form-check-input ms-0 me-2" type="checkbox" v-model="col.checked" @click.stop>
+                <label class="form-check-label small fw-bold text-secondary" style="cursor:pointer;">
+                  {{ col.label }}
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer border-0 p-4 pt-0">
+          <div class="w-100 d-flex justify-content-between">
+            <button class="btn btn-light btn-sm fw-bold" @click="selColumnas.forEach(c => c.checked = true)">Todos</button>
+            <div class="d-flex gap-2">
+               <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancelar</button>
+               <button type="button" class="btn btn-success px-5 fw-bold shadow" @click="confirmarExportacion">
+                 <i class="bi bi-download me-1"></i> Descargar
+               </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

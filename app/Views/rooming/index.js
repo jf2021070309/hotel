@@ -27,6 +27,42 @@ createApp({
 
     // ── REPORTE PAX ────────────────────────────────────────────
     const hoy = new Date();
+        const selColumnas = ref([
+      { label: "OPERADOR", checked: true },
+      { label: "FECHA REGISTRO", checked: true },
+      { label: "HAB", checked: true },
+      { label: "TIPO DE HAB", checked: true },
+      { label: "PAX", checked: true },
+      { label: "MEDIO DE RESERVA", checked: true },
+      { label: "HORA DE CHECK IN", checked: true },
+      { label: "NOMBRE Y APELLIDO", checked: true },
+      { label: "TIPO DOC", checked: true },
+      { label: "NÚMERO", checked: true },
+      { label: "NACIONALIDAD", checked: true },
+      { label: "CIUDAD", checked: true },
+      { label: "ENTRADA", checked: true },
+      { label: "SALIDA", checked: true },
+      { label: "PAGO TOTAL", checked: true },
+      { label: "LATE", checked: true },
+      { label: "METODO", checked: true },
+      { label: "COMPROBANTE", checked: true },
+      { label: "Nº COMPROBANTE", checked: true },
+      { label: "QUIEN COBRO", checked: true },
+      { label: "CARRO", checked: true },
+      { label: "OBS", checked: true },
+    ]);
+
+    const abrirConfigExportar = () => {
+      new bootstrap.Modal("#modalExportConfig").show();
+    };
+
+    const confirmarExportacion = () => {
+      const modalElem = document.getElementById("modalExportConfig");
+      const modal = bootstrap.Modal.getInstance(modalElem);
+      if (modal) modal.hide();
+      exportarReportePax();
+    };
+
     const reportePax = reactive({
       cargando: false,
       mes: hoy.getMonth() + 1,
@@ -726,8 +762,42 @@ createApp({
       try {
         const res = await axios.get(
           `../../../api/rooming.php?action=reporte_pax&mes=${reportePax.mes}&anio=${reportePax.anio}`
-        );
-        reportePax.filas = res.data.data || [];
+        );        reportePax.filas = (res.data.data || []).map(f => ({ ...f, excluir: false }));
+        
+        // Inicializar arrastre (Drag to Scroll)
+        setTimeout(() => {
+          const container = document.getElementById("containerReportePax");
+          if (!container) return;
+          
+          let isDown = false;
+          let startX;
+          let scrollLeft;
+
+          container.addEventListener("mousedown", (e) => {
+            isDown = true;
+            container.style.cursor = "grabbing";
+            startX = e.pageX - container.offsetLeft;
+            scrollLeft = container.scrollLeft;
+          });
+          
+          container.addEventListener("mouseleave", () => {
+            isDown = false;
+            container.style.cursor = "grab";
+          });
+          
+          container.addEventListener("mouseup", () => {
+            isDown = false;
+            container.style.cursor = "grab";
+          });
+          
+          container.addEventListener("mousemove", (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - container.offsetLeft;
+            const walk = (x - startX) * 2; // velocidad de scroll
+            container.scrollLeft = scrollLeft - walk;
+          });
+        }, 300);
       } catch (e) {
         showToast('Error al cargar reporte PAX', 'error');
       } finally {
@@ -744,41 +814,46 @@ createApp({
       const workbook = new ExcelJS.Workbook();
       const worksheet = workbook.addWorksheet("Registro PAX");
 
-      const colsHeaders = ["OPERADOR", "FECHA REGISTRO", "HAB", "TIPO DE HAB", "PAX", "MEDIO DE RESERVA", "HORA DE CHECK IN", "NOMBRE Y APELLIDO", "TIPO DOC", "NÚMERO", "NACIONALIDAD", "CIUDAD", "ENTRADA", "SALIDA", "PAGO TOTAL", "LATE", "METODO", "COMPROBANTE", "Nº COMPROBANTE", "QUIEN COBRO", "CARRO", "OBS"];
+      // Columnas seleccionadas
+      const colSpecs = selColumnas.value.filter(c => c.checked);
+      if (colSpecs.length === 0) {
+        return showToast("Debe seleccionar al menos una columna", "warning");
+      }
+      const labels = colSpecs.map(c => c.label);
 
       // 1. TÍTULO PRINCIPAL
       const titleRow = worksheet.addRow([tituloTexto]);
-      worksheet.mergeCells(1, 1, 1, colsHeaders.length);
+      worksheet.mergeCells(1, 1, 1, labels.length);
       const titleCell = worksheet.getCell(1, 1);
       titleCell.font = { name: "Arial", size: 16, bold: true };
-      titleCell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFADD8E6" } }; // Celeste
+      titleCell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFADD8E6" } };
       titleCell.alignment = { horizontal: "center", vertical: "middle" };
       titleRow.height = 40;
 
-      worksheet.addRow([]); // Fila vacía de separación
+      worksheet.addRow([]);
 
       // 2. ENCABEZADOS
-      const headerRow = worksheet.addRow(colsHeaders);
+      const headerRow = worksheet.addRow(labels);
       headerRow.eachCell((cell) => {
         cell.font = { bold: true, color: { argb: "FF000000" } };
-        cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFFFFF00" } }; // Amarillo
-        cell.border = {
-          top: { style: "thin" }, left: { style: "thin" }, bottom: { style: "thin" }, right: { style: "thin" }
-        };
-        // APLICAR AJUSTAR TEXTO A TODOS LOS ENCABEZADOS
-        cell.alignment = { 
-          horizontal: "center", 
-          vertical: "middle",
-          wrapText: true 
-        };
+        cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFFFFF00" } };
+        cell.border = { top: { style: "thin" }, left: { style: "thin" }, bottom: { style: "thin" }, right: { style: "thin" } };
+        cell.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
       });
-      headerRow.height = 30; // Altura un poco mayor para permitir el ajuste
+      headerRow.height = 30;
 
       // 3. DATOS
       const simbolo = (m) => m === "USD" ? "$" : (m === "CLP" ? "P$" : "S/");
 
+      // Identificar los IDs de estadías a excluir (donde el titular marcó el checkbox)
+      const staysExcluded = reportePax.filas.filter(f => f.es_titular && f.excluir).map(f => f.stay_id || f.id);
+      
       reportePax.filas.forEach(f => {
-        const rowData = [
+        // Si la fila actual pertenece a un stay excluido, no la procesamos
+        const currentStayId = f.stay_id || f.id;
+        if (staysExcluded.includes(currentStayId)) return;
+
+        const fullData = [
           f.es_titular ? (f.operador || "") : "", f.es_titular ? (f.fecha_registro || "") : "", f.es_titular ? ("#" + (f.hab_numero || "")) : "",
           f.es_titular ? (f.tipo_hab_declarado || "") : "", f.es_titular ? (f.pax_total || "") : "", f.es_titular ? (f.medio_reserva || "") : "",
           f.es_titular ? (f.hora_checkin || "") : "", f.nombre_completo || "", f.documento_tipo || "", f.documento_num || "",
@@ -787,31 +862,34 @@ createApp({
           f.es_titular ? (f.metodo_pago || "") : "", f.es_titular ? (f.tipo_comprobante || "") : "", f.es_titular ? (f.num_comprobante || "") : "",
           f.es_titular ? (f.cobrador || "") : "", f.es_titular ? (f.carro || "") : "", f.es_titular ? (f.observaciones || "") : ""
         ];
-        const dataRow = worksheet.addRow(rowData);
-        dataRow.eachCell((cell, colNumber) => {
-          cell.border = {
-             top: { style: "thin" }, left: { style: "thin" }, bottom: { style: "thin" }, right: { style: "thin" }
-          };
-          cell.alignment = { 
-            vertical: "middle",
-            wrapText: colNumber === 8 // MANTENER AJUSTE EN DATOS SOLO PARA NOMBRES
-          };
+        
+        // Mapear solo los indices de las columnas seleccionadas
+        const filteredData = selColumnas.value.reduce((acc, col, idx) => {
+          if (col.checked) acc.push(fullData[idx]);
+          return acc;
+        }, []);
+
+        const dataRow = worksheet.addRow(filteredData);
+        dataRow.eachCell((cell, colIndex) => {
+          cell.border = { top: { style: "thin" }, left: { style: "thin" }, bottom: { style: "thin" }, right: { style: "thin" } };
+          
+          // Hallar el label original para aplicar WrapText
+          const currentLabel = labels[colIndex - 1];
+          const needsWrap = ["TIPO DE HAB", "NOMBRE Y APELLIDO", "OBS"].includes(currentLabel);
+          cell.alignment = { vertical: "middle", wrapText: needsWrap };
         });
       });
 
-      // Ajustar anchos
+      // Anchos
       worksheet.columns.forEach((column, i) => {
-        const colNum = i + 1;
-        if (colNum === 8) {
-          column.width = 30; // Nombre
-        } else if ([1,6,9,17,18,19].includes(colNum)) {
-          column.width = 20; // Columnas con nombres de encabezado largos
-        } else {
-          column.width = 12;
-        }
+        const label = labels[i];
+        if (label === "TIPO DE HAB") column.width = 25;
+        else if (label === "NOMBRE Y APELLIDO") column.width = 35;
+        else if (label === "OBS") column.width = 45;
+        else if (["OPERADOR", "MEDIO DE RESERVA", "TIPO DOC", "METODO", "COMPROBANTE", "Nº COMPROBANTE", "QUIEN COBRO"].includes(label)) column.width = 20;
+        else column.width = 12;
       });
 
-      // Exportar
       const buffer = await workbook.xlsx.writeBuffer();
       const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
       const url = URL.createObjectURL(blob);
@@ -889,7 +967,18 @@ createApp({
       if (pollingTimer) clearInterval(pollingTimer);
     });
 
+    const toggleStayExclusion = (titular) => {
+      const sid = titular.stay_id || titular.id;
+      reportePax.filas.forEach(f => {
+        if ((f.stay_id || f.id) === sid) {
+          f.excluir = titular.excluir;
+        }
+      });
+    };
+
     return {
+      toggleStayExclusion, 
+      selColumnas, abrirConfigExportar, confirmarExportacion, 
       stays, habitacionesLibres, tcs, loading, busqueda, filtroPiso, filtroPago, form, 
       staysFiltrados, selectedStay, stayParaPago, mediosPago, pagoForm,
       abrirCheckin, onHabChange, calcularNoches, onNochesChange, recalcularMoneda, 

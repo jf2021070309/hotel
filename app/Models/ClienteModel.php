@@ -34,7 +34,7 @@ class ClienteModel {
         }
 
         $sql .= " GROUP BY p.documento_num, p.documento_tipo, p.nombre_completo, p.nacionalidad, p.ciudad
-                  ORDER BY p.nombre_completo ASC";
+                  ORDER BY ultima_visita DESC";
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute($params);

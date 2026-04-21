@@ -92,7 +92,19 @@ class RoomingController {
             $transactionStarted = true;
         }
         try {
-            if (!empty($stayData['id'])) {
+            // VALIDACIÓN DE DISPONIBILIDAD (Evitar cruces de fechas)
+            $habId = $mapped['hab_id'];
+            $fi = $mapped['fecha_reg'];
+            $fo = $mapped['fecha_out'];
+            $isEditing = !empty($stayData['id']);
+            $excludeId = $isEditing ? (int)$stayData['id'] : null;
+
+            if (!$this->model->validarDisponibilidad($habId, $fi, $fo, $excludeId)) {
+                $numHab = $this->pdo->query("SELECT numero FROM habitaciones WHERE id = $habId")->fetchColumn();
+                throw new Exception("La habitación #$numHab ya se encuentra ocupada o reservada para las fechas seleccionadas ($fi al $fo).");
+            }
+
+            if ($isEditing) {
                 $stay_id = (int)$stayData['id'];
                 
                 // --- CAPTURA DE DATOS PARA AUDITORÍA DE EDICIÓN ---

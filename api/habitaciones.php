@@ -28,6 +28,12 @@ if ($method === 'GET') {
         case 'libres':
             json_response(true, $model->getLibres());
             break;
+        case 'disponibles':
+            $fi = $_GET['fecha_in'] ?? date('Y-m-d');
+            $fo = $_GET['fecha_out'] ?? date('Y-m-d', strtotime('+1 day'));
+            $ex = isset($_GET['exclude']) ? (int)$_GET['exclude'] : null;
+            json_response(true, $model->getLibresParaFechas($fi, $fo, $ex));
+            break;
         case 'todos':
             json_response(true, $model->getAll());
             break;

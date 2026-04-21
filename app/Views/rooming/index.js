@@ -183,30 +183,43 @@ createApp({
     });
 
     // MÉTODOS
+    const cargarHabitacionesDisponibles = async () => {
+      const fi = form.stay.fecha_registro;
+      const fo = form.stay.fecha_checkout;
+      if (!fi || !fo) return;
+      
+      const exclude = form.stay.id || '';
+      try {
+        const res = await axios.get(`../../../api/habitaciones.php?action=disponibles&fecha_in=${fi}&fecha_out=${fo}&exclude=${exclude}`);
+        habitacionesLibres.value = res.data.data || [];
+        
+        // Si hay una hab seleccionada pero ya no está en la lista (y no es la actual), resetearla
+        if (form.stay.habitacion_id && !habitacionesLibres.value.some(h => h.id == form.stay.habitacion_id)) {
+            // Solo si no estamos re-cargando la misma
+            // form.stay.habitacion_id = ''; 
+        }
+      } catch (e) {
+        console.error("Error cargando habs disponibles", e);
+      }
+    };
+
     const cargarDatos = async (silent = false) => {
       if (!silent) loading.value = true;
       try {
-        const [resStays, resHabs, resTC, resMedios] = await Promise.all([
+        const [resStays, resTC, resMedios] = await Promise.all([
           axios.get('../../../api/rooming.php?action=listar'),
-          axios.get('../../../api/habitaciones.php?action=libres'),
           axios.get('../../../api/tipos_cambio.php'),
           axios.get('../../../api/medios_pago.php?action=listar')
         ]);
         stays.value = resStays.data.data || [];
         
-        // BUGFIX: Preservar la habitación seleccionada si el usuario está en medio de un check-in
-        const currentId = form.stay.habitacion_id;
-        let newHabs = resHabs.data.data || [];
-        if (currentId && !newHabs.some(h => h.id == currentId)) {
-          const currentObj = habitacionesLibres.value.find(h => h.id == currentId);
-          if (currentObj) {
-            newHabs.push(currentObj);
-          }
-        }
-        habitacionesLibres.value = newHabs;
-
         tcs.value = resTC.data.data;
         mediosPago.value = resMedios.data.data || [];
+
+        // Inicializamos habitaciones libres para la fecha de hoy por defecto
+        if (form.stay.fecha_registro && form.stay.fecha_checkout) {
+            await cargarHabitacionesDisponibles();
+        }
       } catch (err) {
         showToast('Error al cargar datos', 'error');
       } finally {
@@ -249,6 +262,7 @@ createApp({
       loading.value = false;
       resetForm();
       calcularNoches();
+      await cargarHabitacionesDisponibles();
       new bootstrap.Modal('#modalCheckin').show();
     };
 
@@ -369,6 +383,7 @@ createApp({
         form.adelanto = form.tipoPago === 'adelanto' ? cobradoOriginalStay : totalOriginalStay;
         onAdelantoChange();
         
+        await cargarHabitacionesDisponibles();
         new bootstrap.Modal('#modalCheckin').show();
       } catch (e) {
         showToast('Error al cargar datos de edición', 'error');
@@ -390,6 +405,7 @@ createApp({
         d.setDate(d.getDate() + n);
         form.stay.fecha_checkout = d.toISOString().split('T')[0];
         onHabChange();
+        cargarHabitacionesDisponibles();
       }
     };
 

@@ -17,6 +17,40 @@ class HabitacionModel {
         return $this->pdo->query("SELECT * FROM habitaciones WHERE estado = 'libre' AND activa = 1 ORDER BY numero ASC")->fetchAll();
     }
 
+    /**
+     * Obtiene habitaciones que no tengan cruces de fechas con estadías activas o reservas.
+     */
+    public function getLibresParaFechas(string $fechaIn, string $fechaOut, ?int $excludeStayId = null): array {
+        $sql = "SELECT h.* 
+                FROM habitaciones h
+                WHERE h.activa = 1 
+                AND h.id NOT IN (
+                    SELECT habitacion_id 
+                    FROM rooming_stays 
+                    WHERE estado IN ('activo', 'reservado', 'late_checkout')
+                    AND fecha_registro < :fecha_out 
+                    AND fecha_checkout > :fecha_in
+                ";
+        
+        if ($excludeStayId) {
+            $sql .= " AND id != :exclude_id ";
+        }
+        
+        $sql .= ") ORDER BY h.numero ASC";
+        
+        $stmt = $this->pdo->prepare($sql);
+        $params = [
+            'fecha_in'  => $fechaIn,
+            'fecha_out' => $fechaOut
+        ];
+        if ($excludeStayId) {
+            $params['exclude_id'] = $excludeStayId;
+        }
+        
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    }
+
     public function getById(int $id): ?array {
         $stmt = $this->pdo->prepare("SELECT * FROM habitaciones WHERE id = ?");
         $stmt->execute([$id]);

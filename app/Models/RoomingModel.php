@@ -20,6 +20,27 @@ class RoomingModel {
     }
 
     /**
+     * Valida si una habitación está disponible para un rango de fechas.
+     */
+    public function validarDisponibilidad(int $habId, string $fechaIn, string $fechaOut, ?int $excludeStayId = null): bool {
+        $sql = "SELECT COUNT(*) FROM rooming_stays 
+                WHERE habitacion_id = ? 
+                AND estado IN ('activo', 'reservado', 'late_checkout')
+                AND fecha_registro < ? 
+                AND fecha_checkout > ?";
+        
+        $params = [$habId, $fechaOut, $fechaIn];
+        if ($excludeStayId) {
+            $sql .= " AND id != ?";
+            $params[] = $excludeStayId;
+        }
+        
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchColumn() == 0;
+    }
+
+    /**
      * Obtiene todas las estadías activas (Ocupado, Reservado, Late Checkout).
      * Incluye datos de habitación y el nombre del titular.
      * 

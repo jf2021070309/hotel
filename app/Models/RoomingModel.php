@@ -48,7 +48,8 @@ class RoomingModel {
      */
     public function getStaysActivos(): array {
         $sql = "SELECT s.*, h.numero as hab_numero, h.tipo as hab_tipo,
-                (SELECT nombre_completo FROM rooming_pax WHERE stay_id = s.id AND es_titular = 1 LIMIT 1) as titular_nombre
+                (SELECT nombre_completo FROM rooming_pax WHERE stay_id = s.id AND es_titular = 1 LIMIT 1) as titular_nombre,
+                (SELECT COUNT(DISTINCT moneda) FROM anticipos WHERE stay_id = s.id) as divisas_count
                 FROM rooming_stays s 
                 JOIN habitaciones h ON s.habitacion_id = h.id 
                 WHERE s.estado IN ('activo', 'reservado', 'late_checkout', 'cancelado') 
@@ -399,11 +400,14 @@ class RoomingModel {
         }
     }
 
-    public function actualizarResumenPagos(int $stay_id): void {
+    public function actualizarResumenPagos(int $stay_id) {
         // 1. Obtener la moneda y TC del stay para poder reconvertir pagos en divisa distinta
         $stmtStay = $this->pdo->prepare("SELECT moneda_pago, tc_aplicado, total_pago FROM rooming_stays WHERE id = ?");
         $stmtStay->execute([$stay_id]);
         $stay = $stmtStay->fetch(PDO::FETCH_ASSOC);
+
+        if (!$stay) return;
+
         $monedaStay = $stay['moneda_pago'] ?? 'PEN';
         $tcStay     = (float)($stay['tc_aplicado'] ?? 1);
         $totalPago  = (float)($stay['total_pago'] ?? 0);
@@ -419,12 +423,22 @@ class RoomingModel {
         $stmt = $this->pdo->prepare("
             SELECT SUM(
                 CASE
-                    WHEN moneda = :moneda THEN monto
-                    ELSE monto_pen / NULLIF(:tc, 0)
+                    WHEN moneda = :m1 THEN monto
+                    ELSE 
+                        CASE 
+                            WHEN :m2 = 'CLP' THEN monto_pen * :tc1
+                            ELSE monto_pen / NULLIF(:tc2, 0)
+                        END
                 END
-            ) FROM anticipos WHERE stay_id = :stay_id
+            ) FROM anticipos WHERE stay_id = :sid
         ");
-        $stmt->execute(['moneda' => $monedaStay, 'tc' => $tcStay, 'stay_id' => $stay_id]);
+        $stmt->execute([
+            'm1'  => $monedaStay, 
+            'm2'  => $monedaStay, 
+            'tc1' => $tcStay, 
+            'tc2' => $tcStay, 
+            'sid' => $stay_id
+        ]);
         $totalCobradoOrig = (float)$stmt->fetchColumn();
 
         // 4. Estado de pago (basado en PEN, que es la moneda contable base)

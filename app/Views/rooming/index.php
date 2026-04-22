@@ -73,7 +73,7 @@ include $_projectRoot . '/includes/head.php';
           </div>
         </div>
       </div>
-
+      <style>
         .row-unpaid {
           background-color: #e8f5e9 !important;
         }
@@ -139,9 +139,10 @@ include $_projectRoot . '/includes/head.php';
                 </td>
                 <td class="text-end fw-bold">
                   <div class="text-dark">{{ s.moneda_pago == 'USD' ? '$' : (s.moneda_pago == 'CLP' ? 'P$' : 'S/') }} {{
-                    fmtCur(s.total_pago) }}</div>
-                  <div class="text-success small" style="font-size: 10px;">Abono {{ s.moneda_pago == 'USD' ? '$' :
-                    (s.moneda_pago == 'CLP' ? 'P$' : 'S/') }} {{ fmtCur(s.total_cobrado_orig || s.total_cobrado) }}
+                    fmtCur(s.monto_original || s.total_pago) }}</div>
+                  <div class="text-success small d-flex align-items-center justify-content-end gap-1" style="font-size: 10px;">
+                    <span>Abono {{ s.moneda_pago == 'USD' ? '$' : (s.moneda_pago == 'CLP' ? 'P$' : 'S/') }} {{ fmtCur(s.total_cobrado_orig || s.total_cobrado) }}</span>
+                    <i v-if="s.divisas_count > 1" class="bi bi-globe-americas text-info" title="Pago Multidivisa" style="font-size: 11px;"></i>
                   </div>
                 </td>
                 <td class="text-center">
@@ -931,31 +932,29 @@ include $_projectRoot . '/includes/head.php';
                         <td class="text-muted py-1">Monto Hospedaje</td>
                         <td class="text-end fw-bold py-1 text-dark">{{ selectedStay.moneda_pago == 'USD' ? '$' :
                           (selectedStay.moneda_pago == 'CLP' ? 'P$' : 'S/') }} {{
-                          parseFloat(selectedStay.monto_original).toFixed(2) }}</td>
+                          fmtCur(selectedStay.monto_original) }}</td>
                       </tr>
                       <tr>
                         <td class="text-muted py-1">Consumo Adicional</td>
                         <td class="text-end fw-bold py-1 text-primary">{{ selectedStay.moneda_pago == 'USD' ? '$' :
-                          (selectedStay.moneda_pago == 'CLP' ? 'P$' : 'S/') }} {{ (parseFloat(selectedStay.total_pago) -
-                          parseFloat(selectedStay.monto_original)).toFixed(2) }}</td>
+                          (selectedStay.moneda_pago == 'CLP' ? 'P$' : 'S/') }} {{ fmtCur(totalConsumoStay) }}</td>
                       </tr>
                       <tr class="border-bottom">
                         <td class="text-muted py-1">Monto Abonado</td>
                         <td class="text-end fw-bold py-1 text-success">{{ selectedStay.moneda_pago == 'USD' ? '$' :
                           (selectedStay.moneda_pago == 'CLP' ? 'P$' : 'S/') }} {{
-                          parseFloat(selectedStay.total_cobrado_orig || selectedStay.total_cobrado).toFixed(2) }}</td>
+                          fmtCur(selectedStay.total_cobrado_orig || selectedStay.total_cobrado) }}</td>
                       </tr>
                       <tr>
                         <td class="py-2 fw-bold text-dark" style="font-size: 15px;">SALDO PENDIENTE</td>
                         <td class="text-end fw-bold py-2 h4 mb-0"
-                          :class="(selectedStay.total_pago - selectedStay.total_cobrado) > 0 ? 'text-danger' : 'text-success'">
+                          :class="(selectedStay.total_pago - selectedStay.total_cobrado) > 0.05 ? 'text-danger' : 'text-success'">
                           <span v-if="(selectedStay.total_pago - selectedStay.total_cobrado) <= 0.05">
                             <i class="bi bi-check-circle-fill me-1"></i> PAGADO
                           </span>
                           <span v-else>
                             {{ selectedStay.moneda_pago == 'USD' ? '$' : (selectedStay.moneda_pago == 'CLP' ? 'P$' :
-                            'S/') }} {{ (parseFloat(selectedStay.total_pago) -
-                            parseFloat(selectedStay.total_cobrado_orig || selectedStay.total_cobrado)).toFixed(2) }}
+                            'S/') }} {{ fmtCur(saldoPendienteStay) }}
                           </span>
                         </td>
                       </tr>
@@ -976,7 +975,7 @@ include $_projectRoot . '/includes/head.php';
                             <td class="text-end pe-2 align-middle">
                                 <span class="badge bg-light text-dark border me-1" style="font-size: 9px;">{{ pag.moneda }}</span>
                                 <span class="fw-bold text-success" style="font-size: 13px;">
-                                    {{ pag.moneda == 'USD' ? '$' : (pag.moneda == 'CLP' ? 'P$' : 'S/') }} {{ parseFloat(pag.monto).toFixed(2) }}
+                                    {{ pag.moneda == 'USD' ? '$' : (pag.moneda == 'CLP' ? 'P$' : 'S/') }} {{ fmtCur(pag.monto) }}
                                 </span>
                             </td>
                           </tr>

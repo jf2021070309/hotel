@@ -41,6 +41,7 @@ class RoomingController {
      * @return array|null Información detallada o null si no existe.
      */
     public function detalle(int $id) {
+        $this->model->actualizarResumenPagos($id);
         return $this->model->getStayDetail($id);
     }
 

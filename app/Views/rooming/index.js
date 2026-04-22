@@ -187,6 +187,23 @@ createApp({
       return Math.max(0, total - adelanto);
     });
 
+    const totalConsumoStay = computed(() => {
+      if (!selectedStay.value || !consumosStay.value) return 0;
+      const totalPen = consumosStay.value.reduce((acc, c) => acc + parseFloat(c.total || 0), 0);
+      if (selectedStay.value.moneda_pago === 'PEN') return totalPen;
+      const tc = parseFloat(selectedStay.value.tc_aplicado) || 1;
+      if (selectedStay.value.moneda_pago === 'CLP') return totalPen * tc;
+      if (selectedStay.value.moneda_pago === 'USD') return totalPen / tc;
+      return totalPen;
+    });
+
+    const saldoPendienteStay = computed(() => {
+      if (!selectedStay.value) return 0;
+      const hospedaje = parseFloat(selectedStay.value.monto_original) || 0;
+      const abonado = parseFloat(selectedStay.value.total_cobrado_orig || selectedStay.value.total_cobrado) || 0;
+      return (hospedaje + totalConsumoStay.value) - abonado;
+    });
+
     // MÉTODOS
     const cargarHabitacionesDisponibles = async () => {
       const fi = form.stay.fecha_registro;
@@ -588,13 +605,17 @@ createApp({
           axios.get(`../../../api/rooming.php?action=detalle&id=${id}`),
           axios.get(`../../../api/consumos.php?action=listar&stay_id=${id}`)
         ]);
-        selectedStay.value = resDet.data.data;
+        selectedStay.value = { ...resDet.data.data, pagos: resDet.data.data.pagos || [], pax: resDet.data.data.pax || [] };
         consumosStay.value = resCons.data.data || [];
         
         // El modal de detalle tiene id="modalDetalle"
-        const modal = new bootstrap.Modal('#modalDetalle');
-        modal.show();
+        const modalElem = document.getElementById('modalDetalle');
+        if (modalElem) {
+           const modal = new bootstrap.Modal(modalElem);
+           modal.show();
+        }
       } catch (err) {
+        console.error('ERROR DETALLE:', err);
         showToast('Error al cargar detalle', 'error');
       } finally {
         loading.value = false;
@@ -1081,7 +1102,8 @@ createApp({
       // AUTOCOMPLETE PAX
       sugerencias, buscarPax, aplicarSugerencia, ocultarSugerencias,
       // REPORTE PAX
-      reportePax, abrirReportePax, cargarReportePax, exportarReportePax
+      reportePax, abrirReportePax, cargarReportePax, exportarReportePax,
+      totalConsumoStay, saldoPendienteStay
     };
   }
 }).mount('#app-rooming');

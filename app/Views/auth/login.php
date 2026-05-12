@@ -197,75 +197,6 @@ if (estaAutenticado()) {
                 transform: translateX(0);
             }
         }
-
-        .time-stop {
-            position: fixed;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle, transparent 18%, rgba(0, 0, 0, 0.96) 100%);
-            backdrop-filter: blur(6px);
-            z-index: 9999;
-            opacity: 0;
-            pointer-events: none;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: opacity .2s ease;
-        }
-
-        .time-text {
-            color: white;
-            font-size: clamp(44px, 8vw, 84px);
-            font-weight: 800;
-            letter-spacing: 6px;
-            opacity: 0;
-            transform: scale(0.5);
-            text-shadow: 0 0 18px rgba(255, 255, 255, .35);
-        }
-
-        .time-stop.active {
-            opacity: 1;
-            pointer-events: all;
-            animation: aura 1.8s infinite linear;
-        }
-
-        .time-stop.active .time-text {
-            animation: aparecer 0.45s forwards;
-        }
-
-        @keyframes aura {
-            0% { filter: hue-rotate(0deg) brightness(1); }
-            50% { filter: hue-rotate(180deg) brightness(1.45); }
-            100% { filter: hue-rotate(360deg) brightness(1); }
-        }
-
-        @keyframes aparecer {
-            to {
-                opacity: 1;
-                transform: scale(1.15);
-            }
-        }
-
-        .flash {
-            position: fixed;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            background: white;
-            opacity: 0;
-            z-index: 10000;
-            pointer-events: none;
-        }
-
-        .flash.active {
-            animation: flashAnim 0.32s;
-        }
-
-        @keyframes flashAnim {
-            0% { opacity: 1; }
-            100% { opacity: 0; }
-        }
     </style>
 </head>
 
@@ -323,11 +254,6 @@ if (estaAutenticado()) {
         </div>
     </div>
 
-    <div class="time-stop" id="overlay">
-        <div class="time-text">THE WORLD</div>
-    </div>
-    <div class="flash" id="flash"></div>
-
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -347,8 +273,7 @@ if (estaAutenticado()) {
                     try {
                         const res = await axios.post(baseUrl + 'api/auth/login.php', form);
                         if (res.data.ok) {
-                            const next = encodeURIComponent(res.data.data.redirect);
-                            window.location.href = `${baseUrl}theworld.html?next=${next}`;
+                            window.location.href = res.data.data.redirect;
                         } else {
                             throw new Error(res.data.msg || 'Error de autenticación');
                         }

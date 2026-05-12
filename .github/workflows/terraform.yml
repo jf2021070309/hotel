@@ -26,7 +26,9 @@ jobs:
           terraform_wrapper: false
 
       - name: Install MySQL client
-        run: sudo apt-get install -y mysql-client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mysql-client
 
       - name: Terraform Init
         working-directory: app/infra
@@ -42,6 +44,22 @@ jobs:
           TF_VAR_railway_token: ${{ secrets.RAILWAY_TOKEN }}
           TF_VAR_mysql_root_password: ${{ secrets.MYSQL_ROOT_PASSWORD }}
           TF_VAR_gh_repo: ${{ secrets.GH_REPO }}
+          TF_VAR_cloudflare_token: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TF_VAR_cloudflare_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+
+      - name: Clean inconsistent state
+        if: ${{ github.event.inputs.action == 'apply' }}
+        working-directory: app/infra
+        run: |
+          terraform state rm railway_variable.app_env || true
+          terraform state rm railway_service_domain.app_domain || true
+        env:
+          TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
+          TF_VAR_railway_token: ${{ secrets.RAILWAY_TOKEN }}
+          TF_VAR_mysql_root_password: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+          TF_VAR_gh_repo: ${{ secrets.GH_REPO }}
+          TF_VAR_cloudflare_token: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TF_VAR_cloudflare_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
 
       - name: Terraform Apply / Destroy
         working-directory: app/infra
@@ -51,6 +69,12 @@ jobs:
           TF_VAR_railway_token: ${{ secrets.RAILWAY_TOKEN }}
           TF_VAR_mysql_root_password: ${{ secrets.MYSQL_ROOT_PASSWORD }}
           TF_VAR_gh_repo: ${{ secrets.GH_REPO }}
+          TF_VAR_cloudflare_token: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TF_VAR_cloudflare_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+
+      - name: Esperar MySQL
+        if: ${{ github.event.inputs.action == 'apply' }}
+        run: sleep 90
 
       - name: Seed Database
         if: ${{ github.event.inputs.action == 'apply' }}
@@ -58,11 +82,11 @@ jobs:
         run: |
           PROXY_HOST=$(terraform output -raw mysql_proxy_domain)
           PROXY_PORT=$(terraform output -raw mysql_proxy_port)
-          echo "Esperando que MySQL arranque..."
-          sleep 60
-          mysql -h $PROXY_HOST -P $PROXY_PORT -u root -p${{ secrets.MYSQL_ROOT_PASSWORD }} hotel_db < hotel.sql
+          mysql -h "$PROXY_HOST" -P "$PROXY_PORT" -u root -p${{ secrets.MYSQL_ROOT_PASSWORD }} hotel_db < hotel.sql
         env:
           TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
           TF_VAR_railway_token: ${{ secrets.RAILWAY_TOKEN }}
           TF_VAR_mysql_root_password: ${{ secrets.MYSQL_ROOT_PASSWORD }}
           TF_VAR_gh_repo: ${{ secrets.GH_REPO }}
+          TF_VAR_cloudflare_token: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TF_VAR_cloudflare_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}

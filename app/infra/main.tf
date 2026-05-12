@@ -57,13 +57,8 @@ resource "railway_service" "app" {
   source_repo_branch = "main"
 }
 
-resource "railway_service_domain" "app_domain" {
-  environment_id = railway_project.hotel.default_environment.id
-  service_id     = railway_service.app.id
-  subdomain      = "hotel-app-jaime"
-
-  depends_on = [railway_service.app]
-}
+# ELIMINADO: railway_service_domain.app_domain (bug del proveedor)
+# Usamos la URL fija predecible de Railway en su lugar
 
 resource "railway_custom_domain" "hotel" {
   domain         = "hotel.jaimefloresdev.site"
@@ -117,12 +112,12 @@ resource "railway_tcp_proxy" "mysql_proxy" {
 resource "cloudflare_record" "hotel" {
   zone_id         = var.cloudflare_zone_id
   name            = "hotel"
-  content         = railway_service_domain.app_domain.domain
+  content         = railway_custom_domain.hotel.dns_record_value
   type            = "CNAME"
   proxied         = true
   allow_overwrite = true
 
-  depends_on = [railway_custom_domain.hotel, railway_service_domain.app_domain]
+  depends_on = [railway_custom_domain.hotel]
 }
 
 output "app_url" {
@@ -130,7 +125,7 @@ output "app_url" {
 }
 
 output "app_url_railway" {
-  value = "https://${railway_service_domain.app_domain.domain}"
+  value = "https://hotel-app-jaime.up.railway.app"
 }
 
 output "mysql_proxy_domain" {

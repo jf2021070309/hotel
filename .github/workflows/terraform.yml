@@ -36,9 +36,12 @@ jobs:
         env:
           TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
 
-      - name: Terraform Plan
+      - name: Clean inconsistent state
+        if: ${{ github.event.inputs.action == 'apply' }}
         working-directory: app/infra
-        run: terraform plan ${{ github.event.inputs.action == 'destroy' && '-destroy' || '' }}
+        run: |
+          terraform state rm railway_service_domain.app_domain || true
+          terraform state rm railway_variable.app_env || true
         env:
           TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
           TF_VAR_railway_token: ${{ secrets.RAILWAY_TOKEN }}
@@ -47,12 +50,9 @@ jobs:
           TF_VAR_cloudflare_token: ${{ secrets.CLOUDFLARE_TOKEN }}
           TF_VAR_cloudflare_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
 
-      - name: Clean inconsistent state
-        if: ${{ github.event.inputs.action == 'apply' }}
+      - name: Terraform Plan
         working-directory: app/infra
-        run: |
-          terraform state rm railway_variable.app_env || true
-          terraform state rm railway_service_domain.app_domain || true
+        run: terraform plan ${{ github.event.inputs.action == 'destroy' && '-destroy' || '' }}
         env:
           TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
           TF_VAR_railway_token: ${{ secrets.RAILWAY_TOKEN }}

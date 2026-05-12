@@ -42,6 +42,8 @@ jobs:
           TF_VAR_railway_token: ${{ secrets.RAILWAY_TOKEN }}
           TF_VAR_mysql_root_password: ${{ secrets.MYSQL_ROOT_PASSWORD }}
           TF_VAR_gh_repo: ${{ secrets.GH_REPO }}
+          TF_VAR_cloudflare_token: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TF_VAR_cloudflare_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
 
       - name: Terraform Apply / Destroy
         working-directory: app/infra
@@ -51,6 +53,8 @@ jobs:
           TF_VAR_railway_token: ${{ secrets.RAILWAY_TOKEN }}
           TF_VAR_mysql_root_password: ${{ secrets.MYSQL_ROOT_PASSWORD }}
           TF_VAR_gh_repo: ${{ secrets.GH_REPO }}
+          TF_VAR_cloudflare_token: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TF_VAR_cloudflare_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
 
       - name: Seed Database
         if: ${{ github.event.inputs.action == 'apply' }}
@@ -66,3 +70,5 @@ jobs:
           TF_VAR_railway_token: ${{ secrets.RAILWAY_TOKEN }}
           TF_VAR_mysql_root_password: ${{ secrets.MYSQL_ROOT_PASSWORD }}
           TF_VAR_gh_repo: ${{ secrets.GH_REPO }}
+          TF_VAR_cloudflare_token: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TF_VAR_cloudflare_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}

@@ -218,6 +218,7 @@ class RoomingModel {
                 tc_aplicado = :tc, metodo_pago = :metodo, 
                 tipo_comprobante = :comprobante, num_comprobante = :num_comp, 
                 ruc_factura = :ruc, razon_social = :razon_social, observaciones = :obs, 
+                procedencia = :procedencia, carro = :carro,
                 total_cobrado = :cobrado, total_cobrado_orig = :cobrado_orig, estado_pago = :est_pago,
                 estado = :estado
                 WHERE id = :id";
@@ -245,6 +246,8 @@ class RoomingModel {
                 'ruc'         => $data['ruc'],
                 'razon_social'=> $data['razon_social'] ?? '',
                 'obs'         => $data['obs'],
+                'procedencia' => $data['procedencia'] ?? '',
+                'carro'       => $data['carro'] ?? 'NO',
                 'cobrado'     => $data['cobrado'],
                 'cobrado_orig'=> $data['cobrado_orig'],
                 'est_pago'    => $data['est_pago'],
@@ -511,6 +514,8 @@ class RoomingModel {
                 p.documento_num,
                 p.nacionalidad,
                 p.ciudad,
+                p.celular,
+                p.email,
                 p.es_titular
             FROM rooming_stays s
             JOIN habitaciones h  ON h.id = s.habitacion_id

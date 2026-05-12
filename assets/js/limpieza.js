@@ -75,69 +75,21 @@ const appConfig = {
         const tareaEdit = ref({});
         let tareaTarget = null;
 
-        const abrirEdicion = (h) => {
-            tareaTarget = h;
-            tareaEdit.value = {
-                id: h.id,
-                habitacion: h.habitacion,
-                estado: h.estado,
-                usuario_id: h.usuario_id || '',
-                observacion: h.observacion || ''
-            };
-            new bootstrap.Modal(document.getElementById('modalEdicionLimpieza')).show();
-        };
-
-        const guardarEdicion = async () => {
-            const formData = new FormData();
-            formData.append('id', tareaEdit.value.id);
-            formData.append('estado', tareaEdit.value.estado);
-            formData.append('observacion', tareaEdit.value.observacion);
-            formData.append('usuario_id', tareaEdit.value.usuario_id);
-
-            loading.value = true;
-            try {
-                const res = await axios.post('/hotel/api/limpieza.php?action=actualizar', formData);
-                if (res.data.ok) {
-                    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Limpieza actualizada', showConfirmButton: false, timer: 3000 });
-                    bootstrap.Modal.getInstance(document.getElementById('modalEdicionLimpieza')).hide();
-                    
-                    // Actualizar UI
-                    if(tareaTarget) {
-                        tareaTarget.estado = tareaEdit.value.estado;
-                        tareaTarget.usuario_id = tareaEdit.value.usuario_id;
-                        tareaTarget.observacion = tareaEdit.value.observacion;
-                        
-                        // Actualizar nombre mostrado buscando en la lista de personal
-                        const p = personalLimpieza.value.find(x => x.id == tareaEdit.value.usuario_id);
-                        tareaTarget.responsable_nombre = p ? p.nombre : '';
-                        
-                        // Actualizar horas internamente (simplificado - ideal recargar o inyectar del API)
-                        if (res.data.data.hora_inicio) tareaTarget.hora_inicio = res.data.data.hora_inicio;
-                        if (res.data.data.hora_fin)    tareaTarget.hora_fin    = res.data.data.hora_fin;
-                    }
-                } else {
-                    Swal.fire('Error', res.data.msg, 'error');
-                }
-            } catch (e) { 
-                Swal.fire('Error', 'Hubo un problema de conexión', 'error');
-            }
-            loading.value = false;
-        };
-
-        const marcarListaRapido = async (h) => {
+        const toggleListo = async (h) => {
+            const nuevoEstado = (h.estado === 'lista') ? 'pendiente' : 'lista';
             const formData = new FormData();
             formData.append('id', h.id);
-            formData.append('estado', 'lista');
-            formData.append('observacion', h.observacion || '');
-            formData.append('usuario_id', h.usuario_id || '');
+            formData.append('estado', nuevoEstado);
 
             loading.value = true;
             try {
                 const res = await axios.post('/hotel/api/limpieza.php?action=actualizar', formData);
                 if (res.data.ok) {
-                    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Habitación marcada como lista', showConfirmButton: false, timer: 2000 });
-                    h.estado = 'lista';
+                    const msg = nuevoEstado === 'lista' ? 'Habitación marcada como lista' : 'Habitación marcada como pendiente';
+                    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: msg, showConfirmButton: false, timer: 2000 });
+                    h.estado = nuevoEstado;
                     if (res.data.data && res.data.data.hora_fin) h.hora_fin = res.data.data.hora_fin;
+                    else if (nuevoEstado === 'pendiente') h.hora_fin = null;
                 } else {
                     Swal.fire('Error', res.data.msg, 'error');
                 }
@@ -211,8 +163,8 @@ const appConfig = {
 
         return {
             loading, yaGenerado, lista, filtro, stats, listaFiltrada, personalLimpieza,
-            generarLista, tareaEdit, abrirEdicion, guardarEdicion, fmtHora,
-            getTipoClass, getEstadoClass, getColorTop, marcarListaRapido,
+            generarLista, tareaEdit, toggleListo, fmtHora,
+            getTipoClass, getEstadoClass, getColorTop,
             listaHistorial, filtroHist,
             detalleDia, fechaDetalle, fetchHistorial, verDetalle, formatFecha, formatFechaHora
         };

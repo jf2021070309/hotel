@@ -399,6 +399,11 @@ createApp({
                 documento_num:   p.documento_num,
                 nacionalidad:    p.nacionalidad || 'Peruana',
                 ciudad:          p.ciudad || '',
+                celular:         p.celular || '',
+                email:           p.email || '',
+                es_corporativo:  p.es_corporativo == 1,
+                empresa:         p.empresa || '',
+                ruc_empresa:     p.es_titular == 1 ? (data.ruc_factura || '') : '',
                 es_titular:      p.es_titular == 1
             }));
         }

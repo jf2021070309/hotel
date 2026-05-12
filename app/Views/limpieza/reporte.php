@@ -93,7 +93,6 @@ include $base . 'includes/sidebar.php';
                         <div class="hab-badge bg-danger text-white">{{ h.habitacion }}</div>
                         <div>
                           <div class="fw-bold">HAB #{{ h.habitacion }}</div>
-                          <div class="small text-muted">{{ h.responsable || 'Sin asignar' }}</div>
                           <div class="mini text-muted" v-if="h.hora_inicio">⏱ Inicio: {{ h.hora_inicio }}</div>
                         </div>
                       </div>
@@ -108,9 +107,7 @@ include $base . 'includes/sidebar.php';
                         <span>{{ task }}</span>
                       </div>
                     </div>
-                    <div v-if="h.observacion" class="mt-2 small text-muted fst-italic">
-                      <i class="bi bi-chat-dots me-1"></i> {{ h.observacion }}
-                    </div>
+
                   </div>
                 </div>
               </div>
@@ -132,7 +129,6 @@ include $base . 'includes/sidebar.php';
                         <div class="hab-badge bg-warning text-dark">{{ h.habitacion }}</div>
                         <div>
                           <div class="fw-bold">HAB #{{ h.habitacion }}</div>
-                          <div class="small text-muted">{{ h.responsable || 'Sin asignar' }}</div>
                         </div>
                       </div>
                       <span class="badge" :class="h.estado === 'lista' ? 'bg-success' : (h.estado === 'en_proceso' ? 'bg-warning text-dark' : 'bg-light text-dark border')">
@@ -146,9 +142,7 @@ include $base . 'includes/sidebar.php';
                         <span>{{ task }}</span>
                       </div>
                     </div>
-                    <div v-if="h.observacion" class="mt-2 small text-muted fst-italic">
-                      <i class="bi bi-chat-dots me-1"></i> {{ h.observacion }}
-                    </div>
+
                   </div>
                 </div>
               </div>
@@ -171,7 +165,6 @@ include $base . 'includes/sidebar.php';
                         <div class="hab-badge bg-success text-white">{{ h.habitacion }}</div>
                         <div>
                           <div class="fw-bold">HAB #{{ h.habitacion }}</div>
-                          <div class="small text-muted">{{ h.responsable || 'Sin asignar' }}</div>
                         </div>
                       </div>
                       <span class="badge" :class="h.estado === 'lista' ? 'bg-success' : (h.estado === 'en_proceso' ? 'bg-warning text-dark' : 'bg-light text-dark border')">
@@ -202,18 +195,14 @@ include $base . 'includes/sidebar.php';
             <table class="table table-bordered border-dark mb-4" style="font-size: 14px; width: 100%;">
                 <thead>
                     <tr class="table-light border-dark">
-                        <th style="width:10%" class="text-center">Hab</th>
-                        <th style="width:25%">Responsable</th>
-                        <th style="width:45%">Observaciones especiales</th>
-                        <th style="width:20%" class="text-center">Realizado</th>
+                        <th style="width:20%" class="text-center">Habitación</th>
+                        <th style="width:80%" class="text-center">Firma / Realizado</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-for="h in grupos.salida" :key="h.id">
-                        <td class="text-center fw-bold fs-5 align-middle">{{ h.habitacion }}</td>
-                        <td class="align-middle">{{ h.responsable || '____________________' }}</td>
-                        <td class="align-middle text-muted">{{ h.observacion || '' }}</td>
-                        <td></td>
+                        <td class="text-center fw-bold fs-3 align-middle py-4">{{ h.habitacion }}</td>
+                        <td class="py-4"></td>
                     </tr>
                 </tbody>
             </table>
@@ -225,18 +214,14 @@ include $base . 'includes/sidebar.php';
             <table class="table table-bordered border-dark mb-4" style="font-size: 14px; width: 100%;">
                 <thead>
                     <tr class="table-light border-dark">
-                        <th style="width:10%" class="text-center">Hab</th>
-                        <th style="width:25%">Responsable</th>
-                        <th style="width:45%">Sugerencias del Huésped</th>
-                        <th style="width:20%" class="text-center">Realizado</th>
+                        <th style="width:20%" class="text-center">Habitación</th>
+                        <th style="width:80%" class="text-center">Firma / Realizado</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-for="h in grupos.estadia" :key="h.id">
-                        <td class="text-center fw-bold fs-5 align-middle">{{ h.habitacion }}</td>
-                        <td class="align-middle">{{ h.responsable || '____________________' }}</td>
-                        <td class="align-middle text-muted">{{ h.observacion || '' }}</td>
-                        <td></td>
+                        <td class="text-center fw-bold fs-3 align-middle py-4">{{ h.habitacion }}</td>
+                        <td class="py-4"></td>
                     </tr>
                 </tbody>
             </table>
@@ -248,18 +233,14 @@ include $base . 'includes/sidebar.php';
             <table class="table table-bordered border-dark mb-4" style="font-size: 14px; width: 100%;">
                 <thead>
                     <tr class="table-light border-dark">
-                        <th style="width:10%" class="text-center">Hab</th>
-                        <th style="width:25%">Responsable</th>
-                        <th style="width:45%">Verificación</th>
-                        <th style="width:20%" class="text-center">Realizado</th>
+                        <th style="width:20%" class="text-center">Habitación</th>
+                        <th style="width:80%" class="text-center">Firma / Realizado</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-for="h in grupos.reserva" :key="h.id">
-                        <td class="text-center fw-bold fs-5 align-middle">{{ h.habitacion }}</td>
-                        <td class="align-middle">{{ h.responsable || '____________________' }}</td>
-                        <td class="align-middle text-muted">{{ h.observacion || '' }}</td>
-                        <td></td>
+                        <td class="text-center fw-bold fs-3 align-middle py-4">{{ h.habitacion }}</td>
+                        <td class="py-4"></td>
                     </tr>
                 </tbody>
             </table>

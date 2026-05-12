@@ -189,11 +189,7 @@ include $base . 'includes/sidebar.php';
                     :class="{'bg-light opacity-75': h.estado === 'lista'}"
                     style="border-radius: 1rem; border-top: 5px solid transparent !important;"
                     :style="'border-top-color: ' + getColorTop(h) + ' !important;'">
-                    <!-- Botón de opciones en la esquina -->
-                    <button class="btn btn-sm btn-outline-secondary position-absolute bg-white"
-                        style="top: 15px; right: 15px; border-radius: 8px;" @click="abrirEdicion(h)">
-                        <i class="bi bi-pencil-square"></i>
-                    </button>
+
 
                     <div class="card-body d-flex flex-column">
                         <!-- Cabecera de Tarjeta -->
@@ -231,32 +227,26 @@ include $base . 'includes/sidebar.php';
                                 <i class="bi bi-tools"></i> FUERA DE SERVICIO
                             </div>
 
-                            <div class="text-muted small fw-semibold">
-                                <i class="bi bi-person-badge"></i>
-                                <span :class="!h.usuario_id ? 'text-danger fw-bold' : ''">
-                                    {{ h.responsable_nombre ? h.responsable_nombre : '⚠️ Sin asignar' }}
-                                </span>
-                            </div>
-                            <div class="mt-2 text-dark small fst-italic p-2 bg-light rounded border"
-                                v-if="h.observacion">
-                                <i class="bi bi-chat-left-dots text-primary me-1"></i> "{{ h.observacion }}"
-                            </div>
+
                         </div>
 
                         <!-- Botón 1-Clic -->
+                        <!-- Botón Toggle -->
                         <div class="mt-auto border-top pt-3 d-flex gap-2">
                             <button v-if="h.estado !== 'lista' && h.estado !== 'mantenimiento'"
                                 class="btn btn-success flex-grow-1 fw-bold fs-5 px-3 py-2 shadow rounded-3"
-                                style="line-height: 1.2;" @click="marcarListaRapido(h)"
-                                :disabled="loading || !h.usuario_id">
+                                style="line-height: 1.2;" @click="toggleListo(h)"
+                                :disabled="loading">
                                 <i class="bi bi-check2-circle d-block fs-3 mb-1"></i> MARCAR LISTA
                             </button>
-                            <div v-else-if="h.estado === 'lista'"
-                                class="w-100 text-center py-2 text-success fw-bold bg-success bg-opacity-10 rounded-3 border border-success border-opacity-25">
-                                <i class="bi bi-check-all fs-4 d-block mb-1"></i> HABITACIÓN LISTA<br>
+                            <button v-else-if="h.estado === 'lista'"
+                                class="btn btn-outline-success flex-grow-1 fw-bold fs-5 px-3 py-2 rounded-3"
+                                style="line-height: 1.2;" @click="toggleListo(h)"
+                                :disabled="loading">
+                                <i class="bi bi-check-all d-block fs-3 mb-1"></i> HABITACIÓN LISTA<br>
                                 <small v-if="h.hora_fin && !h.hora_fin.startsWith('0000')" class="text-muted">{{
                                     formatFechaHora(h.hora_fin, h.fecha) }}</small>
-                            </div>
+                            </button>
                             <div v-else-if="h.estado === 'mantenimiento'"
                                 class="w-100 text-center py-2 text-danger fw-bold bg-danger bg-opacity-10 rounded-3 border border-danger border-opacity-25">
                                 <i class="bi bi-exclamation-octagon fs-4 d-block mb-1"></i> BLOQUEADA
@@ -266,57 +256,7 @@ include $base . 'includes/sidebar.php';
                 </div>
             </div>
         </div>
-        <!-- Modal Édition Limpieza -->
-        <div class="modal fade" id="modalEdicionLimpieza" tabindex="-1">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header border-0 pb-0">
-                        <h5 class="modal-title fw-bold">
-                            <i class="bi bi-pencil-square text-primary me-2"></i>Editar Limpieza — HAB {{
-                            tareaEdit.habitacion }}
-                        </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label class="form-label fw-bold text-muted small">Estado de Limpieza</label>
-                            <select class="form-select" v-model="tareaEdit.estado">
-                                <option value="pendiente">Pendiente</option>
-                                <option value="en_proceso">En Proceso</option>
-                                <option value="lista">Lista</option>
-                                <option value="mantenimiento">Mantenimiento / Bloqueada</option>
-                            </select>
-                        </div>
 
-                        <div class="mb-3">
-                            <label class="form-label fw-bold text-muted small">Personal Responsable</label>
-                            <select class="form-select" v-model="tareaEdit.usuario_id">
-                                <option value="">-- Sin Asignar --</option>
-                                <option v-for="p in personalLimpieza" :value="p.id">{{ p.nombre }}</option>
-                            </select>
-                        </div>
-
-                        <div class="mb-3" v-if="tareaEdit.responsable === '__otro__'">
-                            <label class="form-label fw-bold text-muted small">Nombre del Responsable</label>
-                            <input type="text" class="form-control" v-model="tareaEdit.responsable_manual"
-                                placeholder="Ej: Maria Lopez">
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label fw-bold text-muted small">Observación / Reporte (Opcional)</label>
-                            <textarea class="form-control" rows="3" v-model="tareaEdit.observacion"
-                                placeholder="Detalles o cosas olvidadas..."></textarea>
-                        </div>
-                    </div>
-                    <div class="modal-footer border-0 pt-0">
-                        <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="button" class="btn btn-primary shadow-sm" @click="guardarEdicion()">
-                            <i class="bi bi-check2-circle me-1"></i> Guardar Cambios
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 </div>
 

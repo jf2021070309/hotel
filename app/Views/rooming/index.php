@@ -106,7 +106,7 @@ include $_projectRoot . '/includes/head.php';
                   <div class="spinner-border text-primary"></div>
                 </td>
               </tr>
-              <tr v-else v-for="s in staysFiltrados" :key="s.id" :class="{'row-unpaid': s.estado_pago !== 'pagado'}">
+              <tr v-else v-for="s in staysFiltrados" :key="s.id" :class="{'row-unpaid': s.estado_pago !== 'pagado' && s.estado !== 'cancelado'}">
                 <td class="ps-4">
                   <span class="badge bg-light text-dark border fw-bold">#{{ s.id }}</span>
                 </td>
@@ -146,7 +146,8 @@ include $_projectRoot . '/includes/head.php';
                   </div>
                 </td>
                 <td class="text-center">
-                  <span class="badge" :class="getPagoClass(s.estado_pago)" style="font-size: 9px;">{{
+                  <span v-if="s.estado === 'cancelado'" class="badge bg-secondary" style="font-size: 9px;">ANULADO</span>
+                  <span v-else class="badge" :class="getPagoClass(s.estado_pago)" style="font-size: 9px;">{{
                     s.estado_pago.toUpperCase() }}</span>
                 </td>
                 <td class="text-center">
@@ -292,6 +293,8 @@ include $_projectRoot . '/includes/head.php';
                   <th class="px-3 py-2 text-center" style="min-width:200px;">NOMBRE Y APELLIDO</th>
                   <th class="px-3 py-2 text-center" style="min-width:130px;">DOCUMENTO<br>DE IDENTIDAD</th>
                   <th class="px-3 py-2 text-center" style="min-width:110px;">NÚMERO</th>
+                  <th class="px-3 py-2 text-center" style="min-width:110px;">CELULAR</th>
+                  <th class="px-3 py-2 text-center" style="min-width:150px;">EMAIL</th>
                   <th class="px-3 py-2 text-center" style="min-width:100px;">NACIONALIDAD</th>
                   <th class="px-3 py-2 text-center" style="min-width:90px;">CIUDAD</th>
                   <th class="px-3 py-2 text-center" style="min-width:100px;">CHECK IN<br>FECHA</th>
@@ -366,6 +369,10 @@ include $_projectRoot . '/includes/head.php';
                       <span class="badge bg-dark" style="font-size:9px;">{{ fila.documento_tipo }}</span>
                     </td>  <!-- NÚMERO DOC -->
                     <td class="px-2 text-center fw-bold">{{ fila.documento_num }}</td>
+                    <!-- CELULAR -->
+                    <td class="px-2 text-center">{{ fila.celular || '—' }}</td>
+                    <!-- EMAIL -->
+                    <td class="px-2 text-center">{{ fila.email || '—' }}</td>
                     <!-- NACIONALIDAD -->
                     <td class="px-2 text-center">{{ fila.nacionalidad || '—' }}</td>
                     <!-- CIUDAD -->
@@ -889,8 +896,11 @@ include $_projectRoot . '/includes/head.php';
                       </div>
                       <div>
                         <div class="fw-bold text-dark" style="font-size: 13px;">{{ p.nombre_completo }}</div>
-                        <div class="text-muted small">{{ p.documento_tipo }}: {{ p.documento_num }} | {{ p.nacionalidad
-                          }}</div>
+                        <div class="text-muted small">{{ p.documento_tipo }}: {{ p.documento_num }} | {{ p.nacionalidad }}</div>
+                        <div v-if="p.celular || p.email" class="text-primary mt-1" style="font-size: 11px;">
+                          <span v-if="p.celular"><i class="bi bi-telephone-fill me-1"></i>{{ p.celular }}</span>
+                          <span v-if="p.email" class="ms-2"><i class="bi bi-envelope-fill me-1"></i>{{ p.email }}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -948,8 +958,11 @@ include $_projectRoot . '/includes/head.php';
                       <tr>
                         <td class="py-2 fw-bold text-dark" style="font-size: 15px;">SALDO PENDIENTE</td>
                         <td class="text-end fw-bold py-2 h4 mb-0"
-                          :class="(selectedStay.total_pago - selectedStay.total_cobrado) > 0.05 ? 'text-danger' : 'text-success'">
-                          <span v-if="(selectedStay.total_pago - selectedStay.total_cobrado) <= 0.05">
+                          :class="selectedStay.estado === 'cancelado' ? 'text-secondary' : ((selectedStay.total_pago - selectedStay.total_cobrado) > 0.05 ? 'text-danger' : 'text-success')">
+                          <span v-if="selectedStay.estado === 'cancelado'">
+                            ANULADO
+                          </span>
+                          <span v-else-if="(selectedStay.total_pago - selectedStay.total_cobrado) <= 0.05">
                             <i class="bi bi-check-circle-fill me-1"></i> PAGADO
                           </span>
                           <span v-else>

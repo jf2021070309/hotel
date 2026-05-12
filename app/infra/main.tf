@@ -11,10 +11,6 @@ terraform {
       source  = "terraform-community-providers/railway"
       version = ">= 0.6.0"
     }
-    null = {
-      source  = "hashicorp/null"
-      version = ">= 3.0.0"
-    }
   }
 }
 
@@ -100,23 +96,14 @@ resource "railway_tcp_proxy" "mysql_proxy" {
   application_port = 3306
 }
 
-# db_seed adaptado para Linux (GitHub Actions)
-resource "null_resource" "db_seed" {
-  depends_on = [
-    railway_tcp_proxy.mysql_proxy,
-    railway_variable.mysql_root_password,
-    railway_variable.mysql_database
-  ]
-
-  provisioner "local-exec" {
-    command = "sleep 30 && mysql -h ${railway_tcp_proxy.mysql_proxy.domain} -P ${railway_tcp_proxy.mysql_proxy.proxy_port} -u root -p${var.mysql_root_password} hotel_db < ${path.module}/hotel.sql"
-  }
-}
-
 output "app_url" {
   value = "https://${railway_service_domain.app_domain.domain}"
 }
 
-output "mysql_proxy" {
-  value = "${railway_tcp_proxy.mysql_proxy.domain}:${railway_tcp_proxy.mysql_proxy.proxy_port}"
+output "mysql_proxy_domain" {
+  value = railway_tcp_proxy.mysql_proxy.domain
+}
+
+output "mysql_proxy_port" {
+  value = railway_tcp_proxy.mysql_proxy.proxy_port
 }

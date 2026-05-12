@@ -36,9 +36,23 @@ jobs:
         env:
           TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
 
+      - name: Clean inconsistent state
+        if: ${{ github.event.inputs.action == 'apply' }}
+        working-directory: app/infra
+        run: |
+          terraform state rm railway_service_domain.app_domain || true
+          terraform state rm railway_variable.app_env || true
+        env:
+          TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
+          TF_VAR_railway_token: ${{ secrets.RAILWAY_TOKEN }}
+          TF_VAR_mysql_root_password: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+          TF_VAR_gh_repo: ${{ secrets.GH_REPO }}
+          TF_VAR_cloudflare_token: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TF_VAR_cloudflare_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+
       - name: Terraform Plan
         working-directory: app/infra
-        run: terraform plan -parallelism=1 ${{ github.event.inputs.action == 'destroy' && '-destroy' || '' }}
+        run: terraform plan ${{ github.event.inputs.action == 'destroy' && '-destroy' || '' }}
         env:
           TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
           TF_VAR_railway_token: ${{ secrets.RAILWAY_TOKEN }}
@@ -49,7 +63,7 @@ jobs:
 
       - name: Terraform Apply / Destroy
         working-directory: app/infra
-        run: terraform ${{ github.event.inputs.action }} -auto-approve -parallelism=1
+        run: terraform ${{ github.event.inputs.action }} -auto-approve
         env:
           TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
           TF_VAR_railway_token: ${{ secrets.RAILWAY_TOKEN }}
@@ -60,53 +74,15 @@ jobs:
 
       - name: Esperar MySQL
         if: ${{ github.event.inputs.action == 'apply' }}
-        run: sleep 120
+        run: sleep 90
 
       - name: Seed Database
         if: ${{ github.event.inputs.action == 'apply' }}
         working-directory: app/infra
         run: |
-          PROXY_HOST=$(terraform output -raw mysql_proxy_domain | sed 's/\.$//')
+          PROXY_HOST=$(terraform output -raw mysql_proxy_domain)
           PROXY_PORT=$(terraform output -raw mysql_proxy_port)
-
-          echo "=== Verificando conectividad TCP a $PROXY_HOST:$PROXY_PORT ==="
-          for i in {1..20}; do
-            if nc -z -w 5 "$PROXY_HOST" "$PROXY_PORT" 2>/dev/null; then
-              echo "Puerto TCP abierto en intento $i"
-              break
-            fi
-            echo "Intento $i/20: Puerto cerrado, esperando 15s..."
-            sleep 15
-          done
-
-          echo "=== Verificando handshake MySQL ==="
-          for i in {1..20}; do
-            if mysqladmin ping \
-              -h "$PROXY_HOST" \
-              -P "$PROXY_PORT" \
-              -u root \
-              -p${{ secrets.MYSQL_ROOT_PASSWORD }} \
-              --protocol=TCP \
-              --connect-timeout=10 \
-              --silent 2>/dev/null; then
-              echo "MySQL responde en intento $i"
-              break
-            fi
-            echo "Intento $i/20: MySQL aún no responde, esperando 15s..."
-            sleep 15
-          done
-
-          echo "=== Ejecutando seed ==="
-          mysql \
-            -h "$PROXY_HOST" \
-            -P "$PROXY_PORT" \
-            -u root \
-            -p${{ secrets.MYSQL_ROOT_PASSWORD }} \
-            --protocol=TCP \
-            --connect-timeout=30 \
-            hotel_db < hotel.sql
-
-          echo "=== Seed completado ==="
+          mysql -h "$PROXY_HOST" -P "$PROXY_PORT" -u root -p${{ secrets.MYSQL_ROOT_PASSWORD }} hotel_db < hotel.sql
         env:
           TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
           TF_VAR_railway_token: ${{ secrets.RAILWAY_TOKEN }}
@@ -114,4 +90,3 @@ jobs:
           TF_VAR_gh_repo: ${{ secrets.GH_REPO }}
           TF_VAR_cloudflare_token: ${{ secrets.CLOUDFLARE_TOKEN }}
           TF_VAR_cloudflare_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
-      

@@ -69,18 +69,44 @@ jobs:
           PROXY_HOST=$(terraform output -raw mysql_proxy_domain | sed 's/\.$//')
           PROXY_PORT=$(terraform output -raw mysql_proxy_port)
 
-          echo "Esperando handshake de MySQL en $PROXY_HOST:$PROXY_PORT"
-
-          for i in {1..12}; do
-            if mysqladmin ping -h "$PROXY_HOST" -P "$PROXY_PORT" -u root -p${{ secrets.MYSQL_ROOT_PASSWORD }} --protocol=TCP --silent; then
-              echo "MySQL listo"
+          echo "=== Verificando conectividad TCP a $PROXY_HOST:$PROXY_PORT ==="
+          for i in {1..20}; do
+            if nc -z -w 5 "$PROXY_HOST" "$PROXY_PORT" 2>/dev/null; then
+              echo "Puerto TCP abierto en intento $i"
               break
             fi
-            echo "Intento $i/12: MySQL aún no responde, esperando 10s..."
-            sleep 10
+            echo "Intento $i/20: Puerto cerrado, esperando 15s..."
+            sleep 15
           done
 
-          mysql -h "$PROXY_HOST" -P "$PROXY_PORT" -u root -p${{ secrets.MYSQL_ROOT_PASSWORD }} --protocol=TCP hotel_db < hotel.sql
+          echo "=== Verificando handshake MySQL ==="
+          for i in {1..20}; do
+            if mysqladmin ping \
+              -h "$PROXY_HOST" \
+              -P "$PROXY_PORT" \
+              -u root \
+              -p${{ secrets.MYSQL_ROOT_PASSWORD }} \
+              --protocol=TCP \
+              --connect-timeout=10 \
+              --silent 2>/dev/null; then
+              echo "MySQL responde en intento $i"
+              break
+            fi
+            echo "Intento $i/20: MySQL aún no responde, esperando 15s..."
+            sleep 15
+          done
+
+          echo "=== Ejecutando seed ==="
+          mysql \
+            -h "$PROXY_HOST" \
+            -P "$PROXY_PORT" \
+            -u root \
+            -p${{ secrets.MYSQL_ROOT_PASSWORD }} \
+            --protocol=TCP \
+            --connect-timeout=30 \
+            hotel_db < hotel.sql
+
+          echo "=== Seed completado ==="
         env:
           TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
           TF_VAR_railway_token: ${{ secrets.RAILWAY_TOKEN }}
@@ -88,3 +114,4 @@ jobs:
           TF_VAR_gh_repo: ${{ secrets.GH_REPO }}
           TF_VAR_cloudflare_token: ${{ secrets.CLOUDFLARE_TOKEN }}
           TF_VAR_cloudflare_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+      

@@ -111,11 +111,12 @@ resource "railway_tcp_proxy" "mysql_proxy" {
 }
 
 resource "cloudflare_record" "hotel" {
-  zone_id = var.cloudflare_zone_id
-  name    = "hotel"
-  value   = railway_service_domain.app_domain.domain
-  type    = "CNAME"
-  proxied = true
+  zone_id         = var.cloudflare_zone_id
+  name            = "hotel"
+  content         = railway_service_domain.app_domain.domain
+  type            = "CNAME"
+  proxied         = true
+  allow_overwrite = true
 
   depends_on = [railway_custom_domain.hotel]
 }

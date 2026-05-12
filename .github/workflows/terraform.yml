@@ -38,7 +38,7 @@ jobs:
 
       - name: Terraform Plan
         working-directory: app/infra
-        run: terraform plan ${{ github.event.inputs.action == 'destroy' && '-destroy' || '' }}
+        run: terraform plan -parallelism=1 ${{ github.event.inputs.action == 'destroy' && '-destroy' || '' }}
         env:
           TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
           TF_VAR_railway_token: ${{ secrets.RAILWAY_TOKEN }}

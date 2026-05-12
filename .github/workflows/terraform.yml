@@ -1,9 +1,16 @@
 name: Terraform Deploy
 
 on:
-  push:
-    branches: [main]
-    paths: ['app/infra/**']
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Acción a ejecutar'
+        required: true
+        default: 'apply'
+        type: choice
+        options:
+          - apply
+          - destroy
 
 jobs:
   terraform:
@@ -27,16 +34,16 @@ jobs:
 
       - name: Terraform Plan
         working-directory: app/infra
-        run: terraform plan
+        run: terraform plan ${{ github.event.inputs.action == 'destroy' && '-destroy' || '' }}
         env:
           TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
           TF_VAR_railway_token: ${{ secrets.RAILWAY_TOKEN }}
           TF_VAR_mysql_root_password: ${{ secrets.MYSQL_ROOT_PASSWORD }}
           TF_VAR_gh_repo: ${{ secrets.GH_REPO }}
 
-      - name: Terraform Apply
+      - name: Terraform Apply / Destroy
         working-directory: app/infra
-        run: terraform apply -auto-approve
+        run: terraform ${{ github.event.inputs.action }} -auto-approve
         env:
           TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
           TF_VAR_railway_token: ${{ secrets.RAILWAY_TOKEN }}

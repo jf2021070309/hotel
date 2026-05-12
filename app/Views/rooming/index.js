@@ -396,7 +396,7 @@ createApp({
             form.pax = data.pax.map(p => ({
                 nombre_completo: p.nombre_completo,
                 documento_tipo:  p.documento_tipo || 'DNI',
-                documento_num:   p.documento_num,
+                documento_num:   (p.documento_num === '---') ? '' : (p.documento_num || ''),
                 nacionalidad:    p.nacionalidad || 'Peruana',
                 ciudad:          p.ciudad || '',
                 celular:         p.celular || '',

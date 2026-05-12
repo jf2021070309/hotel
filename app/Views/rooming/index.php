@@ -163,10 +163,10 @@ include $_projectRoot . '/includes/head.php';
                       title="Activar Check-in" @click="activarReserva(s)">
                       <i class="bi bi-person-check-fill"></i>
                     </button>
-                    <button class="btn btn-white btn-sm border" title="Detalle" @click="verDetalle(s)">
+                    <button v-if="s.estado !== 'reservado'" class="btn btn-white btn-sm border" title="Detalle" @click="verDetalle(s)">
                       <i class="bi bi-eye text-primary"></i>
                     </button>
-                    <button v-if="s.estado !== 'cancelado'" class="btn btn-white btn-sm border" title="Editar"
+                    <button v-if="s.estado !== 'cancelado' && s.estado !== 'reservado'" class="btn btn-white btn-sm border" title="Editar"
                       @click="abrirEdicion(s)">
                       <i class="bi bi-pencil-square text-secondary"></i>
                     </button>

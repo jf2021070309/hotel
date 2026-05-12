@@ -236,7 +236,7 @@ class ReservasModel {
             $stay_id = (int)$this->pdo->lastInsertId();
             
             // Insert Pax placeholder
-            $stmtPax = $this->pdo->prepare("INSERT INTO rooming_pax (stay_id, nombre_completo, documento_num, es_titular) VALUES (?, ?, '---', 1)");
+            $stmtPax = $this->pdo->prepare("INSERT INTO rooming_pax (stay_id, nombre_completo, documento_num, es_titular) VALUES (?, ?, '', 1)");
             $stmtPax->execute([$stay_id, $data['titular']]);
             
             if ($mustCommit) {
@@ -335,7 +335,7 @@ class ReservasModel {
             if ($stmtPax->rowCount() === 0) {
                 $stmtInsertPax = $this->pdo->prepare("
                     INSERT INTO rooming_pax (stay_id, nombre_completo, documento_num, es_titular)
-                    VALUES (?, ?, '---', 1)
+                    VALUES (?, ?, '', 1)
                 ");
                 $stmtInsertPax->execute([$id, $data['titular']]);
             }

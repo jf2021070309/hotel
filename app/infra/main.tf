@@ -39,7 +39,6 @@ resource "railway_service" "mysql" {
 resource "railway_variable" "mysql_root_password" {
   name           = "MYSQL_ROOT_PASSWORD"
   value          = var.mysql_root_password
-  project_id     = railway_project.hotel.id
   environment_id = railway_project.hotel.default_environment.id
   service_id     = railway_service.mysql.id
 }
@@ -47,7 +46,6 @@ resource "railway_variable" "mysql_root_password" {
 resource "railway_variable" "mysql_database" {
   name           = "MYSQL_DATABASE"
   value          = "hotel_db"
-  project_id     = railway_project.hotel.id
   environment_id = railway_project.hotel.default_environment.id
   service_id     = railway_service.mysql.id
 }
@@ -78,7 +76,6 @@ resource "railway_custom_domain" "hotel" {
 resource "railway_variable" "mysql_host" {
   name           = "MYSQL_HOST"
   value          = "MySQL.railway.internal"
-  project_id     = railway_project.hotel.id
   environment_id = railway_project.hotel.default_environment.id
   service_id     = railway_service.app.id
 }
@@ -86,7 +83,6 @@ resource "railway_variable" "mysql_host" {
 resource "railway_variable" "mysql_password" {
   name           = "MYSQL_PASSWORD"
   value          = var.mysql_root_password
-  project_id     = railway_project.hotel.id
   environment_id = railway_project.hotel.default_environment.id
   service_id     = railway_service.app.id
 }
@@ -94,7 +90,6 @@ resource "railway_variable" "mysql_password" {
 resource "railway_variable" "mysql_database_app" {
   name           = "MYSQL_DATABASE"
   value          = "hotel_db"
-  project_id     = railway_project.hotel.id
   environment_id = railway_project.hotel.default_environment.id
   service_id     = railway_service.app.id
 }
@@ -102,7 +97,6 @@ resource "railway_variable" "mysql_database_app" {
 resource "railway_variable" "app_env" {
   name           = "APP_ENV"
   value          = "production"
-  project_id     = railway_project.hotel.id
   environment_id = railway_project.hotel.default_environment.id
   service_id     = railway_service.app.id
 }
@@ -110,7 +104,6 @@ resource "railway_variable" "app_env" {
 resource "railway_variable" "mysql_user" {
   name           = "MYSQL_USER"
   value          = "root"
-  project_id     = railway_project.hotel.id
   environment_id = railway_project.hotel.default_environment.id
   service_id     = railway_service.app.id
 }

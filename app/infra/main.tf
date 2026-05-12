@@ -11,11 +11,19 @@ terraform {
       source  = "terraform-community-providers/railway"
       version = ">= 0.6.0"
     }
+    cloudflare = {
+      source  = "cloudflare/cloudflare"
+      version = "~> 4.0"
+    }
   }
 }
 
 provider "railway" {
   token = var.railway_token
+}
+
+provider "cloudflare" {
+  api_token = var.cloudflare_token
 }
 
 resource "railway_project" "hotel" {
@@ -53,6 +61,12 @@ resource "railway_service_domain" "app_domain" {
   environment_id = railway_project.hotel.default_environment.id
   service_id     = railway_service.app.id
   subdomain      = "hotel-app-jaime"
+}
+
+resource "railway_custom_domain" "hotel" {
+  domain         = "hotel.jaimefloresdev.site"
+  environment_id = railway_project.hotel.default_environment.id
+  service_id     = railway_service.app.id
 }
 
 resource "railway_variable" "mysql_host" {
@@ -96,7 +110,21 @@ resource "railway_tcp_proxy" "mysql_proxy" {
   application_port = 3306
 }
 
+resource "cloudflare_record" "hotel" {
+  zone_id = var.cloudflare_zone_id
+  name    = "hotel"
+  value   = railway_service_domain.app_domain.domain
+  type    = "CNAME"
+  proxied = true
+
+  depends_on = [railway_custom_domain.hotel]
+}
+
 output "app_url" {
+  value = "https://hotel.jaimefloresdev.site"
+}
+
+output "app_url_railway" {
   value = "https://${railway_service_domain.app_domain.domain}"
 }
 

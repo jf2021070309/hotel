@@ -39,3 +39,12 @@ yarn-error.log*
 # Archivos de prueba huérfanos
 test.php
 full_test_suite.php
+
+# Terraform 
+*.tfvars
+*.tfvars.json
+.terraform/
+.terraform.lock.hcl
+terraform.tfstate
+terraform.tfstate.backup
+crash.log

@@ -49,7 +49,7 @@ jobs:
 
       - name: Terraform Apply / Destroy
         working-directory: app/infra
-        run: terraform ${{ github.event.inputs.action }} -auto-approve
+        run: terraform ${{ github.event.inputs.action }} -auto-approve -parallelism=1
         env:
           TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
           TF_VAR_railway_token: ${{ secrets.RAILWAY_TOKEN }}

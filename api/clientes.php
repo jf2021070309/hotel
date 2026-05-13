@@ -32,6 +32,27 @@ switch ($action) {
         $dni = $_GET['dni'] ?? '';
         json_response(true, $controller->historial($dni));
         break;
+
+    case 'guardar':
+        $data = json_decode(file_get_contents('php://input'), true) ?? [];
+        if (empty($data)) {
+            json_response(false, null, 400, "Datos no recibidos");
+        }
+        if ($controller->store($data)) {
+            json_response(true, null, 200, "Cliente registrado correctamente");
+        } else {
+            json_response(false, null, 400, "El cliente ya se encuentra registrado o los datos son inválidos");
+        }
+        break;
+        
+    case 'eliminar':
+        $dni = $_GET['dni'] ?? '';
+        if ($controller->delete($dni)) {
+            json_response(true, null, 200, "Registro eliminado");
+        } else {
+            json_response(false, null, 400, "No se pudo eliminar el registro");
+        }
+        break;
         
     default:
         json_response(false, null, 400, "Acción no válida");

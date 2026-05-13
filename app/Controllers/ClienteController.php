@@ -22,4 +22,12 @@ class ClienteController {
     public function buscar_pax(string $q): array {
         return $this->model->buscarPax($q);
     }
+
+    public function store(array $data): bool {
+        return $this->model->save($data);
+    }
+
+    public function delete(string $dni): bool {
+        return $this->model->deleteManual($dni);
+    }
 }

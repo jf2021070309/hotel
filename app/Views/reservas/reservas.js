@@ -8,6 +8,7 @@ createApp({
   setup() {
     const BASE = '../../../api/reservas.php?action=';
     const ROOMING_API = '../../../api/rooming.php?action=';
+    console.log("RESERVAS_CARGADO_V2_SIN_VISITAS");
 
     // ─── State ─────────────────────────────────────────────────────────
     const loading       = ref(true);
@@ -226,7 +227,7 @@ createApp({
       
       if (activeQuickGuest.value) {
         formQuick.titular = activeQuickGuest.value.nombre;
-        formQuick.observaciones = `Cliente Frecuente (${activeQuickGuest.value.visitas} visitas). DNI: ${activeQuickGuest.value.dni}`;
+        formQuick.observaciones = `DNI: ${activeQuickGuest.value.dni}`;
         localStorage.removeItem('quick_reserva_pax'); // Limpiar ahora que se usó
         activeQuickGuest.value = null; 
       } else {

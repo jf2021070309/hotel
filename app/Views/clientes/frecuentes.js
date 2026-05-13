@@ -12,19 +12,63 @@ createApp({
         const loadingHistorial    = ref(false);
         const clienteSeleccionado = ref(null);
 
+        const nuevoCliente = ref({
+            nombre: '', dni: '', tipo_doc: 'DNI', nacionalidad: 'Peruana', celular: '',
+            es_empresa: false, ruc: '', razon_social: ''
+        });
+        const guardando = ref(false);
+
         const clientesFiltrados = computed(() => {
-            // Primero filtramos por frecuencia (mínimo 3 estadías)
-            let filtrados = clientes.value.filter(c => parseInt(c.total_estadias) >= 3);
+            // Mostrar todos los clientes de la base de datos sin restricción de visitas
+            let filtrados = clientes.value;
             
             // Luego filtramos por búsqueda
             const q = buscar.value.toLowerCase().trim();
             if (!q) return filtrados;
             
             return filtrados.filter(c =>
-                c.nombre.toLowerCase().includes(q) ||
-                (c.dni || '').toLowerCase().includes(q)
+                (c.nombre || '').toLowerCase().includes(q) ||
+                (c.dni || '').toLowerCase().includes(q) ||
+                (c.ruc || '').toLowerCase().includes(q) ||
+                (c.razon_social || '').toLowerCase().includes(q)
             );
         });
+
+        const abrirModalNuevo = () => {
+            nuevoCliente.value = {
+                nombre: '', dni: '', tipo_doc: 'DNI', nacionalidad: 'Peruana', celular: '',
+                es_empresa: false, ruc: '', razon_social: ''
+            };
+            const modalEl = document.getElementById('modalNuevoCliente');
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.show();
+        };
+
+        const guardarNuevoCliente = async () => {
+            if (!nuevoCliente.value.nombre || !nuevoCliente.value.dni) {
+                Swal.fire('Error', 'Nombre y Documento son obligatorios', 'error');
+                return;
+            }
+            guardando.value = true;
+            try {
+                // Enviamos el objeto directo como JSON (más limpio y compatible con nuestra API)
+                const res = await axios.post('../../../api/clientes.php?action=guardar', nuevoCliente.value);
+                
+                if (res.data.ok) {
+                    Swal.fire({ icon: 'success', title: '¡Cliente registrado!', showConfirmButton: false, timer: 1500 });
+                    const modalEl = document.getElementById('modalNuevoCliente');
+                    bootstrap.Modal.getOrCreateInstance(modalEl).hide();
+                    cargar(); // Recargar la lista
+                } else {
+                    Swal.fire({ icon: 'error', title: 'Error', text: res.data.msg || 'No se pudo guardar' });
+                }
+            } catch (e) {
+                console.error(e);
+                Swal.fire({ icon: 'error', title: 'Error de conexión' });
+            } finally {
+                guardando.value = false;
+            }
+        };
 
         const totalPago = computed(() =>
             historial.value.reduce((s, r) => s + parseFloat(r.total_pago || 0), 0).toFixed(2)
@@ -73,7 +117,9 @@ createApp({
                 ciudad: c.ciudad,
                 tipo_doc: c.tipo_doc,
                 frecuente: true,
-                visitas: c.total_estadias
+                visitas: c.total_estadias,
+                ruc: c.ruc,
+                empresa: c.razon_social
             };
             localStorage.setItem('quick_checkin_pax', JSON.stringify(data));
             window.location.href = '../rooming/index.php';
@@ -100,13 +146,41 @@ createApp({
             return `${day}/${m}/${y}`;
         };
 
+        const eliminarCliente = async (c) => {
+            const confirm = await Swal.fire({
+                title: '¿Eliminar cliente?',
+                text: `Se borrará el registro de ${c.nombre}. Esta acción no se puede deshacer.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            });
+
+            if (confirm.isConfirmed) {
+                try {
+                    const res = await axios.get(`../../../api/clientes.php?action=eliminar&dni=${encodeURIComponent(c.dni)}`);
+                    if (res.data.ok) {
+                        Swal.fire({ icon: 'success', title: 'Registro eliminado', showConfirmButton: false, timer: 1500 });
+                        cargar();
+                    } else {
+                        Swal.fire('Error', res.data.msg || 'No se pudo eliminar', 'error');
+                    }
+                } catch (e) {
+                    console.error(e);
+                    Swal.fire('Error', 'Error de conexión', 'error');
+                }
+            }
+        };
+
         onMounted(cargar);
 
         return {
             clientes, loading, buscar,
             historial, loadingHistorial, clienteSeleccionado,
             clientesFiltrados, totalPago, totalCobrado,
-            verHistorial, fmtFecha, crearEstadiaRapida, crearReservaRapida
+            verHistorial, fmtFecha, crearEstadiaRapida, crearReservaRapida,
+            abrirModalNuevo, nuevoCliente, guardando, guardarNuevoCliente, eliminarCliente
         };
     }
 }).mount('#app-clientes-frecuentes');

@@ -547,18 +547,19 @@ createApp({
       pax.nacionalidad    = s.nacionalidad || pax.nacionalidad;
       pax.ciudad          = s.ciudad       || pax.ciudad;
       
-      // Nuevos campos auto-completados
+      // Nuevos campos auto-completados (Prioridad al RUC del perfil de cliente frecuente)
       pax.celular         = s.celular || '';
       pax.email           = s.email || '';
       pax.empresa         = s.empresa || '';
-      pax.es_corporativo  = !!(s.es_corporativo == 1 || s.ruc_factura);
-      pax.ruc_empresa     = s.ruc_factura || '';
+      // Si tiene RUC o Empresa, activamos el modo corporativo automáticamente
+      pax.es_corporativo  = !!(s.ruc || s.es_corporativo == 1 || s.ruc_factura);
+      pax.ruc_empresa     = s.ruc || s.ruc_factura || '';
 
-      // Si es el titular, auto-llenar también la sección de Facturación
+      // Si es el titular, auto-llenar también la sección de Facturación (Prioridad al RUC del perfil)
       if (pax.es_titular) {
-        form.stay.ruc_factura  = s.ruc_factura || '';
-        form.stay.razon_social = s.razon_social || s.empresa || '';
-        if (s.ruc_factura) {
+        form.stay.ruc_factura  = s.ruc || s.ruc_factura || '';
+        form.stay.razon_social = s.empresa || s.razon_social || '';
+        if (form.stay.ruc_factura) {
           form.stay.tipo_comprobante = 'FACTURA';
         }
       }
@@ -1096,9 +1097,21 @@ createApp({
                 form.pax[0].nacionalidad = data.nacionalidad;
                 form.pax[0].ciudad = data.ciudad;
                 form.pax[0].es_titular = 1;
+
+                // Cargar datos corporativos si existen
+                if (data.ruc || data.empresa) {
+                    form.pax[0].es_corporativo = true;
+                    form.pax[0].ruc_empresa = data.ruc || '';
+                    form.pax[0].empresa = data.empresa || '';
+                    
+                    // También pre-llenar facturación
+                    form.stay.ruc_factura = data.ruc || '';
+                    form.stay.razon_social = data.empresa || '';
+                    form.stay.tipo_comprobante = 'FACTURA';
+                }
             }
             
-            showToast(`¡Cliente Frecuente detectado! (${data.visitas} visitas)`, 'success');
+            showToast(`¡Cliente Frecuente detectado!`, 'success');
         } catch (e) {
             console.error('Error in quick checkin:', e);
         }

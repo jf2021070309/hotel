@@ -5,7 +5,7 @@
  */
 $base = '../../../';
 require_once $base . 'auth/middleware.php';
-$page_title = 'Clientes Frecuentes — Hotel Manager';
+$page_title = 'Base de Datos de Clientes — Hotel Manager';
 include $base . 'includes/head.php';
 include $base . 'includes/sidebar.php';
 ?>
@@ -15,9 +15,9 @@ include $base . 'includes/sidebar.php';
     <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list fs-4"></i></button>
     <div>
       <h4 class="fw-bold mb-0" style="color: #111; letter-spacing: -0.5px;">
-        <i class="bi bi-person-heart me-2" style="color: #ef4444;"></i>Clientes Frecuentes
+        <i class="bi bi-people-fill me-2" style="color: #ef4444;"></i>Base de Datos de Clientes
       </h4>
-      <p class="mb-0 small text-muted fw-semibold">Huéspedes con 3 o más visitas al hotel</p>
+      <p class="mb-0 small text-muted fw-semibold">Gestión integral de huéspedes y registros corporativos</p>
     </div>
     <div class="ms-auto d-flex align-items-center gap-1">
     </div>
@@ -25,20 +25,31 @@ include $base . 'includes/sidebar.php';
 
   <div class="page-body">
 
-    <!-- BUSCADOR SOBRIO -->
-    <div class="mb-4">
-      <div class="position-relative shadow-sm rounded-3" style="background: #fff; border: 1px solid #e2e8f0; transition: all 0.3s ease; overflow: hidden;" id="search-wrapper">
-        <i class="bi bi-search position-absolute" style="top:50%; left:15px; transform:translateY(-50%); color:#ef4444; font-size: 16px;"></i>
-        <input v-model="buscar" 
-               class="form-control border-0 ps-5 py-3 shadow-none" 
-               placeholder="Buscar cliente por nombre o DNI/DOC..." 
-               style="background: transparent; font-size: 14px; color: #444;"
-               @focus="document.getElementById('search-wrapper').style.borderColor = '#ef4444'"
-               @blur="document.getElementById('search-wrapper').style.borderColor = '#e2e8f0'">
-        <button v-if="buscar" @click="buscar=''" 
-                class="btn position-absolute border-0" 
-                style="top:50%; right:15px; transform:translateY(-50%); background: transparent;">
-          <i class="bi bi-x-circle-fill text-muted opacity-50"></i>
+    <!-- CABECERA DE ACCIONES -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h5 class="fw-bold mb-0 text-dark">Base de Datos de Clientes</h5>
+        <p class="text-muted small mb-0">Huéspedes frecuentes y registros corporativos</p>
+      </div>
+      <div class="d-flex gap-2">
+        <!-- Buscador Rectangular -->
+        <div class="input-group border shadow-sm bg-white" style="border-radius: 8px; overflow: hidden; width: 350px;">
+           <span class="input-group-text bg-white border-0 ps-3">
+              <i class="bi bi-search text-danger"></i>
+           </span>
+           <input type="text" 
+                  class="form-control border-0 shadow-none py-2" 
+                  placeholder="Buscar por nombre, DNI o RUC..." 
+                  v-model="buscar"
+                  style="font-size: 14px;">
+        </div>
+        <!-- Botón Nuevo -->
+        <button @click="abrirModalNuevo" 
+                data-bs-toggle="modal" 
+                data-bs-target="#modalNuevoCliente"
+                class="btn btn-danger px-4 shadow-sm fw-bold d-flex align-items-center gap-2" 
+                style="border-radius: 8px; font-size: 14px;">
+           <i class="bi bi-plus-lg"></i> Nuevo Registro
         </button>
       </div>
     </div>
@@ -47,44 +58,38 @@ include $base . 'includes/sidebar.php';
     <div class="card border-0 shadow-sm" style="border-radius:12px; overflow:hidden;">
       <div v-if="loading" class="text-center py-5">
         <div class="spinner-border text-danger"></div>
-        <p class="mt-2 text-muted">Cargando clientes frecuentes...</p>
+        <p class="mt-2 text-muted">Cargando base de datos...</p>
       </div>
       <div class="table-responsive" v-else>
         <table class="table align-middle mb-0" style="font-size: 14px;">
           <thead>
             <tr class="text-uppercase" style="background-color: #ebebeb !important;">
-              <th class="ps-4" style="width:40px; background-color: #ebebeb !important; color: #334155;">#</th>
-              <th style="background-color: #ebebeb !important; color: #334155;">NOMBRE</th>
-              <th style="background-color: #ebebeb !important; color: #334155;">DNI / DOC.</th>
-              <th style="background-color: #ebebeb !important; color: #334155;">NACIONALIDAD</th>
-              <th class="text-center" style="background-color: #ebebeb !important; color: #334155;">ESTADÍAS</th>
-              <th class="text-center" style="background-color: #ebebeb !important; color: #334155;">ÚLTIMA VISITA</th>
-              <th class="text-end pe-4" style="background-color: #ebebeb !important; color: #334155;">ACCIÓN</th>
+              <th class="px-4" style="width:20%; background-color: #ebebeb !important; color: #334155;">NOMBRE</th>
+              <th class="text-center" style="width:10%; background-color: #ebebeb !important; color: #334155;">DNI</th>
+              <th class="text-center" style="width:12%; background-color: #ebebeb !important; color: #334155;">RUC</th>
+              <th class="text-center" style="width:10%; background-color: #ebebeb !important; color: #334155;">CELULAR</th>
+              <th style="width:23%; background-color: #ebebeb !important; color: #334155;">EMPRESA</th>
+              <th class="text-center px-4" style="width:25%; background-color: #ebebeb !important; color: #334155;">ACCIÓN</th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="clientesFiltrados.length === 0">
               <td colspan="7" class="text-center py-5 text-muted">
-                <i class="bi bi-person-heart fs-1 d-block mb-2 opacity-25"></i>
-                No hay clientes frecuentes todavía.
+                <i class="bi bi-people fs-1 d-block mb-2 opacity-25"></i>
+                No hay clientes registrados todavía.
               </td>
             </tr>
             <tr v-for="(c, i) in clientesFiltrados" :key="c.dni" class="row-hover">
-              <td class="ps-4 text-muted">{{ i+1 }}</td>
-              <td>
+              <td class="px-4">
                 <div class="text-dark">{{ c.nombre }}</div>
                 <div class="text-muted" v-if="c.ciudad" style="font-size: 12px;"><i class="bi bi-geo-alt me-1"></i>{{ c.ciudad }}</div>
               </td>
-              <td>
-                <span class="text-dark">{{ c.tipo_doc }} {{ c.dni }}</span>
-              </td>
-              <td class="text-muted">{{ c.nacionalidad || '—' }}</td>
-              <td class="text-center">
-                <span class="text-dark">{{ c.total_estadias }} visitas</span>
-              </td>
-              <td class="text-center text-muted">{{ fmtFecha(c.ultima_visita) }}</td>
-              <td class="text-end pe-4">
-                <div class="d-flex justify-content-end gap-2">
+              <td class="text-center text-dark">{{ c.dni }}</td>
+              <td class="text-center text-dark">{{ c.ruc || '—' }}</td>
+              <td class="text-center text-dark">{{ c.celular || '—' }}</td>
+              <td class="text-dark">{{ c.razon_social || '—' }}</td>
+              <td class="text-center px-4">
+                <div class="d-flex justify-content-center gap-2">
                   <button @click="crearEstadiaRapida(c)" class="btn-premium" title="Check-in rápido">
                     <i class="bi bi-person-check"></i> Check-in
                   </button>
@@ -93,6 +98,9 @@ include $base . 'includes/sidebar.php';
                   </button>
                   <button @click="verHistorial(c)" class="btn-premium" title="Ver historial">
                     <i class="bi bi-clock-history"></i> Historial
+                  </button>
+                  <button @click="eliminarCliente(c)" class="btn-premium hover-danger" title="Eliminar registro">
+                    <i class="bi bi-trash"></i>
                   </button>
                 </div>
               </td>
@@ -103,90 +111,134 @@ include $base . 'includes/sidebar.php';
     </div>
   </div>
 
-  <!-- MODAL HISTORIAL MINIMALISTA EDITORIAL -->
+  <!-- ================================================================================= -->
+  <!-- MODALES AL FINAL PARA EVITAR CONFLICTOS DE VISIBILIDAD -->
+  <!-- ================================================================================= -->
+
+  <!-- MODAL HISTORIAL -->
   <div class="modal fade" id="modalHistorial" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
-      <div class="modal-content border-0 shadow-lg" style="border-radius:12px; background: #fff;">
-        
-        <div class="modal-header border-bottom p-4">
-          <div>
-            <h5 class="fw-bold mb-0 text-dark" style="letter-spacing: -0.5px;">Historial de Visitas</h5>
-            <p class="text-muted small mb-0" v-if="clienteSeleccionado">
-              {{ clienteSeleccionado.nombre }} <span class="mx-1">/</span> {{ clienteSeleccionado.dni }}
-            </p>
-          </div>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      <div class="modal-content border-0 shadow-lg" style="border-radius:15px; overflow:hidden;">
+        <div class="modal-header bg-white border-0 pt-5 pb-4 d-flex flex-column align-items-center text-center position-relative">
+          <h4 class="fw-bold mb-1 text-dark letter-spacing-1" v-if="clienteSeleccionado">{{ clienteSeleccionado.nombre.toUpperCase() }}</h4>
+          <div class="text-muted mini text-uppercase fw-bold opacity-75" v-if="clienteSeleccionado">Historial de Estadías</div>
+          <button type="button" class="btn-close position-absolute" style="top:25px; right:25px;" data-bs-dismiss="modal"></button>
         </div>
-        
-        <div class="modal-body p-0">
-          <!-- RESUMEN DISCRETO -->
-          <div class="d-flex gap-4 p-4 bg-light border-bottom">
-             <div>
-                <span class="text-muted mini text-uppercase d-block mb-1">Estancias</span>
-                <span class="fw-bold text-dark">{{ historial.length }}</span>
-             </div>
-             <div class="vr opacity-25"></div>
-             <div>
-                <span class="text-muted mini text-uppercase d-block mb-1">Inversión Total</span>
-                <span class="fw-bold text-danger">S/ {{ totalPago }}</span>
-             </div>
-          </div>
-
+        <div class="modal-body bg-light px-4 py-4">
           <div v-if="loadingHistorial" class="text-center py-5">
-            <div class="spinner-border text-danger spinner-border-sm"></div>
-            <p class="mt-2 text-muted" style="font-size: 12px;">Cargando registros...</p>
+             <div class="spinner-grow text-danger" role="status"></div>
           </div>
-
-          <div v-else class="p-0">
-            <div v-for="s in historial" :key="s.id" class="p-4 border-bottom position-relative">
-              <div class="row align-items-center g-3">
-                 <!-- Columna 1: Habitación -->
-                 <div class="col-md-3">
-                    <div class="fw-bold text-dark mb-1" style="font-size: 13px;">HAB #{{ s.habitacion }}</div>
-                    <div class="text-muted" style="font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase;">{{ s.tipo_hab }}</div>
-                 </div>
-
-                 <!-- Columna 2: Fechas -->
-                 <div class="col-md-4">
-                    <div class="d-flex align-items-center gap-2">
-                       <div>
-                          <div class="text-muted mini text-uppercase mb-1">Entrada</div>
-                          <div class="text-dark fw-medium" style="font-size: 12px;">{{ fmtFecha(s.check_in) }}</div>
-                       </div>
-                       <i class="bi bi-arrow-right text-muted mx-2 opacity-50"></i>
-                       <div>
-                          <div class="text-muted mini text-uppercase mb-1">Salida</div>
-                          <div class="text-dark fw-medium" style="font-size: 12px;">{{ fmtFecha(s.check_out) }}</div>
-                       </div>
-                    </div>
-                 </div>
-
-                 <!-- Columna 3: Montos -->
-                 <div class="col-md-3 text-md-end">
-                    <div class="text-muted mini text-uppercase mb-1">Costo / Abonado</div>
-                    <div class="text-dark" style="font-size: 13px;">
-                       S/ {{ parseFloat(s.total_pago||0).toFixed(2) }} 
-                       <span class="mx-1">/</span> 
-                       <span :class="parseFloat(s.total_pago) > parseFloat(s.total_cobrado) ? 'text-danger' : 'text-success'">
-                         S/ {{ parseFloat(s.total_cobrado||0).toFixed(2) }}
-                       </span>
-                    </div>
-                 </div>
-
-                 <!-- Columna 4: Estado -->
-                 <div class="col-md-2 text-end">
-                    <span :class="['px-2 py-1 rounded-1 fw-bold', s.estado === 'activo' ? 'bg-success-subtle text-success' : 'bg-light text-muted border']"
-                          style="font-size: 9px; letter-spacing: 0.5px;">
-                        {{ s.estado.toUpperCase() }}
-                    </span>
-                 </div>
+          <div v-else class="container-fluid">
+            <div v-for="(s, idx) in historial" :key="idx" class="card mb-3 stay-card shadow-sm border-0 rounded-3 overflow-hidden">
+              <div class="card-body p-3 row align-items-center">
+                <div class="col-md-3">
+                   <div class="text-muted mini text-uppercase mb-1">Habitación</div>
+                   <div class="text-dark fw-bold" style="font-size: 14px;"><i class="bi bi-door-open me-2 text-danger"></i>#{{ s.n_habitacion }}</div>
+                </div>
+                <div class="col-md-4">
+                   <div class="d-flex align-items-center gap-2">
+                      <div>
+                         <div class="text-muted mini text-uppercase mb-1">Entrada</div>
+                         <div class="text-dark fw-medium" style="font-size: 12px;">{{ fmtFecha(s.check_in) }}</div>
+                      </div>
+                      <i class="bi bi-arrow-right text-muted mx-2 opacity-50"></i>
+                      <div>
+                         <div class="text-muted mini text-uppercase mb-1">Salida</div>
+                         <div class="text-dark fw-medium" style="font-size: 12px;">{{ fmtFecha(s.check_out) }}</div>
+                      </div>
+                   </div>
+                </div>
+                <div class="col-md-3 text-md-end">
+                   <div class="text-muted mini text-uppercase mb-1">Costo / Abonado</div>
+                   <div class="text-dark" style="font-size: 13px;">
+                      S/ {{ parseFloat(s.total_pago||0).toFixed(2) }} 
+                      <span class="mx-1">/</span> 
+                      <span :class="parseFloat(s.total_pago) > parseFloat(s.total_cobrado) ? 'text-danger' : 'text-success'">
+                        S/ {{ parseFloat(s.total_cobrado||0).toFixed(2) }}
+                      </span>
+                   </div>
+                </div>
+                <div class="col-md-2 text-end">
+                   <span :class="['px-2 py-1 rounded-1 fw-bold', s.estado === 'activo' ? 'bg-success-subtle text-success' : 'bg-light text-muted border']"
+                         style="font-size: 9px; letter-spacing: 0.5px;">
+                       {{ s.estado.toUpperCase() }}
+                   </span>
+                </div>
               </div>
             </div>
-
             <div v-if="historial.length === 0" class="text-center py-5 text-muted">
                <span style="font-size: 13px;">No se encontraron registros de visitas.</span>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL NUEVO CLIENTE -->
+  <div class="modal fade" id="modalNuevoCliente" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg" style="border-radius:12px;">
+        <div class="modal-header border-bottom p-4 d-flex flex-column align-items-center text-center position-relative">
+          <h5 class="fw-bold mb-1 text-dark" style="font-size: 18px; letter-spacing: -0.5px;">Registro de Nuevo Cliente</h5>
+          <p class="text-muted mb-0" style="font-size: 13px;">Ingrese los datos para la base de datos de clientes</p>
+          <button type="button" class="btn-close position-absolute" style="top: 20px; right: 20px;" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4 bg-light">
+          <form @submit.prevent="guardarNuevoCliente">
+            <div class="row g-3 mb-4">
+              <div class="col-12">
+                <label class="text-muted text-uppercase fw-bold mb-1" style="font-size: 11px; letter-spacing: 0.5px;">Nombre Completo</label>
+                <input type="text" v-model="nuevoCliente.nombre" class="form-control border-0 shadow-sm py-2" placeholder="Ej: Juan Perez" required style="font-size: 14px;">
+              </div>
+              <div class="col-md-6">
+                <label class="text-muted text-uppercase fw-bold mb-1" style="font-size: 11px; letter-spacing: 0.5px;">Tipo Doc</label>
+                <select v-model="nuevoCliente.tipo_doc" class="form-select border-0 shadow-sm py-2" style="font-size: 14px;">
+                  <option value="DNI">DNI</option>
+                  <option value="RUC">RUC</option>
+                  <option value="CE">CE</option>
+                  <option value="PASAPORTE">PASAPORTE</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="text-muted text-uppercase fw-bold mb-1" style="font-size: 11px; letter-spacing: 0.5px;">Número</label>
+                <input type="text" v-model="nuevoCliente.dni" class="form-control border-0 shadow-sm py-2" placeholder="Documento..." required style="font-size: 14px;">
+              </div>
+              <div class="col-md-6">
+                <label class="text-muted text-uppercase fw-bold mb-1" style="font-size: 11px; letter-spacing: 0.5px;">Nacionalidad</label>
+                <input type="text" v-model="nuevoCliente.nacionalidad" class="form-control border-0 shadow-sm py-2" placeholder="Ej: Peruana" style="font-size: 14px;">
+              </div>
+              <div class="col-md-6">
+                <label class="text-muted text-uppercase fw-bold mb-1" style="font-size: 11px; letter-spacing: 0.5px;">Celular</label>
+                <input type="text" v-model="nuevoCliente.celular" class="form-control border-0 shadow-sm py-2" placeholder="999 888 777" style="font-size: 14px;">
+              </div>
+            </div>
+            <div class="p-3 rounded-3 border bg-white shadow-sm">
+              <div class="form-check form-switch d-flex align-items-center gap-2 mb-3">
+                <input class="form-check-input" type="checkbox" v-model="nuevoCliente.es_empresa" id="switchEmpresa">
+                <label class="form-check-label text-muted fw-bold text-uppercase" for="switchEmpresa" style="font-size: 11px; letter-spacing: 0.5px;">
+                  <i class="bi bi-building me-1"></i> ¿Es una empresa? (Corporativo)
+                </label>
+              </div>
+              <div v-if="nuevoCliente.es_empresa" class="row g-3 animate__animated animate__fadeIn">
+                <div class="col-12">
+                  <label class="text-muted text-uppercase fw-bold mb-1" style="font-size: 11px; letter-spacing: 0.5px;">RUC</label>
+                  <input type="text" v-model="nuevoCliente.ruc" class="form-control bg-light border-0 py-2" placeholder="RUC de la empresa..." style="font-size: 14px;">
+                </div>
+                <div class="col-12">
+                  <label class="text-muted text-uppercase fw-bold mb-1" style="font-size: 11px; letter-spacing: 0.5px;">Razón Social</label>
+                  <input type="text" v-model="nuevoCliente.razon_social" class="form-control bg-light border-0 py-2" placeholder="Nombre de la empresa..." style="font-size: 14px;">
+                </div>
+              </div>
+            </div>
+            <div class="mt-4 pt-2">
+              <button type="submit" class="btn btn-dark w-100 py-2 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2" :disabled="guardando" style="font-size: 14px;">
+                <span v-if="guardando" class="spinner-border spinner-border-sm"></span>
+                <i v-else class="bi bi-check-lg"></i>
+                {{ guardando ? 'Guardando...' : 'Registrar Cliente' }}
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
@@ -208,9 +260,11 @@ include $base . 'includes/sidebar.php';
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    white-space: nowrap;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    justify-content: center;
+    gap: 8px;
     transition: all 0.2s ease-in-out;
     box-shadow: 0 1px 2px rgba(0,0,0,0.05);
   }
@@ -221,6 +275,11 @@ include $base . 'includes/sidebar.php';
     border-color: #111;
     transform: translateY(-1px);
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  }
+
+  .btn-premium.hover-danger:hover {
+    background: #ef4444 !important;
+    border-color: #ef4444 !important;
   }
 
   .btn-premium i {

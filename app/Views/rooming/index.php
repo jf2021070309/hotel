@@ -619,16 +619,12 @@ include $_projectRoot . '/includes/head.php';
                         style="font-size:10px; top: -10px; right: -10px; background-color: white; border: 1px solid #ddd; padding: 8px; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" 
                         @click="form.pax.splice(idx, 1)"></button>
                       
-                      <div class="mb-3 mt-3">
-                        <label class="micro-text fw-bold text-muted mb-1">NOMBRE COMPLETO</label>
-                        <input type="text" v-model="pax.nombre_completo" id="inputNombreHuesped"
-                          class="form-control form-control-sm border-light bg-light fw-bold" placeholder="Escriba aquí..." required>
-                      </div>
-
-                      <div class="row g-2 mb-3">
+                      <!-- TIPO DOC + NÚMERO (first, to trigger autocomplete) -->
+                      <div class="row g-2 mb-3 mt-3">
                         <div class="col-4">
                           <label class="micro-text fw-bold text-muted mb-1">TIPO DOC</label>
-                          <select v-model="pax.documento_tipo" class="form-select form-select-sm border-light bg-light" style="border-radius: 8px;">
+                          <select v-model="pax.documento_tipo" class="form-select form-select-sm border-light bg-light" style="border-radius: 8px;"
+                            @change="onDocTipoChange(pax, idx)">
                             <option value="DNI">DNI</option>
                             <option value="CE">CE</option>
                             <option value="PASA">PASAPORTE</option>
@@ -636,10 +632,25 @@ include $_projectRoot . '/includes/head.php';
                         </div>
                         <div class="col-8 position-relative">
                           <label class="micro-text fw-bold text-muted mb-1">NÚMERO</label>
-                          <input type="text" v-model="pax.documento_num" id="inputDocumentoHuesped"
-                            class="form-control form-control-sm border-light bg-light fw-bold" placeholder="Documento..." required
-                            @input="buscarPax(pax, idx)" @blur="ocultarSugerencias(idx)" autocomplete="off">
-                          <!-- Dropdown sugerencias -->
+                          <div class="position-relative">
+                            <input type="text" v-model="pax.documento_num" :id="'inputDocNum'+idx"
+                              class="form-control form-control-sm border-light bg-light fw-bold"
+                              :placeholder="pax.documento_tipo === 'DNI' ? '8 dígitos...' : pax.documento_tipo === 'CE' ? 'Carnet...' : 'Pasaporte...'"
+                              required
+                              @input="buscarPax(pax, idx); lookupDocumento(pax, idx)"
+                              @blur="ocultarSugerencias(idx)" autocomplete="off"
+                              :maxlength="pax.documento_tipo === 'DNI' ? 8 : 20">
+                            <!-- Spinner lookup activo -->
+                            <span v-if="lookupLoading[idx]"
+                              class="position-absolute top-50 end-0 translate-middle-y me-2 spinner-border spinner-border-sm text-primary"
+                              style="width:14px;height:14px;border-width:2px;">
+                            </span>
+                            <!-- Icono OK -->
+                            <span v-else-if="lookupOk[idx]"
+                              class="position-absolute top-50 end-0 translate-middle-y me-2 text-success fw-bold"
+                              style="font-size:12px;">✓</span>
+                          </div>
+                          <!-- Dropdown sugerencias (clientes frecuentes) -->
                           <div v-if="sugerencias[idx] && sugerencias[idx].length"
                             class="position-absolute bg-white border rounded shadow-lg w-100 z-3 mt-1"
                             style="top:100%; left:0; max-height:200px; overflow-y:auto; border-radius: 10px;">
@@ -654,6 +665,14 @@ include $_projectRoot . '/includes/head.php';
                             </div>
                           </div>
                         </div>
+                      </div>
+
+                      <!-- NOMBRE COMPLETO (debajo, se auto-llena con el scraping) -->
+                      <div class="mb-3">
+                        <label class="micro-text fw-bold text-muted mb-1">NOMBRE COMPLETO</label>
+                        <input type="text" v-model="pax.nombre_completo" :id="'inputNombrePax'+idx"
+                          class="form-control form-control-sm border-light bg-light fw-bold"
+                          placeholder="Se autocompleta con DNI..." required>
                       </div>
 
                       <div class="row g-2 mb-3">
@@ -693,13 +712,24 @@ include $_projectRoot . '/includes/head.php';
                           <div class="row g-2">
                             <div class="col-5">
                               <label class="micro-text fw-bold text-primary mb-1">RUC</label>
-                              <input type="text" v-model="pax.ruc_empresa" class="form-control form-control-sm border-primary"
-                                placeholder="RUC..." maxlength="11" @input="form.stay.ruc_factura = pax.ruc_empresa">
+                              <div class="position-relative">
+                                <input type="text" v-model="pax.ruc_empresa" class="form-control form-control-sm border-primary"
+                                  placeholder="RUC..." maxlength="11"
+                                  @input="form.stay.ruc_factura = pax.ruc_empresa; lookupRuc(pax, idx)">
+                                <span v-if="rucLoading[idx]"
+                                  class="position-absolute top-50 end-0 translate-middle-y me-2 spinner-border spinner-border-sm text-primary"
+                                  style="width:12px;height:12px;border-width:2px;">
+                                </span>
+                                <span v-else-if="rucOk[idx]"
+                                  class="position-absolute top-50 end-0 translate-middle-y me-2 text-success fw-bold"
+                                  style="font-size:11px;">✓</span>
+                              </div>
                             </div>
                             <div class="col-7">
                               <label class="micro-text fw-bold text-primary mb-1">RAZÓN SOCIAL</label>
                               <input type="text" v-model="pax.empresa" class="form-control form-control-sm border-primary"
-                                placeholder="..." :required="pax.es_corporativo" @input="form.stay.razon_social = pax.empresa">
+                                placeholder="Se autocompleta con RUC..." :required="pax.es_corporativo"
+                                @input="form.stay.razon_social = pax.empresa">
                             </div>
                           </div>
                         </div>

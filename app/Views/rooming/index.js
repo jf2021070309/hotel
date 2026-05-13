@@ -570,7 +570,91 @@ createApp({
     const ocultarSugerencias = (idx) => {
       setTimeout(() => { sugerencias.value[idx] = []; }, 200);
     };
-    // ────────────────────────────────────────────────────────
+
+    // ─── LOOKUP DNI / RUC VÍA API (DocumentLookupService) ────────
+    const lookupLoading = ref({});  // { [idx]: bool }
+    const lookupOk      = ref({});
+    const rucLoading    = ref({});
+    const rucOk         = ref({});
+    let dniTimer = null;
+    let rucTimer = null;
+
+    /**
+     * Dispara el scraping de DNI cuando el número tiene exactamente 8 dígitos.
+     * Solo autocompleta el Nombre Completo (sin tocar otros campos).
+     */
+    const lookupDocumento = (pax, idx) => {
+      const num = (pax.documento_num || '').trim();
+      lookupOk.value[idx] = false;
+
+      // Solo aplica para DNI (8 dígitos numéricos)
+      if (pax.documento_tipo !== 'DNI' || num.length !== 8 || !/^\d{8}$/.test(num)) return;
+
+      // Si ya hay sugerencias de la BD local, no hace falta el API externo
+      if (sugerencias.value[idx] && sugerencias.value[idx].length > 0) return;
+
+      clearTimeout(dniTimer);
+      lookupLoading.value[idx] = true;
+
+      dniTimer = setTimeout(async () => {
+        try {
+          const res = await axios.get(`../../../api/usuarios.php?action=consultar_dni&dni=${num}`);
+          if (res.data.success && res.data.data) {
+            const nombre = res.data.data.nombre_completo || '';
+            if (nombre && !pax.nombre_completo) {
+              pax.nombre_completo = nombre;
+            } else if (nombre && pax.nombre_completo !== nombre) {
+              pax.nombre_completo = nombre;
+            }
+            lookupOk.value[idx] = true;
+          }
+        } catch (e) { /* silencio – API inactiva */ }
+        finally { lookupLoading.value[idx] = false; }
+      }, 400);
+    };
+
+    /**
+     * Dispara el scraping de RUC cuando el número tiene exactamente 11 dígitos.
+     * Solo autocompleta Razón Social (sin tocar DNI ni nombre completo del huésped).
+     */
+    const lookupRuc = (pax, idx) => {
+      const ruc = (pax.ruc_empresa || '').trim();
+      rucOk.value[idx] = false;
+
+      if (ruc.length !== 11 || !/^\d{11}$/.test(ruc)) return;
+
+      clearTimeout(rucTimer);
+      rucLoading.value[idx] = true;
+
+      rucTimer = setTimeout(async () => {
+        try {
+          const res = await axios.get(`../../../api/usuarios.php?action=consultar_ruc&ruc=${ruc}`);
+          if (res.data.success && res.data.data) {
+            const razon = res.data.data.razon_social || '';
+            if (razon) {
+              pax.empresa = razon;
+              form.stay.razon_social = razon;
+              form.stay.ruc_factura  = ruc;
+              form.stay.tipo_comprobante = 'FACTURA';
+            }
+            rucOk.value[idx] = true;
+          }
+        } catch (e) { /* silencio */ }
+        finally { rucLoading.value[idx] = false; }
+      }, 400);
+    };
+
+    /**
+     * Limpia nombre y estado de lookup cuando se cambia el tipo de documento.
+     */
+    const onDocTipoChange = (pax, idx) => {
+      pax.documento_num   = '';
+      pax.nombre_completo = '';
+      lookupOk.value[idx]      = false;
+      lookupLoading.value[idx] = false;
+      sugerencias.value[idx]   = [];
+    };
+    // ────────────────────────────────────────────────────────────
 
     const guardarCheckin = async () => {
       if (form.tipoPago === 'adelanto') {
@@ -1150,6 +1234,9 @@ createApp({
       abrirConsumo, onProductoChange, calcularTotalConsumo, guardarConsumo,
       // AUTOCOMPLETE PAX
       sugerencias, buscarPax, aplicarSugerencia, ocultarSugerencias,
+      // LOOKUP DNI / RUC
+      lookupDocumento, lookupRuc, onDocTipoChange,
+      lookupLoading, lookupOk, rucLoading, rucOk,
       // REPORTE PAX
       reportePax, abrirReportePax, cargarReportePax, exportarReportePax,
       totalConsumoStay, saldoPendienteStay

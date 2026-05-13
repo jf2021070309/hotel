@@ -11,6 +11,7 @@ require_once '../config/db.php';
 require_once '../auth/session.php';
 require_once '../auth/middleware.php';
 require_once '../app/Controllers/UsuarioController.php';
+require_once '../app/Helpers/DocumentLookupService.php';
 
 // Detectar acción y método
 $action = $_GET['action'] ?? '';
@@ -53,6 +54,14 @@ switch ($action) {
         $pass = $input['password'] ?? '';
         $res  = $controller->updatePassword($id, $pass);
         json_response($res['ok'], null, $res['code'] ?? 200, $res['msg']);
+        break;
+
+    case 'consultar_dni':
+        $controller->consultarDni();
+        break;
+
+    case 'consultar_ruc':
+        $controller->consultarRuc();
         break;
 
     default:

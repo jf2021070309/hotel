@@ -730,13 +730,19 @@ include $_projectRoot . '/includes/head.php';
                     <div class="bg-light p-3 rounded-4 border border-secondary border-opacity-25 mb-4 shadow-sm">
                       <div class="d-flex align-items-center gap-2 mb-1">
                          <div class="flex-grow-1">
-                           <label class="form-label micro-text fw-bold text-secondary mb-1">TOTAL BASE (PEN)</label>
-                           <div class="d-flex align-items-baseline gap-1">
-                              <span class="fw-bold text-dark" style="font-size: 20px;">S/</span>
-                              <input type="number" v-model="form.stay.total_pago" id="inputMontoPago"
-                                class="form-control form-control-lg border-0 bg-transparent fw-bold text-dark p-0" step="0.50" min="0"
-                                @input="recalcularMoneda" style="font-size: 24px; box-shadow: none;">
-                           </div>
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                          <label class="form-label micro-text fw-bold text-secondary mb-0">TOTAL BASE (PEN)</label>
+                          <button type="button" class="btn btn-link btn-sm p-0 text-primary" @click="onHabChange" 
+                            title="Sincronizar con el precio actual de la habitación">
+                            <i class="bi bi-arrow-clockwise"></i> <span style="font-size: 10px;">Sincronizar</span>
+                          </button>
+                        </div>
+                        <div class="d-flex align-items-baseline gap-1">
+                           <span class="fw-bold text-dark" style="font-size: 20px;">S/</span>
+                           <input type="number" v-model="form.stay.total_pago" id="inputMontoPago"
+                             class="form-control form-control-lg border-0 bg-transparent fw-bold text-dark p-0" step="0.50" min="0"
+                             @input="recalcularMoneda" style="font-size: 24px; box-shadow: none;">
+                        </div>
                          </div>
                       </div>
                       <div class="border-top border-secondary border-opacity-25 pt-2 mt-2">

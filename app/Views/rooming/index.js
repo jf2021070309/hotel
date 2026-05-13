@@ -414,6 +414,11 @@ createApp({
         form.tipoPago = (cobradoOriginalStay > 0 && cobradoOriginalStay < totalOriginalStay) ? 'adelanto' : 'completo';
         form.adelanto = form.tipoPago === 'adelanto' ? cobradoOriginalStay : totalOriginalStay;
         onAdelantoChange();
+
+        // Si el precio cargado es 0, sincronizamos automáticamente con el precio actual de la habitación
+        if (parseFloat(data.total_pago) === 0) {
+            onHabChange();
+        }
         
         await cargarHabitacionesDisponibles();
         new bootstrap.Modal('#modalCheckin').show();

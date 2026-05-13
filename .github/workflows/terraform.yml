@@ -63,11 +63,10 @@ jobs:
           terraform state rm railway_variable.mysql_root_password || true
           terraform state rm railway_variable.mysql_user || true
           terraform state rm railway_variable.app_env || true
-        env:
-          TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
-          TF_VAR_railway_token: ${{ secrets.RAILWAY_TOKEN }}
-          TF_VAR_mysql_root_password: ${{ secrets.MYSQL_ROOT_PASSWORD }}
-          TF_VAR_gh_repo: ${{ secrets.GH_REPO }}
+          terraform state rm time_sleep.wait_1 || true
+          terraform state rm time_sleep.wait_2 || true
+          terraform state rm time_sleep.wait_3 || true
+          terraform state rm time_sleep.wait_4 || true
 
       - name: Terraform Plan
         working-directory: app/infra

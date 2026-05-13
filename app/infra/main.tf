@@ -11,12 +11,18 @@ terraform {
       source  = "terraform-community-providers/railway"
       version = ">= 0.6.0"
     }
+    time = {
+      source  = "hashicorp/time"
+      version = ">= 0.9.0"
+    }
   }
 }
 
 provider "railway" {
   token = var.railway_token
 }
+
+provider "time" {}
 
 resource "railway_project" "hotel" {
   name = "hotel"
@@ -58,13 +64,23 @@ resource "railway_variable" "mysql_host" {
   service_id     = railway_service.app.id
 }
 
+resource "time_sleep" "wait_1" {
+  depends_on      = [railway_variable.mysql_host]
+  create_duration = "15s"
+}
+
 resource "railway_variable" "mysql_password" {
   name           = "MYSQL_PASSWORD"
   value          = var.mysql_root_password
   environment_id = railway_project.hotel.default_environment.id
   service_id     = railway_service.app.id
 
-  depends_on = [railway_variable.mysql_host]
+  depends_on = [time_sleep.wait_1]
+}
+
+resource "time_sleep" "wait_2" {
+  depends_on      = [railway_variable.mysql_password]
+  create_duration = "15s"
 }
 
 resource "railway_variable" "mysql_database_app" {
@@ -73,7 +89,12 @@ resource "railway_variable" "mysql_database_app" {
   environment_id = railway_project.hotel.default_environment.id
   service_id     = railway_service.app.id
 
-  depends_on = [railway_variable.mysql_password]
+  depends_on = [time_sleep.wait_2]
+}
+
+resource "time_sleep" "wait_3" {
+  depends_on      = [railway_variable.mysql_database_app]
+  create_duration = "15s"
 }
 
 resource "railway_variable" "app_env" {
@@ -82,7 +103,12 @@ resource "railway_variable" "app_env" {
   environment_id = railway_project.hotel.default_environment.id
   service_id     = railway_service.app.id
 
-  depends_on = [railway_variable.mysql_database_app]
+  depends_on = [time_sleep.wait_3]
+}
+
+resource "time_sleep" "wait_4" {
+  depends_on      = [railway_variable.app_env]
+  create_duration = "15s"
 }
 
 resource "railway_variable" "mysql_user" {
@@ -91,7 +117,7 @@ resource "railway_variable" "mysql_user" {
   environment_id = railway_project.hotel.default_environment.id
   service_id     = railway_service.app.id
 
-  depends_on = [railway_variable.app_env]
+  depends_on = [time_sleep.wait_4]
 }
 
 resource "railway_tcp_proxy" "mysql_proxy" {

@@ -8,17 +8,18 @@
  *
  * @package App\Controllers
  */
-class UsuarioController {
+class UsuarioController
+{
     /**
      * @var PDO Conexión a la base de datos
      */
     private PDO $pdo;
-    
+
     /**
      * @var UsuarioModel Instancia del modelo de usuarios
      */
     private UsuarioModel $model;
-    
+
     /**
      * @var AuditoriaModel Instancia del modelo de auditoría para registro de acciones
      */
@@ -30,7 +31,8 @@ class UsuarioController {
      *
      * @param PDO $pdo Instancia activa de conexión a la base de datos
      */
-    public function __construct(PDO $pdo) {
+    public function __construct(PDO $pdo)
+    {
         $this->pdo = $pdo;
         require_once __DIR__ . '/../Models/UsuarioModel.php';
         require_once __DIR__ . '/../Models/AuditoriaModel.php';
@@ -43,7 +45,8 @@ class UsuarioController {
      *
      * @return array Lista de usuarios obtenida desde el modelo
      */
-    public function index() {
+    public function index()
+    {
         return $this->model->getAll();
     }
 
@@ -57,7 +60,8 @@ class UsuarioController {
      * @param array $data Datos proporcionados por la solicitud POST
      * @return array Respuesta estructurada con claves 'ok', 'msg', y opcionalmente 'code', 'id'
      */
-    public function create(array $data) {
+    public function create(array $data)
+    {
         if (empty($data['usuario']) || empty($data['nombre']) || empty($data['password'])) {
             return ['ok' => false, 'msg' => "Todos los campos son obligatorios", 'code' => 400];
         }
@@ -98,8 +102,10 @@ class UsuarioController {
      * @param array $data Mapa con los valores actualizados
      * @return array Respuesta estructurada con claves 'ok', 'msg' y 'code' opcional
      */
-    public function update(int $id, array $data) {
-        if (!$id) return ['ok' => false, 'msg' => "ID inválido", 'code' => 400];
+    public function update(int $id, array $data)
+    {
+        if (!$id)
+            return ['ok' => false, 'msg' => "ID inválido", 'code' => 400];
 
         // Regla: No se puede cambiar el rol del admin id=1
         if ($id === 1 && $data['rol'] !== 'admin') {
@@ -123,23 +129,24 @@ class UsuarioController {
 
         // --- CAPTURA DE DATOS PARA AUDITORÍA ---
         $original = $this->model->getById($id);
-        
+
         if ($this->model->update($id, $data)) {
             // Sincronizar sesión si se edita a sí mismo
             if ($id === $currentUser['id']) {
-                if (session_status() === PHP_SESSION_NONE) session_start();
-                $_SESSION['auth_nombre']  = $data['nombre'] ?? $_SESSION['auth_nombre'];
+                if (session_status() === PHP_SESSION_NONE)
+                    session_start();
+                $_SESSION['auth_nombre'] = $data['nombre'] ?? $_SESSION['auth_nombre'];
                 $_SESSION['auth_usuario'] = $data['usuario'] ?? $_SESSION['auth_usuario'];
-                $_SESSION['auth_rol']     = $data['rol'] ?? $_SESSION['auth_rol'];
+                $_SESSION['auth_rol'] = $data['rol'] ?? $_SESSION['auth_rol'];
             }
 
             // Construir detalle JSON de cambios
             $cambios = [];
             $labels = [
                 'usuario' => 'User',
-                'nombre'  => 'Nombre',
-                'rol'     => 'Rol',
-                'estado'  => 'Estado'
+                'nombre' => 'Nombre',
+                'rol' => 'Rol',
+                'estado' => 'Estado'
             ];
 
             foreach ($data as $key => $val) {
@@ -149,8 +156,8 @@ class UsuarioController {
 
                     // Formatear estado para legibilidad
                     if ($key === 'estado') {
-                        $antes   = ($antes == 1)   ? 'Activo'   : 'Inactivo';
-                        $despues = ($despues == 1) ? 'Activo'   : 'Inactivo';
+                        $antes = ($antes == 1) ? 'Activo' : 'Inactivo';
+                        $despues = ($despues == 1) ? 'Activo' : 'Inactivo';
                     }
 
                     $label = $labels[$key] ?? $key;
@@ -180,8 +187,10 @@ class UsuarioController {
      * @param string $password Nueva credencial de acceso
      * @return array Respuesta estructurada con claves 'ok', 'msg' y 'code'
      */
-    public function updatePassword(int $id, string $password) {
-        if (!$id || empty($password)) return ['ok' => false, 'msg' => "Datos inválidos", 'code' => 400];
+    public function updatePassword(int $id, string $password)
+    {
+        if (!$id || empty($password))
+            return ['ok' => false, 'msg' => "Datos inválidos", 'code' => 400];
 
         if ($this->model->updatePassword($id, $password)) {
             $target = $this->model->getById($id);
@@ -192,4 +201,51 @@ class UsuarioController {
 
         return ['ok' => false, 'msg' => "Error al actualizar contraseña", 'code' => 500];
     }
+
+
+    public function consultarDni(): void
+    {
+        header('Content-Type: application/json; charset=utf-8');
+
+        $dni = $_GET['dni'] ?? null;
+
+        if (!$dni || strlen($dni) !== 8 || !is_numeric($dni)) {
+            echo json_encode(['success' => false, 'message' => 'DNI inválido.']);
+            exit;
+        }
+
+        $documentLookup = new DocumentLookupService();
+        $data = $documentLookup->consultarDni($dni);
+
+        if ($data) {
+            echo json_encode(['success' => true, 'data' => $data]);
+            exit;
+        }
+
+        echo json_encode(['success' => false, 'message' => 'No se encontraron resultados o API inactiva para el DNI ' . $dni]);
+        exit;
+    }
+
+    public function consultarRuc(): void
+    {
+        header('Content-Type: application/json; charset=utf-8');
+
+        $ruc = $_GET['ruc'] ?? null;
+        if (!$ruc || strlen($ruc) !== 11 || !is_numeric($ruc)) {
+            echo json_encode(['success' => false, 'message' => 'RUC inválido.']);
+            exit;
+        }
+
+        $documentLookup = new DocumentLookupService();
+        $data = $documentLookup->consultarRuc($ruc);
+
+        if ($data) {
+            echo json_encode(['success' => true, 'data' => $data]);
+            exit;
+        }
+
+        echo json_encode(['success' => false, 'message' => 'RUC no encontrado o API no disponible. Digite manualmente.']);
+        exit;
+    }
+
 }

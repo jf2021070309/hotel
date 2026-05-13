@@ -55,7 +55,10 @@ class ConsumoController {
             // 2. Descontar Stock
             $this->invModel->descontarStock($productoId, $cantidad);
 
-            // 3. Sincronización Financiera
+            // 3. Sincronización Financiera y Aumento de Deuda
+            // Siempre aumentamos el total_pago del stay para que el balance sea correcto
+            $this->roomModel->incrementarTotal($stayId, $total);
+
             if ($metodo !== null) {
                 // Pago Inmediato: Registrar anticipo + Flujo
                 $this->roomModel->registrarPago([
@@ -70,12 +73,6 @@ class ConsumoController {
                     'fecha'     => date('Y-m-d'),
                     'uid'       => $_SESSION['auth_id'] ?? 1
                 ]);
-                // El total_pago del stay NO aumenta porque se pagó en el acto? 
-                // En realidad, para el Sr. Mendoza "OTROS INGRESOS" son ventas de bebidas pagadas.
-                // Si lo cargamos a la habitación, el "total_pago" de la estadía aumenta.
-            } else {
-                // Cargo a Habitación: Aumentar deuda del stay
-                $this->roomModel->incrementarTotal($stayId, $total);
             }
 
             // --- REGISTRO DE AUDITORÍA ESTRUCTURADA ---

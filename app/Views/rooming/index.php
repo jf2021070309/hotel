@@ -139,7 +139,7 @@ include $_projectRoot . '/includes/head.php';
                 </td>
                 <td class="text-end fw-bold">
                   <div class="text-dark">{{ s.moneda_pago == 'USD' ? '$' : (s.moneda_pago == 'CLP' ? 'P$' : 'S/') }} {{
-                    fmtCur(s.monto_original || s.total_pago) }}</div>
+                    fmtCur(s.total_pago) }}</div>
                   <div class="text-success small d-flex align-items-center justify-content-end gap-1" style="font-size: 10px;">
                     <span>Abono {{ s.moneda_pago == 'USD' ? '$' : (s.moneda_pago == 'CLP' ? 'P$' : 'S/') }} {{ fmtCur(s.total_cobrado_orig || s.total_cobrado) }}</span>
                     <i v-if="s.divisas_count > 1" class="bi bi-globe-americas text-info" title="Pago Multidivisa" style="font-size: 11px;"></i>

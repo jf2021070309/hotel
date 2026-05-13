@@ -40,6 +40,8 @@ resource "railway_variable" "mysql_database" {
   value          = "hotel_db"
   environment_id = railway_project.hotel.default_environment.id
   service_id     = railway_service.mysql.id
+
+  depends_on = [railway_variable.mysql_root_password]
 }
 
 resource "railway_service" "app" {
@@ -61,6 +63,8 @@ resource "railway_variable" "mysql_password" {
   value          = var.mysql_root_password
   environment_id = railway_project.hotel.default_environment.id
   service_id     = railway_service.app.id
+
+  depends_on = [railway_variable.mysql_host]
 }
 
 resource "railway_variable" "mysql_database_app" {
@@ -68,6 +72,8 @@ resource "railway_variable" "mysql_database_app" {
   value          = "hotel_db"
   environment_id = railway_project.hotel.default_environment.id
   service_id     = railway_service.app.id
+
+  depends_on = [railway_variable.mysql_password]
 }
 
 resource "railway_variable" "app_env" {
@@ -75,6 +81,8 @@ resource "railway_variable" "app_env" {
   value          = "production"
   environment_id = railway_project.hotel.default_environment.id
   service_id     = railway_service.app.id
+
+  depends_on = [railway_variable.mysql_database_app]
 }
 
 resource "railway_variable" "mysql_user" {
@@ -82,6 +90,8 @@ resource "railway_variable" "mysql_user" {
   value          = "root"
   environment_id = railway_project.hotel.default_environment.id
   service_id     = railway_service.app.id
+
+  depends_on = [railway_variable.app_env]
 }
 
 resource "railway_tcp_proxy" "mysql_proxy" {

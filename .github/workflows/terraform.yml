@@ -67,6 +67,13 @@ jobs:
           terraform state rm time_sleep.wait_2 || true
           terraform state rm time_sleep.wait_3 || true
           terraform state rm time_sleep.wait_4 || true
+          terraform state rm railway_service_domain.app_domain || true
+          terraform state rm null_resource.db_seed || true
+        env:
+          TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
+          TF_VAR_railway_token: ${{ secrets.RAILWAY_TOKEN }}
+          TF_VAR_mysql_root_password: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+          TF_VAR_gh_repo: ${{ secrets.GH_REPO }}
 
       - name: Terraform Plan
         working-directory: app/infra
@@ -80,23 +87,6 @@ jobs:
       - name: Terraform Apply / Destroy
         working-directory: app/infra
         run: terraform ${{ github.event.inputs.action }} -auto-approve
-        env:
-          TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
-          TF_VAR_railway_token: ${{ secrets.RAILWAY_TOKEN }}
-          TF_VAR_mysql_root_password: ${{ secrets.MYSQL_ROOT_PASSWORD }}
-          TF_VAR_gh_repo: ${{ secrets.GH_REPO }}
-
-      - name: Esperar MySQL
-        if: ${{ github.event.inputs.action == 'apply' }}
-        run: sleep 90
-
-      - name: Seed Database
-        if: ${{ github.event.inputs.action == 'apply' }}
-        working-directory: app/infra
-        run: |
-          PROXY_HOST=$(terraform output -raw mysql_proxy_domain)
-          PROXY_PORT=$(terraform output -raw mysql_proxy_port)
-          mysql -h "$PROXY_HOST" -P "$PROXY_PORT" -u root -p${{ secrets.MYSQL_ROOT_PASSWORD }} hotel_db < hotel.sql
         env:
           TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
           TF_VAR_railway_token: ${{ secrets.RAILWAY_TOKEN }}

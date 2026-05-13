@@ -15,6 +15,10 @@ terraform {
       source  = "hashicorp/time"
       version = ">= 0.9.0"
     }
+    null = {
+      source  = "hashicorp/null"
+      version = ">= 3.0.0"
+    }
   }
 }
 
@@ -25,7 +29,8 @@ provider "railway" {
 provider "time" {}
 
 resource "railway_project" "hotel" {
-  name = "hotel"
+  name         = "hotel"
+  workspace_id = "9437db35-bbad-4338-a688-8e79ad39cc8e"
 }
 
 resource "railway_service" "mysql" {
@@ -55,6 +60,12 @@ resource "railway_service" "app" {
   project_id         = railway_project.hotel.id
   source_repo        = var.gh_repo
   source_repo_branch = "main"
+}
+
+resource "railway_service_domain" "app_domain" {
+  environment_id = railway_project.hotel.default_environment.id
+  service_id     = railway_service.app.id
+  subdomain      = "hotel-app-jaime"
 }
 
 resource "railway_variable" "mysql_host" {
@@ -126,14 +137,22 @@ resource "railway_tcp_proxy" "mysql_proxy" {
   application_port = 3306
 }
 
-output "app_url_railway" {
-  value = "https://hotel-app-jaime.up.railway.app"
+resource "null_resource" "db_seed" {
+  depends_on = [
+    railway_tcp_proxy.mysql_proxy,
+    railway_variable.mysql_root_password,
+    railway_variable.mysql_database
+  ]
+
+  provisioner "local-exec" {
+    command = "sleep 30 && mysql -h ${railway_tcp_proxy.mysql_proxy.domain} -P ${railway_tcp_proxy.mysql_proxy.proxy_port} -u root -p${var.mysql_root_password} hotel_db < ${path.module}/hotel.sql"
+  }
 }
 
-output "mysql_proxy_domain" {
-  value = railway_tcp_proxy.mysql_proxy.domain
+output "app_url" {
+  value = "https://${railway_service_domain.app_domain.domain}"
 }
 
-output "mysql_proxy_port" {
-  value = railway_tcp_proxy.mysql_proxy.proxy_port
+output "mysql_proxy" {
+  value = "${railway_tcp_proxy.mysql_proxy.domain}:${railway_tcp_proxy.mysql_proxy.proxy_port}"
 }

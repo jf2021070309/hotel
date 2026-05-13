@@ -199,9 +199,9 @@ createApp({
 
     const saldoPendienteStay = computed(() => {
       if (!selectedStay.value) return 0;
-      const hospedaje = parseFloat(selectedStay.value.monto_original) || 0;
+      const total = parseFloat(selectedStay.value.total_pago) || 0;
       const abonado = parseFloat(selectedStay.value.total_cobrado_orig || selectedStay.value.total_cobrado) || 0;
-      return (hospedaje + totalConsumoStay.value) - abonado;
+      return total - abonado;
     });
 
     // MÉTODOS
@@ -722,7 +722,7 @@ createApp({
       stayParaPago.value = stay;
       pagoForm.stay_id = stay.id;
       // Saldo pendiente en moneda original
-      const saldoOrig = parseFloat(stay.monto_original) - parseFloat(stay.total_cobrado_orig || 0);
+      const saldoOrig = parseFloat(stay.total_pago) - parseFloat(stay.total_cobrado_orig || 0);
       pagoForm.monto = saldoOrig.toFixed(2);
       pagoForm.moneda = stay.moneda_pago;
       pagoForm.recargo_pos = false;
@@ -782,7 +782,7 @@ createApp({
       const stay = stayParaPago.value;
       
       // Saldo pendiente en SU MONEDA ORIGINAL
-      const saldoPendOrig = parseFloat(stay.monto_original) - parseFloat(stay.total_cobrado_orig || 0);
+      const saldoPendOrig = parseFloat(stay.total_pago) - parseFloat(stay.total_cobrado_orig || 0);
       
       // Convertir ese saldo pendiente original a PEN primeramente
       const tcStay = stay.moneda_pago === 'PEN' ? 1 : parseFloat(tcs.value[stay.moneda_pago]) || 1;

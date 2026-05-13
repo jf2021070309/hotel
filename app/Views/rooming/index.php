@@ -1133,7 +1133,7 @@ include $_projectRoot . '/includes/head.php';
               <div class="text-end">
                 <div class="small text-muted fw-bold text-uppercase">Saldo Pendiente</div>
                 <div class="fw-bold text-danger fs-5">{{ stayParaPago.moneda_pago == 'USD' ? '$' :
-                  (stayParaPago.moneda_pago == 'CLP' ? 'P$' : 'PEN') }} {{ (stayParaPago.monto_original -
+                  (stayParaPago.moneda_pago == 'CLP' ? 'P$' : 'PEN') }} {{ (stayParaPago.total_pago -
                   stayParaPago.total_cobrado_orig).toFixed(2) }}</div>
               </div>
             </div>

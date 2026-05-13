@@ -45,15 +45,6 @@ switch ($action) {
         }
         break;
         
-    case 'eliminar':
-        $dni = $_GET['dni'] ?? '';
-        if ($controller->delete($dni)) {
-            json_response(true, null, 200, "Registro eliminado");
-        } else {
-            json_response(false, null, 400, "No se pudo eliminar el registro");
-        }
-        break;
-        
     default:
         json_response(false, null, 400, "Acción no válida");
         break;

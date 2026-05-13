@@ -99,9 +99,6 @@ include $base . 'includes/sidebar.php';
                   <button @click="verHistorial(c)" class="btn-premium" title="Ver historial">
                     <i class="bi bi-clock-history"></i> Historial
                   </button>
-                  <button @click="eliminarCliente(c)" class="btn-premium hover-danger" title="Eliminar registro">
-                    <i class="bi bi-trash"></i>
-                  </button>
                 </div>
               </td>
             </tr>
@@ -275,11 +272,6 @@ include $base . 'includes/sidebar.php';
     border-color: #111;
     transform: translateY(-1px);
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-  }
-
-  .btn-premium.hover-danger:hover {
-    background: #ef4444 !important;
-    border-color: #ef4444 !important;
   }
 
   .btn-premium i {

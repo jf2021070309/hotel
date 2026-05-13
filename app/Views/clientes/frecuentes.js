@@ -146,33 +146,6 @@ createApp({
             return `${day}/${m}/${y}`;
         };
 
-        const eliminarCliente = async (c) => {
-            const confirm = await Swal.fire({
-                title: '¿Eliminar cliente?',
-                text: `Se borrará el registro de ${c.nombre}. Esta acción no se puede deshacer.`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#ef4444',
-                confirmButtonText: 'Sí, eliminar',
-                cancelButtonText: 'Cancelar'
-            });
-
-            if (confirm.isConfirmed) {
-                try {
-                    const res = await axios.get(`../../../api/clientes.php?action=eliminar&dni=${encodeURIComponent(c.dni)}`);
-                    if (res.data.ok) {
-                        Swal.fire({ icon: 'success', title: 'Registro eliminado', showConfirmButton: false, timer: 1500 });
-                        cargar();
-                    } else {
-                        Swal.fire('Error', res.data.msg || 'No se pudo eliminar', 'error');
-                    }
-                } catch (e) {
-                    console.error(e);
-                    Swal.fire('Error', 'Error de conexión', 'error');
-                }
-            }
-        };
-
         onMounted(cargar);
 
         return {
@@ -180,7 +153,7 @@ createApp({
             historial, loadingHistorial, clienteSeleccionado,
             clientesFiltrados, totalPago, totalCobrado,
             verHistorial, fmtFecha, crearEstadiaRapida, crearReservaRapida,
-            abrirModalNuevo, nuevoCliente, guardando, guardarNuevoCliente, eliminarCliente
+            abrirModalNuevo, nuevoCliente, guardando, guardarNuevoCliente
         };
     }
 }).mount('#app-clientes-frecuentes');

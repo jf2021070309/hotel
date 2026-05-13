@@ -154,17 +154,5 @@ class ClienteModel {
             error_log('ClienteModel::save error: ' . $e->getMessage());
             return false;
         }
-    /**
-     * Elimina un registro manual (donde stay_id es NULL)
-     */
-    public function deleteManual(string $dni): bool {
-        try {
-            $sql = "DELETE FROM rooming_pax WHERE documento_num = ? AND stay_id IS NULL";
-            $stmt = $this->pdo->prepare($sql);
-            return $stmt->execute([$dni]);
-        } catch (PDOException $e) {
-            error_log('ClienteModel::deleteManual error: ' . $e->getMessage());
-            return false;
-        }
     }
 }

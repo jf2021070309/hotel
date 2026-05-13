@@ -30,7 +30,6 @@ provider "time" {}
 
 resource "railway_project" "hotel" {
   name         = "hotel"
-  workspace_id = "9437db35-bbad-4338-a688-8e79ad39cc8e"
 }
 
 resource "railway_service" "mysql" {

@@ -39,19 +39,19 @@ jobs:
       - name: Inspect current state
         if: ${{ github.event.inputs.action == 'apply' }}
         working-directory: app/infra
-        run: terraform state list
+        run: terraform state list || true
         env:
           TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
           TF_VAR_railway_token: ${{ secrets.RAILWAY_TOKEN }}
           TF_VAR_mysql_root_password: ${{ secrets.MYSQL_ROOT_PASSWORD }}
           TF_VAR_gh_repo: ${{ secrets.GH_REPO }}
-          TF_VAR_cloudflare_token: ${{ secrets.CLOUDFLARE_TOKEN }}
-          TF_VAR_cloudflare_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
 
       - name: Clean inconsistent state
         if: ${{ github.event.inputs.action == 'apply' }}
         working-directory: app/infra
         run: |
+          terraform state rm railway_custom_domain.hotel || true
+          terraform state rm cloudflare_record.hotel || true
           terraform state rm railway_project.hotel || true
           terraform state rm railway_service.app || true
           terraform state rm railway_service.mysql || true
@@ -61,15 +61,13 @@ jobs:
           terraform state rm railway_variable.mysql_host || true
           terraform state rm railway_variable.mysql_password || true
           terraform state rm railway_variable.mysql_root_password || true
-          terraform state rm railway_service_domain.app_domain || true
+          terraform state rm railway_variable.mysql_user || true
           terraform state rm railway_variable.app_env || true
         env:
           TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
           TF_VAR_railway_token: ${{ secrets.RAILWAY_TOKEN }}
           TF_VAR_mysql_root_password: ${{ secrets.MYSQL_ROOT_PASSWORD }}
           TF_VAR_gh_repo: ${{ secrets.GH_REPO }}
-          TF_VAR_cloudflare_token: ${{ secrets.CLOUDFLARE_TOKEN }}
-          TF_VAR_cloudflare_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
 
       - name: Terraform Plan
         working-directory: app/infra
@@ -79,8 +77,6 @@ jobs:
           TF_VAR_railway_token: ${{ secrets.RAILWAY_TOKEN }}
           TF_VAR_mysql_root_password: ${{ secrets.MYSQL_ROOT_PASSWORD }}
           TF_VAR_gh_repo: ${{ secrets.GH_REPO }}
-          TF_VAR_cloudflare_token: ${{ secrets.CLOUDFLARE_TOKEN }}
-          TF_VAR_cloudflare_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
 
       - name: Terraform Apply / Destroy
         working-directory: app/infra
@@ -90,8 +86,6 @@ jobs:
           TF_VAR_railway_token: ${{ secrets.RAILWAY_TOKEN }}
           TF_VAR_mysql_root_password: ${{ secrets.MYSQL_ROOT_PASSWORD }}
           TF_VAR_gh_repo: ${{ secrets.GH_REPO }}
-          TF_VAR_cloudflare_token: ${{ secrets.CLOUDFLARE_TOKEN }}
-          TF_VAR_cloudflare_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
 
       - name: Esperar MySQL
         if: ${{ github.event.inputs.action == 'apply' }}
@@ -109,5 +103,3 @@ jobs:
           TF_VAR_railway_token: ${{ secrets.RAILWAY_TOKEN }}
           TF_VAR_mysql_root_password: ${{ secrets.MYSQL_ROOT_PASSWORD }}
           TF_VAR_gh_repo: ${{ secrets.GH_REPO }}
-          TF_VAR_cloudflare_token: ${{ secrets.CLOUDFLARE_TOKEN }}
-          TF_VAR_cloudflare_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}

@@ -11,19 +11,11 @@ terraform {
       source  = "terraform-community-providers/railway"
       version = ">= 0.6.0"
     }
-    cloudflare = {
-      source  = "cloudflare/cloudflare"
-      version = "~> 4.0"
-    }
   }
 }
 
 provider "railway" {
   token = var.railway_token
-}
-
-provider "cloudflare" {
-  api_token = var.cloudflare_token
 }
 
 resource "railway_project" "hotel" {
@@ -55,17 +47,6 @@ resource "railway_service" "app" {
   project_id         = railway_project.hotel.id
   source_repo        = var.gh_repo
   source_repo_branch = "main"
-}
-
-# ELIMINADO: railway_service_domain.app_domain (bug del proveedor)
-# Usamos la URL fija predecible de Railway en su lugar
-
-resource "railway_custom_domain" "hotel" {
-  domain         = "hotel.jaimefloresdev.site"
-  environment_id = railway_project.hotel.default_environment.id
-  service_id     = railway_service.app.id
-
-  depends_on = [railway_service.app]
 }
 
 resource "railway_variable" "mysql_host" {
@@ -107,21 +88,6 @@ resource "railway_tcp_proxy" "mysql_proxy" {
   environment_id   = railway_project.hotel.default_environment.id
   service_id       = railway_service.mysql.id
   application_port = 3306
-}
-
-resource "cloudflare_record" "hotel" {
-  zone_id         = var.cloudflare_zone_id
-  name            = "hotel"
-  content         = railway_custom_domain.hotel.dns_record_value
-  type            = "CNAME"
-  proxied         = true
-  allow_overwrite = true
-
-  depends_on = [railway_custom_domain.hotel]
-}
-
-output "app_url" {
-  value = "https://hotel.jaimefloresdev.site"
 }
 
 output "app_url_railway" {

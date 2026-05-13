@@ -41,7 +41,7 @@ switch ($action) {
         if ($controller->store($data)) {
             json_response(true, null, 200, "Cliente registrado correctamente");
         } else {
-            json_response(false, null, 400, "El cliente ya se encuentra registrado o los datos son inválidos");
+            json_response(false, null, 500, "No se pudo registrar el cliente");
         }
         break;
         

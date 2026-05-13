@@ -114,22 +114,6 @@ class ClienteModel {
      */
     public function save(array $data): bool {
         try {
-            // 1. Evitar duplicados por DNI
-            $checkDni = $this->pdo->prepare("SELECT id FROM rooming_pax WHERE documento_num = ? AND stay_id IS NULL LIMIT 1");
-            $checkDni->execute([$data['dni']]);
-            if ($checkDni->fetch()) {
-                return false; // Ya existe por DNI
-            }
-
-            // 2. Evitar duplicados por RUC (si es empresa)
-            if ($data['es_empresa'] && !empty($data['ruc'])) {
-                $checkRuc = $this->pdo->prepare("SELECT id FROM rooming_pax WHERE ruc = ? AND stay_id IS NULL LIMIT 1");
-                $checkRuc->execute([$data['ruc']]);
-                if ($checkRuc->fetch()) {
-                    return false; // Ya existe por RUC
-                }
-            }
-
             $sql = "INSERT INTO rooming_pax 
                         (stay_id, documento_tipo, documento_num, ruc, nombre_completo, nacionalidad, celular, empresa, es_titular, es_corporativo) 
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?)";

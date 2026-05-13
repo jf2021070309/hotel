@@ -5,7 +5,7 @@ variable "railway_token" {
 }
 
 variable "gh_repo" {
-  description = "Repo GitHub, ej: jf2021070309/hotel"
+  description = "Repo GitHub, ejemplo: jf2021070309/hotel"
   type        = string
 }
 

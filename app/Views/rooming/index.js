@@ -1077,6 +1077,32 @@ createApp({
       if (stayId) {
         verDetalle(stayId);
       }
+
+      // QUICK CHECK-IN desde Clientes Frecuentes
+      const quickPax = localStorage.getItem('quick_checkin_pax');
+      if (quickPax) {
+        try {
+            const data = JSON.parse(quickPax);
+            localStorage.removeItem('quick_checkin_pax'); // Limpiar para que no se repita
+            
+            // 1. Abrir modal de checkin
+            await abrirCheckin();
+            
+            // 2. Pre-llenar el primer pasajero
+            if (form.pax.length > 0) {
+                form.pax[0].documento_num = data.dni;
+                form.pax[0].documento_tipo = data.tipo_doc;
+                form.pax[0].nombre_completo = data.nombre;
+                form.pax[0].nacionalidad = data.nacionalidad;
+                form.pax[0].ciudad = data.ciudad;
+                form.pax[0].es_titular = 1;
+            }
+            
+            showToast(`¡Cliente Frecuente detectado! (${data.visitas} visitas)`, 'success');
+        } catch (e) {
+            console.error('Error in quick checkin:', e);
+        }
+      }
     });
 
     watch(() => form.stay.habitacion_id, () => {

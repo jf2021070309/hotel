@@ -26,6 +26,7 @@ RewriteRule ^inventario/?$ app/Views/inventario/index.php [L,QSA]
 RewriteRule ^desayunos/?$ app/Views/desayunos/index.php [L,QSA]
 RewriteRule ^limpieza/?$ app/Views/limpieza/index.php [L,QSA]
 RewriteRule ^clientes/?$ app/Views/clientes/index.php [L,QSA]
+RewriteRule ^clientes-frecuentes/?$ app/Views/clientes/frecuentes.php [L,QSA]
 
 # Configuración
 RewriteRule ^admin/usuarios/?$ app/Views/admin/usuarios.php [L,QSA]

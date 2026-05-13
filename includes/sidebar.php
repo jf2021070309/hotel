@@ -170,6 +170,11 @@ function isActive(string $page, string $folder_): string {
         <i class="bi bi-people-fill"></i> <span>Clientes</span>
       </a>
     </div>
+    <div class="nav-item">
+      <a href="<?= route('clientes/frecuentes.php', $base) ?>" class="<?= isActive('frecuentes.php','clientes') ?>" onclick="closeSidebarOnMobile()">
+        <i class="bi bi-person-heart text-danger"></i> <span>Clientes Frecuentes</span>
+      </a>
+    </div>
     <?php endif; ?>
 
       <?php if (tieneAccesoModulo('gestion_usuarios') || tieneAccesoModulo('medios_pago') || tieneAccesoModulo('auditoria')): ?>

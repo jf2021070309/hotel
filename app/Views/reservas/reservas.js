@@ -42,6 +42,15 @@ createApp({
       observaciones: '',
       canal: 'DIRECTO'
     });
+    const activeQuickGuest = ref(null);
+
+    // Detección inmediata de reserva rápida (Cliente Frecuente)
+    const quickPaxData = localStorage.getItem('quick_reserva_pax');
+    if (quickPaxData) {
+      try {
+        activeQuickGuest.value = JSON.parse(quickPaxData);
+      } catch (e) { console.error(e); }
+    }
 
     const pagoRapido = reactive({ monto: 0, moneda: 'PEN', metodo: 'efectivo' });
 
@@ -214,9 +223,18 @@ createApp({
       formQuick.editando = false;
       formQuick.hab     = hab;
       formQuick.fecha   = `${anioActual.value}-${String(mesActual.value).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
-      formQuick.titular = '';
+      
+      if (activeQuickGuest.value) {
+        formQuick.titular = activeQuickGuest.value.nombre;
+        formQuick.observaciones = `Cliente Frecuente (${activeQuickGuest.value.visitas} visitas). DNI: ${activeQuickGuest.value.dni}`;
+        localStorage.removeItem('quick_reserva_pax'); // Limpiar ahora que se usó
+        activeQuickGuest.value = null; 
+      } else {
+        formQuick.titular = '';
+        formQuick.observaciones = '';
+      }
+
       formQuick.noches  = 1;
-      formQuick.observaciones = '';
       formQuick.canal   = 'DIRECTO';
       bootstrap.Modal.getOrCreateInstance(document.getElementById('modalQuickReserva')).show();
     };
@@ -529,6 +547,17 @@ createApp({
       habitaciones.value = enrichHabs(habitaciones.value);
       iniciarPolling();
       scrollToToday();
+
+      if (activeQuickGuest.value) {
+        Swal.fire({ 
+          title: `MODO RESERVA: ${activeQuickGuest.value.nombre}`,
+          text: 'Selecciona una celda en el cuadro para completar la reserva',
+          icon: 'info',
+          timer: 5000,
+          toast: true,
+          position: 'top-end'
+        });
+      }
     });
 
     onUnmounted(() => {
@@ -537,6 +566,7 @@ createApp({
     });
 
     return {
+      activeQuickGuest,
       loading, loadingPago,
       habitaciones, diasEnMes, resumen, ingresos,
       mesActual, anioActual, hoyDia, mesHoy, anioHoy,

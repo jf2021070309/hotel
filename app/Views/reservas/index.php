@@ -424,9 +424,22 @@ include $_projectRoot . '/includes/sidebar.php';
 
   <div class="page-body">
 
-    <!-- RESUMEN Y LEYENDA -->
-    <div class="summary-pills align-items-center">
-
+    <div v-if="activeQuickGuest" class="mb-2 animate__animated animate__headShake">
+      <div class="alert alert-dark d-flex align-items-center justify-content-between py-2 px-3 shadow-sm border-0" 
+           style="background: #111; border-left: 4px solid #ef4444 !important; border-radius: 12px;">
+        <div class="d-flex align-items-center gap-3">
+          <div class="bg-danger rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+            <i class="bi bi-person-fill text-white"></i>
+          </div>
+          <div>
+            <div class="text-white fw-bold small" style="letter-spacing: 0.5px;">MODO RESERVA ACTIVO</div>
+            <div class="text-white-50" style="font-size: 11px;">Haciendo reserva para: <strong class="text-danger">{{ activeQuickGuest.nombre.toUpperCase() }}</strong></div>
+          </div>
+        </div>
+        <button class="btn btn-sm btn-outline-light border-0 opacity-75" @click="activeQuickGuest = null">
+          Cancelar <i class="bi bi-x-circle ms-1"></i>
+        </button>
+      </div>
     </div>
 
     <!-- CONTROLS -->
@@ -812,4 +825,4 @@ include $_projectRoot . '/includes/sidebar.php';
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="<?= $base ?>app/Views/reservas/reservas.js"></script>
+<script src="<?= $base ?>app/Views/reservas/reservas.js?v=1.1"></script>

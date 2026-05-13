@@ -52,6 +52,7 @@ if (!function_exists('clean_route_map')) {
             'desayunos/index.php'       => 'desayunos',
             'limpieza/index.php'        => 'limpieza',
             'clientes/index.php'        => 'clientes',
+            'clientes/frecuentes.php'   => 'clientes-frecuentes',
             'admin/usuarios.php'        => 'admin/usuarios',
             'admin/medios_pago.php'     => 'admin/medios-pago',
             'admin/auditoria.php'       => 'admin/auditoria',

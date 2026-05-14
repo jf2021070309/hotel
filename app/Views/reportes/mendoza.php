@@ -162,5 +162,5 @@ include $base . 'includes/sidebar.php';
     </div>
 </div>
 
-<script src="<?= $base ?>assets/js/reportes/mendoza.js"></script>
+<script src="<?= $base ?>assets/js/reportes/mendoza.js?v=<?= time() ?>"></script>
 </body></html>

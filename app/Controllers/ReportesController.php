@@ -75,4 +75,53 @@ class ReportesController {
         $stmt->execute([$minVisitas]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    /**
+     * Reporte Sr. Mendoza
+     */
+    public function mendoza(int $mes, int $anio) {
+        require_once __DIR__ . '/../Models/ReporteModel.php';
+        $model = new ReporteModel($this->pdo);
+        return [
+            'data' => $model->getVentaHospedaje($mes, $anio),
+            'resumen' => $model->getResumenP_L($mes, $anio),
+            'resumen_desglosado' => $model->getResumenDesglosado($mes, $anio)
+        ];
+    }
+
+    /**
+     * Reporte Alex (Gastos Yape)
+     */
+    public function alex(int $mes, int $anio) {
+        require_once __DIR__ . '/../Models/ReporteModel.php';
+        $model = new ReporteModel($this->pdo);
+        return $model->getGastosYape($mes, $anio);
+    }
+
+    /**
+     * Reporte Cuadre Diario
+     */
+    public function cuadre(string $fecha) {
+        require_once __DIR__ . '/../Models/ReporteModel.php';
+        $model = new ReporteModel($this->pdo);
+        return $model->getCuadreDiario($fecha);
+    }
+
+    /**
+     * Reporte Mensual Consolidado
+     */
+    public function mensual(int $mes, int $anio) {
+        require_once __DIR__ . '/../Models/ReporteModel.php';
+        $model = new ReporteModel($this->pdo);
+        return $model->getMensualData($mes, $anio);
+    }
+
+    /**
+     * Reporte de Gráficos Estadísticos
+     */
+    public function graficos(int $mes, int $anio) {
+        require_once __DIR__ . '/../Models/ReporteModel.php';
+        $model = new ReporteModel($this->pdo);
+        return $model->getGraficosData($mes, $anio);
+    }
 }

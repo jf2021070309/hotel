@@ -1,7 +1,7 @@
 /**
  * assets/js/reportes/mendoza.js
  */
-const { createApp, ref, onMounted, onUnmounted } = Vue;
+const { createApp, ref, computed, onMounted, onUnmounted } = Vue;
 
 createApp({
     setup() {
@@ -21,11 +21,12 @@ createApp({
             try {
                 const res = await axios.get(`/hotel/api/reportes.php?action=mendoza&mes=${filtro.value.mes}&anio=${filtro.value.anio}`);
                 if (res.data.ok) {
-                    data.value = res.data.data;
-                    resumen.value = res.data.resumen;
-                    resumenDesglosado.value = res.data.resumen_desglosado;
+                    const payload = res.data.data;
+                    data.value = Array.isArray(payload.data) ? payload.data : [];
+                    resumen.value = payload.resumen || {};
+                    resumenDesglosado.value = payload.resumen_desglosado || {};
                     
-                    // Inicializar colapsados: hoy expandido, resto colapsado
+                    // Inicializar colapsados
                     const hoy = new Date().toISOString().split('T')[0];
                     const tempCol = {};
                     const fechasUnicas = [...new Set(data.value.map(d => d.pago_fecha))];
@@ -41,7 +42,7 @@ createApp({
             }
         };
 
-        const groupedData = Vue.computed(() => {
+        const groupedData = computed(() => {
             const groups = {};
             data.value.forEach(item => {
                 const fecha = item.pago_fecha;

@@ -58,6 +58,9 @@ if (!function_exists('clean_route_map')) {
             'admin/auditoria.php'       => 'admin/auditoria',
             'app/Views/reportes/mendoza.php' => 'reportes/mendoza',
             'app/Views/reportes/alex.php'    => 'reportes/alex',
+            'app/Views/reportes/graficos.php' => 'reportes/graficos',
+            'app/Views/reportes/cuadre_diario.php' => 'reportes/cuadre-diario',
+            'app/Views/reportes/mensual.php' => 'reportes/mensual',
             'logout.php'                => 'logout.php',
         ];
     }

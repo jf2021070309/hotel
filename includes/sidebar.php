@@ -231,6 +231,30 @@ function isActive(string $page, string $folder_): string {
     </div>
     <?php endif; ?>
 
+    <?php if (tieneAccesoModulo('reporte_graficos')): ?>
+    <div class="nav-item">
+      <a href="<?= route('app/Views/reportes/graficos.php', $base) ?>" class="<?= isActive('graficos.php','reportes') ?>" onclick="closeSidebarOnMobile()">
+        <i class="bi bi-pie-chart-fill text-primary"></i> <span>Gráficos Estadísticos</span>
+      </a>
+    </div>
+    <?php endif; ?>
+
+    <?php if (tieneAccesoModulo('reporte_cuadre')): ?>
+    <div class="nav-item">
+      <a href="<?= route('app/Views/reportes/cuadre_diario.php', $base) ?>" class="<?= isActive('cuadre_diario.php','reportes') ?>" onclick="closeSidebarOnMobile()">
+        <i class="bi bi-journal-check text-warning"></i> <span>Cuadre Diario</span>
+      </a>
+    </div>
+    <?php endif; ?>
+
+    <?php if (tieneAccesoModulo('reporte_mensual')): ?>
+    <div class="nav-item">
+      <a href="<?= route('app/Views/reportes/mensual.php', $base) ?>" class="<?= isActive('mensual.php','reportes') ?>" onclick="closeSidebarOnMobile()">
+        <i class="bi bi-calculator-fill text-info"></i> <span>Utilidad Mensual (P&L)</span>
+      </a>
+    </div>
+    <?php endif; ?>
+
   </nav>
 
   <div class="sidebar-user px-3 py-3 border-top" style="border-color: rgba(255,255,255,0.05) !important;">

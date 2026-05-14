@@ -29,7 +29,45 @@ switch ($action) {
         json_response(true, $controller->extranjerosRecurrentes($min));
         break;
 
+    case 'mendoza':
+        $mes  = (int)($_GET['mes']  ?? date('m'));
+        $anio = (int)($_GET['anio'] ?? date('Y'));
+        json_response(true, $controller->mendoza($mes, $anio));
+        break;
+
+    case 'alex':
+        $mes  = (int)($_GET['mes']  ?? date('m'));
+        $anio = (int)($_GET['anio'] ?? date('Y'));
+        json_response(true, $controller->alex($mes, $anio));
+        break;
+
+    case 'diario':
+        $fecha = $_GET['fecha'] ?? date('Y-m-d');
+        json_response(true, $controller->cuadre($fecha));
+        break;
+
+    case 'mensual':
+        $mes  = (int)($_GET['month'] ?? date('m'));
+        $anio = (int)($_GET['year']  ?? date('Y'));
+        json_response(true, $controller->mensual($mes, $anio));
+        break;
+
     default:
-        json_response(false, null, 400, "Acción no válida");
+        // Soporte para parámetro 'tipo' usado en algunos JS
+        $tipo = $_GET['tipo'] ?? '';
+        if ($tipo === 'diario') {
+            $fecha = $_GET['fecha'] ?? date('Y-m-d');
+            json_response(true, $controller->cuadre($fecha));
+        } elseif ($tipo === 'mensual') {
+            $mes  = (int)($_GET['month'] ?? date('m'));
+            $anio = (int)($_GET['year']  ?? date('Y'));
+            json_response(true, $controller->mensual($mes, $anio));
+        } elseif ($tipo === 'graficos') {
+            $mes  = (int)($_GET['month'] ?? date('m'));
+            $anio = (int)($_GET['year']  ?? date('Y'));
+            json_response(true, $controller->graficos($mes, $anio));
+        } else {
+            json_response(false, null, 400, "Acción no válida");
+        }
         break;
 }

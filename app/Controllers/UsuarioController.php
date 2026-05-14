@@ -181,7 +181,6 @@ class UsuarioController
      * Modifica la contraseña de un usuario determinado.
      * 
      * Procesa el cambio en el modelo y registra un log de auditoría
-     * documentando la acción bajo el usuario ejecutante.
      *
      * @param int $id Identificador del usuario a modificar
      * @param string $password Nueva credencial de acceso

@@ -47,15 +47,23 @@ class ClienteModel {
     public function buscarPax(string $q): array {
         $like = '%' . $q . '%';
         $sql = "SELECT 
-                    p.documento_num, p.documento_tipo, p.nombre_completo, 
-                    p.nacionalidad, p.ciudad, p.celular, 
-                    p.email, p.empresa, p.es_corporativo, p.ruc,
-                    s.ruc_factura, s.razon_social
+                    p.documento_num, 
+                    MAX(p.documento_tipo)   AS documento_tipo, 
+                    MAX(p.nombre_completo)  AS nombre_completo, 
+                    MAX(p.nacionalidad)     AS nacionalidad, 
+                    MAX(p.ciudad)           AS ciudad, 
+                    MAX(p.celular)          AS celular, 
+                    MAX(p.email)            AS email, 
+                    MAX(p.empresa)          AS empresa, 
+                    MAX(p.es_corporativo)   AS es_corporativo, 
+                    MAX(p.ruc)              AS ruc,
+                    MAX(s.ruc_factura)      AS ruc_factura, 
+                    MAX(s.razon_social)     AS razon_social
                 FROM rooming_pax p
                 LEFT JOIN rooming_stays s ON p.stay_id = s.id
                 WHERE p.documento_num LIKE ? OR p.nombre_completo LIKE ?
-                GROUP BY p.documento_num, p.documento_tipo, p.nombre_completo, p.nacionalidad, p.ciudad, p.celular, p.email, p.empresa, p.es_corporativo, p.ruc, s.ruc_factura, s.razon_social
-                ORDER BY MAX(p.stay_id) DESC
+                GROUP BY p.documento_num
+                ORDER BY MAX(COALESCE(p.stay_id, 0)) DESC, MAX(p.id) DESC
                 LIMIT 10";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([$like, $like]);

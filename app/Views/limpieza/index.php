@@ -42,6 +42,9 @@ include $base . 'includes/sidebar.php';
             <a href="<?= route('limpieza/reporte.php', $base) ?>" class="btn btn-outline-danger shadow-sm">
                 <i class="bi bi-clipboard2-check me-1"></i> Reporte / Checklist
             </a>
+            <a href="<?= route('reportes/ficha_servicio.php', $base) ?>" class="btn btn-dark shadow-sm">
+                <i class="bi bi-printer me-1 text-warning"></i> Ficha de Servicio
+            </a>
             <a href="<?= route('limpieza/historial.php', $base) ?>" class="btn btn-outline-secondary shadow-sm">
                 <i class="bi bi-clock-history me-1"></i> Ver Historial
             </a>

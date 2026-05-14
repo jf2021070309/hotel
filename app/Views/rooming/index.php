@@ -672,7 +672,7 @@ include $_projectRoot . '/includes/head.php';
                         <label class="micro-text fw-bold text-muted mb-1">NOMBRE COMPLETO</label>
                         <input type="text" v-model="pax.nombre_completo" :id="'inputNombrePax'+idx"
                           class="form-control form-control-sm border-light bg-light fw-bold"
-                          placeholder="Se autocompleta con DNI..." required>
+                          placeholder="Nombre completo del huésped..." required>
                       </div>
 
                       <div class="row g-2 mb-3">

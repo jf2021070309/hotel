@@ -20,14 +20,20 @@ include $_projectRoot . '/includes/head.php';
         .main-content { margin-left: 0 !important; padding: 0 !important; width: 100% !important; }
         .page-body { padding: 0 !important; }
         .card { border: none !important; box-shadow: none !important; }
-        table { border: 1px solid #000 !important; width: 100% !important; }
-        th, td { border: 1px solid #000 !important; color: #000 !important; padding: 12px !important; }
+        table { border: 1px solid #000 !important; width: 100% !important; table-layout: fixed; }
+        th, td { border: 1px solid #000 !important; color: #000 !important; padding: 10px !important; word-wrap: break-word; vertical-align: middle !important; }
+        th { text-align: center !important; font-size: 11px !important; height: 40px !important; }
         .card-header { background: #eee !important; color: #000 !important; border: 1px solid #000 !important; }
+        
+        /* Ajuste de anchos para impresión */
+        .hab-col { width: 18% !important; }
+        .estado-col { width: 34% !important; }
+        .col-comentario { width: 48% !important; }
     }
-    .table-ficha th { background-color: #f8f9fa; color: #333; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
-    .table-ficha td { height: 60px; vertical-align: middle; }
+    .table-ficha th { background-color: #f8f9fa; color: #333; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; vertical-align: middle; }
+    .table-ficha td { height: 70px; vertical-align: middle; }
     .hab-col { width: 160px; font-weight: 900; font-size: 24px; text-align: center; color: #1a1a2e; }
-    .estado-col { width: 250px; }
+    .estado-col { width: 400px; }
 </style>
 
 <div class="main-content" id="app-ficha" v-cloak>
@@ -39,7 +45,7 @@ include $_projectRoot . '/includes/head.php';
             <h4 class="fw-bold mb-0">Ficha de Limpieza y Desayuno</h4>
             <p class="text-muted small mb-0"><i class="bi bi-calendar-event me-1"></i> {{ fmtFecha(fecha) }} — Habitaciones registradas</p>
         </div>
-        <div class="ms-auto d-flex gap-2 align-items-center">
+        <div class="ms-auto d-flex align-items-center gap-2">
             <label class="small fw-bold text-muted d-none d-md-block">CAMBIAR FECHA:</label>
             <input type="date" v-model="fecha" @change="cambiarFecha" class="form-control form-control-sm" style="width: 140px;">
             <button @click="imprimir" class="btn btn-primary fw-bold shadow-sm px-4 border-dark ms-2">
@@ -74,7 +80,7 @@ include $_projectRoot . '/includes/head.php';
                         <tr class="text-center">
                             <th class="hab-col">NRO DE HABITACIÓN</th>
                             <th class="estado-col">ESTADO</th>
-                            <th>COMENTARIO</th>
+                            <th class="col-comentario">COMENTARIO</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -83,8 +89,12 @@ include $_projectRoot . '/includes/head.php';
                                 <span class="d-block">#{{ h.hab_numero }}</span>
                                 <small class="text-muted d-print-none" style="font-size: 10px; font-weight: normal;">{{ h.hab_tipo }}</small>
                             </td>
-                            <td class="estado-col"></td>
-                            <td></td>
+                            <td class="p-0">
+                                <textarea class="editable-cell" placeholder="Escribir estado..."></textarea>
+                            </td>
+                            <td class="p-0">
+                                <textarea class="editable-cell" placeholder="Añadir comentario..."></textarea>
+                            </td>
                         </tr>
                         <tr v-if="habitaciones.length === 0">
                             <td colspan="3" class="text-center py-5 text-muted fst-italic">
@@ -114,6 +124,38 @@ include $_projectRoot . '/includes/head.php';
         </div>
     </div>
 </div>
+
+<style>
+    .editable-cell {
+        width: 100%;
+        min-height: 80px;
+        border: none;
+        padding: 12px;
+        resize: none;
+        background: transparent;
+        font-family: inherit;
+        font-size: 13px;
+        outline: none;
+        display: block;
+        overflow: hidden;
+        word-wrap: break-word;
+        line-height: 1.5;
+    }
+    .editable-cell:focus {
+        background: rgba(0,0,0,0.02);
+    }
+    @media print {
+        .editable-cell::placeholder { color: transparent !important; }
+        .editable-cell { 
+            height: auto !important; 
+            min-height: 80px; 
+            border: none !important; 
+            padding: 10px !important;
+            font-size: 12px !important;
+        }
+        td { height: auto !important; }
+    }
+</style>
 
 <script>
 const { createApp, ref, onMounted } = Vue;

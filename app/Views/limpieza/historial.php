@@ -17,7 +17,7 @@ include $base . 'includes/sidebar.php';
             <p class="mb-0 text-muted">Consulta de registros de días anteriores</p>
         </div>
         <div class="ms-auto">
-            <a href="app/Views/limpieza/index.php" class="btn btn-light border shadow-sm">
+            <a href="index.php" class="btn btn-light border shadow-sm">
                 <i class="bi bi-arrow-left me-1"></i> Volver al Panel
             </a>
         </div>
@@ -27,7 +27,7 @@ include $base . 'includes/sidebar.php';
         
         <div class="card shadow-sm border-0 mb-4">
             <div class="card-body py-3 d-flex gap-3 align-items-center">
-                <select class="form-select form-select-sm" style="width:150px" v-model="filtro.mes" @change="fetchHistorial()">
+                <select class="form-select form-select-sm" style="width:150px" v-model="filtroHist.mes" @change="fetchHistorial()">
                     <option value="1">Enero</option><option value="2">Febrero</option>
                     <option value="3">Marzo</option><option value="4">Abril</option>
                     <option value="5">Mayo</option><option value="6">Junio</option>
@@ -35,7 +35,7 @@ include $base . 'includes/sidebar.php';
                     <option value="9">Septiembre</option><option value="10">Octubre</option>
                     <option value="11">Noviembre</option><option value="12">Diciembre</option>
                 </select>
-                <select class="form-select form-select-sm" style="width:120px" v-model="filtro.anio" @change="fetchHistorial()">
+                <select class="form-select form-select-sm" style="width:120px" v-model="filtroHist.anio" @change="fetchHistorial()">
                     <option value="2024">2024</option><option value="2025">2025</option><option value="2026">2026</option>
                 </select>
             </div>
@@ -55,8 +55,8 @@ include $base . 'includes/sidebar.php';
                 </thead>
                 <tbody>
                     <tr v-if="loading" class="text-center"><td colspan="6" class="py-5"><div class="spinner-border text-primary"></div></td></tr>
-                    <tr v-if="!loading && lista.length === 0" class="text-center"><td colspan="6" class="py-5 text-muted">No se encontraron registros en este periodo.</td></tr>
-                    <tr v-for="r in lista">
+                    <tr v-if="!loading && listaHistorial.length === 0" class="text-center"><td colspan="6" class="py-5 text-muted">No se encontraron registros en este periodo.</td></tr>
+                    <tr v-for="r in listaHistorial">
                         <td class="ps-3 fw-bold">{{ formatFecha(r.fecha) }}</td>
                         <td class="text-center">{{ r.total }}</td>
                         <td class="text-center text-success fw-bold">{{ r.completadas }}</td>

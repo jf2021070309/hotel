@@ -212,12 +212,6 @@ class FlujoController {
      * @param string $fecha Formato YYYY-MM-DD.
      * @return array Resumen con totales por moneda y desglose de turnos.
      */
-    /**
-     * Obtiene el resumen consolidado específico para la liquidación de sobres de Alex.
-     * 
-     * @param string $fecha Formato YYYY-MM-DD.
-     * @return array Resumen con totales por turno y desglose de egresos.
-     */
     public function resumenDia(string $fecha): array {
         return $this->model->getResumenDia($fecha);
     }
@@ -233,50 +227,70 @@ class FlujoController {
     }
 
     /**
-     * Devuelve el reporte consolidado para un mes específico (por días).
-     *
-     * @param int $mes Mes (1-12)
-     * @param int $anio Año (YYYY)
-     * @return array Estructura indexada por fecha con los montos por turno y totales
-     */
-    /**
-     * Verifica preventivamente si el usuario actual tiene un turno de caja abierto para hoy.
-     * Útil para bloqueos en la interfaz (ej: check-ins).
+     * Verifica si hay un turno de caja abierto y correcto para el momento actual.
      * 
-     * @return array ['ok' => bool, 'flujo_id' => int|null]
+     * Lógica de tres casos:
+     *  1. Flujo del turno CORRECTO abierto   → ok:true  (todo bien, continúa)
+     *  2. Flujo de turno INCORRECTO abierto  → ok:false + turno_pendiente
+     *     (ej: son las 14:30, hay caja de MAÑANA sin cerrar)
+     *  3. Sin ningún flujo abierto hoy       → ok:false (hay que abrir caja)
+     * 
+     * @return array {ok, flujo_id, turno_actual, turno_flujo?, turno_pendiente?, msg}
      */
     public function verificarApertura(): array {
         require_once __DIR__ . '/../Helpers/FinanzasHelper.php';
-        $helper = new FinanzasHelper($this->pdo);
         
-        $flujoId = $helper->getFlujoIdActivo($_SESSION['auth_id']);
         $turnoActual = FinanzasHelper::getTurnoActual();
+        $fechaHoy    = date('Y-m-d');
+        $usuarioId   = $_SESSION['auth_id'];
 
-        if ($flujoId === null) {
-            $stmt = $this->pdo->prepare("
-                SELECT id, turno FROM flujo_caja
-                WHERE fecha = ? AND usuario_id = ? AND estado = 'borrador'
-                ORDER BY id DESC LIMIT 1
-            ");
-            $stmt->execute([date('Y-m-d'), $_SESSION['auth_id']]);
-            $flujoPendiente = $stmt->fetch(PDO::FETCH_ASSOC);
+        // 1. Buscar flujo que coincida exactamente con el turno actual
+        $stmtExacto = $this->pdo->prepare("
+            SELECT id, turno FROM flujo_caja
+            WHERE fecha = ? AND turno = ? AND usuario_id = ? AND estado = 'borrador'
+            ORDER BY id DESC LIMIT 1
+        ");
+        $stmtExacto->execute([$fechaHoy, $turnoActual, $usuarioId]);
+        $flujoExacto = $stmtExacto->fetch(PDO::FETCH_ASSOC);
 
-            if ($flujoPendiente) {
-                return [
-                    'ok' => false,
-                    'flujo_id' => null,
-                    'turno_actual' => $turnoActual,
-                    'turno_pendiente' => $flujoPendiente['turno'],
-                    'msg' => "Cierra el flujo de caja de {$flujoPendiente['turno']} para registrar operaciones. Luego abre el flujo de caja de $turnoActual."
-                ];
-            }
+        if ($flujoExacto) {
+            // ✔ Caja del turno correcto abierta
+            return [
+                'ok'           => true,
+                'flujo_id'     => (int)$flujoExacto['id'],
+                'turno_flujo'  => $flujoExacto['turno'],
+                'turno_actual' => $turnoActual,
+                'msg'          => 'Flujo de caja abierto.'
+            ];
         }
-        
+
+        // 2. Buscar si hay una caja de un turno DIFERENTE todavía en borrador
+        $stmtOtro = $this->pdo->prepare("
+            SELECT id, turno FROM flujo_caja
+            WHERE fecha = ? AND usuario_id = ? AND estado = 'borrador'
+            ORDER BY id DESC LIMIT 1
+        ");
+        $stmtOtro->execute([$fechaHoy, $usuarioId]);
+        $flujoOtroTurno = $stmtOtro->fetch(PDO::FETCH_ASSOC);
+
+        if ($flujoOtroTurno) {
+            // ⚠ Caja del turno equivocado: hay que cerrarla antes de operar
+            return [
+                'ok'              => false,
+                'flujo_id'        => null,
+                'turno_flujo'     => $flujoOtroTurno['turno'],
+                'turno_actual'    => $turnoActual,
+                'turno_pendiente' => $flujoOtroTurno['turno'],
+                'msg'             => "Cierra el flujo de caja de {$flujoOtroTurno['turno']} antes de registrar operaciones del turno $turnoActual."
+            ];
+        }
+
+        // 3. No hay ninguna caja abierta hoy
         return [
-            'ok' => ($flujoId !== null),
-            'flujo_id' => $flujoId,
+            'ok'           => false,
+            'flujo_id'     => null,
             'turno_actual' => $turnoActual,
-            'msg' => $flujoId !== null ? 'Flujo de caja abierto.' : "Abre el flujo de caja de $turnoActual para registrar operaciones."
+            'msg'          => "No hay flujo de caja abierto. Abre el turno $turnoActual para continuar."
         ];
     }
 }

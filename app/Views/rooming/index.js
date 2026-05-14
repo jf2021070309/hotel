@@ -252,18 +252,43 @@ createApp({
     const validarCajaAbierta = async () => {
       try {
         const res = await axios.get('../../../api/flujo.php?action=verificar_apertura');
-        window.__CAJA_MSG = res.data.msg || (res.data.data && res.data.data.msg) || '';
-        return res.data.ok;
+        // json_response() envuelve en {ok, data, msg} — el payload real está en data
+        return res.data.data ?? res.data;
       } catch (e) {
-        window.__CAJA_MSG = e.response && e.response.data && e.response.data.msg ? e.response.data.msg : '';
-        return false;
+        return { ok: false, msg: 'Error al verificar caja' };
       }
     };
 
-    const mostrarModalCajaCerrada = () => {
+    const mostrarModalCajaCerrada = (estadoCaja) => {
+      // Caso A: hay caja del turno incorrecto abierta (ej: MAÑANA cuando ya es TARDE)
+      if (estadoCaja?.turno_pendiente) {
+        const turnoPendiente = estadoCaja.turno_pendiente;
+        const turnoActual    = estadoCaja.turno_actual;
+        Swal.fire({
+          title: `⚠️ Caja de ${turnoPendiente} sin cerrar`,
+          html: `
+            <p>Estás en el turno <strong>${turnoActual}</strong>, pero tienes el flujo de caja de <strong>${turnoPendiente}</strong> todavía abierto.</p>
+            <p class="mt-2 text-muted small">Cierra ese turno y luego abre el de <strong>${turnoActual}</strong> para registrar operaciones.</p>
+          `,
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#f59e0b',
+          cancelButtonColor: '#6b7280',
+          confirmButtonText: '<i class="bi bi-cash-stack"></i> IR A FLUJO DE CAJA',
+          cancelButtonText: 'Cancelar'
+        }).then((result) => {
+          if (result.isConfirmed) window.location.href = '../flujo/index.php';
+        });
+        return;
+      }
+
+      // Caso B: no hay ninguna caja abierta hoy
       Swal.fire({
-        title: '¡Caja Cerrada!',
-        text: window.__CAJA_MSG || 'No puedes realizar check-ins ni registrar pagos sin el turno de caja actual abierto.',
+        title: '¡Sin Caja Abierta!',
+        html: `
+          <p>No tienes un flujo de caja abierto para el turno <strong>${estadoCaja?.turno_actual ?? ''}</strong>.</p>
+          <p class="mt-2 text-muted small">Abre la caja del turno correspondiente antes de registrar check-ins o pagos.</p>
+        `,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#3085d6',
@@ -271,17 +296,16 @@ createApp({
         confirmButtonText: '<i class="bi bi-cash-stack"></i> IR A ABRIR CAJA',
         cancelButtonText: 'Cancelar'
       }).then((result) => {
-        if (result.isConfirmed) {
-          window.location.href = '../flujo/index.php';
-        }
+        if (result.isConfirmed) window.location.href = '../flujo/index.php';
       });
     };
 
     const abrirCheckin = async () => {
       loading.value = true;
-      if (!(await validarCajaAbierta())) {
+      const estadoCaja = await validarCajaAbierta();
+      if (!estadoCaja.ok) {
         loading.value = false;
-        return mostrarModalCajaCerrada();
+        return mostrarModalCajaCerrada(estadoCaja);
       }
       loading.value = false;
       resetForm();
@@ -289,6 +313,7 @@ createApp({
       await cargarHabitacionesDisponibles();
       new bootstrap.Modal('#modalCheckin').show();
     };
+
 
     const resetForm = () => {
       Object.assign(form.stay, {
@@ -721,9 +746,10 @@ createApp({
 
     const abrirConsumo = async (s) => {
       loadingConsumo.value = true;
-      if (!(await validarCajaAbierta())) {
+      const estadoCaja = await validarCajaAbierta();
+      if (!estadoCaja.ok) {
         loadingConsumo.value = false;
-        return mostrarModalCajaCerrada();
+        return mostrarModalCajaCerrada(estadoCaja);
       }
       stayParaConsumo.value = s;
       Object.assign(consumoForm, {

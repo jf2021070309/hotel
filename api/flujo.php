@@ -89,7 +89,8 @@ switch ($action) {
 
     case 'verificar_apertura':
         if ($method !== 'GET') json_response(false, null, 405, 'Método no permitido');
-        json_response(true, $controller->verificarApertura());
+        $res = $controller->verificarApertura();
+        json_response($res['ok'], $res, 200, $res['msg'] ?? '');
         break;
 
     default:

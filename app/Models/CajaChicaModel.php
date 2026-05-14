@@ -61,7 +61,9 @@ class CajaChicaModel {
         $id = (int)$this->pdo->lastInsertId();
 
         // SINCRONIZACIÓN: La apertura de caja chica es un EGRESO del flujo principal
-        $this->finanzas->registrarMovimientoAutomatico([
+        $registrarFlujo = $extra['registrar_flujo'] ?? true;
+        if ($registrarFlujo) {
+            $okFlujo = $this->finanzas->registrarMovimientoAutomatico([
             'usuario_id'  => $usuarioId,
             'categoria'   => 'RECEPCIÓN C.CH.',
             'tipo'        => 'Egreso',
@@ -71,7 +73,12 @@ class CajaChicaModel {
             'observacion' => "Apertura Ciclo #$id: $nombre",
             'sobre_fecha' => $extra['sobre_fecha'] ?? null,
             'sobre_turno' => $extra['sobre_turno'] ?? null
-        ]);
+            ]);
+
+            if (!$okFlujo) {
+                throw new Exception("Debe existir un Flujo de Caja abierto para descontar la Caja Chica.");
+            }
+        }
 
         return $id;
     }

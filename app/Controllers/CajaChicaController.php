@@ -10,10 +10,10 @@ class CajaChicaController {
     public function __construct(PDO $pdo) {
         require_once __DIR__ . '/../Models/CajaChicaModel.php';
         require_once __DIR__ . '/../Models/AuditoriaModel.php';
-        
+
         $this->model = new CajaChicaModel($pdo);
         $this->audit = new AuditoriaModel($pdo);
-        $this->pdo = $pdo; // Need it to intantiate FlujoModel during Reposición if needed, or we just pass it.
+        $this->pdo = $pdo;
     }
 
     public function categorias(): array {
@@ -22,7 +22,7 @@ class CajaChicaController {
 
     public function cicloActivo(): array {
         $ciclo = $this->model->getCicloActivo();
-        return ['ok' => true, 'data' => $ciclo]; // If null, means no active cycle
+        return ['ok' => true, 'data' => $ciclo];
     }
 
     public function listar(): array {
@@ -34,21 +34,22 @@ class CajaChicaController {
         $saldo  = (float)($input['saldo_inicial'] ?? 100);
 
         if (empty($nombre) || $saldo <= 0) {
-            return ['ok' => false, 'msg' => 'Datos inválidos. El nombre y saldo son obligatorios.'];
+            return ['ok' => false, 'msg' => 'Datos invalidos. El nombre y saldo son obligatorios.'];
         }
 
-        // Verificamos si ya hay uno abierto
         if ($this->model->getCicloActivo()) {
-            return ['ok' => false, 'msg' => 'Ya existe un ciclo de caja chica abierto. Ciérrelo primero.'];
+            return ['ok' => false, 'msg' => 'Ya existe un ciclo de caja chica abierto. Cierrelo primero.'];
         }
 
         try {
-            $id = $this->model->abrirCiclo($nombre, $saldo, $_SESSION['auth_id'], [
-                'sobre_fecha' => $input['sobre_fecha'] ?? null,
-                'sobre_turno' => $input['sobre_turno'] ?? null
-            ]);
-            $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'CAJA_CHICA_ABIERTA', 'FINANZAS', "Ciclo de C.Chica abierto: $nombre con S/$saldo.");
-            return ['ok' => true, 'msg' => 'Ciclo abierto correctamente', 'data' => ['id' => $id]];
+            return $this->model->ejecutarTransaccionCierreRepocision(function($pdo) use ($nombre, $saldo, $input) {
+                $id = $this->model->abrirCiclo($nombre, $saldo, $_SESSION['auth_id'], [
+                    'sobre_fecha' => $input['sobre_fecha'] ?? null,
+                    'sobre_turno' => $input['sobre_turno'] ?? null
+                ]);
+                $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'CAJA_CHICA_ABIERTA', 'FINANZAS', "Ciclo de C.Chica abierto: $nombre con S/$saldo.");
+                return ['ok' => true, 'msg' => 'Ciclo abierto correctamente', 'data' => ['id' => $id]];
+            });
         } catch (Exception $e) {
             return ['ok' => false, 'msg' => 'Error de BD: ' . $e->getMessage()];
         }
@@ -67,7 +68,7 @@ class CajaChicaController {
 
         $ciclo = $this->model->getCicloActivo();
         if (!$ciclo || $ciclo['id'] !== $caja_id) {
-            return ['ok' => false, 'msg' => 'El ciclo indicado ya no está abierto o no coincide.'];
+            return ['ok' => false, 'msg' => 'El ciclo indicado ya no esta abierto o no coincide.'];
         }
 
         if ($ciclo['saldo_actual'] < $monto) {
@@ -85,7 +86,7 @@ class CajaChicaController {
             ]);
 
             $detalle = json_encode([
-                'mensaje' => "Registró un GASTO en Caja Chica",
+                'mensaje' => 'Registro un GASTO en Caja Chica',
                 'cambios' => [
                     'Rubro' => ['antes' => '-', 'despues' => $rubro],
                     'Monto' => ['antes' => 'S/ 0.00', 'despues' => 'S/ ' . number_format($monto, 2)],
@@ -107,10 +108,9 @@ class CajaChicaController {
         $motivo = mb_strtoupper(trim($input['motivo'] ?? ''));
 
         if ($mov_id <= 0 || empty($motivo)) {
-            return ['ok' => false, 'msg' => 'El motivo de anulación es obligatorio.'];
+            return ['ok' => false, 'msg' => 'El motivo de anulacion es obligatorio.'];
         }
 
-        // Verify that the cycle is still open to annul expenses
         $ciclo = $this->model->getCicloActivo();
         if (!$ciclo) {
             return ['ok' => false, 'msg' => 'No hay caja abierta para anular movimientos.'];
@@ -119,7 +119,7 @@ class CajaChicaController {
         try {
             if ($this->model->anularGasto($mov_id, $motivo, $_SESSION['auth_id'])) {
                 $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'CAJA_CHICA_ANULADA', 'FINANZAS', "Movimiento $mov_id anulado: $motivo");
-                return ['ok' => true, 'msg' => 'Gasto anulado. El monto regresó al saldo.'];
+                return ['ok' => true, 'msg' => 'Gasto anulado. El monto regreso al saldo.'];
             }
             return ['ok' => false, 'msg' => 'No se pudo anular el gasto.'];
         } catch (Exception $e) {
@@ -138,42 +138,22 @@ class CajaChicaController {
 
         try {
             return $this->model->ejecutarTransaccionCierreRepocision(function($pdo) use ($caja_id, $ciclo, $reponer, $input) {
-                // 1. Cerrar ciclo actual
                 $this->model->cerrarCiclo($caja_id, $ciclo['saldo_actual'], $_SESSION['auth_id']);
                 $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'CAJA_CHICA_CERRADA', 'FINANZAS', "Caja Chica $caja_id cerrada. Saldo Final: {$ciclo['saldo_actual']}");
 
-                // 2. Si reponer es verdadero, intentar sacar dinero de Flujo de Caja
                 if ($reponer) {
                     $montoReposicion = 100.00;
                     $sFecha = !empty($input['sobre_fecha']) ? $input['sobre_fecha'] : date('Y-m-d');
                     $sTurno = !empty($input['sobre_turno']) ? $input['sobre_turno'] : 'MAÑANA';
 
-                    require_once __DIR__ . '/../Helpers/FinanzasHelper.php';
-                    $finanzas = new FinanzasHelper($pdo);
-                    
-                    // La reposición es un EGRESO en el flujo de caja activo
-                    $okRep = $finanzas->registrarMovimientoAutomatico([
-                        'usuario_id'  => $_SESSION['auth_id'],
-                        'categoria'   => 'RECEPCIÓN C.CH.',
-                        'tipo'        => 'Egreso',
-                        'monto'       => $montoReposicion,
-                        'moneda'      => 'PEN',
-                        'medio_pago'  => 'EFECTIVO',
-                        'observacion' => "REPO AL $sFecha ($sTurno)",
+                    $nuevoNombre = "FONDO FIJO S/ 100 - " . date('d/m/Y');
+                    $this->model->abrirCiclo($nuevoNombre, $montoReposicion, $_SESSION['auth_id'], [
                         'sobre_fecha' => $sFecha,
                         'sobre_turno' => $sTurno
                     ]);
-
-                    if (!$okRep) {
-                        throw new Exception("Debe abrir un nuevo Flujo de Caja para poder registrar la reposición.");
-                    }
-
-                    // Crear nuevo ciclo de Caja Chica
-                    $nuevoNombre = "FONDO FIJO S/ 100 - " . date('d/m/Y');
-                    $this->model->abrirCiclo($nuevoNombre, $montoReposicion, $_SESSION['auth_id']);
                 }
 
-                return ['ok' => true, 'msg' => $reponer ? 'Ciclo cerrado, reintegro descontado del sobre y Nuevo Ciclo creado.' : 'Ciclo cerrado con éxito.'];
+                return ['ok' => true, 'msg' => $reponer ? 'Ciclo cerrado, reintegro descontado del sobre y nuevo ciclo creado.' : 'Ciclo cerrado con exito.'];
             });
         } catch (Exception $e) {
             return ['ok' => false, 'msg' => $e->getMessage()];

@@ -91,9 +91,7 @@ class FlujoController {
         if ($id > 0) {
             $actual = $this->model->getDetalle($id);
             if ($actual && $actual['estado'] !== 'borrador') {
-                if (!in_array($_SESSION['auth_rol'] ?? '', ['admin', 'supervisor'])) {
-                    return ['ok' => false, 'msg' => 'No tienes permisos para editar un turno cerrado o depositado'];
-                }
+                return ['ok' => false, 'msg' => 'No puedes editar un turno cerrado o depositado. Reabre el turno antes de corregirlo.'];
             }
         }
 
@@ -175,6 +173,15 @@ class FlujoController {
             return ['ok' => false, 'msg' => 'No tienes permisos para reabrir turnos'];
         }
 
+        $actual = $this->model->getDetalle($id);
+        if (!$actual) return ['ok' => false, 'msg' => 'Flujo no encontrado'];
+        if ($actual['estado'] === 'depositado') {
+            return ['ok' => false, 'msg' => 'No se puede reabrir un flujo depositado. Registra un ajuste administrativo.'];
+        }
+        if ($actual['estado'] !== 'cerrado') {
+            return ['ok' => false, 'msg' => 'Solo se pueden reabrir turnos cerrados'];
+        }
+
         if ($this->model->cambiarEstado($id, 'borrador')) {
             $this->registrarAuditoriaSeguro('FLUJO_REABIERTO', 'FINANZAS', "Flujo ID $id reabierto a borrador.");
             return ['ok' => true, 'msg' => 'Turno reabierto correctamente (ahora es editable)'];
@@ -243,10 +250,33 @@ class FlujoController {
         $helper = new FinanzasHelper($this->pdo);
         
         $flujoId = $helper->getFlujoIdActivo($_SESSION['auth_id']);
+        $turnoActual = FinanzasHelper::getTurnoActual();
+
+        if ($flujoId === null) {
+            $stmt = $this->pdo->prepare("
+                SELECT id, turno FROM flujo_caja
+                WHERE fecha = ? AND usuario_id = ? AND estado = 'borrador'
+                ORDER BY id DESC LIMIT 1
+            ");
+            $stmt->execute([date('Y-m-d'), $_SESSION['auth_id']]);
+            $flujoPendiente = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($flujoPendiente) {
+                return [
+                    'ok' => false,
+                    'flujo_id' => null,
+                    'turno_actual' => $turnoActual,
+                    'turno_pendiente' => $flujoPendiente['turno'],
+                    'msg' => "Cierra el flujo de caja de {$flujoPendiente['turno']} para registrar operaciones. Luego abre el flujo de caja de $turnoActual."
+                ];
+            }
+        }
         
         return [
             'ok' => ($flujoId !== null),
-            'flujo_id' => $flujoId
+            'flujo_id' => $flujoId,
+            'turno_actual' => $turnoActual,
+            'msg' => $flujoId !== null ? 'Flujo de caja abierto.' : "Abre el flujo de caja de $turnoActual para registrar operaciones."
         ];
     }
 }

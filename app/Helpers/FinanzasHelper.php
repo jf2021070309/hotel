@@ -38,28 +38,8 @@ class FinanzasHelper {
 
         if ($id) return (int)$id;
 
-        // 2. Fallback: Buscar cualquier caja abierta para el usuario el día de hoy 
-        // (Evita fallos por discrepancias de minutos en el cambio de turno)
-        $stmtFallback = $this->pdo->prepare("
-            SELECT id FROM flujo_caja 
-            WHERE fecha = ? AND usuario_id = ? AND estado = 'borrador'
-            ORDER BY id DESC LIMIT 1
-        ");
-        $stmtFallback->execute([$fechaHoy, $usuarioId]);
-        $resFallback = $stmtFallback->fetch(PDO::FETCH_ASSOC);
-        if ($resFallback) return (int)$resFallback['id'];
-
-        // 3. Buscador Global: Si no tiene caja propia, buscar CUALQUIER caja abierta del hotel hoy
-        // Esto permite que el Admin o un compañero use la caja abierta por otro en el mismo turno.
-        $stmtGlobal = $this->pdo->prepare("
-            SELECT id FROM flujo_caja 
-            WHERE fecha = ? AND estado = 'borrador'
-            ORDER BY id DESC LIMIT 1
-        ");
-        $stmtGlobal->execute([$fechaHoy]);
-        $resGlobal = $stmtGlobal->fetch(PDO::FETCH_ASSOC);
-        
-        return $resGlobal ? (int)$resGlobal['id'] : null;
+        // No se permite usar un turno anterior como caja activa.
+        return null;
     }
 
     /**

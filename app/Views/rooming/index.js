@@ -252,8 +252,10 @@ createApp({
     const validarCajaAbierta = async () => {
       try {
         const res = await axios.get('../../../api/flujo.php?action=verificar_apertura');
+        window.__CAJA_MSG = res.data.msg || (res.data.data && res.data.data.msg) || '';
         return res.data.ok;
       } catch (e) {
+        window.__CAJA_MSG = e.response && e.response.data && e.response.data.msg ? e.response.data.msg : '';
         return false;
       }
     };
@@ -261,7 +263,7 @@ createApp({
     const mostrarModalCajaCerrada = () => {
       Swal.fire({
         title: '¡Caja Cerrada!',
-        text: 'No puedes realizar check-ins ni registrar pagos sin un turno de caja abierto para hoy.',
+        text: window.__CAJA_MSG || 'No puedes realizar check-ins ni registrar pagos sin el turno de caja actual abierto.',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#3085d6',

@@ -162,7 +162,13 @@ class FlujoModel {
                 $id = (int)$this->pdo->lastInsertId();
             }
 
-            // Clear old movements and insert fresh
+            // Clear old movements and insert fresh. Primero limpiamos los reflejos
+            // en Caja Chica que dependian de movimientos anteriores de este flujo.
+            $this->pdo->prepare("
+                DELETE ccm FROM caja_chica_movimientos ccm
+                JOIN flujo_caja_movimientos fcm ON ccm.flujo_movimiento_id = fcm.id
+                WHERE fcm.flujo_id = ?
+            ")->execute([$id]);
             $this->pdo->prepare("DELETE FROM flujo_caja_movimientos WHERE flujo_id = ?")->execute([$id]);
 
             $stmtMov = $this->pdo->prepare("INSERT INTO flujo_caja_movimientos (flujo_id, categoria_id, categoria, tipo, moneda, monto, medio_pago, observacion, sobre_fecha, sobre_turno) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
@@ -197,6 +203,10 @@ class FlujoModel {
                     $stmtCC = $this->pdo->prepare("SELECT id FROM caja_chica WHERE estado = 'abierta' ORDER BY id DESC LIMIT 1");
                     $stmtCC->execute();
                     $cajaId = $stmtCC->fetchColumn();
+
+                    if (!$cajaId) {
+                        throw new Exception("No hay un ciclo de Caja Chica abierto para recibir la reposicion.");
+                    }
 
                     if ($cajaId) {
                         // Primero borrar duplicados previos de este mismo movimiento del flujo

@@ -571,12 +571,11 @@ createApp({
       setTimeout(() => { sugerencias.value[idx] = []; }, 200);
     };
 
-
     // ─── LOOKUP DNI / RUC VÍA API (DocumentLookupService) ────────
     const lookupLoading = ref({});  // { [idx]: bool }
-    const lookupOk = ref({});
-    const rucLoading = ref({});
-    const rucOk = ref({});
+    const lookupOk      = ref({});
+    const rucLoading    = ref({});
+    const rucOk         = ref({});
     let dniTimer = null;
     let rucTimer = null;
 
@@ -635,7 +634,7 @@ createApp({
             if (razon) {
               pax.empresa = razon;
               form.stay.razon_social = razon;
-              form.stay.ruc_factura = ruc;
+              form.stay.ruc_factura  = ruc;
               form.stay.tipo_comprobante = 'FACTURA';
             }
             rucOk.value[idx] = true;
@@ -649,16 +648,13 @@ createApp({
      * Limpia nombre y estado de lookup cuando se cambia el tipo de documento.
      */
     const onDocTipoChange = (pax, idx) => {
-      pax.documento_num = '';
+      pax.documento_num   = '';
       pax.nombre_completo = '';
-      lookupOk.value[idx] = false;
+      lookupOk.value[idx]      = false;
       lookupLoading.value[idx] = false;
-      sugerencias.value[idx] = [];
+      sugerencias.value[idx]   = [];
     };
     // ────────────────────────────────────────────────────────────
-
-
-    // ────────────────────────────────────────────────────────
 
     const guardarCheckin = async () => {
       if (form.tipoPago === 'adelanto') {
@@ -1240,6 +1236,9 @@ createApp({
       abrirConsumo, onProductoChange, calcularTotalConsumo, guardarConsumo,
       // AUTOCOMPLETE PAX
       sugerencias, buscarPax, aplicarSugerencia, ocultarSugerencias,
+      // LOOKUP DNI / RUC
+      lookupDocumento, lookupRuc, onDocTipoChange,
+      lookupLoading, lookupOk, rucLoading, rucOk,
       // REPORTE PAX
       reportePax, abrirReportePax, cargarReportePax, exportarReportePax,
       totalConsumoStay, saldoPendienteStay

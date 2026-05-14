@@ -45,6 +45,13 @@ switch ($action) {
         echo json_encode(['ok' => true, 'data' => $data]);
         break;
 
+    case 'propuesta':
+        $fecha = $_GET['fecha'] ?? date('Y-m-d');
+        $model = new LimpiezaModel($pdo);
+        $data = $model->getCalculoPropuesta($fecha);
+        echo json_encode(['success' => true, 'data' => $data]);
+        break;
+
     default:
         echo json_encode(['ok' => false, 'msg' => 'Acción no reconocida']);
         break;

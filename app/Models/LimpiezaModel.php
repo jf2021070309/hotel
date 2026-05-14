@@ -81,7 +81,7 @@ class LimpiezaModel {
                               s.fecha_checkout
                        FROM rooming_stays s
                        JOIN habitaciones h ON s.habitacion_id = h.id
-                       WHERE s.estado IN ('activo', 'late_checkout') AND s.fecha_checkout = ?";
+                       WHERE s.estado IN ('activo', 'late_checkout', 'finalizado') AND s.fecha_checkout = ?";
         
         // 2. Estadías (Ocupadas pero no salen hoy)
         $sqlEstadias = "SELECT s.habitacion_id, h.numero as habitacion, 'estadía' as tipo, 'normal' as prioridad,
@@ -89,7 +89,7 @@ class LimpiezaModel {
                                s.fecha_checkout
                         FROM rooming_stays s
                         JOIN habitaciones h ON s.habitacion_id = h.id
-                        WHERE s.estado IN ('activo', 'late_checkout') AND DATE(s.fecha_checkout) > ? AND DATE(s.fecha_registro) <= ?";
+                        WHERE s.estado IN ('activo', 'late_checkout', 'finalizado') AND DATE(s.fecha_checkout) > ? AND DATE(s.fecha_registro) <= ?";
 
         // 3. Programadas (Libres con checkin hoy o mañana)
         $sqlProgramadas = "SELECT s.habitacion_id, h.numero as habitacion, 'programada' as tipo, 'normal' as prioridad,

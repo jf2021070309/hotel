@@ -9,6 +9,7 @@ const appConfig = {
         const yaGenerado = ref(false);
         const lista = ref([]);
         const filtro = ref({ estado: 'todos', tipo: 'todos' });
+        const filtroFecha = ref(new Date().toLocaleDateString('en-CA'));
         const personalLimpieza = ref([]);
 
         // Historial
@@ -49,13 +50,20 @@ const appConfig = {
         const fetchHoy = async () => {
             loading.value = true;
             try {
-                const res = await axios.get('/hotel/api/limpieza.php?action=hoy');
+                const hoy = new Date().toLocaleDateString('en-CA');
+                const action = filtroFecha.value === hoy ? 'hoy' : `detalle_fecha&fecha=${filtroFecha.value}`;
+                
+                const res = await axios.get(`/hotel/api/limpieza.php?action=${action}`);
                 if (res.data.ok) {
                     lista.value = res.data.data;
-                    yaGenerado.value = res.data.ya_generado;
+                    yaGenerado.value = res.data.ya_generado || (filtroFecha.value !== hoy);
                 }
             } catch (e) { console.error(e); }
             loading.value = false;
+        };
+
+        const fetchPorFecha = () => {
+            fetchHoy();
         };
 
         const generarLista = async () => {
@@ -162,8 +170,8 @@ const appConfig = {
         });
 
         return {
-            loading, yaGenerado, lista, filtro, stats, listaFiltrada, personalLimpieza,
-            generarLista, tareaEdit, toggleListo, fmtHora,
+            loading, yaGenerado, lista, filtro, filtroFecha, stats, listaFiltrada, personalLimpieza,
+            generarLista, tareaEdit, toggleListo, fmtHora, fetchPorFecha,
             getTipoClass, getEstadoClass, getColorTop,
             listaHistorial, filtroHist,
             detalleDia, fechaDetalle, fetchHistorial, verDetalle, formatFecha, formatFechaHora

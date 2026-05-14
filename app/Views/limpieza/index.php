@@ -165,11 +165,9 @@ include $base . 'includes/sidebar.php';
                         <option value="programada">Programada</option>
                     </select>
                 </div>
-                <div class="ms-auto">
-                    <span class="badge bg-light text-dark border px-3 py-2">
-                        <i class="bi bi-calendar3 me-1"></i>
-                        <?= date('d/m/Y') ?>
-                    </span>
+                <div class="ms-auto d-flex align-items-center gap-2">
+                    <label class="small fw-bold text-muted">Fecha:</label>
+                    <input type="date" v-model="filtroFecha" @change="fetchPorFecha" class="form-control form-control-sm" style="width: 140px;">
                 </div>
             </div>
         </div>

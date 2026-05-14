@@ -47,6 +47,9 @@ class RoomingModel {
      * @return array Lista de registros activos.
      */
     public function getStaysActivos(): array {
+        // Auto-cancelar reservas vencidas (donde hoy es posterior a la fecha de checkout y siguen como 'reservado')
+        $this->pdo->query("UPDATE rooming_stays SET estado = 'cancelado' WHERE estado = 'reservado' AND fecha_checkout < CURRENT_DATE");
+
         $sql = "SELECT s.*, h.numero as hab_numero, h.tipo as hab_tipo,
                 (SELECT nombre_completo FROM rooming_pax WHERE stay_id = s.id AND es_titular = 1 LIMIT 1) as titular_nombre,
                 (SELECT COUNT(DISTINCT moneda) FROM anticipos WHERE stay_id = s.id) as divisas_count

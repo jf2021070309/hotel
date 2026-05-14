@@ -13,7 +13,7 @@ createApp({
         const clienteSeleccionado = ref(null);
 
         const nuevoCliente = ref({
-            nombre: '', dni: '', tipo_doc: 'DNI', nacionalidad: 'Peruana', celular: '',
+            nombre: '', dni: '', tipo_doc: 'DNI', nacionalidad: 'Peruana', ciudad: '', celular: '', email: '',
             es_empresa: false, ruc: '', razon_social: ''
         });
         const guardando = ref(false);
@@ -36,8 +36,26 @@ createApp({
 
         const abrirModalNuevo = () => {
             nuevoCliente.value = {
-                nombre: '', dni: '', tipo_doc: 'DNI', nacionalidad: 'Peruana', celular: '',
+                nombre: '', dni: '', tipo_doc: 'DNI', nacionalidad: 'Peruana', ciudad: '', celular: '', email: '',
                 es_empresa: false, ruc: '', razon_social: ''
+            };
+            const modalEl = document.getElementById('modalNuevoCliente');
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.show();
+        };
+
+        const editarCliente = (c) => {
+            nuevoCliente.value = {
+                nombre: c.nombre,
+                dni: c.dni,
+                tipo_doc: c.tipo_doc,
+                nacionalidad: c.nacionalidad,
+                ciudad: c.ciudad || '',
+                celular: c.celular,
+                email: c.email || '',
+                es_empresa: !!c.ruc,
+                ruc: c.ruc || '',
+                razon_social: c.razon_social || ''
             };
             const modalEl = document.getElementById('modalNuevoCliente');
             const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
@@ -115,6 +133,8 @@ createApp({
                 nombre: c.nombre,
                 nacionalidad: c.nacionalidad,
                 ciudad: c.ciudad,
+                celular: c.celular,
+                email: c.email,
                 tipo_doc: c.tipo_doc,
                 frecuente: true,
                 visitas: c.total_estadias,
@@ -131,6 +151,8 @@ createApp({
                 nombre: c.nombre,
                 nacionalidad: c.nacionalidad,
                 ciudad: c.ciudad,
+                celular: c.celular,
+                email: c.email,
                 tipo_doc: c.tipo_doc,
                 frecuente: true,
                 visitas: c.total_estadias
@@ -153,7 +175,7 @@ createApp({
             historial, loadingHistorial, clienteSeleccionado,
             clientesFiltrados, totalPago, totalCobrado,
             verHistorial, fmtFecha, crearEstadiaRapida, crearReservaRapida,
-            abrirModalNuevo, nuevoCliente, guardando, guardarNuevoCliente
+            abrirModalNuevo, editarCliente, nuevoCliente, guardando, guardarNuevoCliente
         };
     }
 }).mount('#app-clientes-frecuentes');

@@ -96,6 +96,9 @@ include $base . 'includes/sidebar.php';
                   <button @click="crearReservaRapida(c)" class="btn-premium" title="Reserva rápida">
                     <i class="bi bi-calendar-plus"></i> Reserva
                   </button>
+                  <button @click="editarCliente(c)" class="btn-premium" title="Editar datos">
+                    <i class="bi bi-pencil-square"></i> Editar
+                  </button>
                   <button @click="verHistorial(c)" class="btn-premium" title="Ver historial">
                     <i class="bi bi-clock-history"></i> Historial
                   </button>
@@ -206,8 +209,16 @@ include $base . 'includes/sidebar.php';
                 <input type="text" v-model="nuevoCliente.nacionalidad" class="form-control border-0 shadow-sm py-2" placeholder="Ej: Peruana" style="font-size: 14px;">
               </div>
               <div class="col-md-6">
+                <label class="text-muted text-uppercase fw-bold mb-1" style="font-size: 11px; letter-spacing: 0.5px;">Ciudad</label>
+                <input type="text" v-model="nuevoCliente.ciudad" class="form-control border-0 shadow-sm py-2" placeholder="Ej: Lima" style="font-size: 14px;">
+              </div>
+              <div class="col-md-6">
                 <label class="text-muted text-uppercase fw-bold mb-1" style="font-size: 11px; letter-spacing: 0.5px;">Celular</label>
                 <input type="text" v-model="nuevoCliente.celular" class="form-control border-0 shadow-sm py-2" placeholder="999 888 777" style="font-size: 14px;">
+              </div>
+              <div class="col-md-6">
+                <label class="text-muted text-uppercase fw-bold mb-1" style="font-size: 11px; letter-spacing: 0.5px;">Email</label>
+                <input type="email" v-model="nuevoCliente.email" class="form-control border-0 shadow-sm py-2" placeholder="ejemplo@correo.com" style="font-size: 14px;">
               </div>
             </div>
             <div class="p-3 rounded-3 border bg-white shadow-sm">

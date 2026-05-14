@@ -14,6 +14,9 @@ class ReservasModel {
      * Single optimized JOIN — no N+1 queries.
      */
     public function getDatosMes(int $mes, int $anio): array {
+        // Auto-cancelar reservas vencidas (donde hoy es posterior a la fecha de checkout y siguen como 'reservado')
+        $this->pdo->query("UPDATE rooming_stays SET estado = 'cancelado' WHERE estado = 'reservado' AND fecha_checkout < CURRENT_DATE");
+
         $primerDia  = sprintf('%04d-%02d-01', $anio, $mes);
         $ultimoDia  = date('Y-m-t', strtotime($primerDia));
         $diasEnMes  = (int)date('t', strtotime($primerDia));
@@ -111,6 +114,9 @@ class ReservasModel {
      * Today's summary panel.
      */
     public function getResumenDia(string $fecha): array {
+        // Sincronizar vencimientos antes del resumen
+        $this->pdo->query("UPDATE rooming_stays SET estado = 'cancelado' WHERE estado = 'reservado' AND fecha_checkout < CURRENT_DATE");
+
         $stmt = $this->pdo->prepare(
             "SELECT
                  COUNT(DISTINCT s.id)               AS ocupadas,

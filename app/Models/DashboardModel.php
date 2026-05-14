@@ -23,6 +23,9 @@ class DashboardModel {
      * @return array Mapa de métricas agrupadas por KPI, desgloses y listas.
      */
     public function getAdminData(string $fecha): array {
+        // Auto-cancelar reservas vencidas antes de procesar KPIs
+        $this->pdo->query("UPDATE rooming_stays SET estado = 'cancelado' WHERE estado = 'reservado' AND fecha_checkout < CURRENT_DATE");
+
         // 1. KPI Ocupación
         $stmtOcup = $this->pdo->prepare("
             SELECT COUNT(id) as total, 
@@ -195,7 +198,9 @@ class DashboardModel {
      * @return array Datos operativos incluyendo check-ins, check-outs y estado del turno.
      */
     public function getCajeraData(string $fecha, int $usuarioId, string $turno): array {
-        
+        // Auto-cancelar reservas vencidas
+        $this->pdo->query("UPDATE rooming_stays SET estado = 'cancelado' WHERE estado = 'reservado' AND fecha_checkout < CURRENT_DATE");
+
         // 1. Urgentes (Top deuds for the shift to collect)
         $sqlUrgentes = "
             SELECT 

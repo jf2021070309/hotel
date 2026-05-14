@@ -16,13 +16,14 @@ class ClienteModel {
     public function getAll(string $buscar = ''): array {
         $sql = "SELECT 
                     p.documento_num                         AS dni,
-                    p.documento_tipo                        AS tipo_doc,
-                    p.nombre_completo                       AS nombre,
-                    p.nacionalidad,
-                    p.ciudad,
-                    p.celular,
-                    p.ruc,
-                    p.empresa                               AS razon_social,
+                    MAX(p.documento_tipo)                   AS tipo_doc,
+                    MAX(p.nombre_completo)                  AS nombre,
+                    MAX(p.nacionalidad)                     AS nacionalidad,
+                    MAX(p.ciudad)                           AS ciudad,
+                    MAX(p.celular)                          AS celular,
+                    MAX(p.email)                            AS email,
+                    MAX(p.ruc)                              AS ruc,
+                    MAX(p.empresa)                          AS razon_social,
                     COUNT(DISTINCT p.stay_id)               AS total_estadias,
                     MAX(p.created_at)                       AS ultima_visita
                 FROM rooming_pax p
@@ -35,7 +36,7 @@ class ClienteModel {
             $params = [$like, $like, $like, $like];
         }
 
-        $sql .= " GROUP BY p.documento_num, p.documento_tipo, p.nombre_completo, p.nacionalidad, p.ciudad, p.celular, p.ruc, p.empresa
+        $sql .= " GROUP BY p.documento_num
                   ORDER BY ultima_visita DESC";
 
         $stmt = $this->pdo->prepare($sql);
@@ -114,26 +115,61 @@ class ClienteModel {
      */
     public function save(array $data): bool {
         try {
-            $sql = "INSERT INTO rooming_pax 
-                        (stay_id, documento_tipo, documento_num, ruc, nombre_completo, nacionalidad, celular, empresa, es_titular, es_corporativo) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?)";
-            
-            $esCorp = $data['es_empresa'] ? 1 : 0;
-            $ruc = $data['es_empresa'] ? ($data['ruc'] ?? '') : '';
-            $empresa = $data['es_empresa'] ? ($data['razon_social'] ?? '') : '';
-            
-            $stmt = $this->pdo->prepare($sql);
-            return $stmt->execute([
-                null, // NULL stay_id for manual registration
-                $data['tipo_doc'],
-                $data['dni'],
-                $ruc,
-                $data['nombre'],
-                $data['nacionalidad'],
-                $data['celular'],
-                $empresa,
-                $esCorp
-            ]);
+            // Check if record exists for this DNI with NULL stay_id
+            $checkSql = "SELECT id FROM rooming_pax WHERE documento_num = ? AND stay_id IS NULL LIMIT 1";
+            $stmtCheck = $this->pdo->prepare($checkSql);
+            $stmtCheck->execute([$data['dni']]);
+            $existing = $stmtCheck->fetch();
+
+            $esCorp = (!empty($data['es_empresa'])) ? 1 : 0;
+            $ruc = $esCorp ? ($data['ruc'] ?? '') : '';
+            $empresa = $esCorp ? ($data['razon_social'] ?? '') : '';
+
+            if ($existing) {
+                // UPDATE
+                $sql = "UPDATE rooming_pax SET 
+                            documento_tipo = ?,
+                            ruc = ?,
+                            nombre_completo = ?,
+                            nacionalidad = ?,
+                            ciudad = ?,
+                            celular = ?,
+                            email = ?,
+                            empresa = ?,
+                            es_corporativo = ?
+                        WHERE id = ?";
+                $stmt = $this->pdo->prepare($sql);
+                return $stmt->execute([
+                    $data['tipo_doc'],
+                    $ruc,
+                    $data['nombre'],
+                    $data['nacionalidad'],
+                    $data['ciudad'] ?? '',
+                    $data['celular'],
+                    $data['email'] ?? '',
+                    $empresa,
+                    $esCorp,
+                    $existing['id']
+                ]);
+            } else {
+                // INSERT
+                $sql = "INSERT INTO rooming_pax 
+                            (stay_id, documento_tipo, documento_num, ruc, nombre_completo, nacionalidad, ciudad, celular, email, empresa, es_titular, es_corporativo) 
+                        VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)";
+                $stmt = $this->pdo->prepare($sql);
+                return $stmt->execute([
+                    $data['tipo_doc'],
+                    $data['dni'],
+                    $ruc,
+                    $data['nombre'],
+                    $data['nacionalidad'],
+                    $data['ciudad'] ?? '',
+                    $data['celular'],
+                    $data['email'] ?? '',
+                    $empresa,
+                    $esCorp
+                ]);
+            }
         } catch (PDOException $e) {
             error_log('ClienteModel::save error: ' . $e->getMessage());
             return false;

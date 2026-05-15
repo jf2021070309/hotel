@@ -1249,8 +1249,16 @@ createApp({
       });
     };
 
+    const isVencido = (fechaOut, estado) => {
+      if (estado !== 'activo' && estado !== 'late_checkout') return false;
+      const hoy = new Date();
+      hoy.setHours(0, 0, 0, 0);
+      const salida = new Date(fechaOut + 'T00:00:00');
+      return salida < hoy;
+    };
+
     return {
-      toggleStayExclusion,
+      toggleStayExclusion, isVencido,
       selColumnas, abrirConfigExportar, confirmarExportacion,
       stays, habitacionesLibres, tcs, loading, busqueda, filtroPiso, filtroPago, form,
       staysFiltrados, selectedStay, stayParaPago, mediosPago, pagoForm,
@@ -1269,7 +1277,8 @@ createApp({
       lookupLoading, lookupOk, rucLoading, rucOk,
       // REPORTE PAX
       reportePax, abrirReportePax, cargarReportePax, exportarReportePax,
-      totalConsumoStay, saldoPendienteStay
+      totalConsumoStay, saldoPendienteStay,
+      filtroFecha
     };
   }
 }).mount('#app-rooming');

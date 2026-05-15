@@ -81,31 +81,10 @@ include $_projectRoot . '/includes/head.php';
         .row-unpaid {
           background-color: #e8f5e9 !important;
         }
+
         /* Verde suave para pendientes */
         .row-unpaid:hover {
           background-color: #c8e6c9 !important;
-        }
-        /* Naranja para checkout vencido */
-        .row-overdue {
-          background-color: #fff3e0 !important;
-          border-left: 4px solid #f57c00 !important;
-        }
-        .row-overdue:hover {
-          background-color: #ffe0b2 !important;
-        }
-        .badge-overdue {
-          font-size: 9px;
-          padding: 3px 7px;
-          border-radius: 20px;
-          background: #f57c00;
-          color: white;
-          font-weight: 700;
-          letter-spacing: 0.3px;
-          animation: pulse-orange 1.5s infinite;
-        }
-        @keyframes pulse-orange {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.6; }
         }
       </style>
 
@@ -131,11 +110,7 @@ include $_projectRoot . '/includes/head.php';
                   <div class="spinner-border text-primary"></div>
                 </td>
               </tr>
-              <tr v-else v-for="s in staysFiltrados" :key="s.id"
-                :class="{
-                  'row-unpaid': s.estado_pago !== 'pagado' && s.estado !== 'cancelado' && !isVencido(s.fecha_checkout, s.estado),
-                  'row-overdue': isVencido(s.fecha_checkout, s.estado)
-                }">
+              <tr v-else v-for="s in staysFiltrados" :key="s.id" :class="{'row-unpaid': s.estado_pago !== 'pagado' && s.estado !== 'cancelado'}">
                 <td class="ps-4">
                   <span class="badge bg-light text-dark border fw-bold">#{{ s.id }}</span>
                 </td>
@@ -144,11 +119,6 @@ include $_projectRoot . '/includes/head.php';
                   <span class="badge" :class="getEstadBadge(s.estado)" style="font-size: 8px; padding: 4px 8px;">{{
                     s.estado.toUpperCase() }}</span>
                   <div class="text-muted small fw-semibold" style="letter-spacing: 0.5px;">{{ s.hab_tipo }}</div>
-                  <div v-if="isVencido(s.fecha_checkout, s.estado)" class="mt-1">
-                    <span class="badge-overdue">
-                      <i class="bi bi-exclamation-triangle-fill me-1"></i>CHECKOUT PENDIENTE
-                    </span>
-                  </div>
                 </td>
                 <td style="width: 250px; max-width: 250px;">
                   <div class="fw-bold" style="white-space: normal; line-height: 1.2; word-break: break-word;">{{

@@ -84,6 +84,7 @@ class ReportesController {
         $model = new ReporteModel($this->pdo);
         return [
             'data' => $model->getVentaHospedaje($mes, $anio),
+            'consumos' => $model->getConsumosDetail($mes, $anio),
             'resumen' => $model->getResumenP_L($mes, $anio),
             'resumen_desglosado' => $model->getResumenDesglosado($mes, $anio)
         ];

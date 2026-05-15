@@ -9,6 +9,7 @@ class ReporteModel {
         $this->pdo = $pdo;
     }
 
+
     /**
      * Reporte Sr. Mendoza: Venta Detallada por Habitación
      * Incluye todos los pagos (Efectivo, POS, Yape) asociados a estadías del mes.
@@ -61,23 +62,9 @@ class ReporteModel {
 
     /**
      * Resumen por Moneda y Método (Mendoza Footer)
+     * Consolidado de Hospedaje (anticipos) + Consumos Extras (rooming_consumos)
      */
     public function getResumenDesglosado(int $mes, int $anio): array {
-        $sql = "
-            SELECT 
-                moneda,
-                tipo_pago,
-                SUM(monto) AS total
-            FROM anticipos a
-            JOIN rooming_stays s ON a.stay_id = s.id
-            WHERE MONTH(a.fecha) = :mes AND YEAR(a.fecha) = :anio
-              AND s.estado != 'anulado'
-            GROUP BY moneda, tipo_pago
-        ";
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([':mes' => $mes, ':anio' => $anio]);
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
         $res = [
             'POS' => ['PEN' => 0, 'USD' => 0, 'CLP' => 0],
             'EFECTIVO' => ['PEN' => 0, 'USD' => 0, 'CLP' => 0],
@@ -85,9 +72,21 @@ class ReporteModel {
             'TRANSFERENCIA' => 0
         ];
 
-        foreach ($rows as $r) {
-            $m   = $r['moneda'];
-            $t   = strtoupper($r['tipo_pago']);
+        // 1. Procesar Anticipos (Hospedaje + Pagos de consumos vinculados)
+        $sqlAnticipos = "
+            SELECT a.moneda, a.tipo_pago, SUM(a.monto) AS total
+            FROM anticipos a
+            JOIN rooming_stays s ON a.stay_id = s.id
+            WHERE MONTH(a.fecha) = :mes AND YEAR(a.fecha) = :anio
+              AND s.estado != 'anulado'
+            GROUP BY a.moneda, a.tipo_pago
+        ";
+        $stmtA = $this->pdo->prepare($sqlAnticipos);
+        $stmtA->execute([':mes' => $mes, ':anio' => $anio]);
+        
+        foreach ($stmtA->fetchAll(PDO::FETCH_ASSOC) as $r) {
+            $m = $r['moneda'];
+            $t = strtoupper($r['tipo_pago'] ?? '');
             $val = (float)$r['total'];
 
             if (strpos($t, 'YAPE') !== false || strpos($t, 'PLIN') !== false) {
@@ -95,12 +94,67 @@ class ReporteModel {
             } elseif (strpos($t, 'TRANS') !== false || strpos($t, 'DEPO') !== false || strpos($t, 'BANCO') !== false) {
                 $res['TRANSFERENCIA'] += $val;
             } elseif (strpos($t, 'EFECTIVO') !== false) {
-                $res['EFECTIVO'][$m] += $val;
+                $res['EFECTIVO'][$m] = ($res['EFECTIVO'][$m] ?? 0) + $val;
             } elseif (strpos($t, 'POS') !== false) {
-                $res['POS'][$m] += $val;
+                $res['POS'][$m] = ($res['POS'][$m] ?? 0) + $val;
             }
         }
+
+        // 2. Ingresos por Consumos Extras (Solo Ventas Directas que NO tienen stay_id)
+        $sqlConsumos = "SELECT c.total, c.metodo_pago, 'PEN' as moneda 
+                        FROM rooming_consumos c 
+                        WHERE MONTH(c.created_at) = :mes AND YEAR(c.created_at) = :anio 
+                          AND c.metodo_pago IS NOT NULL AND c.metodo_pago != ''
+                          AND (c.stay_id IS NULL OR c.stay_id = 0)"; 
+        
+        $stmtC = $this->pdo->prepare($sqlConsumos);
+        $stmtC->execute([':mes' => $mes, ':anio' => $anio]);
+        
+        foreach ($stmtC->fetchAll(PDO::FETCH_ASSOC) as $c) {
+            $t = strtoupper($c['metodo_pago'] ?? '');
+            $val = (float)$c['total'];
+
+            if (strpos($t, 'YAPE') !== false || strpos($t, 'PLIN') !== false) {
+                $res['YAPE'] += $val;
+            } elseif (strpos($t, 'TRANS') !== false || strpos($t, 'DEPO') !== false || strpos($t, 'BANCO') !== false) {
+                $res['TRANSFERENCIA'] += $val;
+            } elseif (strpos($t, 'EFECTIVO') !== false) {
+                $res['EFECTIVO']['PEN'] += $val;
+            } elseif (strpos($t, 'POS') !== false) {
+                $res['POS']['PEN'] += $val;
+            }
+        }
+
         return $res;
+    }
+
+    /**
+     * Mendoza: Detalle de consumos realizados en el mes
+     */
+    public function getConsumosDetail(int $mes, int $anio): array {
+        $sql = "
+            SELECT 
+                c.id,
+                c.stay_id,
+                h.numero AS habitacion,
+                c.nombre_producto AS producto,
+                c.cantidad,
+                c.total,
+                c.metodo_pago,
+                DATE(c.created_at) AS fecha,
+                CASE 
+                    WHEN HOUR(c.created_at) >= 6 AND HOUR(c.created_at) < 14 THEN 'MAÑANA' 
+                    ELSE 'TARDE' 
+                END AS turno
+            FROM rooming_consumos c
+            LEFT JOIN rooming_stays s ON c.stay_id = s.id
+            LEFT JOIN habitaciones h ON s.habitacion_id = h.id
+            WHERE MONTH(c.created_at) = :mes AND YEAR(c.created_at) = :anio
+            ORDER BY c.created_at DESC
+        ";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute(['mes' => $mes, 'anio' => $anio]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     /**

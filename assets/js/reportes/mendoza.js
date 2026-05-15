@@ -9,11 +9,16 @@ createApp({
             mes: new Date().getMonth() + 1,
             anio: new Date().getFullYear()
         });
+        const filtroAvanzado = ref({
+            search: '',
+            metodo: ''
+        });
         const data = ref([]);
         const resumen = ref({ ingresos_hospedaje: 0, otros_ingresos: 0, egresos_operativos: 0, gastos_caja_chica: 0, gastos_yape: 0, utilidad_neta: 0 });
         const resumenDesglosado = ref({});
+        const consumos = ref([]);
         const loading = ref(false);
-        const colapsados = ref({}); // { '2026-03-27': false, '2026-03-26': true }
+        const colapsados = ref({});
         let pollingTimer = null;
 
         const fetchData = async (silent = false) => {
@@ -23,15 +28,19 @@ createApp({
                 if (res.data.ok) {
                     const payload = res.data.data;
                     data.value = Array.isArray(payload.data) ? payload.data : [];
+                    consumos.value = Array.isArray(payload.consumos) ? payload.consumos : [];
                     resumen.value = payload.resumen || {};
                     resumenDesglosado.value = payload.resumen_desglosado || {};
                     
-                    // Inicializar colapsados
+                    // Inicializar colapsados: solo si la fecha es nueva preservamos el estado actual
                     const hoy = new Date().toISOString().split('T')[0];
-                    const tempCol = {};
-                    const fechasUnicas = [...new Set(data.value.map(d => d.pago_fecha))];
+                    const tempCol = { ...colapsados.value };
+                    const fechasUnicas = [...new Set([...data.value.map(d => d.pago_fecha), ...consumos.value.map(c => c.fecha)])];
+                    
                     fechasUnicas.forEach(f => {
-                        tempCol[f] = (f !== hoy);
+                        if (tempCol[f] === undefined) {
+                            tempCol[f] = (f !== hoy);
+                        }
                     });
                     colapsados.value = tempCol;
                 }
@@ -42,13 +51,79 @@ createApp({
             }
         };
 
+        const filteredHospedaje = computed(() => {
+            return data.value.filter(item => {
+                const matchesSearch = !filtroAvanzado.value.search || 
+                                     item.habitacion.toLowerCase().includes(filtroAvanzado.value.search.toLowerCase()) ||
+                                     item.medio_label.toLowerCase().includes(filtroAvanzado.value.search.toLowerCase());
+                const matchesMetodo = !filtroAvanzado.value.metodo || 
+                                     item.medio_label.toUpperCase().includes(filtroAvanzado.value.metodo.toUpperCase());
+                return matchesSearch && matchesMetodo;
+            });
+        });
+
+        const filteredConsumos = computed(() => {
+            return consumos.value.filter(item => {
+                const matchesSearch = !filtroAvanzado.value.search || 
+                                     item.habitacion.toLowerCase().includes(filtroAvanzado.value.search.toLowerCase()) ||
+                                     item.producto.toLowerCase().includes(filtroAvanzado.value.search.toLowerCase());
+                const matchesMetodo = !filtroAvanzado.value.metodo || 
+                                     item.metodo_pago.toUpperCase().includes(filtroAvanzado.value.metodo.toUpperCase());
+                return matchesSearch && matchesMetodo;
+            });
+        });
+
         const groupedData = computed(() => {
             const groups = {};
-            data.value.forEach(item => {
+            const consumosUsados = new Set();
+            
+            // 1. Procesar Hospedaje (Anticipos)
+            filteredHospedaje.value.forEach(item => {
                 const fecha = item.pago_fecha;
-                if (!groups[fecha]) groups[fecha] = { MAÑANA: [], TARDE: [] };
-                groups[fecha][item.turno].push(item);
+                const turno = item.turno;
+                if (!groups[fecha]) groups[fecha] = { MAÑANA: { hospedaje: [], consumos: [], totales: {} }, TARDE: { hospedaje: [], consumos: [], totales: {} } };
+                
+                // Smart Merge: ¿Es un pago de consumo?
+                const match = filteredConsumos.value.find(c => 
+                    !consumosUsados.has(c.id) && 
+                    c.stay_id == item.stay_id && 
+                    parseFloat(c.total) == parseFloat(item.total_fila) &&
+                    c.fecha == item.pago_fecha
+                );
+
+                if (match) {
+                    item.concept_override = `Consumo: ${match.producto} (x${match.match_cantidad || match.cantidad})`;
+                    consumosUsados.add(match.id);
+                }
+
+                groups[fecha][turno].hospedaje.push(item);
+                
+                // Sumar a totales del turno
+                const label = item.medio_label;
+                const monto = parseFloat(item.total_fila || 0);
+                groups[fecha][turno].totales[label] = (groups[fecha][turno].totales[label] || 0) + monto;
             });
+
+            // 2. Procesar Consumos (Ventas Directas o no vinculadas)
+            filteredConsumos.value.forEach(item => {
+                if (consumosUsados.has(item.id)) return;
+
+                const fecha = item.fecha;
+                const turno = item.turno;
+                if (!groups[fecha]) groups[fecha] = { MAÑANA: { hospedaje: [], consumos: [], totales: {} }, TARDE: { hospedaje: [], consumos: [], totales: {} } };
+                groups[fecha][turno].consumos.push(item);
+
+                // Mapear medio de pago de consumo a label estándar si es necesario
+                const label = item.metodo_pago || 'EFECTIVO'; 
+                // Normalizar label (Ej: 'POS' -> 'POS S/')
+                let standardLabel = label;
+                if (label === 'POS') standardLabel = 'POS S/';
+                if (label === 'EFECTIVO') standardLabel = 'EFEC S/';
+
+                const monto = parseFloat(item.total || 0);
+                groups[fecha][turno].totales[standardLabel] = (groups[fecha][turno].totales[standardLabel] || 0) + monto;
+            });
+
             return groups;
         });
 
@@ -57,10 +132,10 @@ createApp({
         };
 
         const getBadgeClass = (label, isText = false) => {
-            if (label.includes('POS')) return isText ? 'text-primary' : 'bg-primary text-white';
-            if (label.includes('YAPE')) return isText ? 'text-info' : 'bg-info text-white';
-            if (label.includes('TRANSFER')) return isText ? 'text-success' : 'bg-success text-white';
-            return isText ? 'text-dark' : 'bg-dark text-white';
+            if (label.includes('POS')) return isText ? 'text-primary' : 'bg-pos';
+            if (label.includes('YAPE')) return isText ? 'text-info' : 'bg-yape';
+            if (label.includes('TRANSFER')) return isText ? 'text-success' : 'bg-transfer';
+            return isText ? 'text-dark' : 'bg-cash';
         };
 
         const getPrefix = (label) => {
@@ -102,6 +177,12 @@ createApp({
             return 'S/';
         };
 
+        const verDetalle = (stayId) => {
+            if (!stayId) return;
+            // Redireccionar al rooming con el stay_id para que el deep-linking lo abra
+            window.location.href = `../../../rooming?stay_id=${stayId}`;
+        };
+
         const exportar = () => {
             const columnas = [
                 { header: 'FECHA', key: 'pago_fecha' },
@@ -133,7 +214,9 @@ createApp({
 
         return { 
             filtro, data, groupedData, resumen, resumenDesglosado, colapsados, loading, 
-            fetchData, toggleDia, getResumenTurno, getBadgeClass, getPrefix, getMesNombre, formatCurrency, formatNumber, getSym, exportar 
+            fetchData, toggleDia, getResumenTurno, getBadgeClass, getPrefix, getMesNombre, formatCurrency, formatNumber, getSym, exportar,
+            filtroAvanzado,
+            verDetalle
         };
     }
 }).mount('#app-mendoza');

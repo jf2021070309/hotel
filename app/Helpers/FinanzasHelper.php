@@ -21,7 +21,9 @@ class FinanzasHelper {
     }
 
     /**
-     * Busca el turno de flujo de caja activo para hoy y el usuario actual.
+     * Busca el turno de flujo de caja activo para hoy.
+     * Prioriza el turno del usuario actual, pero si no tiene uno y hay uno solo abierto
+     * para el turno actual (Mañana/Tarde), permite usarlo (útil para Admins).
      */
     public function getFlujoIdActivo(int $usuarioId): ?int {
         $fechaHoy = date('Y-m-d');
@@ -38,7 +40,20 @@ class FinanzasHelper {
 
         if ($id) return (int)$id;
 
-        // No se permite usar un turno anterior como caja activa.
+        // 2. Fallback: Si no tiene turno propio, buscar si hay algún otro turno abierto para este turno/fecha
+        $stmtAll = $this->pdo->prepare("
+            SELECT id FROM flujo_caja 
+            WHERE fecha = ? AND turno = ? AND estado = 'borrador'
+        ");
+        $stmtAll->execute([$fechaHoy, $turno]);
+        $ids = $stmtAll->fetchAll(PDO::FETCH_COLUMN);
+
+        if (count($ids) === 1) {
+            // Si solo hay una caja abierta para este turno, la usamos
+            return (int)$ids[0];
+        }
+
+        // Si hay múltiples cajas o ninguna, no podemos auto-decidir
         return null;
     }
 
@@ -138,13 +153,14 @@ class FinanzasHelper {
                 VALUES (:flujo_id, :cat_id, :categoria, :tipo, :moneda, :monto, :medio, :obs, :s_fecha, :s_turno)";
         
         $stmt = $this->pdo->prepare($sql);
+        $montoFinal = (float)($data['monto'] ?? 0);
         return $stmt->execute([
             ':flujo_id'  => $flujoId,
             ':cat_id'    => $categoriaId,
             ':categoria' => $categoria,
             ':tipo'      => $tipo,
             ':moneda'    => $moneda,
-            ':monto'     => $data['monto'],
+            ':monto'     => $montoFinal,
             ':medio'     => $medioFinal,
             ':obs'       => $data['observacion'] ?? '',
             ':s_fecha'   => $sFecha,

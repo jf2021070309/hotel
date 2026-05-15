@@ -158,10 +158,11 @@ $turnoQuery = $_GET['turno'] ?? 'MAÑANA';
               <table class="table table-borderless table-striped align-middle mb-0" style="font-size:13px;">
                 <thead class="table-light">
                   <tr class="text-secondary" style="font-size:11px;">
-                    <th style="width:22%;">CATEGORÍA</th>
-                    <th style="width:15%;">MONEDA</th>
-                    <th style="width:13%;">MONTO</th>
-                    <th style="width:45%;">OBSERVACIÓN</th>
+                    <th style="width:20%;">CATEGORÍA</th>
+                    <th style="width:12%;">MONEDA</th>
+                    <th style="width:12%;">MONTO</th>
+                    <th style="width:30%;">OBSERVACIÓN</th>
+                    <th style="width:21%;">DE SOBRE?</th>
                     <th style="width:5%;" v-if="esEditable"></th>
                   </tr>
                 </thead>
@@ -201,12 +202,28 @@ $turnoQuery = $_GET['turno'] ?? 'MAÑANA';
                     <td>
                       <div class="input-group input-group-sm">
                         <textarea class="form-control text-danger border-end-0 py-1" v-model="mov.observacion" :disabled="!esEditable" placeholder="Nota..." rows="2" style="resize: none; font-size: 11px; overflow: hidden; line-height: 1.2;"></textarea>
-                        <span class="input-group-text bg-white border-start-0" v-if="mov.observacion.includes('#')">
+                        <span class="input-group-text bg-white border-start-0" v-if="mov.observacion && mov.observacion.includes('#')">
                            <a :href="SERVER_DATA.roomingIndex + '?stay_id=' + (mov.observacion.match(/#(\d+)/) || [])[1]" class="text-primary" title="Ver Registro" target="_blank">
                              <i class="bi bi-box-arrow-up-right"></i>
                            </a>
                         </span>
                       </div>
+                    </td>
+                    <td>
+                        <div v-if="mov.medio_pago === 'EFECTIVO'" class="d-flex flex-column gap-1">
+                            <div class="form-check form-switch mb-0">
+                                <input class="form-check-input" type="checkbox" :id="'chkSobre' + index" v-model="mov._usaSobre" :disabled="!esEditable">
+                                <label class="form-check-label" :for="'chkSobre' + index" style="font-size: 9px;">Vincular</label>
+                            </div>
+                            <div v-if="mov._usaSobre" class="d-flex gap-1 animate__animated animate__fadeIn">
+                                <input type="date" class="form-control form-control-sm p-1" v-model="mov.sobre_fecha" :disabled="!esEditable" style="font-size: 10px; width: 105px;">
+                                <select class="form-select form-select-sm p-1" v-model="mov.sobre_turno" :disabled="!esEditable" style="font-size: 10px; width: 75px;">
+                                    <option value="MAÑANA">MAÑ.</option>
+                                    <option value="TARDE">TARD.</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div v-else class="text-muted small italic" style="font-size: 10px;">Solo efectivo</div>
                     </td>
                     <td v-if="esEditable" class="text-center">
                       <button class="btn btn-sm text-danger" @click="eliminarMovimiento('egresos', index)"><i class="bi bi-trash"></i></button>

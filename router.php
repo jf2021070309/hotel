@@ -40,7 +40,6 @@ $routeMap = [
     '/admin/medios-pago'       => 'app/Views/admin/medios_pago.php',
     '/admin/auditoria'         => 'app/Views/admin/auditoria.php',
     '/reportes/mendoza'        => 'app/Views/reportes/mendoza.php',
-    '/reportes/alex'           => 'app/Views/reportes/alex.php',
     '/login'                   => 'login.php',
     '/login.php'               => 'login.php',
     '/logout.php'              => 'logout.php',

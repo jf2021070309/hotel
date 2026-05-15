@@ -96,7 +96,12 @@ createApp({
             cabecera.nota_entrega = d.nota_entrega || '';
             
             ingresos.value = d.ingresos || [];
-            egresos.value  = d.egresos || [];
+            egresos.value  = (d.egresos || []).map(e => ({
+              ...e,
+              _usaSobre: !!(e.sobre_fecha || e.sobre_turno),
+              sobre_fecha: e.sobre_fecha || '',
+              sobre_turno: e.sobre_turno || 'MAÑANA'
+            }));
             
             if (d.tc) {
               tc.USD = d.tc.USD;
@@ -192,7 +197,10 @@ createApp({
         moneda: 'PEN',
         monto: '',
         medio_pago: 'EFECTIVO',
-        observacion: ''
+        observacion: '',
+        _usaSobre: false,
+        sobre_fecha: cabecera.fecha,
+        sobre_turno: 'MAÑANA'
       });
     };
 
@@ -277,7 +285,15 @@ createApp({
           turno: cabecera.turno,
           nota_entrega: cabecera.nota_entrega,
           ingresos: ingresos.value,
-          egresos: egresos.value
+          egresos: egresos.value.map(e => {
+            const copy = { ...e };
+            if (!copy._usaSobre) {
+              copy.sobre_fecha = null;
+              copy.sobre_turno = null;
+            }
+            delete copy._usaSobre;
+            return copy;
+          })
         };
 
         const res = await axios.post(`${BASE}guardar`, data);

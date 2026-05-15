@@ -217,6 +217,17 @@ class FlujoController {
     }
 
     /**
+     * Obtiene el resumen consolidado mensual específico para la liquidación de sobres de Alex.
+     * 
+     * @param int $mes Mes (1-12).
+     * @param int $anio Año (YYYY).
+     * @return array Resumen diario consolidado del mes.
+     */
+    public function resumenAlexMensual(int $mes, int $anio): array {
+        return $this->model->getReporteAlexMensual($mes, $anio);
+    }
+
+    /**
      * Obtiene el resumen consolidado específico para la liquidación de sobres de Alex.
      * 
      * @param string $fecha Formato YYYY-MM-DD.

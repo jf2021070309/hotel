@@ -35,25 +35,6 @@ class ReporteController {
     }
 
     /**
-     * Reporte Alex: Gastos Yape Detallados
-     */
-    public function alex(): array {
-        $mes = (int)($_GET['mes'] ?? date('m'));
-        $anio = (int)($_GET['anio'] ?? date('Y'));
-        
-        try {
-            $data = $this->model->getGastosYape($mes, $anio);
-            return [
-                'ok' => true,
-                'data' => $data,
-                'filtros' => ['mes' => $mes, 'anio' => $anio]
-            ];
-        } catch (Exception $e) {
-            return ['ok' => false, 'msg' => $e->getMessage()];
-        }
-    }
-
-    /**
      * Resumen P&L para Dashboard
      */
     public function resumenPL(): array {

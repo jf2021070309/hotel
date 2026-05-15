@@ -209,7 +209,7 @@ class RoomingController {
             }
             
             // Si es un REGISTRO NUEVO y hay pago inicial, registrarlo como anticipo
-            if (empty($stayData['id']) && $mapped['cobrado'] > 0) {
+            if (empty($stayData['id']) && (float)($mapped['cobrado'] ?? 0) > 0) {
                 $adelantoVal = isset($input['adelanto']) ? (float)$input['adelanto'] : 0;
                 $esPagoCompleto = ($input['tipoPago'] ?? 'completo') === 'completo';
                 $monto_pago = $esPagoCompleto ? (float)$mapped['monto_orig'] : $adelantoVal;
@@ -218,7 +218,7 @@ class RoomingController {
                     'stay_id'   => $stay_id,
                     'monto'     => $monto_pago,
                     'moneda'    => $mapped['moneda'],
-                    'monto_pen' => $mapped['cobrado'],
+                    'monto_pen' => (float)$mapped['cobrado'],
                     'tc'        => $mapped['tc'],
                     'tipo'      => $mapped['metodo'],
                     'recibo'    => $mapped['num_comp'],

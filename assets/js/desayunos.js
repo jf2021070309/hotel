@@ -44,7 +44,7 @@ createApp({
         const fetchLista = async () => {
             loading.value = true;
             try {
-                const res = await axios.get(`/hotel/api/desayunos.php?action=listar&mes=${filtro.value.mes}&anio=${filtro.value.anio}&t=${Date.now()}`);
+                const res = await axios.get(`../../../api/desayunos.php?action=listar&mes=${filtro.value.mes}&anio=${filtro.value.anio}&t=${Date.now()}`);
                 if (res.data.ok) lista.value = res.data.data;
             } catch (e) { console.error(e); }
             loading.value = false;
@@ -53,7 +53,7 @@ createApp({
         const nuevoRegistro = async () => {
             loading.value = true;
             try {
-                const res = await axios.get(`/hotel/api/desayunos.php?action=hoy&t=${Date.now()}`);
+                const res = await axios.get(`../../../api/desayunos.php?action=hoy&t=${Date.now()}`);
                 if (res.data.ok) {
                     actual.value = res.data.data;
                     tab.value = 'detalle';
@@ -73,7 +73,7 @@ createApp({
             url.searchParams.set('fecha', item.fecha);
             window.history.pushState({}, '', url);
 
-            axios.get(`/hotel/api/desayunos.php?action=hoy&fecha=${item.fecha}&t=${Date.now()}`)
+            axios.get(`../../../api/desayunos.php?action=hoy&fecha=${item.fecha}&t=${Date.now()}`)
                 .then(res => {
                     if (res.data.ok) {
                         actual.value = res.data.data;
@@ -119,7 +119,7 @@ createApp({
             };
             
             try {
-                const res = await axios.post('/hotel/api/desayunos.php?action=guardar', payload);
+                const res = await axios.post('../../../api/desayunos.php?action=guardar', payload);
                 if (res.data.ok) {
                     if (res.data.id) actual.value.id = res.data.id;
                 }
@@ -145,7 +145,7 @@ createApp({
                 pax_ajustado: totalFinal.value
             };
             try {
-                const res = await axios.post('/hotel/api/desayunos.php?action=guardar', payload);
+                const res = await axios.post('../../../api/desayunos.php?action=guardar', payload);
                 if (res.data.ok) {
                     // Actualizar ID local
                     if (res.data.id) actual.value.id = res.data.id;
@@ -206,7 +206,7 @@ createApp({
         };
 
         const imprimir = (id) => {
-            window.open(`/hotel/api/desayunos.php?action=imprimir&id=${id}`, '_blank');
+            window.open(`../../../api/desayunos.php?action=imprimir&id=${id}`, '_blank');
         };
 
         onMounted(async () => {

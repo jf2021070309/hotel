@@ -24,7 +24,7 @@ createApp({
         const fetchData = async (silent = false) => {
             if (!silent) loading.value = true;
             try {
-                const res = await axios.get(`/hotel/api/reportes.php?action=mendoza&mes=${filtro.value.mes}&anio=${filtro.value.anio}`);
+                const res = await axios.get(`../../../api/reportes.php?action=mendoza&mes=${filtro.value.mes}&anio=${filtro.value.anio}`);
                 if (res.data.ok) {
                     const payload = res.data.data;
                     data.value = Array.isArray(payload.data) ? payload.data : [];

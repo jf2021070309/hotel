@@ -42,7 +42,7 @@ const appConfig = {
 
         const fetchPersonal = async () => {
             try {
-                const res = await axios.get('/hotel/api/usuarios.php?action=personal_limpieza');
+                const res = await axios.get('../../../api/usuarios.php?action=personal_limpieza');
                 personalLimpieza.value = res.data.data || [];
             } catch (e) { /* silencio si no hay usuario limpieza aún */ }
         };
@@ -53,7 +53,7 @@ const appConfig = {
                 const hoy = new Date().toLocaleDateString('en-CA');
                 const action = filtroFecha.value === hoy ? 'hoy' : `detalle_fecha&fecha=${filtroFecha.value}`;
                 
-                const res = await axios.get(`/hotel/api/limpieza.php?action=${action}`);
+                const res = await axios.get(`../../../api/limpieza.php?action=${action}`);
                 if (res.data.ok) {
                     lista.value = res.data.data;
                     yaGenerado.value = res.data.ya_generado || (filtroFecha.value !== hoy);
@@ -69,7 +69,7 @@ const appConfig = {
         const generarLista = async () => {
             loading.value = true;
             try {
-                const res = await axios.post('/hotel/api/limpieza.php?action=generar');
+                const res = await axios.post('../../../api/limpieza.php?action=generar');
                 if (res.data.ok) {
                     Swal.fire('¡Listo!', res.data.msg, 'success');
                     fetchHoy();
@@ -91,7 +91,7 @@ const appConfig = {
 
             loading.value = true;
             try {
-                const res = await axios.post('/hotel/api/limpieza.php?action=actualizar', formData);
+                const res = await axios.post('../../../api/limpieza.php?action=actualizar', formData);
                 if (res.data.ok) {
                     const msg = nuevoEstado === 'lista' ? 'Habitación marcada como lista' : 'Habitación marcada como pendiente';
                     Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: msg, showConfirmButton: false, timer: 2000 });
@@ -133,7 +133,7 @@ const appConfig = {
         const fetchHistorial = async () => {
             loading.value = true;
             try {
-                const res = await axios.get(`/hotel/api/limpieza.php?action=listar&mes=${filtroHist.value.mes}&anio=${filtroHist.value.anio}`);
+                const res = await axios.get(`../../../api/limpieza.php?action=listar&mes=${filtroHist.value.mes}&anio=${filtroHist.value.anio}`);
                 if (res.data.ok) listaHistorial.value = res.data.data;
             } catch (e) { console.error(e); }
             loading.value = false;
@@ -141,7 +141,7 @@ const appConfig = {
 
         const verDetalle = (fecha) => {
             fechaDetalle.value = fecha;
-            axios.get('/hotel/api/limpieza.php?action=detalle&fecha=' + fecha).then(res => {
+            axios.get('../../../api/limpieza.php?action=detalle&fecha=' + fecha).then(res => {
                 if (res.data.ok) {
                     detalleDia.value = res.data.data;
                     new bootstrap.Modal(document.getElementById('modalDetalle')).show();

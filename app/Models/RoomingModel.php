@@ -396,7 +396,7 @@ class RoomingModel {
                 VALUES (?, ?, ?, 'salida', 'alta', 'pendiente', ?)
                 ON DUPLICATE KEY UPDATE tipo_limpieza = 'salida', prioridad = 'alta', estado = 'pendiente'
             ");
-            $stmtLimpieza->execute([$fechaOut, $hab_id, $numHab, $_SESSION['auth_id'] ?? 1]);
+            $stmtLimpieza->execute([date('Y-m-d'), $hab_id, $numHab, $_SESSION['auth_id'] ?? 1]);
 
             if ($mustCommit) $this->pdo->commit();
             return true;
@@ -477,7 +477,7 @@ class RoomingModel {
                 VALUES (?, ?, ?, 'salida', 'alta', 'pendiente', ?)
                 ON DUPLICATE KEY UPDATE tipo_limpieza = 'salida', prioridad = 'alta'";
         $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([$fecha_out, $hab_id, $numHab, $_SESSION['auth_id'] ?? 1]);
+        $stmt->execute([date('Y-m-d'), $hab_id, $numHab, $_SESSION['auth_id'] ?? 1]);
     }
 
     /**

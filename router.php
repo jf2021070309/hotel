@@ -36,6 +36,7 @@ $routeMap = [
     '/desayunos'               => 'app/Views/desayunos/index.php',
     '/limpieza'                => 'app/Views/limpieza/index.php',
     '/clientes'                => 'app/Views/clientes/index.php',
+    '/clientes-frecuentes'     => 'app/Views/clientes/frecuentes.php',
     '/admin/usuarios'          => 'app/Views/admin/usuarios.php',
     '/admin/medios-pago'       => 'app/Views/admin/medios_pago.php',
     '/admin/auditoria'         => 'app/Views/admin/auditoria.php',

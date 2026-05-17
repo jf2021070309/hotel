@@ -19,6 +19,19 @@ $controller = new ClienteController($pdo);
 
 switch ($action) {
     case 'listar':
+        // --- MIGRACIÓN AUTOMÁTICA DE EMERGENCIA (Self-Healing) ---
+        try {
+            $pdo->exec("ALTER TABLE `rooming_pax` MODIFY `stay_id` INT(10) UNSIGNED NULL;");
+        } catch (Exception $e) {
+            // Ya modificado o ignorar
+        }
+        try {
+            $pdo->exec("ALTER TABLE `rooming_pax` ADD COLUMN `ruc` VARCHAR(20) DEFAULT NULL AFTER `documento_num`;");
+        } catch (Exception $e) {
+            // Ya existe o ignorar
+        }
+        // ---------------------------------------------------------
+
         $buscar = $_GET['buscar'] ?? '';
         json_response(true, $controller->index($buscar));
         break;

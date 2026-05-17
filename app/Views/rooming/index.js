@@ -1204,37 +1204,50 @@ createApp({
         try {
           const data = JSON.parse(quickPax);
 
-          // Esperamos un momento a que Vue y la página estén completamente cargadas y estables
-          setTimeout(async () => {
-            // 1. Abrir modal de checkin
-            await abrirCheckin();
+          // Lazo de reintentos ultra-robusto y tolerante a fallos para asegurar carga del DOM y de Bootstrap
+          let attempts = 0;
+          const interval = setInterval(async () => {
+            attempts++;
+            const modalEl = document.getElementById('modalCheckin');
+            if (modalEl && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+              clearInterval(interval);
+              try {
+                // 1. Abrir modal de checkin (valida caja, carga habs y muestra modal)
+                await abrirCheckin();
 
-            // 2. Pre-llenar el primer pasajero
-            if (form.pax.length > 0) {
-              form.pax[0].documento_num = data.dni;
-              form.pax[0].documento_tipo = data.tipo_doc || 'DNI';
-              form.pax[0].nombre_completo = data.nombre;
-              form.pax[0].nacionalidad = data.nacionalidad || 'Peruana';
-              form.pax[0].ciudad = data.ciudad || '';
-              form.pax[0].celular = data.celular || '';
-              form.pax[0].email = data.email || '';
-              form.pax[0].es_titular = true;
+                // 2. Pre-llenar el primer pasajero con los datos recibidos
+                if (form.pax.length > 0) {
+                  form.pax[0].documento_num = data.dni;
+                  form.pax[0].documento_tipo = data.tipo_doc || 'DNI';
+                  form.pax[0].nombre_completo = data.nombre;
+                  form.pax[0].nacionalidad = data.nacionalidad || 'Peruana';
+                  form.pax[0].ciudad = data.ciudad || '';
+                  form.pax[0].celular = data.celular || '';
+                  form.pax[0].email = data.email || '';
+                  form.pax[0].es_titular = true;
 
-              // Cargar datos corporativos si existen
-              if (data.ruc || data.empresa) {
-                form.pax[0].es_corporativo = true;
-                form.pax[0].ruc_empresa = data.ruc || '';
-                form.pax[0].empresa = data.empresa || '';
+                  // Cargar datos corporativos si existen
+                  if (data.ruc || data.empresa) {
+                    form.pax[0].es_corporativo = true;
+                    form.pax[0].ruc_empresa = data.ruc || '';
+                    form.pax[0].empresa = data.empresa || '';
 
-                // También pre-llenar facturación
-                form.stay.ruc_factura = data.ruc || '';
-                form.stay.razon_social = data.empresa || '';
-                form.stay.tipo_comprobante = 'FACTURA';
+                    // También pre-llenar facturación
+                    form.stay.ruc_factura = data.ruc || '';
+                    form.stay.razon_social = data.empresa || '';
+                    form.stay.tipo_comprobante = 'FACTURA';
+                  }
+                }
+
+                showToast(`¡Cliente Frecuente detectado!`, 'success');
+              } catch (err) {
+                console.error('Error al instanciar checkin rápido:', err);
               }
+            } else if (attempts >= 50) {
+              clearInterval(interval);
+              console.error('Error de carga: El modal de checkin o la librería Bootstrap no cargaron a tiempo.');
             }
-
-            showToast(`¡Cliente Frecuente detectado!`, 'success');
-          }, 350);
+          }, 100);
         } catch (e) {
           console.error('Error in quick checkin:', e);
         }

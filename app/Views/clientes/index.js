@@ -29,15 +29,16 @@ createApp({
             email: '',
             es_empresa: false,
             ruc: '',
-            razon_social: ''
+            razon_social: '',
+            vip: false
         });
 
         const clientesFiltrados = computed(() => {
             let filtrados = clientes.value;
             
-            // 1. Filtro por tipo de cliente (Todos vs Frecuentes [>= 2 estadías])
+            // 1. Filtro por tipo de cliente (Todos vs Frecuentes [>= 2 estadías o VIP])
             if (filtroFrecuente.value === 'frecuentes') {
-                filtrados = filtrados.filter(c => parseInt(c.total_estadias || 0) >= 2);
+                filtrados = filtrados.filter(c => parseInt(c.total_estadias || 0) >= 2 || c.vip == 1);
             }
 
             // 2. Filtro por buscador (nombre, DNI, RUC, Razón Social)
@@ -84,7 +85,8 @@ createApp({
                 email: '',
                 es_empresa: false,
                 ruc: '',
-                razon_social: ''
+                razon_social: '',
+                vip: false
             };
             const modalEl = document.getElementById('modalNuevoCliente');
             bootstrap.Modal.getOrCreateInstance(modalEl).show();
@@ -102,7 +104,8 @@ createApp({
                 email: c.email || '',
                 es_empresa: !!c.ruc || !!c.razon_social,
                 ruc: c.ruc || '',
-                razon_social: c.razon_social || ''
+                razon_social: c.razon_social || '',
+                vip: c.vip == 1
             };
             const modalEl = document.getElementById('modalNuevoCliente');
             bootstrap.Modal.getOrCreateInstance(modalEl).show();

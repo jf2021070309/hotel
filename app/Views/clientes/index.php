@@ -103,11 +103,11 @@ include $_projectRoot . '/includes/head.php';
                 <td>
                   <div class="d-flex align-items-center gap-1">
                     <span class="fw-bold text-dark" style="font-size: 14px;">{{ c.nombre }}</span>
-                    <!-- Estrella brillante para clientes frecuentes -->
-                    <span v-if="c.total_estadias >= 2" 
+                    <!-- Estrella brillante para clientes frecuentes / destacados -->
+                    <span v-if="c.total_estadias >= 2 || c.vip == 1" 
                           class="badge bg-warning bg-opacity-10 text-dark border border-warning d-inline-flex align-items-center gap-1 px-2 py-1 ms-1 hover-scale pulse-star"
                           style="font-size: 10px; font-weight: 700; cursor: default;" 
-                          title="Huésped Frecuente ★">
+                          title="Huésped VIP / Destacado ★">
                       <i class="bi bi-star-fill text-warning"></i>
                     </span>
                   </div>
@@ -324,12 +324,21 @@ include $_projectRoot . '/includes/head.php';
               </div>
             </div>
             <div class="p-3 rounded-4 border bg-white shadow-sm mb-4">
-              <div class="form-check form-switch d-flex align-items-center gap-2 mb-2">
+              <div class="form-check form-switch d-flex align-items-center gap-2 mb-3">
                 <input class="form-check-input cursor-pointer" type="checkbox" v-model="nuevoCliente.es_empresa" id="switchEmpresa">
                 <label class="form-check-label text-muted fw-bold text-uppercase cursor-pointer mb-0" for="switchEmpresa" style="font-size: 11px; letter-spacing: 0.5px;">
                   <i class="bi bi-building me-1"></i> ¿Es una empresa? (Corporativo)
                 </label>
               </div>
+
+              <!-- Switch de Cliente VIP / Estrella -->
+              <div class="form-check form-switch d-flex align-items-center gap-2 mb-2">
+                <input class="form-check-input cursor-pointer" type="checkbox" v-model="nuevoCliente.vip" id="switchVip">
+                <label class="form-check-label text-muted fw-bold text-uppercase cursor-pointer mb-0" for="switchVip" style="font-size: 11px; letter-spacing: 0.5px;">
+                  <i class="bi bi-star-fill text-warning me-1"></i> ¿Destacar con Estrella? (Huésped VIP)
+                </label>
+              </div>
+
               <div v-if="nuevoCliente.es_empresa" class="row g-3 animate__animated animate__fadeIn mt-2 pt-2 border-top">
                 <div class="col-12">
                   <label class="text-muted text-uppercase fw-bold mb-1" style="font-size: 11px; letter-spacing: 0.5px;">RUC</label>

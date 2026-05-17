@@ -13,7 +13,6 @@ class ClienteModel {
     /**
      * Lista únicos titulares (agrupa por documento_num para evitar duplicados)
      */
-    public function getAll(string $buscar = ''): array {
         $sql = "SELECT 
                     p.documento_num                         AS dni,
                     MAX(p.documento_tipo)                   AS tipo_doc,
@@ -25,6 +24,7 @@ class ClienteModel {
                     MAX(p.ruc)                              AS ruc,
                     MAX(p.empresa)                          AS razon_social,
                     COUNT(DISTINCT p.stay_id)               AS total_estadias,
+                    MAX(p.vip)                              AS vip,
                     MAX(p.created_at)                       AS ultima_visita
                 FROM rooming_pax p
                 WHERE p.es_titular = 1";
@@ -132,6 +132,7 @@ class ClienteModel {
             $esCorp = (!empty($data['es_empresa'])) ? 1 : 0;
             $ruc = $esCorp ? ($data['ruc'] ?? '') : '';
             $empresa = $esCorp ? ($data['razon_social'] ?? '') : '';
+            $vip = (!empty($data['vip'])) ? 1 : 0;
 
             if ($existing) {
                 // UPDATE
@@ -144,7 +145,8 @@ class ClienteModel {
                             celular = ?,
                             email = ?,
                             empresa = ?,
-                            es_corporativo = ?
+                            es_corporativo = ?,
+                            vip = ?
                         WHERE id = ?";
                 $stmt = $this->pdo->prepare($sql);
                 return $stmt->execute([
@@ -157,13 +159,14 @@ class ClienteModel {
                     $data['email'] ?? '',
                     $empresa,
                     $esCorp,
+                    $vip,
                     $existing['id']
                 ]);
             } else {
                 // INSERT
                 $sql = "INSERT INTO rooming_pax 
-                            (stay_id, documento_tipo, documento_num, ruc, nombre_completo, nacionalidad, ciudad, celular, email, empresa, es_titular, es_corporativo) 
-                        VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)";
+                            (stay_id, documento_tipo, documento_num, ruc, nombre_completo, nacionalidad, ciudad, celular, email, empresa, es_titular, es_corporativo, vip) 
+                        VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)";
                 $stmt = $this->pdo->prepare($sql);
                 return $stmt->execute([
                     $data['tipo_doc'],
@@ -175,7 +178,8 @@ class ClienteModel {
                     $data['celular'],
                     $data['email'] ?? '',
                     $empresa,
-                    $esCorp
+                    $esCorp,
+                    $vip
                 ]);
             }
         } catch (PDOException $e) {

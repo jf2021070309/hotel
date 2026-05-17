@@ -30,6 +30,11 @@ switch ($action) {
         } catch (Exception $e) {
             // Ya existe o ignorar
         }
+        try {
+            $pdo->exec("ALTER TABLE `rooming_pax` ADD COLUMN `vip` TINYINT(1) DEFAULT 0;");
+        } catch (Exception $e) {
+            // Ya existe o ignorar
+        }
         // ---------------------------------------------------------
 
         $buscar = $_GET['buscar'] ?? '';

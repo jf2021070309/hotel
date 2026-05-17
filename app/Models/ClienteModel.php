@@ -13,6 +13,7 @@ class ClienteModel {
     /**
      * Lista únicos titulares (agrupa por documento_num para evitar duplicados)
      */
+    public function getAll(string $buscar = ''): array {
         $sql = "SELECT 
                     p.documento_num                         AS dni,
                     MAX(p.documento_tipo)                   AS tipo_doc,

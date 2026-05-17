@@ -32,24 +32,46 @@ include $_projectRoot . '/includes/head.php';
 
     <div class="page-body">
       <!-- FILTROS Y ACCIONES -->
-      <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
-        <!-- Tabs para filtrar Todos vs Frecuentes -->
-        <div class="btn-group bg-white p-1 shadow-sm rounded-3 border" role="group" style="height: 42px;">
-          <button type="button" class="btn btn-sm px-3 fw-bold rounded-2 transition-all d-flex align-items-center gap-2"
-            :class="filtroFrecuente === 'todos' ? 'btn-dark text-white' : 'btn-white text-secondary border-0'"
-            @click="filtroFrecuente = 'todos'">
-            <i class="bi bi-people"></i> Todos
-          </button>
-          <button type="button" class="btn btn-sm px-3 fw-bold rounded-2 transition-all d-flex align-items-center gap-2"
-            :class="filtroFrecuente === 'frecuentes' ? 'btn-warning text-dark' : 'btn-white text-secondary border-0'"
-            @click="filtroFrecuente = 'frecuentes'">
-            <i class="bi bi-star-fill text-dark"></i> Frecuentes
-          </button>
-          <button type="button" class="btn btn-sm px-3 fw-bold rounded-2 transition-all d-flex align-items-center gap-2"
-            :class="filtroFrecuente === 'regulares' ? 'btn-secondary text-white' : 'btn-white text-secondary border-0'"
-            @click="filtroFrecuente = 'regulares'">
-            <i class="bi bi-star text-secondary"></i> Regulares (Sin Estrella)
-          </button>
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4 w-100">
+        <!-- Grupo de Filtros Izquierda -->
+        <div class="d-flex flex-wrap gap-2">
+          <!-- Filtro por Frecuencia -->
+          <div class="btn-group bg-white p-1 shadow-sm rounded-3 border" role="group" style="height: 42px;">
+            <button type="button" class="btn btn-sm px-3 fw-bold rounded-2 transition-all d-flex align-items-center gap-2"
+              :class="filtroFrecuente === 'todos' ? 'btn-dark text-white' : 'btn-white text-secondary border-0'"
+              @click="filtroFrecuente = 'todos'">
+              <i class="bi bi-people"></i> Todos
+            </button>
+            <button type="button" class="btn btn-sm px-3 fw-bold rounded-2 transition-all d-flex align-items-center gap-2"
+              :class="filtroFrecuente === 'frecuentes' ? 'btn-warning text-dark' : 'btn-white text-secondary border-0'"
+              @click="filtroFrecuente = 'frecuentes'">
+              <i class="bi bi-star-fill text-dark"></i> Frecuentes
+            </button>
+            <button type="button" class="btn btn-sm px-3 fw-bold rounded-2 transition-all d-flex align-items-center gap-2"
+              :class="filtroFrecuente === 'regulares' ? 'btn-secondary text-white' : 'btn-white text-secondary border-0'"
+              @click="filtroFrecuente = 'regulares'">
+              <i class="bi bi-star text-secondary"></i> Regulares (Sin Estrella)
+            </button>
+          </div>
+
+          <!-- Filtro por Tipo de Cliente (Personas vs Empresas) -->
+          <div class="btn-group bg-white p-1 shadow-sm rounded-3 border" role="group" style="height: 42px;">
+            <button type="button" class="btn btn-sm px-3 fw-bold rounded-2 transition-all d-flex align-items-center gap-2"
+              :class="filtroTipo === 'todos' ? 'btn-dark text-white' : 'btn-white text-secondary border-0'"
+              @click="filtroTipo = 'todos'">
+              <i class="bi bi-person-lines-fill"></i> Todos los Tipos
+            </button>
+            <button type="button" class="btn btn-sm px-3 fw-bold rounded-2 transition-all d-flex align-items-center gap-2"
+              :class="filtroTipo === 'personas' ? 'btn-info text-white' : 'btn-white text-secondary border-0'"
+              @click="filtroTipo = 'personas'">
+              <i class="bi bi-person"></i> Personas (DNI)
+            </button>
+            <button type="button" class="btn btn-sm px-3 fw-bold rounded-2 transition-all d-flex align-items-center gap-2"
+              :class="filtroTipo === 'empresas' ? 'btn-primary text-white' : 'btn-white text-secondary border-0'"
+              @click="filtroTipo = 'empresas'">
+              <i class="bi bi-building"></i> Empresas (RUC)
+            </button>
+          </div>
         </div>
 
         <div class="d-flex flex-grow-1 flex-md-grow-0 gap-2">

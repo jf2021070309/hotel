@@ -13,8 +13,11 @@ createApp({
         const loadingHistorial    = ref(false);
         const clienteSeleccionado = ref(null);
         
-        // Filtro activo: 'todos' o 'frecuentes'
+        // Filtro activo: 'todos', 'frecuentes' o 'regulares'
         const filtroFrecuente     = ref('todos');
+
+        // Filtro por tipo: 'todos', 'personas', 'empresas'
+        const filtroTipo          = ref('todos');
 
         // Formulario de Nuevo / Editar Cliente
         const isEditMode          = ref(false);
@@ -43,7 +46,14 @@ createApp({
                 filtrados = filtrados.filter(c => c.vip != 1);
             }
 
-            // 2. Filtro por buscador (nombre, DNI, RUC, Razón Social)
+            // 2. Filtro por tipo de persona/empresa (Todos vs Personas [sin RUC] vs Empresas [con RUC])
+            if (filtroTipo.value === 'personas') {
+                filtrados = filtrados.filter(c => !c.ruc || c.ruc.trim() === '');
+            } else if (filtroTipo.value === 'empresas') {
+                filtrados = filtrados.filter(c => c.ruc && c.ruc.trim() !== '');
+            }
+
+            // 3. Filtro por buscador (nombre, DNI, RUC, Razón Social)
             const q = buscar.value.toLowerCase().trim();
             if (!q) return filtrados;
             
@@ -331,6 +341,7 @@ createApp({
             loadingHistorial,
             clienteSeleccionado,
             filtroFrecuente,
+            filtroTipo,
             isEditMode,
             guardando,
             nuevoCliente,

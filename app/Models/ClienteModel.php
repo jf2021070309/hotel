@@ -193,13 +193,8 @@ class ClienteModel {
      * Alterna o establece el estado VIP/Estrella de un titular por su DNI.
      */
     public function setVip(string $dni, int $vip): bool {
-        try {
-            $sql = "UPDATE rooming_pax SET vip = ? WHERE documento_num = ? AND es_titular = 1";
-            $stmt = $this->pdo->prepare($sql);
-            return $stmt->execute([$vip, $dni]);
-        } catch (PDOException $e) {
-            error_log('ClienteModel::setVip error: ' . $e->getMessage());
-            return false;
-        }
+        $sql = "UPDATE rooming_pax SET vip = ? WHERE documento_num = ? AND es_titular = 1";
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute([$vip, $dni]);
     }
 }

@@ -36,9 +36,9 @@ createApp({
         const clientesFiltrados = computed(() => {
             let filtrados = clientes.value;
             
-            // 1. Filtro por tipo de cliente (Todos vs Frecuentes [>= 2 estadías o VIP])
+            // 1. Filtro por tipo de cliente (Todos vs Frecuentes con estrella manual)
             if (filtroFrecuente.value === 'frecuentes') {
-                filtrados = filtrados.filter(c => parseInt(c.total_estadias || 0) >= 2 || c.vip == 1);
+                filtrados = filtrados.filter(c => c.vip == 1);
             }
 
             // 2. Filtro por buscador (nombre, DNI, RUC, Razón Social)
@@ -223,7 +223,7 @@ createApp({
                     if (index !== -1) {
                         clientes.value[index].vip = nuevoEstado == 1 ? 0 : 1;
                     }
-                    Swal.fire('Error', 'No se pudo actualizar el estado VIP.', 'error');
+                    Swal.fire('Error', res.data.msg || 'No se pudo actualizar el estado VIP.', 'error');
                 } else {
                     Swal.fire({
                         toast: true,
@@ -239,7 +239,8 @@ createApp({
                 if (index !== -1) {
                     clientes.value[index].vip = nuevoEstado == 1 ? 0 : 1;
                 }
-                Swal.fire('Error', 'Error de red.', 'error');
+                const serverMsg = e.response?.data?.msg || 'Error de red al conectar con el servidor.';
+                Swal.fire('Error', serverMsg, 'error');
             }
         };
 

@@ -74,13 +74,20 @@ switch ($action) {
             json_response(false, null, 400, "DNI requerido");
         }
         try {
+            // Garantizar que la columna 'vip' exista en rooming_pax antes de actualizar
+            try {
+                $pdo->exec("ALTER TABLE `rooming_pax` ADD COLUMN `vip` TINYINT(1) DEFAULT 0;");
+            } catch (Exception $colEx) {
+                // Ya existe o ignorar
+            }
+
             if ($controller->toggleVip($dni, $vip)) {
                 json_response(true, null, 200, "Estado VIP actualizado");
             } else {
-                json_response(false, null, 500, "No se pudo actualizar el estado VIP");
+                json_response(false, null, 500, "No se pudo actualizar el estado VIP (0 filas afectadas)");
             }
         } catch (Throwable $e) {
-            json_response(false, null, 500, $e->getMessage());
+            json_response(false, null, 500, "Error en Base de Datos: " . $e->getMessage());
         }
         break;
         

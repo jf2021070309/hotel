@@ -104,12 +104,12 @@ include $_projectRoot . '/includes/head.php';
                     <span class="fw-bold text-dark" style="font-size: 14px;">{{ c.nombre }}</span>
                     <!-- Estrella interactiva premium -->
                     <span class="d-inline-flex align-items-center justify-content-center ms-2" style="width: 24px; height: 24px;">
-                      <!-- Con estrella (frecuente o VIP manual) -->
-                      <i v-if="c.total_estadias >= 2 || c.vip == 1" 
+                      <!-- Con estrella (frecuente manual) -->
+                      <i v-if="c.vip == 1" 
                          @click.stop="toggleVipStatus(c)" 
                          class="bi bi-star-fill text-warning fs-5 cursor-pointer hover-scale pulse-star d-inline-block" 
                          style="transition: all 0.2s;"
-                         :title="c.total_estadias >= 2 ? 'Cliente Frecuente (Automático ★) — Clic para forzar estado manual' : 'Cliente VIP (Manual) — Clic para quitar estrella'">
+                         title="Cliente Frecuente ★ — Clic para quitar estrella">
                       </i>
                       <!-- Sin estrella (regular) -->
                       <i v-else 

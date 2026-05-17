@@ -180,7 +180,7 @@ class ClienteModel {
             }
         } catch (PDOException $e) {
             error_log('ClienteModel::save error: ' . $e->getMessage());
-            return false;
+            throw $e;
         }
     }
 }

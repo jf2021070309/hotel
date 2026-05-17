@@ -38,10 +38,14 @@ switch ($action) {
         if (empty($data)) {
             json_response(false, null, 400, "Datos no recibidos");
         }
-        if ($controller->store($data)) {
-            json_response(true, null, 200, "Cliente registrado correctamente");
-        } else {
-            json_response(false, null, 500, "No se pudo registrar el cliente");
+        try {
+            if ($controller->store($data)) {
+                json_response(true, null, 200, "Cliente registrado correctamente");
+            } else {
+                json_response(false, null, 500, "No se pudo registrar el cliente");
+            }
+        } catch (Throwable $e) {
+            json_response(false, null, 500, $e->getMessage());
         }
         break;
         

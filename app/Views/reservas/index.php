@@ -194,7 +194,8 @@ include $_projectRoot . '/includes/sidebar.php';
   .res-booking .badge-pax, .res-directo .badge-pax, .res-inhouse .badge-pax { background: transparent; color: #fff; }
   
   /* Mantener el resto para otros elementos */
-  .est-limpieza   { background: #9E9E9E; color: #fff; box-shadow: inset 0 0 10px rgba(0,0,0,0.1); }
+  .est-limpieza, .est-sucio { background: #9E9E9E; color: #fff; box-shadow: inset 0 0 10px rgba(0,0,0,0.1); }
+  .est-mantenimiento { background: #E53935; color: #fff; box-shadow: inset 0 0 10px rgba(0,0,0,0.2); }
 
   /* ── Summary pills ─────────────────────────────────────── */
   .summary-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
@@ -532,7 +533,7 @@ include $_projectRoot . '/includes/sidebar.php';
                      class="stay-block animate__animated animate__fadeIn shadow-sm"
                      :class="getStayColorClass(getCeldaStay(hab, d))"
                      :style="{ width: (calcCols(getCeldaStay(hab, d)) * colWidth - 5) + 'px' }"
-                     @click="abrirDetalle(getCeldaStay(hab, d))">
+                     @click.stop="abrirDetalle(getCeldaStay(hab, d))">
                   <span class="titular">{{ getCeldaStay(hab, d).titular }}</span>
                   <span v-if="viewMode !== 'compacto'" class="badge-pax">{{ getCeldaStay(hab, d).pax }} PAX</span>
 
@@ -825,4 +826,4 @@ include $_projectRoot . '/includes/sidebar.php';
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="<?= $base ?>app/Views/reservas/reservas.js?v=2.0"></script>
+<script src="<?= $base ?>app/Views/reservas/reservas.js?v=<?= filemtime(__DIR__ . '/reservas.js') ?>"></script>

@@ -159,4 +159,23 @@ class ReservasController {
             return ['ok' => false, 'msg' => $e->getMessage()];
         }
     }
+
+    public function cambiarEstadoHab(array $input): array {
+        $hab_id = (int)($input['hab_id'] ?? 0);
+        $estado = $input['estado'] ?? '';
+        if (!$hab_id || !in_array($estado, ['libre', 'limpieza', 'sucio', 'mantenimiento'])) {
+            return ['ok' => false, 'msg' => 'Datos de habitación inválidos'];
+        }
+
+        try {
+            if ($this->model->cambiarEstadoHabitacion($hab_id, $estado)) {
+                $msg = "Cambió estado de la Habitación #{$hab_id} a: " . strtoupper($estado);
+                $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'CAMBIO_ESTADO_HAB', 'RESERVAS', $msg);
+                return ['ok' => true, 'msg' => 'Estado actualizado'];
+            }
+            return ['ok' => false, 'msg' => 'No se pudo actualizar el estado de la habitación'];
+        } catch (Exception $e) {
+            return ['ok' => false, 'msg' => 'Error: ' . $e->getMessage()];
+        }
+    }
 }

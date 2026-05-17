@@ -137,7 +137,7 @@ createApp({
 
     const esDiaEstadoEspecial = (hab, dia) => {
       const esHoy = dia === hoyDia.value && mesActual.value === mesHoy.value && anioActual.value === anioHoy.value;
-      return esHoy && ['limpieza', 'bloqueado', 'mantenimiento', 'late_checkout'].includes(hab.estado);
+      return esHoy && ['limpieza', 'sucio', 'bloqueado', 'mantenimiento', 'late_checkout'].includes(hab.estado);
     };
 
     const getTipoClass = (tipo) => {
@@ -210,12 +210,104 @@ createApp({
     };
 
     // ─── Cell click ───────────────────────────────────────────────────
+    const cambiarEstadoHabitacion = async (habId, estado) => {
+      loading.value = true;
+      try {
+        const res = await axios.post(`${BASE}estado_hab`, { hab_id: habId, estado: estado });
+        if (res.data.ok) {
+          Swal.fire({
+            icon: 'success',
+            title: `Estado cambiado a ${estado.toUpperCase()}`,
+            timer: 1500,
+            showConfirmButton: false
+          });
+          await cargarDatos();
+          habitaciones.value = enrichHabs(habitaciones.value);
+        } else {
+          Swal.fire('Error', res.data.msg || 'No se pudo cambiar el estado', 'error');
+        }
+      } catch (e) {
+        Swal.fire('Error', 'Error de conexión al cambiar estado', 'error');
+      } finally {
+        loading.value = false;
+      }
+    };
+
     const onCeldaClick = (hab, dia) => {
       const stay = getCeldaStay(hab, dia);
       if (stay) {
         abrirDetalle(stay, hab.numero);
       } else {
-        abrirQuickReserva(hab, dia);
+        Swal.fire({
+          title: `Habitación #${hab.numero} — Día ${dia}/${mesActual.value}`,
+          html: `
+            <div class="d-flex flex-column gap-2 mt-3">
+              <button id="btn-opt-reserva" class="btn btn-primary py-3 fw-bold text-start shadow-sm d-flex align-items-center gap-3 border-0" style="background: linear-gradient(135deg, #0288D1, #01579B); border-radius: 12px;">
+                <div class="bg-white text-primary rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 38px; height: 38px;">
+                  <i class="bi bi-calendar-plus fs-5"></i>
+                </div>
+                <div class="text-white">
+                  <div class="fs-6 mb-0">Crear Reserva</div>
+                  <div class="small opacity-75 fw-normal" style="font-size: 11px;">Registrar nueva reserva para esta fecha</div>
+                </div>
+              </button>
+
+              <button id="btn-opt-sucio" class="btn btn-secondary py-3 fw-bold text-start shadow-sm d-flex align-items-center gap-3 border-0" style="background: linear-gradient(135deg, #757575, #424242); border-radius: 12px;">
+                <div class="bg-white text-secondary rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 38px; height: 38px;">
+                  <i class="bi bi-droplet-half fs-5"></i>
+                </div>
+                <div class="text-white">
+                  <div class="fs-6 mb-0">Cambiar estado sucio</div>
+                  <div class="small opacity-75 fw-normal" style="font-size: 11px;">Marcar habitación para limpieza</div>
+                </div>
+              </button>
+
+              <button id="btn-opt-mant" class="btn btn-danger py-3 fw-bold text-start shadow-sm d-flex align-items-center gap-3 border-0" style="background: linear-gradient(135deg, #E53935, #B71C1C); border-radius: 12px;">
+                <div class="bg-white text-danger rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 38px; height: 38px;">
+                  <i class="bi bi-tools fs-5"></i>
+                </div>
+                <div class="text-white">
+                  <div class="fs-6 mb-0">Cambiar a mantenimiento</div>
+                  <div class="small opacity-75 fw-normal" style="font-size: 11px;">Bloquear por reparaciones o mantenimiento</div>
+                </div>
+              </button>
+
+              <button id="btn-opt-libre" class="btn btn-success py-3 fw-bold text-start shadow-sm d-flex align-items-center gap-3 border-0" style="background: linear-gradient(135deg, #2E7D32, #1B5E20); border-radius: 12px;">
+                <div class="bg-white text-success rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 38px; height: 38px;">
+                  <i class="bi bi-check-circle fs-5"></i>
+                </div>
+                <div class="text-white">
+                  <div class="fs-6 mb-0">Cambiar a libre</div>
+                  <div class="small opacity-75 fw-normal" style="font-size: 11px;">Habilitar habitación disponible</div>
+                </div>
+              </button>
+            </div>
+          `,
+          showConfirmButton: false,
+          showCloseButton: true,
+          customClass: {
+            popup: 'rounded-4 shadow-lg'
+          },
+          didOpen: () => {
+            const popup = Swal.getPopup();
+            popup.querySelector('#btn-opt-reserva').onclick = () => {
+              Swal.close();
+              abrirQuickReserva(hab, dia);
+            };
+            popup.querySelector('#btn-opt-sucio').onclick = () => {
+              Swal.close();
+              cambiarEstadoHabitacion(hab.id, 'limpieza');
+            };
+            popup.querySelector('#btn-opt-mant').onclick = () => {
+              Swal.close();
+              cambiarEstadoHabitacion(hab.id, 'mantenimiento');
+            };
+            popup.querySelector('#btn-opt-libre').onclick = () => {
+              Swal.close();
+              cambiarEstadoHabitacion(hab.id, 'libre');
+            };
+          }
+        });
       }
     };
 

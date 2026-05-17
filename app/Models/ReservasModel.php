@@ -396,4 +396,13 @@ class ReservasModel {
             throw $e;
         }
     }
+
+    /**
+     * Cambiar estado de una habitación desde el cuadro de reservas.
+     */
+    public function cambiarEstadoHabitacion(int $hab_id, string $estado): bool {
+        require_once __DIR__ . '/HabitacionModel.php';
+        $habModel = new HabitacionModel($this->pdo);
+        return $habModel->actualizarEstado($hab_id, $estado);
+    }
 }

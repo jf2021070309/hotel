@@ -57,6 +57,12 @@ switch ($action) {
         json_response($res['ok'], null, $res['ok'] ? 200 : 422, $res['msg']);
         break;
 
+    case 'estado_hab':
+        if ($method !== 'POST') json_response(false, null, 405, 'Metodo no permitido');
+        $res = $controller->cambiarEstadoHab($input);
+        json_response($res['ok'], null, $res['ok'] ? 200 : 422, $res['msg']);
+        break;
+
     default:
         json_response(false, null, 400, 'Accion no valida');
         break;

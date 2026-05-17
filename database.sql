@@ -258,7 +258,7 @@ CREATE TABLE IF NOT EXISTS `habitaciones` (
   `numero` varchar(10) NOT NULL,
   `tipo` varchar(60) NOT NULL DEFAULT 'Simple',
   `piso` tinyint(3) unsigned NOT NULL DEFAULT 1,
-  `estado` enum('libre','ocupado','reservado','limpieza','mantenimiento') NOT NULL DEFAULT 'libre',
+  `estado` enum('libre','ocupado','reservado','limpieza','sucio','mantenimiento') NOT NULL DEFAULT 'libre',
   `precio_base` decimal(10,2) NOT NULL DEFAULT 0.00,
   `descripcion` text DEFAULT NULL,
   `activa` tinyint(1) NOT NULL DEFAULT 1,

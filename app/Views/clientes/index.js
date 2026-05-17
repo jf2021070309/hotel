@@ -254,6 +254,66 @@ createApp({
             return `${day}/${m}/${y}`;
         };
 
+        const exportarExcel = () => {
+            const data = clientesFiltrados.value;
+            if (data.length === 0) {
+                Swal.fire('Atención', 'No hay datos disponibles para exportar', 'warning');
+                return;
+            }
+
+            // Cabeceras de columnas
+            const headers = ['Nombre Completo', 'Tipo Doc', 'Documento/DNI', 'Celular', 'Email', 'Empresa (Razón Social)', 'RUC', '¿Frecuente?', 'Total Estadías', 'Última Visita'];
+            
+            // Construir CSV con BOM para visualización correcta de acentos en Excel
+            let csvContent = "\uFEFF"; 
+            csvContent += headers.join(';') + "\r\n";
+
+            data.forEach(c => {
+                const row = [
+                    c.nombre || '',
+                    c.tipo_doc || 'DNI',
+                    c.dni || '',
+                    c.celular || '',
+                    c.email || '',
+                    c.razon_social || c.empresa || '',
+                    c.ruc || '',
+                    c.vip == 1 ? 'SÍ' : 'NO',
+                    c.total_estadias || '0',
+                    c.ultima_visita ? fmtFecha(c.ultima_visita) : ''
+                ];
+                
+                // Sanitizar texto para evitar corromper el CSV
+                const cleanedRow = row.map(val => {
+                    let text = String(val).replace(/(\r\n|\n|\r)/gm, " ").trim();
+                    text = text.replace(/;/g, ","); // Evitar saltos por punto y coma
+                    return text;
+                });
+                csvContent += cleanedRow.join(';') + "\r\n";
+            });
+
+            // Descarga de archivo
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            
+            const dateStr = new Date().toISOString().slice(0, 10);
+            link.setAttribute("href", url);
+            link.setAttribute("download", `Clientes_Platinium_Hotel_${dateStr}.csv`);
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            Swal.fire({
+                icon: 'success',
+                title: '¡Exportación exitosa!',
+                text: `Se han exportado ${data.length} registros a Excel (CSV).`,
+                showConfirmButton: false,
+                timer: 1500
+            });
+        };
+
         onMounted(() => {
             cargar();
             // Soporte para pre-filtrar Clientes Frecuentes desde URL
@@ -285,6 +345,7 @@ createApp({
             crearEstadiaRapida,
             crearReservaRapida,
             toggleVipStatus,
+            exportarExcel,
             fmtFecha
         };
     }

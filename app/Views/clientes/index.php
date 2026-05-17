@@ -65,6 +65,12 @@ include $_projectRoot . '/includes/head.php';
                     style="font-size: 13px; font-weight: 600;">
              <button v-if="buscar" @click="buscar=''" class="btn btn-white border-0 text-muted px-2"><i class="bi bi-x-lg"></i></button>
           </div>
+          <!-- Botón Exportar Excel -->
+          <button @click="exportarExcel" 
+                  class="btn btn-success px-3 shadow-sm fw-bold d-flex align-items-center gap-2" 
+                  style="border-radius: 8px; font-size: 13px; background-color: #198754; border-color: #198754;">
+             <i class="bi bi-file-earmark-excel"></i> Exportar
+          </button>
           <!-- Botón Nuevo -->
           <button @click="abrirModalNuevo" 
                   class="btn btn-dark px-3 shadow-sm fw-bold d-flex align-items-center gap-2" 

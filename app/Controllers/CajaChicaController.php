@@ -57,13 +57,13 @@ class CajaChicaController {
 
     public function registrarGasto(array $input): array {
         $caja_id = (int)($input['caja_id'] ?? 0);
-        $rubro = mb_strtoupper(trim($input['rubro'] ?? ''));
-        $monto = (float)($input['monto'] ?? 0);
         $documento = mb_strtoupper(trim($input['documento'] ?? ''));
+        $rubro = mb_strtoupper(trim($input['rubro'] ?? $documento));
+        $monto = (float)($input['monto'] ?? 0);
         $obs = mb_strtoupper(trim($input['observacion'] ?? ''));
 
-        if ($caja_id <= 0 || empty($rubro) || $monto <= 0) {
-            return ['ok' => false, 'msg' => 'Rubro y Monto son obligatorios.'];
+        if ($caja_id <= 0 || empty($documento) || $monto <= 0) {
+            return ['ok' => false, 'msg' => 'El Documento y Monto son obligatorios.'];
         }
 
         $ciclo = $this->model->getCicloActivo();
@@ -88,9 +88,8 @@ class CajaChicaController {
             $detalle = json_encode([
                 'mensaje' => 'Registro un GASTO en Caja Chica',
                 'cambios' => [
-                    'Rubro' => ['antes' => '-', 'despues' => $rubro],
+                    'Documento' => ['antes' => '-', 'despues' => $documento],
                     'Monto' => ['antes' => 'S/ 0.00', 'despues' => 'S/ ' . number_format($monto, 2)],
-                    'Doc'   => ['antes' => '-', 'despues' => $documento ?: 'S/D'],
                     'Obs'   => ['antes' => '-', 'despues' => $obs ?: 'Ninguna']
                 ]
             ], JSON_UNESCAPED_UNICODE);

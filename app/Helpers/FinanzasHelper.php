@@ -11,7 +11,7 @@ class FinanzasHelper {
     }
 
     /**
-     * Determina el turno actual basado en la hora.
+     * Determina el turno actual sugerido basado en la hora.
      * Mañana: 06:00 - 13:59
      * Tarde: 14:00 - 05:59
      */
@@ -21,40 +21,32 @@ class FinanzasHelper {
     }
 
     /**
-     * Busca el turno de flujo de caja activo para hoy.
-     * Prioriza el turno del usuario actual, pero si no tiene uno y hay uno solo abierto
-     * para el turno actual (Mañana/Tarde), permite usarlo (útil para Admins).
+     * Busca el turno de flujo de caja activo (borrador).
+     * Horario abierto: Prioriza el turno abierto del usuario actual. Si no tiene uno,
+     * busca cualquier otra caja abierta (borrador) sin restricción estricta de hora.
      */
     public function getFlujoIdActivo(int $usuarioId): ?int {
-        $fechaHoy = date('Y-m-d');
-        $turno = self::getTurnoActual();
-
-        // 1. Intentar coincidencia exacta (Fecha + Turno + Usuario)
+        // 1. Buscar si el usuario actual tiene un turno abierto (estado = 'borrador')
         $stmt = $this->pdo->prepare("
             SELECT id FROM flujo_caja 
-            WHERE fecha = ? AND turno = ? AND usuario_id = ? AND estado = 'borrador'
+            WHERE usuario_id = ? AND estado = 'borrador'
             ORDER BY id DESC LIMIT 1
         ");
-        $stmt->execute([$fechaHoy, $turno, $usuarioId]);
+        $stmt->execute([$usuarioId]);
         $id = $stmt->fetchColumn();
 
         if ($id) return (int)$id;
 
-        // 2. Fallback: Si no tiene turno propio, buscar si hay algún otro turno abierto para este turno/fecha
+        // 2. Fallback: Si no tiene turno propio, buscar si hay algún otro turno abierto en general
         $stmtAll = $this->pdo->prepare("
             SELECT id FROM flujo_caja 
-            WHERE fecha = ? AND turno = ? AND estado = 'borrador'
+            WHERE estado = 'borrador'
+            ORDER BY id DESC LIMIT 1
         ");
-        $stmtAll->execute([$fechaHoy, $turno]);
-        $ids = $stmtAll->fetchAll(PDO::FETCH_COLUMN);
+        $stmtAll->execute();
+        $idGen = $stmtAll->fetchColumn();
 
-        if (count($ids) === 1) {
-            // Si solo hay una caja abierta para este turno, la usamos
-            return (int)$ids[0];
-        }
-
-        // Si hay múltiples cajas o ninguna, no podemos auto-decidir
-        return null;
+        return $idGen ? (int)$idGen : null;
     }
 
     /**

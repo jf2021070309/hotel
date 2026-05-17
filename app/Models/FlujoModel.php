@@ -303,32 +303,17 @@ class FlujoModel {
 
         return $resumen;
     }
+
     /**
-     * Busca si existe un turno en estado 'borrador' (activo) que coincida 
-     * con la fecha y hora actual para el auto-redireccionamiento.
+     * Busca si existe un turno en estado 'borrador' (activo) para el auto-redireccionamiento.
+     * Horario abierto: el turno activo es la caja abierta (borrador) sin restricción estricta de hora.
      * @return int|null ID del flujo o null si no hay ninguno abierto.
      */
     public function getTurnoActivo(): ?int {
-        $fecha = date('Y-m-d');
-        $hora  = (int)date('H');
-        
-        // MAÑANA: 6 am a 2 pm (06:00 - 13:59)
-        // TARDE: 2 pm a 10 pm (14:00 - 21:59). 
-        // Si es fuera de rango, buscamos el de TARDE o el último de hoy.
-        $turnoActual = ($hora >= 6 && $hora < 14) ? 'MAÑANA' : 'TARDE';
-        
-        // 1. Intentar buscar el turno exacto de hoy que corresponda a la hora
-        $stmt = $this->pdo->prepare("SELECT id FROM flujo_caja WHERE fecha = ? AND turno = ? AND estado = 'borrador' LIMIT 1");
-        $stmt->execute([$fecha, $turnoActual]);
+        // Buscamos cualquier turno en estado 'borrador' (activo)
+        $stmt = $this->pdo->prepare("SELECT id FROM flujo_caja WHERE estado = 'borrador' ORDER BY id DESC LIMIT 1");
+        $stmt->execute();
         $id = $stmt->fetchColumn();
-        
-        // 2. Fallback: Si no hay exacto para la hora, cualquier borrador de HOY (por si se pasó de hora)
-        if (!$id) {
-            $stmt = $this->pdo->prepare("SELECT id FROM flujo_caja WHERE fecha = ? AND estado = 'borrador' ORDER BY id DESC LIMIT 1");
-            $stmt->execute([$fecha]);
-            $id = $stmt->fetchColumn();
-        }
-        
         return $id ? (int)$id : null;
     }
 

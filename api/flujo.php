@@ -36,7 +36,9 @@ switch ($action) {
     case 'guardar':
         if ($method !== 'POST') json_response(false, null, 405, 'Método no permitido');
         $res = $controller->guardar($input);
-        json_response($res['ok'], $res['data'] ?? null, $res['ok'] ? 200 : 422, $res['msg']);
+        // Si la validacion detecta un turno abierto, enviamos status 200 para capturarlo facilmente en axios
+        $status = ($res['ok'] || !empty($res['data']['turno_abierto'])) ? 200 : 422;
+        json_response($res['ok'], $res['data'] ?? null, $status, $res['msg'] ?? '');
         break;
 
     case 'cerrar':

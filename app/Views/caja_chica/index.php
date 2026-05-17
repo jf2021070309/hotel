@@ -100,4 +100,4 @@ include $base . 'includes/sidebar.php';
 <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="<?= $base ?>app/Views/caja_chica/index.js"></script>
+<script src="<?= $base ?>app/Views/caja_chica/index.js?v=<?= filemtime(__DIR__ . '/index.js') ?>"></script>

@@ -57,11 +57,11 @@ createApp({
       const fechaHoy = new Date().toISOString().split('T')[0];
 
       const { value: formValues } = await Swal.fire({
-        title: 'Abrir Nuevo Turno',
+        title: 'Abrir Nuevo Turno de Caja',
         html: `
           <div style="text-align:left; margin-bottom: 16px;">
             <label style="font-weight:600; font-size:14px; color:#555; display:block; margin-bottom:6px;">
-              Fecha
+              Fecha de Apertura
             </label>
             <input type="date" id="swal-fecha" value="${fechaHoy}"
               style="width:100%; padding:8px 12px; border:1px solid #ddd; border-radius:8px; font-size:15px; color:#333;">
@@ -70,12 +70,12 @@ createApp({
             <label style="cursor:pointer; border:2px solid #ddd; border-radius:10px; padding:12px 20px; flex:1; text-align:center; transition:all .2s;" id="lbl-manana">
               <input type="radio" name="swal-turno" value="MAÑANA" ${turnoSugerido === 'MAÑANA' ? 'checked' : ''} style="display:none;">
               <div style="font-weight:700; font-size:14px;">☀️ MAÑANA</div>
-              <div style="font-size:11px; color:#777;">6am – 2pm</div>
+              <div style="font-size:11px; color:#777;">Apertura en hora exacta</div>
             </label>
             <label style="cursor:pointer; border:2px solid #ddd; border-radius:10px; padding:12px 20px; flex:1; text-align:center; transition:all .2s;" id="lbl-tarde">
               <input type="radio" name="swal-turno" value="TARDE" ${turnoSugerido === 'TARDE' ? 'checked' : ''} style="display:none;">
               <div style="font-weight:700; font-size:14px;">🌙 TARDE</div>
-              <div style="font-size:11px; color:#777;">2pm – 10pm</div>
+              <div style="font-size:11px; color:#777;">Apertura en hora exacta</div>
             </label>
           </div>
         `,
@@ -123,6 +123,50 @@ createApp({
 
         if (res.data.ok) {
           window.location.href = `${window.FLUJO_ROUTES.form}?id=${res.data.data.id}`;
+        } else if (res.data.data && res.data.data.turno_abierto) {
+          const abierto = res.data.data;
+          const result = await Swal.fire({
+            title: 'Atención',
+            text: res.data.msg,
+            icon: 'warning',
+            showDenyButton: true,
+            showCancelButton: true,
+            confirmButtonText: 'Cerrar ahora',
+            denyButtonText: `Ver caja ${abierto.abierto_turno.toLowerCase()}`,
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#d63031',
+            denyButtonColor: '#0984e3',
+            cancelButtonColor: '#636e72',
+            customClass: {
+              actions: 'my-actions',
+              confirmButton: 'order-1',
+              denyButton: 'order-2',
+              cancelButton: 'order-3'
+            }
+          });
+
+          if (result.isConfirmed) {
+            // Clic en "Cerrar ahora"
+            loadingCheck.value = true;
+            try {
+              const closeRes = await axios.post(`${BASE}cerrar`, { id: abierto.abierto_id });
+              if (closeRes.data.ok) {
+                Swal.fire('Éxito', `El turno de ${abierto.abierto_turno.toLowerCase()} se cerró correctamente.`, 'success').then(() => {
+                  listar();
+                });
+              } else {
+                Swal.fire('Error', closeRes.data.msg || 'No se pudo cerrar el turno.', 'error');
+              }
+            } catch (ec) {
+              console.error(ec);
+              Swal.fire('Error', 'Ocurrió un error al intentar cerrar el turno.', 'error');
+            } finally {
+              loadingCheck.value = false;
+            }
+          } else if (result.isDenied) {
+            // Clic en "Ver caja"
+            window.location.href = `${window.FLUJO_ROUTES.form}?id=${abierto.abierto_id}`;
+          }
         } else {
           Swal.fire('Error', res.data.msg, 'error');
         }

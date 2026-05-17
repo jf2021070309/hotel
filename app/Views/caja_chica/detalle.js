@@ -15,7 +15,7 @@ createApp({
     const categorias = ref([]);
 
     const formg = reactive({
-      rubro: '',
+      documento: '',
       monto: '',
       observacion: ''
     });
@@ -48,7 +48,7 @@ createApp({
     });
 
     const registrarGasto = async () => {
-      if (!formg.rubro || formg.monto <= 0) return;
+      if (!formg.documento || formg.monto <= 0) return;
       
       if (parseFloat(formg.monto) > parseFloat(ciclo.value.saldo_actual)) {
         Swal.fire('Atención', 'El gasto es mayor al saldo actual disponible en la caja.', 'warning');
@@ -59,10 +59,14 @@ createApp({
       try {
         const res = await axios.post(`${BASE}gasto`, {
           caja_id: ciclo.value.id,
-          ...formg
+          rubro: formg.documento,
+          documento: formg.documento,
+          monto: formg.monto,
+          observacion: formg.observacion
         });
 
         if (res.data.ok) {
+          formg.documento = '';
           formg.monto = '';
           formg.observacion = '';
           loadData(); // refresh active

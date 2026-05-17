@@ -226,7 +226,14 @@ if (estaAutenticado()) {
 
                 <div class="mb-5">
                     <label class="form-label">Contraseña</label>
-                    <input v-model="form.password" type="password" class="form-control" placeholder="••••••••" required>
+                    <div class="position-relative">
+                        <input v-model="form.password" :type="showPassword ? 'text' : 'password'" class="form-control pe-4" placeholder="••••••••" required>
+                        <span @click="showPassword = !showPassword" 
+                              class="position-absolute end-0 bottom-0 pb-2 text-muted" 
+                              style="font-size: 18px; z-index: 10; cursor: pointer;">
+                            <i :class="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+                        </span>
+                    </div>
                 </div>
 
                 <div class="d-flex justify-content-between align-items-center mb-4 small">
@@ -265,6 +272,7 @@ if (estaAutenticado()) {
             setup() {
                 const form = reactive({ usuario: '', password: '' });
                 const loading = ref(false);
+                const showPassword = ref(false);
                 const error = ref('');
                 const baseUrl = '<?php echo project_base_url(); ?>';
                 const handleSubmit = async () => {
@@ -292,7 +300,7 @@ if (estaAutenticado()) {
                     }
                 };
 
-                return { form, loading, error, handleSubmit };
+                return { form, loading, error, handleSubmit, showPassword };
             }
         }).mount('#login-app');
     </script>

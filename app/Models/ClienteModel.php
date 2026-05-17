@@ -27,7 +27,7 @@ class ClienteModel {
                     COUNT(DISTINCT p.stay_id)               AS total_estadias,
                     MAX(p.created_at)                       AS ultima_visita
                 FROM rooming_pax p
-                WHERE p.es_titular = 1 AND p.stay_id IS NULL";
+                WHERE p.es_titular = 1";
 
         $params = [];
         if ($buscar !== '') {

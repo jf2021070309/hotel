@@ -165,13 +165,14 @@ function isActive(string $page, string $folder_): string {
     <?php endif; ?>
 
     <?php if (tieneAccesoModulo('clientes')): ?>
+    <?php $isFrec = ($_GET['filter'] ?? '') === 'frecuentes' || strpos($_SERVER['REQUEST_URI'], 'frecuentes.php') !== false; ?>
     <div class="nav-item">
-      <a href="<?= route('clientes/index.php', $base) ?>" class="<?= isActive('index.php','clientes') ?>" onclick="closeSidebarOnMobile()">
+      <a href="<?= route('clientes/index.php', $base) ?>" class="<?= !$isFrec && isActive('index.php','clientes') ? 'active' : '' ?>" onclick="closeSidebarOnMobile()">
         <i class="bi bi-people-fill"></i> <span>Clientes</span>
       </a>
     </div>
     <div class="nav-item">
-      <a href="<?= route('clientes/frecuentes.php', $base) ?>" class="<?= isActive('frecuentes.php','clientes') ?>" onclick="closeSidebarOnMobile()">
+      <a href="<?= route('clientes/index.php?filter=frecuentes', $base) ?>" class="<?= $isFrec ? 'active' : '' ?>" onclick="closeSidebarOnMobile()">
         <i class="bi bi-person-heart text-danger"></i> <span>Clientes Frecuentes</span>
       </a>
     </div>

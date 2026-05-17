@@ -82,7 +82,10 @@ createApp({
                 }
             } catch (e) {
                 console.error(e);
-                Swal.fire({ icon: 'error', title: 'Error de conexión' });
+                const errMsg = e.response && e.response.data && e.response.data.msg
+                    ? e.response.data.msg
+                    : 'Error de conexión con el servidor.';
+                Swal.fire({ icon: 'error', title: 'Error al registrar', text: errMsg });
             } finally {
                 guardando.value = false;
             }

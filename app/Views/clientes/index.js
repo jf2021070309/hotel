@@ -36,9 +36,11 @@ createApp({
         const clientesFiltrados = computed(() => {
             let filtrados = clientes.value;
             
-            // 1. Filtro por tipo de cliente (Todos vs Frecuentes con estrella manual)
+            // 1. Filtro por tipo de cliente (Todos vs Frecuentes vs Regulares)
             if (filtroFrecuente.value === 'frecuentes') {
                 filtrados = filtrados.filter(c => c.vip == 1);
+            } else if (filtroFrecuente.value === 'regulares') {
+                filtrados = filtrados.filter(c => c.vip != 1);
             }
 
             // 2. Filtro por buscador (nombre, DNI, RUC, Razón Social)

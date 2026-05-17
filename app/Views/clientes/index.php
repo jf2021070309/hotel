@@ -45,6 +45,11 @@ include $_projectRoot . '/includes/head.php';
             @click="filtroFrecuente = 'frecuentes'">
             <i class="bi bi-star-fill text-dark"></i> Frecuentes
           </button>
+          <button type="button" class="btn btn-sm px-3 fw-bold rounded-2 transition-all d-flex align-items-center gap-2"
+            :class="filtroFrecuente === 'regulares' ? 'btn-secondary text-white' : 'btn-white text-secondary border-0'"
+            @click="filtroFrecuente = 'regulares'">
+            <i class="bi bi-star text-secondary"></i> Regulares (Sin Estrella)
+          </button>
         </div>
 
         <div class="d-flex flex-grow-1 flex-md-grow-0 gap-2">

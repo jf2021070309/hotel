@@ -53,7 +53,7 @@ createApp({
     ]);
 
     const abrirConfigExportar = () => {
-      new bootstrap.Modal("#modalExportConfig").show();
+      bootstrap.Modal.getOrCreateInstance(document.getElementById('modalExportConfig')).show();
     };
 
     const confirmarExportacion = () => {
@@ -302,16 +302,22 @@ createApp({
 
     const abrirCheckin = async () => {
       loading.value = true;
-      const estadoCaja = await validarCajaAbierta();
-      if (!estadoCaja.ok) {
+      try {
+        const estadoCaja = await validarCajaAbierta();
+        if (!estadoCaja.ok) {
+          loading.value = false;
+          return mostrarModalCajaCerrada(estadoCaja);
+        }
         loading.value = false;
-        return mostrarModalCajaCerrada(estadoCaja);
+        resetForm();
+        calcularNoches();
+        await cargarHabitacionesDisponibles();
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('modalCheckin')).show();
+      } catch (err) {
+        console.error("Error al abrir Check-in modal:", err);
+        loading.value = false;
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('modalCheckin')).show();
       }
-      loading.value = false;
-      resetForm();
-      calcularNoches();
-      await cargarHabitacionesDisponibles();
-      new bootstrap.Modal('#modalCheckin').show();
     };
 
 
@@ -448,7 +454,7 @@ createApp({
         }
 
         await cargarHabitacionesDisponibles();
-        new bootstrap.Modal('#modalCheckin').show();
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('modalCheckin')).show();
       } catch (e) {
         showToast('Error al cargar datos de edición', 'error');
       } finally {
@@ -701,7 +707,7 @@ createApp({
         const res = await axios.post('../../../api/rooming.php?action=checkin', form);
         if (res.data.ok) {
           showToast(res.data.msg, 'success');
-          bootstrap.Modal.getInstance('#modalCheckin').hide();
+          bootstrap.Modal.getOrCreateInstance(document.getElementById('modalCheckin')).hide();
           cargarDatos(true);
         } else {
           showToast(res.data.msg || 'Error al procesar check-in', 'error');
@@ -1194,38 +1200,41 @@ createApp({
       // QUICK CHECK-IN desde Clientes Frecuentes
       const quickPax = localStorage.getItem('quick_checkin_pax');
       if (quickPax) {
+        localStorage.removeItem('quick_checkin_pax'); // Limpiar inmediatamente para evitar bucles
         try {
           const data = JSON.parse(quickPax);
-          localStorage.removeItem('quick_checkin_pax'); // Limpiar para que no se repita
 
-          // 1. Abrir modal de checkin
-          await abrirCheckin();
+          // Esperamos un momento a que Vue y la página estén completamente cargadas y estables
+          setTimeout(async () => {
+            // 1. Abrir modal de checkin
+            await abrirCheckin();
 
-          // 2. Pre-llenar el primer pasajero
-          if (form.pax.length > 0) {
-            form.pax[0].documento_num = data.dni;
-            form.pax[0].documento_tipo = data.tipo_doc;
-            form.pax[0].nombre_completo = data.nombre;
-            form.pax[0].nacionalidad = data.nacionalidad;
-            form.pax[0].ciudad = data.ciudad;
-            form.pax[0].celular = data.celular || '';
-            form.pax[0].email = data.email || '';
-            form.pax[0].es_titular = 1;
+            // 2. Pre-llenar el primer pasajero
+            if (form.pax.length > 0) {
+              form.pax[0].documento_num = data.dni;
+              form.pax[0].documento_tipo = data.tipo_doc || 'DNI';
+              form.pax[0].nombre_completo = data.nombre;
+              form.pax[0].nacionalidad = data.nacionalidad || 'Peruana';
+              form.pax[0].ciudad = data.ciudad || '';
+              form.pax[0].celular = data.celular || '';
+              form.pax[0].email = data.email || '';
+              form.pax[0].es_titular = true;
 
-            // Cargar datos corporativos si existen
-            if (data.ruc || data.empresa) {
-              form.pax[0].es_corporativo = true;
-              form.pax[0].ruc_empresa = data.ruc || '';
-              form.pax[0].empresa = data.empresa || '';
+              // Cargar datos corporativos si existen
+              if (data.ruc || data.empresa) {
+                form.pax[0].es_corporativo = true;
+                form.pax[0].ruc_empresa = data.ruc || '';
+                form.pax[0].empresa = data.empresa || '';
 
-              // También pre-llenar facturación
-              form.stay.ruc_factura = data.ruc || '';
-              form.stay.razon_social = data.empresa || '';
-              form.stay.tipo_comprobante = 'FACTURA';
+                // También pre-llenar facturación
+                form.stay.ruc_factura = data.ruc || '';
+                form.stay.razon_social = data.empresa || '';
+                form.stay.tipo_comprobante = 'FACTURA';
+              }
             }
-          }
 
-          showToast(`¡Cliente Frecuente detectado!`, 'success');
+            showToast(`¡Cliente Frecuente detectado!`, 'success');
+          }, 350);
         } catch (e) {
           console.error('Error in quick checkin:', e);
         }

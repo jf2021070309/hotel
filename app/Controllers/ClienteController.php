@@ -26,4 +26,8 @@ class ClienteController {
     public function store(array $data): bool {
         return $this->model->save($data);
     }
+
+    public function toggleVip(string $dni, int $vip): bool {
+        return $this->model->setVip($dni, $vip);
+    }
 }

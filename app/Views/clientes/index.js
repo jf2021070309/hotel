@@ -207,6 +207,42 @@ createApp({
             window.location.href = '../reservas/index.php';
         };
 
+        const toggleVipStatus = async (c) => {
+            const nuevoEstado = c.vip == 1 ? 0 : 1;
+            
+            // Optimistic update for instant visual response
+            const index = clientes.value.findIndex(item => item.dni === c.dni);
+            if (index !== -1) {
+                clientes.value[index].vip = nuevoEstado;
+            }
+
+            try {
+                const res = await axios.get(`../../../api/clientes.php?action=toggle_vip&dni=${encodeURIComponent(c.dni)}&vip=${nuevoEstado}`);
+                if (!res.data.ok) {
+                    // Revert if error
+                    if (index !== -1) {
+                        clientes.value[index].vip = nuevoEstado == 1 ? 0 : 1;
+                    }
+                    Swal.fire('Error', 'No se pudo actualizar el estado VIP.', 'error');
+                } else {
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'success',
+                        title: nuevoEstado === 1 ? '¡Estrella agregada!' : '¡Estrella removida!',
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                }
+            } catch (e) {
+                console.error(e);
+                if (index !== -1) {
+                    clientes.value[index].vip = nuevoEstado == 1 ? 0 : 1;
+                }
+                Swal.fire('Error', 'Error de red.', 'error');
+            }
+        };
+
         const fmtFecha = (f) => {
             if (!f) return '—';
             const d = f.split(' ')[0]; // Limpiar hora si viene en formato datetime
@@ -244,6 +280,7 @@ createApp({
             verHistorial,
             crearEstadiaRapida,
             crearReservaRapida,
+            toggleVipStatus,
             fmtFecha
         };
     }

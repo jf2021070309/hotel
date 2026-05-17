@@ -80,20 +80,19 @@ include $_projectRoot . '/includes/head.php';
                 <th style="width: 140px;">DOCUMENTO</th>
                 <th style="width: 180px;">CELULAR / EMAIL</th>
                 <th style="min-width: 200px;">EMPRESA / FACTURACIÓN</th>
-                <th class="text-center" style="width: 100px;">ESTADÍAS</th>
                 <th class="text-center" style="width: 120px;">ÚLTIMA VISITA</th>
                 <th class="text-end pe-4" style="width: 280px;">ACCIONES</th>
               </tr>
             </thead>
             <tbody>
               <tr v-if="loading">
-                <td colspan="8" class="text-center py-5">
+                <td colspan="7" class="text-center py-5">
                   <div class="spinner-border text-primary me-2"></div>
                   <span class="text-muted fw-bold">Cargando base de datos...</span>
                 </td>
               </tr>
               <tr v-else-if="clientesFiltrados.length === 0">
-                <td colspan="8" class="text-center py-5 text-muted">
+                <td colspan="7" class="text-center py-5 text-muted">
                   <i class="bi bi-people fs-1 d-block mb-2 opacity-25"></i>
                   No se encontraron clientes registrados con los filtros seleccionados.
                 </td>
@@ -103,12 +102,22 @@ include $_projectRoot . '/includes/head.php';
                 <td>
                   <div class="d-flex align-items-center gap-1">
                     <span class="fw-bold text-dark" style="font-size: 14px;">{{ c.nombre }}</span>
-                    <!-- Estrella brillante para clientes frecuentes / destacados -->
-                    <span v-if="c.total_estadias >= 2 || c.vip == 1" 
-                          class="badge bg-warning bg-opacity-10 text-dark border border-warning d-inline-flex align-items-center gap-1 px-2 py-1 ms-1 hover-scale pulse-star"
-                          style="font-size: 10px; font-weight: 700; cursor: default;" 
-                          title="Huésped VIP / Destacado ★">
-                      <i class="bi bi-star-fill text-warning"></i>
+                    <!-- Estrella interactiva premium -->
+                    <span class="d-inline-flex align-items-center justify-content-center ms-2" style="width: 24px; height: 24px;">
+                      <!-- Con estrella (frecuente o VIP manual) -->
+                      <i v-if="c.total_estadias >= 2 || c.vip == 1" 
+                         @click.stop="toggleVipStatus(c)" 
+                         class="bi bi-star-fill text-warning fs-5 cursor-pointer hover-scale pulse-star d-inline-block" 
+                         style="transition: all 0.2s;"
+                         :title="c.total_estadias >= 2 ? 'Cliente Frecuente (Automático ★) — Clic para forzar estado manual' : 'Cliente VIP (Manual) — Clic para quitar estrella'">
+                      </i>
+                      <!-- Sin estrella (regular) -->
+                      <i v-else 
+                         @click.stop="toggleVipStatus(c)" 
+                         class="bi bi-star text-secondary opacity-25 fs-5 cursor-pointer hover-scale hover-color-warning d-inline-block" 
+                         style="transition: all 0.2s;"
+                         title="Marcar como VIP / Destacado ★">
+                      </i>
                     </span>
                   </div>
                   <div class="text-muted small fw-semibold" v-if="c.ciudad">
@@ -133,12 +142,6 @@ include $_projectRoot . '/includes/head.php';
                     <div class="text-muted small fw-bold">RUC: {{ c.ruc || '—' }}</div>
                   </div>
                   <span v-else class="text-muted opacity-50">—</span>
-                </td>
-                <td class="text-center">
-                  <span class="badge rounded-pill px-3 py-1 font-bold"
-                    :class="c.total_estadias >= 2 ? 'bg-warning text-dark border border-warning' : 'bg-light text-dark border'">
-                    {{ c.total_estadias }}
-                  </span>
                 </td>
                 <td class="text-center text-muted fw-semibold">
                   {{ fmtFecha(c.ultima_visita) }}
@@ -369,7 +372,15 @@ include $_projectRoot . '/includes/head.php';
   .table td, .table th { padding: 0.75rem 0.6rem !important; }
   .transition-all { transition: all 0.2s ease-in-out; }
   .hover-scale:hover { transform: scale(1.04); }
-  .font-bold { font-weight: 700; }
+  .cursor-pointer { cursor: pointer !important; }
+  .hover-color-warning {
+    transition: all 0.2s ease-in-out;
+  }
+  .hover-color-warning:hover {
+    color: #ffc107 !important;
+    opacity: 1 !important;
+    transform: scale(1.2);
+  }
   .pulse-star {
     animation: starPulse 2.5s infinite ease-in-out;
   }

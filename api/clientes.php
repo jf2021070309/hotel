@@ -66,6 +66,23 @@ switch ($action) {
             json_response(false, null, 500, $e->getMessage());
         }
         break;
+
+    case 'toggle_vip':
+        $dni = $_GET['dni'] ?? '';
+        $vip = intval($_GET['vip'] ?? 0);
+        if ($dni === '') {
+            json_response(false, null, 400, "DNI requerido");
+        }
+        try {
+            if ($controller->toggleVip($dni, $vip)) {
+                json_response(true, null, 200, "Estado VIP actualizado");
+            } else {
+                json_response(false, null, 500, "No se pudo actualizar el estado VIP");
+            }
+        } catch (Throwable $e) {
+            json_response(false, null, 500, $e->getMessage());
+        }
+        break;
         
     default:
         json_response(false, null, 400, "Acción no válida");

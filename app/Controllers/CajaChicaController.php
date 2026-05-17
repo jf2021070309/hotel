@@ -145,7 +145,7 @@ class CajaChicaController {
                     $sFecha = !empty($input['sobre_fecha']) ? $input['sobre_fecha'] : date('Y-m-d');
                     $sTurno = !empty($input['sobre_turno']) ? $input['sobre_turno'] : 'MAÑANA';
 
-                    $nuevoNombre = "FONDO FIJO S/ 100 - " . date('d/m/Y');
+                    $nuevoNombre = !empty($input['nombre_reposicion']) ? mb_strtoupper(trim($input['nombre_reposicion'])) : ("FONDO FIJO S/ 100 - " . date('d/m/Y'));
                     $this->model->abrirCiclo($nuevoNombre, $montoReposicion, $_SESSION['auth_id'], [
                         'sobre_fecha' => $sFecha,
                         'sobre_turno' => $sTurno

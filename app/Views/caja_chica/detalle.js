@@ -115,12 +115,19 @@ createApp({
     };
 
     const cerrarCiclo = async () => {
+      const defaultName = `FONDO FIJO S/ 100 - ${new Date().toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' })}`;
+      
       const confirm = await Swal.fire({
         title: 'Cerrar y Reponer Caja Chica',
         html: `
           <div class="text-start p-2">
             <p class="small text-muted mb-3">El saldo final de este ciclo será de <b>S/ ${parseFloat(ciclo.value.saldo_actual).toFixed(2)}</b>.</p>
             
+            <div class="mb-3 border-top pt-3">
+              <label class="form-label fw-bold small text-dark mb-1">Nombre para el Nuevo Ciclo de Reposición <span class="text-danger">*</span></label>
+              <input id="swal-new-name" class="form-control fw-bold text-uppercase" placeholder="Ej: FONDO SEMANA 20 MAYO" value="${defaultName}" style="font-size: 14px;">
+            </div>
+
             <div class="card bg-light border-0 mb-3 shadow-sm">
               <div class="card-body p-3">
                 <label class="form-label fw-bold small mb-2 text-primary d-block">
@@ -158,6 +165,12 @@ createApp({
         denyButtonText: 'Cerrar SIN reponer',
         cancelButtonText: 'Cancelar',
         preConfirm: () => {
+          const nombre = document.getElementById('swal-new-name').value.trim();
+          if (!nombre) {
+             Swal.showValidationMessage('¡El nombre para el nuevo ciclo es obligatorio!');
+             return false;
+          }
+
           const selected = document.querySelector('input[name="swal-sobre"]:checked').value;
           const [day, turn] = selected.split('|');
           
@@ -168,7 +181,7 @@ createApp({
             date = d.toISOString().split('T')[0];
           }
 
-          return { sobre_fecha: date, sobre_turno: turn };
+          return { nombre_reposicion: nombre, sobre_fecha: date, sobre_turno: turn };
         }
       });
 

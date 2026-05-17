@@ -95,6 +95,7 @@ createApp({
         const editarCliente = (c) => {
             isEditMode.value = true;
             nuevoCliente.value = {
+                old_dni: c.dni, // Guardamos el DNI original para identificar y cascajear cambios de DNI
                 nombre: c.nombre,
                 dni: c.dni,
                 tipo_doc: c.tipo_doc || 'DNI',

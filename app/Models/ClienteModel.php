@@ -124,10 +124,20 @@ class ClienteModel {
      */
     public function save(array $data): bool {
         try {
+            $oldDni = $data['old_dni'] ?? '';
+            $newDni = $data['dni'];
+
+            // Si el DNI fue modificado, actualizamos en cascada todas las apariciones de ese DNI (históricas y maestras)
+            if (!empty($oldDni) && $oldDni !== $newDni) {
+                $sqlCascade = "UPDATE rooming_pax SET documento_num = ? WHERE documento_num = ?";
+                $stmtCascade = $this->pdo->prepare($sqlCascade);
+                $stmtCascade->execute([$newDni, $oldDni]);
+            }
+
             // Check if record exists for this DNI with NULL stay_id
             $checkSql = "SELECT id FROM rooming_pax WHERE documento_num = ? AND stay_id IS NULL LIMIT 1";
             $stmtCheck = $this->pdo->prepare($checkSql);
-            $stmtCheck->execute([$data['dni']]);
+            $stmtCheck->execute([$newDni]);
             $existing = $stmtCheck->fetch();
 
             $esCorp = (!empty($data['es_empresa'])) ? 1 : 0;

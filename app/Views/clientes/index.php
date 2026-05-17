@@ -307,7 +307,7 @@ include $_projectRoot . '/includes/head.php';
               </div>
               <div class="col-md-6">
                 <label class="text-muted text-uppercase fw-bold mb-1" style="font-size: 11px; letter-spacing: 0.5px;">Número</label>
-                <input type="text" v-model="nuevoCliente.dni" class="form-control border-light shadow-sm py-2 fw-bold text-dark" placeholder="Documento..." required :disabled="isEditMode" style="font-size: 14px; border-radius: 8px;">
+                <input type="text" v-model="nuevoCliente.dni" class="form-control border-light shadow-sm py-2 fw-bold text-dark" placeholder="Documento..." required style="font-size: 14px; border-radius: 8px;">
               </div>
               <div class="col-md-6">
                 <label class="text-muted text-uppercase fw-bold mb-1" style="font-size: 11px; letter-spacing: 0.5px;">Nacionalidad</label>

@@ -42,10 +42,10 @@ const appConfig = {
 
         const fetchPersonal = async () => {
             try {
-                const res = await axios.get('../../../api/usuarios.php?action=personal_limpieza');
+                const res = await axios.get('/api/usuarios.php?action=personal_limpieza');
                 personalLimpieza.value = res.data.data || [];
                 console.debug('[Limpieza] fetchPersonal ->', {
-                    ok: !!res.data, dataLength: (res.data && res.data.data) ? res.data.data.length : 0,
+                    ok: !!res.data, status: res.status, dataLength: (res.data && res.data.data) ? res.data.data.length : 0,
                     payload: res.data
                 });
             } catch (e) { /* silencio si no hay usuario limpieza aún */ }
@@ -57,7 +57,7 @@ const appConfig = {
                 const hoy = new Date().toLocaleDateString('en-CA');
                 const action = filtroFecha.value === hoy ? 'hoy' : `detalle_fecha&fecha=${filtroFecha.value}`;
                 
-                const res = await axios.get(`../../../api/limpieza.php?action=${action}`);
+                const res = await axios.get(`/api/limpieza.php?action=${action}`);
                 console.groupCollapsed('%c[Limpieza] fetchHoy', 'color:teal;font-weight:bold', { action, fecha: filtroFecha.value, server: new Date().toISOString() });
                 console.debug('response', res.data);
                 if (res.data.ok) {
@@ -83,7 +83,7 @@ const appConfig = {
         const generarLista = async () => {
             loading.value = true;
             try {
-                const res = await axios.post('../../../api/limpieza.php?action=generar');
+                const res = await axios.post('/api/limpieza.php?action=generar');
                 console.debug('[Limpieza] generarLista ->', res.data);
                 if (res.data.ok) {
                     Swal.fire('¡Listo!', res.data.msg, 'success');
@@ -108,7 +108,7 @@ const appConfig = {
 
             loading.value = true;
             try {
-                const res = await axios.post('../../../api/limpieza.php?action=actualizar', formData);
+                const res = await axios.post('/api/limpieza.php?action=actualizar', formData);
                 console.debug('[Limpieza] toggleListo ->', {id: h.id, nuevoEstado, response: res.data});
                 if (res.data.ok) {
                     const msg = nuevoEstado === 'lista' ? 'Habitación marcada como lista' : 'Habitación marcada como pendiente';
@@ -153,7 +153,7 @@ const appConfig = {
         const fetchHistorial = async () => {
             loading.value = true;
             try {
-                const res = await axios.get(`../../../api/limpieza.php?action=listar&mes=${filtroHist.value.mes}&anio=${filtroHist.value.anio}`);
+                const res = await axios.get(`/api/limpieza.php?action=listar&mes=${filtroHist.value.mes}&anio=${filtroHist.value.anio}`);
                 console.debug('[Limpieza] fetchHistorial ->', { mes: filtroHist.value.mes, anio: filtroHist.value.anio, resp: res.data });
                 if (res.data.ok) listaHistorial.value = res.data.data;
             } catch (e) { console.error(e); }
@@ -162,7 +162,7 @@ const appConfig = {
 
         const verDetalle = (fecha) => {
             fechaDetalle.value = fecha;
-            axios.get('../../../api/limpieza.php?action=detalle&fecha=' + fecha).then(res => {
+            axios.get('/api/limpieza.php?action=detalle&fecha=' + fecha).then(res => {
                 console.debug('[Limpieza] verDetalle ->', { fecha, resp: res.data });
                 if (res.data.ok) {
                     detalleDia.value = res.data.data;

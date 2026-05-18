@@ -52,6 +52,7 @@ include '../../../includes/sidebar.php';
           <option value="ocupado">Ocupado</option>
           <option value="reservado">Reservado</option>
           <option value="limpieza">Limpieza</option>
+          <option value="sucio">Sucio</option>
           <option value="mantenimiento">Mantenimiento</option>
         </select>
       </div>
@@ -110,7 +111,8 @@ include '../../../includes/sidebar.php';
                 'badge-libre': h.estado === 'libre',
                 'badge-ocupado': h.estado === 'ocupado',
                 'badge-reservado': h.estado === 'reservado',
-                'badge-limpieza': h.estado === 'limpieza',
+                  'badge-limpieza': h.estado === 'limpieza',
+                  'badge-sucio': h.estado === 'sucio',
                 'badge-mantenimiento': h.estado === 'mantenimiento'
               }">
                 {{ h.estado.charAt(0).toUpperCase() + h.estado.slice(1) }}
@@ -182,8 +184,9 @@ include '../../../includes/sidebar.php';
               <option value="libre">🟢 LIBRE Y LIMPIA</option>
               <option value="ocupado">🔴 OCUPADA</option>
               <option value="reservado">🟡 RESERVADA</option>
-              <option value="limpieza">🔵 SUCIA / PENDIENTE</option>
-              <option value="mantenimiento">⚫ BLOQUEADA / MANTENIMIENTO</option>
+              <option value="limpieza">⚪ LIMPIEZA (PL)</option>
+              <option value="sucio">🔵 SUCIO / PENDIENTE</option>
+              <option value="mantenimiento">🔴 MANTENIMIENTO</option>
             </select>
           </div>
         </div>
@@ -213,8 +216,9 @@ include '../../../includes/sidebar.php';
 .badge-libre { background-color: #d1fae5; color: #065f46; border: 1px solid #34d399; }
 .badge-ocupado { background-color: #fee2e2; color: #991b1b; border: 1px solid #f87171; }
 .badge-reservado { background-color: #fef3c7; color: #92400e; border: 1px solid #fbbf24; }
-.badge-limpieza { background-color: #efebe9; color: #5d4037; border: 1px solid #bcaaa4; }
-.badge-mantenimiento { background-color: #f1f5f9; color: #475569; border: 1px solid #94a3b8; }
+.badge-limpieza { background-color: #9ca3af; color: #ffffff; border: 1px solid #6b7280; }
+.badge-sucio { background-color: #8d6e63; color: #ffffff; border: 1px solid #5d4037; }
+.badge-mantenimiento { background-color: #e53935; color: #ffffff; border: 1px solid #b71c1c; }
 .text-sm { font-size: 0.85rem; }
 .table-hover tbody tr:hover { background-color: #f8f9fa !important; }
 

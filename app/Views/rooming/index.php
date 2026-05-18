@@ -851,13 +851,13 @@ include $_projectRoot . '/includes/head.php';
                         <div class="col-7">
                           <label class="form-label micro-text fw-bold text-muted mb-1">COMPROBANTE</label>
                           <select v-model="form.stay.tipo_comprobante" class="form-select form-select-sm border-0 fw-bold bg-transparent">
-                            <option value="RECIBO">RECIBO</option>
                             <option value="BOLETA">BOLETA</option>
                             <option value="FACTURA">FACTURA</option>
+                            <option value="RECIBO">FX</option>
                           </select>
                         </div>
                         <div class="col-5">
-                          <label class="form-label micro-text fw-bold text-muted mb-1">N° REF.</label>
+                          <label class="form-label micro-text fw-bold text-muted mb-1">N° REF. (Opcional)</label>
                           <input type="text" v-model="form.stay.num_comprobante" class="form-control form-control-sm border-0 bg-transparent fw-bold"
                             placeholder="1372">
                         </div>

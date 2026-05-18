@@ -320,7 +320,7 @@ createApp({
             };
             popup.querySelector('#btn-opt-sucio').onclick = () => {
               Swal.close();
-              cambiarEstadoHabitacion(hab.id, 'limpieza');
+              cambiarEstadoHabitacion(hab.id, 'sucio');
             };
             popup.querySelector('#btn-opt-mant').onclick = () => {
               Swal.close();

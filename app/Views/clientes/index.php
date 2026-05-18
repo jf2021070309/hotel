@@ -28,6 +28,28 @@ include $_projectRoot . '/includes/head.php';
     gap: 10px;
   }
 
+  .clientes-filter-control {
+    min-width: 190px;
+  }
+
+  .clientes-filter-label {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .45px;
+    text-transform: uppercase;
+    color: #6b7280;
+    margin-bottom: 4px;
+  }
+
+  .clientes-filter-select {
+    height: 38px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    border-color: #dbe2ea;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, .06);
+  }
+
   .clientes-actions-row {
     justify-content: flex-end;
   }
@@ -53,15 +75,10 @@ include $_projectRoot . '/includes/head.php';
   }
 
   @media (max-width: 768px) {
-    .clientes-filter-row .btn-group,
+    .clientes-filter-control,
     .clientes-actions-row,
     .clientes-actions-row > .d-flex {
       width: 100%;
-    }
-
-    .clientes-filter-row .btn-group {
-      overflow-x: auto;
-      justify-content: flex-start;
     }
 
     .clientes-search {
@@ -100,42 +117,22 @@ include $_projectRoot . '/includes/head.php';
           
           <!-- Grupo de Filtros Izquierda -->
           <div class="clientes-filter-row">
-            <!-- Filtro por Frecuencia -->
-            <div class="btn-group bg-white p-1 shadow-sm rounded-3 border" role="group" style="height: 42px;">
-              <button type="button" class="btn btn-sm px-3 fw-bold rounded-2 transition-all d-flex align-items-center gap-2 text-nowrap"
-                :class="filtroFrecuente === 'todos' ? 'btn-dark text-white' : 'btn-white text-secondary border-0'"
-                @click="filtroFrecuente = 'todos'">
-                <i class="bi bi-people"></i> Todos
-              </button>
-              <button type="button" class="btn btn-sm px-3 fw-bold rounded-2 transition-all d-flex align-items-center gap-2 text-nowrap"
-                :class="filtroFrecuente === 'frecuentes' ? 'btn-warning text-dark' : 'btn-white text-secondary border-0'"
-                @click="filtroFrecuente = 'frecuentes'">
-                <i class="bi bi-star-fill text-dark"></i> Frecuentes
-              </button>
-              <button type="button" class="btn btn-sm px-3 fw-bold rounded-2 transition-all d-flex align-items-center gap-2 text-nowrap"
-                :class="filtroFrecuente === 'regulares' ? 'btn-secondary text-white' : 'btn-white text-secondary border-0'"
-                @click="filtroFrecuente = 'regulares'">
-                <i class="bi bi-star text-secondary"></i> Regulares
-              </button>
+            <div class="clientes-filter-control">
+              <label class="clientes-filter-label" for="filtroFrecuenteClientes">Frecuencia</label>
+              <select id="filtroFrecuenteClientes" class="form-select form-select-sm clientes-filter-select" v-model="filtroFrecuente">
+                <option value="todos">Todos</option>
+                <option value="frecuentes">Frecuentes</option>
+                <option value="regulares">Regulares</option>
+              </select>
             </div>
 
-            <!-- Filtro por Tipo de Cliente (Personas vs Empresas) -->
-            <div class="btn-group bg-white p-1 shadow-sm rounded-3 border" role="group" style="height: 42px;">
-              <button type="button" class="btn btn-sm px-3 fw-bold rounded-2 transition-all d-flex align-items-center gap-2 text-nowrap"
-                :class="filtroTipo === 'todos' ? 'btn-dark text-white' : 'btn-white text-secondary border-0'"
-                @click="filtroTipo = 'todos'">
-                <i class="bi bi-person-lines-fill"></i> Todos los Tipos
-              </button>
-              <button type="button" class="btn btn-sm px-3 fw-bold rounded-2 transition-all d-flex align-items-center gap-2 text-nowrap"
-                :class="filtroTipo === 'personas' ? 'btn-info text-white' : 'btn-white text-secondary border-0'"
-                @click="filtroTipo = 'personas'">
-                <i class="bi bi-person"></i> Personas (DNI)
-              </button>
-              <button type="button" class="btn btn-sm px-3 fw-bold rounded-2 transition-all d-flex align-items-center gap-2 text-nowrap"
-                :class="filtroTipo === 'empresas' ? 'btn-primary text-white' : 'btn-white text-secondary border-0'"
-                @click="filtroTipo = 'empresas'">
-                <i class="bi bi-building"></i> Empresas (RUC)
-              </button>
+            <div class="clientes-filter-control">
+              <label class="clientes-filter-label" for="filtroTipoClientes">Tipo de cliente</label>
+              <select id="filtroTipoClientes" class="form-select form-select-sm clientes-filter-select" v-model="filtroTipo">
+                <option value="todos">Todos los tipos</option>
+                <option value="personas">Personas (DNI)</option>
+                <option value="empresas">Empresas (RUC)</option>
+              </select>
             </div>
           </div>
 

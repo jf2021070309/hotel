@@ -18,33 +18,6 @@ include $base . 'includes/sidebar.php';
         background-color: #f4f7fa;
         min-height: 100vh;
     }
-    /* Evitar que el contenido interno sobresalga del card */
-    #app-limpieza .card {
-        overflow: hidden;
-    }
-    #app-limpieza .card .card-body {
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-    }
-    /* Permitir que badges y líneas se envuelvan sin forzar ancho */
-    #app-limpieza .card .d-flex {
-        flex-wrap: wrap;
-        gap: .5rem;
-        align-items: center;
-    }
-    #app-limpieza .badge {
-        white-space: nowrap;
-        max-width: 100%;
-        display: inline-flex;
-        align-items: center;
-        gap: .35rem;
-    }
-    #app-limpieza .rounded-full {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
 </style>
 
 <div class="main-content" id="app-limpieza" v-cloak>
@@ -118,37 +91,36 @@ include $base . 'includes/sidebar.php';
             </div>
 
             <div v-for="h in listaFiltrada" :key="h.id" class="col-12 col-md-6 col-lg-4">
-                <div class="card shadow-sm border-0 h-100 position-relative p-4"
-                    :class="[getRoomBgTwClass(h.room_estado), {'bg-light opacity-75': h.estado === 'lista'}, getColorTopTwClass(h)]"
-                    style="border-radius: 1rem;">
+                <div class="card shadow-sm border-0 h-100 position-relative"
+                    :class="{'bg-light opacity-75': h.estado === 'lista'}"
+                    style="border-radius: 1rem; border-top: 5px solid transparent !important;"
+                    :style="'border-top-color: ' + getColorTop(h) + ' !important;'">
 
 
                     <div class="card-body d-flex flex-column">
                         <!-- Cabecera de Tarjeta -->
                         <div class="d-flex align-items-center gap-3 mb-3">
-                            <div class="d-flex align-items-center gap-3">
+                            <div>
                                 <h1 class="fw-black mb-0"
-                                    style="font-size: 2rem; letter-spacing: -1px; color: #1e293b; line-height: 1;">{{ h.habitacion }}</h1>
-                                <div v-if="h.room_estado" class="rounded-full px-2 py-0.5 text-xs font-bold" :class="getRoomStateTwClass(h.room_estado)" style="display:inline-flex; align-items:center; gap:6px;">
-                                    <i v-if="h.room_estado.toLowerCase() === 'mantenimiento'" class="bi bi-tools me-1"></i>
-                                    <i v-else-if="h.room_estado.toLowerCase() === 'sucio'" class="bi bi-droplet-half me-1"></i>
-                                        <i v-else-if="h.room_estado.toLowerCase() === 'limpieza'" class="bi bi-stars" style="margin-right:4px;"></i>
-                                    {{ h.room_estado.toUpperCase() }}
-                                </div>
+                                    style="font-size: 3rem; letter-spacing: -2px; color: #1e293b; line-height: 1;">{{
+                                    h.habitacion }}</h1>
                             </div>
                             <div class="d-flex flex-column gap-1">
-                                <span class="badge py-1 px-2 fw-bold" :class="getEstadoClass(h.estado)"
-                                    style="font-size: 0.7rem;">
+                                <span class="badge py-2 px-3 fw-bold shadow-sm" :class="getEstadoClass(h.estado)"
+                                    style="font-size: 0.85rem;">
                                     {{ h.estado.toUpperCase() }}
                                 </span>
                                 <div class="d-flex gap-1">
-                                    <span class="badge" :class="[getTipoClass(h.tipo_limpieza), getTipoTwClass(h.tipo_limpieza)]"
-                                        style="font-size: 0.65rem; padding: 0.25rem 0.5rem;">
+                                    <span class="badge" :class="getTipoClass(h.tipo_limpieza)"
+                                        style="font-size: 0.75rem;">
                                         {{ h.tipo_limpieza.toUpperCase() }}
                                     </span>
                                         <span class="badge bg-secondary" style="font-size: 0.75rem;"
                                             title="Ocupantes esperados">
                                             <i class="bi bi-people-fill"></i> {{ (h.pax !== null && h.pax !== undefined) ? h.pax : (h.ocupantes || '?') }} PAX
+                                        </span>
+                                        <span v-if="h.room_estado" class="badge" :class="getRoomStateClass(h.room_estado)" style="font-size:0.75rem;">
+                                            {{ h.room_estado.toUpperCase() }}
                                         </span>
                                 </div>
                             </div>

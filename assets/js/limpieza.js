@@ -168,51 +168,6 @@ const appConfig = {
             return 'bg-light text-dark';
         };
 
-        // Tailwind class helpers for stronger visual cues
-        const getRoomStateTwClass = (state) => {
-            const s = String(state || '').toLowerCase();
-            if (s === 'mantenimiento') return 'bg-red-600 text-white';
-            if (s === 'sucio') return 'bg-amber-800 text-white';
-            if (s === 'limpieza') return 'bg-gray-500 text-white';
-            return 'bg-gray-100 text-gray-800';
-        };
-
-        const getRoomBgTwClass = (state) => {
-            const s = String(state || '').toLowerCase();
-            if (s === 'mantenimiento') return 'bg-red-50';
-            if (s === 'sucio') return 'bg-amber-50';
-            if (s === 'limpieza') return 'bg-gray-100';
-            if (s === 'ocupado' || s === 'ocupada') return 'bg-pink-50';
-            return 'bg-white';
-        };
-
-        const getEstadoTwClass = (estado) => {
-            const e = String(estado || '').toLowerCase();
-            if (e === 'pendiente') return 'bg-gray-100 text-gray-800 border';
-            if (e === 'en proceso' || e === 'en_proceso') return 'bg-yellow-300 text-gray-900';
-            if (e === 'mantenimiento') return 'bg-red-600 text-white';
-            if (e === 'sucio') return 'bg-amber-800 text-white';
-            if (e === 'lista') return 'bg-green-600 text-white';
-            return 'bg-green-600 text-white';
-        };
-
-        const getTipoTwClass = (t) => {
-            if (t === 'salida') return 'bg-red-500 text-white';
-            if (t === 'estimacion') return 'bg-gray-800 text-white';
-            if (t === 'estadía') return 'bg-yellow-400 text-gray-800';
-            return 'bg-teal-400 text-gray-800';
-        };
-
-        const getColorTopTwClass = (h) => {
-            if (!h) return '';
-            if (h.estado === 'mantenimiento' || h.tipo_limpieza === 'estimacion') return 'border-t-4 border-gray-800';
-            if (h.estado === 'sucio') return 'border-t-4 border-amber-800';
-            if (h.estado === 'lista') return 'border-t-4 border-green-600';
-            if (h.tipo_limpieza === 'salida') return 'border-t-4 border-red-500';
-            if (h.tipo_limpieza === 'estadía') return 'border-t-4 border-yellow-400';
-            return 'border-t-4 border-cyan-400';
-        };
-
         // HISTORIAL
         const fetchHistorial = async () => {
             loading.value = true;
@@ -260,8 +215,6 @@ const appConfig = {
             generarLista, tareaEdit, toggleListo, fmtHora, fetchPorFecha,
             getTipoClass, getEstadoClass, getColorTop,
             getRoomStateClass,
-            // Tailwind helpers
-            getRoomStateTwClass, getEstadoTwClass, getTipoTwClass, getColorTopTwClass, getRoomBgTwClass,
             listaHistorial, filtroHist,
             detalleDia, fechaDetalle, fetchHistorial, verDetalle, formatFecha, formatFechaHora
         };

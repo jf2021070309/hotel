@@ -12,6 +12,69 @@ $page_title = 'Base de Datos de Clientes — Hotel Manager';
 include $_projectRoot . '/includes/head.php';
 ?>
 
+<style>
+  .clientes-toolbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 14px;
+    align-items: center;
+  }
+
+  .clientes-filter-row,
+  .clientes-actions-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .clientes-actions-row {
+    justify-content: flex-end;
+  }
+
+  .clientes-search {
+    width: min(340px, 100%);
+  }
+
+  @media (max-width: 1320px) {
+    .clientes-toolbar {
+      grid-template-columns: 1fr;
+    }
+
+    .clientes-actions-row {
+      justify-content: space-between;
+    }
+
+    .clientes-search {
+      flex: 1 1 320px;
+      width: auto;
+      max-width: none;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .clientes-filter-row .btn-group,
+    .clientes-actions-row,
+    .clientes-actions-row > .d-flex {
+      width: 100%;
+    }
+
+    .clientes-filter-row .btn-group {
+      overflow-x: auto;
+      justify-content: flex-start;
+    }
+
+    .clientes-search {
+      flex-basis: 100%;
+    }
+
+    .clientes-actions-row > .d-flex .btn {
+      flex: 1 1 0;
+      justify-content: center;
+    }
+  }
+</style>
+
 <div id="app-clientes" style="display:contents" v-cloak>
   <?php include $_projectRoot . '/includes/sidebar.php'; ?>
   <div class="main-content">
@@ -33,10 +96,10 @@ include $_projectRoot . '/includes/head.php';
     <div class="page-body">
       <!-- FILTROS Y ACCIONES PREMIUM -->
       <div class="card border-0 shadow-sm p-3 mb-4" style="border-radius: 12px; background: #ffffff; border: 1px solid rgba(0,0,0,0.05) !important;">
-        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+        <div class="clientes-toolbar">
           
           <!-- Grupo de Filtros Izquierda -->
-          <div class="d-flex flex-wrap gap-2 align-items-center">
+          <div class="clientes-filter-row">
             <!-- Filtro por Frecuencia -->
             <div class="btn-group bg-white p-1 shadow-sm rounded-3 border" role="group" style="height: 42px;">
               <button type="button" class="btn btn-sm px-3 fw-bold rounded-2 transition-all d-flex align-items-center gap-2 text-nowrap"
@@ -77,9 +140,9 @@ include $_projectRoot . '/includes/head.php';
           </div>
 
           <!-- Búsqueda y Acciones (Derecha) -->
-          <div class="d-flex flex-wrap gap-2 align-items-center flex-grow-1 flex-md-grow-0 justify-content-end">
+          <div class="clientes-actions-row">
             <!-- Buscador Premium -->
-            <div class="input-group border shadow-sm bg-white" style="border-radius: 8px; overflow: hidden; width: 100%; max-width: 320px; height: 42px;">
+            <div class="input-group border shadow-sm bg-white clientes-search" style="border-radius: 8px; overflow: hidden; height: 42px;">
                <span class="input-group-text bg-white border-0 ps-3">
                   <i class="bi bi-search text-muted"></i>
                </span>

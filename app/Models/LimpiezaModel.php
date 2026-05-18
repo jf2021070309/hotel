@@ -14,6 +14,18 @@ class LimpiezaModel {
         $stmtHabs = $this->pdo->query("SELECT id, numero, estado FROM habitaciones WHERE estado IN ('limpieza', 'mantenimiento')");
         $dirtyRooms = $stmtHabs->fetchAll(PDO::FETCH_ASSOC);
 
+        // Determinar un usuario válido para asignar a los registros de limpieza.
+        $sessionUid = $_SESSION['auth_id'] ?? null;
+        $validUid = null;
+        if ($sessionUid) {
+            $stmtChk = $this->pdo->prepare("SELECT id FROM usuarios WHERE id = ?");
+            $stmtChk->execute([$sessionUid]);
+            $validUid = $stmtChk->fetchColumn() ?: null;
+        }
+        if (!$validUid) {
+            $validUid = (int)$this->pdo->query("SELECT id FROM usuarios LIMIT 1")->fetchColumn() ?: 1;
+        }
+
         foreach ($dirtyRooms as $room) {
             $stmtCheck = $this->pdo->prepare("SELECT id, estado FROM limpieza_registros WHERE fecha = ? AND habitacion_id = ?");
             $stmtCheck->execute([$fecha, $room['id']]);
@@ -25,9 +37,9 @@ class LimpiezaModel {
 
                 $stmtInsert = $this->pdo->prepare("
                     INSERT INTO limpieza_registros (fecha, habitacion_id, habitacion, tipo_limpieza, prioridad, estado, usuario_id)
-                    VALUES (?, ?, ?, ?, ?, 'pendiente', 1)
+                    VALUES (?, ?, ?, ?, ?, 'pendiente', ?)
                 ");
-                $stmtInsert->execute([$fecha, $room['id'], $room['numero'], $tipo, $prioridad]);
+                $stmtInsert->execute([$fecha, $room['id'], $room['numero'], $tipo, $prioridad, $validUid]);
             } else {
                 if ($room['estado'] === 'limpieza' && $existing['estado'] === 'lista') {
                     $stmtReset = $this->pdo->prepare("UPDATE limpieza_registros SET estado = 'pendiente', hora_fin = NULL WHERE id = ?");
@@ -81,14 +93,25 @@ class LimpiezaModel {
             $sql = "INSERT IGNORE INTO limpieza_registros (fecha, habitacion_id, habitacion, tipo_limpieza, prioridad, usuario_id) 
                     VALUES (:fecha, :hab_id, :hab, :tipo, :prioridad, :uid)";
             $stmt = $this->pdo->prepare($sql);
+            // preparar verificación de usuario y fallback
+            $stmtUser = $this->pdo->prepare("SELECT id FROM usuarios WHERE id = ? LIMIT 1");
+            $fallbackUid = (int)$this->pdo->query("SELECT id FROM usuarios LIMIT 1")->fetchColumn() ?: 1;
             foreach ($registros as $r) {
+                $uid = isset($r['usuario_id']) ? (int)$r['usuario_id'] : 0;
+                if ($uid <= 0) {
+                    $uid = $fallbackUid;
+                } else {
+                    $stmtUser->execute([$uid]);
+                    if (!$stmtUser->fetchColumn()) $uid = $fallbackUid;
+                }
+
                 $stmt->execute([
                     ':fecha'     => $r['fecha'],
                     ':hab_id'    => $r['habitacion_id'],
                     ':hab'       => $r['habitacion'],
                     ':tipo'      => $r['tipo_limpieza'],
                     ':prioridad' => $r['prioridad'],
-                    ':uid'       => $r['usuario_id']
+                    ':uid'       => $uid
                 ]);
             }
             $this->pdo->commit();

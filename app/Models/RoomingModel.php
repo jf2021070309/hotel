@@ -480,7 +480,16 @@ class RoomingModel {
                 VALUES (?, ?, ?, 'salida', 'alta', 'pendiente', ?)
                 ON DUPLICATE KEY UPDATE tipo_limpieza = 'salida', prioridad = 'alta'";
         $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([date('Y-m-d'), $hab_id, $numHab, $_SESSION['auth_id'] ?? 1]);
+        $uid = $_SESSION['auth_id'] ?? null;
+        if ($uid) {
+            $chk = $this->pdo->prepare("SELECT id FROM usuarios WHERE id = ? LIMIT 1");
+            $chk->execute([$uid]);
+            if (!$chk->fetchColumn()) $uid = null;
+        }
+        if (!$uid) {
+            $uid = (int)$this->pdo->query("SELECT id FROM usuarios LIMIT 1")->fetchColumn() ?: 1;
+        }
+        $stmt->execute([date('Y-m-d'), $hab_id, $numHab, $uid]);
     }
 
     /**

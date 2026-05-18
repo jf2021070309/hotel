@@ -22,7 +22,12 @@ createApp({
       egresos: 0,
       efectivo_sobre: 0,
       estado: 'inexistente',
-      desglose: []
+      desglose: [],
+      // Totales por día (fallback inicial para evitar undefined en templates)
+      ingresos_dia: { PEN: 0, USD: 0, CLP: 0 },
+      egresos_dia: { PEN: 0 },
+      using_other_flujo: false,
+      owner_name: ''
     });
     const kpi = ref({
       ocupacion: { ocupadas: 0, total: 0 },

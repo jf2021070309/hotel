@@ -27,22 +27,44 @@ class DashboardModel {
         $this->pdo->query("UPDATE rooming_stays SET estado = 'cancelado' WHERE estado = 'reservado' AND fecha_checkout < CURRENT_DATE");
 
         // 1. KPI Ocupación
-        $stmtOcup = $this->pdo->prepare("
-            SELECT COUNT(id) as total, 
-                   (SELECT COUNT(DISTINCT habitacion_id) FROM rooming_stays WHERE estado IN ('activo','late_checkout') AND fecha_registro <= ? AND fecha_checkout > ?) as ocupadas 
-            FROM habitaciones
-        ");
-        $stmtOcup->execute([$fecha, $fecha]);
-        $ocupacion = $stmtOcup->fetch(PDO::FETCH_ASSOC);
+        $stmtF = $this->pdo->prepare(""
+            SELECT id, estado, usuario_id FROM flujo_caja 
+            WHERE fecha = ? AND turno = ? AND usuario_id = ? 
+            ORDER BY id DESC LIMIT 1
+        ""
+        );
+        $stmtF->execute([$fecha, $turno, $usuarioId]);
+        $flujoRow = $stmtF->fetch(PDO::FETCH_ASSOC);
 
-        // 2. KPI PAX Hoy
-        $stmtPax = $this->pdo->prepare("SELECT SUM(pax_total) FROM rooming_stays WHERE estado IN ('activo','late_checkout') AND fecha_registro <= ? AND fecha_checkout > ?");
-        $stmtPax->execute([$fecha, $fecha]);
-        $pax_hoy = (int)$stmtPax->fetchColumn();
+        $owner_name = null;
+        $using_other_flujo = false;
 
-        // Extraer TC del día para cálculos
-        $stmtTC = $this->pdo->prepare("SELECT moneda_origen, factor FROM tipos_cambio WHERE fecha = ?");
-        $stmtTC->execute([$fecha]);
+        // Si el usuario no tiene su propio turno abierto, intentar usar cualquier turno 'borrador' del mismo turno
+        if (!$flujoRow) {
+            $stmtFb = $this->pdo->prepare("SELECT id, estado, usuario_id FROM flujo_caja WHERE fecha = ? AND turno = ? AND estado = 'borrador' ORDER BY id DESC LIMIT 1");
+            $stmtFb->execute([$fecha, $turno]);
+            $fb = $stmtFb->fetch(PDO::FETCH_ASSOC);
+            if ($fb) {
+                $flujoRow = $fb;
+                $using_other_flujo = true;
+                // obtener nombre del usuario que abrió ese turno para mostrarlo en UI
+                if (!empty($fb['usuario_id'])) {
+                    $stmtU = $this->pdo->prepare("SELECT nombre FROM usuarios WHERE id = ?");
+                    $stmtU->execute([$fb['usuario_id']]);
+                    $owner_name = $stmtU->fetchColumn() ?: null;
+                }
+            }
+        }
+
+        $mi_turno = [
+            'id' => $flujoRow ? $flujoRow['id'] : null,
+            'ingresos' => 0,
+            'egresos' => 0,
+            'efectivo_sobre' => 0,
+            'estado' => $flujoRow ? $flujoRow['estado'] : 'inexistente',
+            'using_other_flujo' => $using_other_flujo,
+            'owner_name' => $owner_name
+        ];
         $tcData = $stmtTC->fetchAll(PDO::FETCH_ASSOC);
         $tc = ['USD' => 3.7, 'CLP' => 256.41]; 
         foreach($tcData as $row) { $tc[$row['moneda_origen']] = (float)$row['factor']; }
@@ -293,6 +315,23 @@ class DashboardModel {
                 $mi_turno['desglose'] = $stmtDes->fetchAll(PDO::FETCH_ASSOC);
             }
         }
+
+        // Totales del día (suma de todos los turnos) para dar contexto al usuario
+        $stmtTotDia = $this->pdo->prepare("SELECT 
+            COALESCE(SUM(CASE WHEN m.tipo='Ingreso' AND m.moneda='PEN' THEN m.monto ELSE 0 END),0) AS ing_pen,
+            COALESCE(SUM(CASE WHEN m.tipo='Ingreso' AND m.moneda='USD' THEN m.monto ELSE 0 END),0) AS ing_usd,
+            COALESCE(SUM(CASE WHEN m.tipo='Ingreso' AND m.moneda='CLP' THEN m.monto ELSE 0 END),0) AS ing_clp,
+            COALESCE(SUM(CASE WHEN m.tipo='Egreso' AND m.moneda='PEN' THEN m.monto ELSE 0 END),0) AS egr_pen
+            FROM flujo_caja_movimientos m JOIN flujo_caja f ON m.flujo_id = f.id WHERE f.fecha = ?");
+        $stmtTotDia->execute([$fecha]);
+        $totDia = $stmtTotDia->fetch(PDO::FETCH_ASSOC);
+
+        $mi_turno['ingresos_dia'] = [
+            'PEN' => (float)($totDia['ing_pen'] ?? 0),
+            'USD' => (float)($totDia['ing_usd'] ?? 0),
+            'CLP' => (float)($totDia['ing_clp'] ?? 0)
+        ];
+        $mi_turno['egresos_dia'] = ['PEN' => (float)($totDia['egr_pen'] ?? 0)];
 
         // 5. KPIs globales (Ocupación, PAX, Ingresos, Egresos) para las tarjetas superiores
         $stmtOcup = $this->pdo->prepare("

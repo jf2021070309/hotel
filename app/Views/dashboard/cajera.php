@@ -289,6 +289,13 @@ include 'includes/sidebar.php';
                 <span class="text-muted fw-bold">Egresos:</span>
                 <span class="fw-bold text-danger">S/ {{ formatNumber(mi_turno.egresos) }}</span>
               </div>
+              <div class="mt-2 mb-2">
+                <small class="text-muted">Recaudado hoy (todos los turnos):</small>
+                <div class="fw-bold">S/ {{ mi_turno.ingresos_dia.PEN !== undefined ? formatNumber(mi_turno.ingresos_dia.PEN) : '0.00' }}</div>
+                <div v-if="mi_turno.using_other_flujo" class="mt-1 small text-warning">
+                  Turno abierto por: <span class="fw-bold">{{ mi_turno.owner_name || 'Otro usuario' }}</span>
+                </div>
+              </div>
               <hr>
               <div class="mb-4 d-flex justify-content-between align-items-center">
                 <span class="fw-bold h6 mb-0 text-dark">EFECTIVO EN SOBRE:</span>

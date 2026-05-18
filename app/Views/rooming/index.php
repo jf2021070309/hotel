@@ -139,7 +139,7 @@ include $_projectRoot . '/includes/head.php';
                     <span><i class="bi bi-box-arrow-out-right text-danger me-1"></i> Salida: <span class="fw-bold">{{
                         fmtFecha(s.fecha_checkout) }}</span></span>
                   </div>
-                  <div class="text-muted mt-1" style="font-size: 11px;">🛏️ {{ s.noches }} noches</div>
+                  <div class="text-muted mt-1" style="font-size: 11px;">Noches: 0{{ s.noches }} </div>
                 </td>
                 <td class="text-end fw-bold">
                   <div class="text-dark">{{ s.moneda_pago == 'USD' ? '$' : (s.moneda_pago == 'CLP' ? 'P$' : 'S/') }} {{

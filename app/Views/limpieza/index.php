@@ -14,12 +14,6 @@ include $base . 'includes/sidebar.php';
         font-weight: 900;
     }
 
-    .card-hover:hover {
-        transform: translateY(-5px);
-        transition: all 0.3s ease;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
-    }
-
     .main-content {
         background-color: #f4f7fa;
         min-height: 100vh;
@@ -52,96 +46,6 @@ include $base . 'includes/sidebar.php';
     </div>
 
     <div class="page-body">
-
-        <!-- RESUMEN SUPERIOR - DISEÑO PREMIUM & ORDENADO -->
-        <div class="row g-3 mb-4" v-if="lista.length > 0">
-            <!-- SALIDAS -->
-            <div class="col-6 col-md-3">
-                <div class="card border-0 shadow card-hover position-relative overflow-hidden" 
-                    style="border-radius: 1.5rem; background: linear-gradient(135deg, #f87171 0%, #dc2626 100%); color: white; min-height: 130px;">
-                    <div class="card-body p-4 d-flex flex-column justify-content-center">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="text-white fw-bold text-uppercase mb-1" style="font-size: 0.75rem; letter-spacing: 1.5px; opacity: 0.9;">Salidas Hoy</h6>
-                                <div class="d-flex align-items-baseline gap-1">
-                                    <h2 class="fw-black mb-0 text-white" style="font-size: 2.3rem;">{{ stats.salida }}</h2>
-                                    <span class="text-white small fw-bold opacity-75">habs</span>
-                                </div>
-                            </div>
-                            <div class="rounded-4 d-flex align-items-center justify-content-center shadow-lg" 
-                                style="width: 58px; height: 58px; background: rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(4px);">
-                                <i class="bi bi-door-open-fill text-white fs-2"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- ESTADÍAS -->
-            <div class="col-6 col-md-3">
-                <div class="card border-0 shadow card-hover position-relative overflow-hidden" 
-                    style="border-radius: 1.5rem; background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%); color: white; min-height: 130px;">
-                    <div class="card-body p-4 d-flex flex-column justify-content-center">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="text-white fw-bold text-uppercase mb-1" style="font-size: 0.75rem; letter-spacing: 1.5px; opacity: 0.9;">Repaso / Stay</h6>
-                                <div class="d-flex align-items-baseline gap-1">
-                                    <h2 class="fw-black mb-0 text-white" style="font-size: 2.3rem;">{{ stats.estadia }}</h2>
-                                    <span class="text-white small fw-bold opacity-75">habs</span>
-                                </div>
-                            </div>
-                            <div class="rounded-4 d-flex align-items-center justify-content-center shadow-lg" 
-                                style="width: 58px; height: 58px; background: rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(4px);">
-                                <i class="bi bi-person-walking text-white fs-2"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- PROGRAMADAS -->
-            <div class="col-6 col-md-3">
-                <div class="card border-0 shadow card-hover position-relative overflow-hidden" 
-                    style="border-radius: 1.5rem; background: linear-gradient(135deg, #22d3ee 0%, #0891b2 100%); color: white; min-height: 130px;">
-                    <div class="card-body p-4 d-flex flex-column justify-content-center">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="text-white fw-bold text-uppercase mb-1" style="font-size: 0.75rem; letter-spacing: 1.5px; opacity: 0.9;">Reservas Act.</h6>
-                                <div class="d-flex align-items-baseline gap-1">
-                                    <h2 class="fw-black mb-0 text-white" style="font-size: 2.3rem;">{{ stats.programada }}</h2>
-                                    <span class="text-white small fw-bold opacity-75">habs</span>
-                                </div>
-                            </div>
-                            <div class="rounded-4 d-flex align-items-center justify-content-center shadow-lg" 
-                                style="width: 58px; height: 58px; background: rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(4px);">
-                                <i class="bi bi-calendar-check-fill text-white fs-2"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- TOTAL -->
-            <div class="col-6 col-md-3">
-                <div class="card border-0 shadow card-hover position-relative overflow-hidden" 
-                    style="border-radius: 1.5rem; background: linear-gradient(135deg, #444 0%, #111 100%); color: white; min-height: 130px;">
-                    <div class="card-body p-4 d-flex flex-column justify-content-center">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="text-warning fw-bold text-uppercase mb-1" style="font-size: 0.75rem; letter-spacing: 1.5px; color: #fbbf24 !important;">Carga Total</h6>
-                                <div class="d-flex align-items-baseline gap-1">
-                                    <h2 class="fw-black mb-0 text-warning" style="font-size: 2.3rem;">{{ lista.length }}</h2>
-                                    <span class="text-white small fw-bold opacity-75">trabajos</span>
-                                </div>
-                            </div>
-                            <div class="rounded-4 bg-warning d-flex align-items-center justify-content-center shadow-lg" style="width: 58px; height: 58px; border: 1px solid rgba(255,255,255,0.1);">
-                                <i class="bi bi-stars text-dark fs-2"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <!-- FILTROS -->
         <div class="card shadow-sm border-0 mb-4" v-if="lista.length > 0">

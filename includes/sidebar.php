@@ -204,11 +204,7 @@ function isActive(string $page, string $folder_): string {
     <div class="nav-label mt-2">Reportes Avanzados</div>
     <?php endif; ?>
 
-    <div class="nav-item">
-      <a href="<?= route('app/Views/reportes/comercial.php', $base) ?>" class="<?= isActive('comercial.php','reportes') ?>" onclick="closeSidebarOnMobile()">
-        <i class="bi bi-bar-chart-line-fill text-primary"></i> <span>Reportes Comerciales</span>
-      </a>
-    </div>
+    <!-- Reportes Comerciales eliminado del sidebar -->
 
     <?php if (tieneAccesoModulo('reporte_mendoza')): ?>
     <div class="nav-item">

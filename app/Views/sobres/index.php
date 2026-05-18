@@ -1,259 +1,268 @@
 <?php
-/**
- * app/Views/sobres/index.php
- * Dashboard del Módulo de Sobres (Consolidado de Efectivo)
- */
 $base = '../../../';
-require_once $base . 'auth/middleware.php';
+$_projectRoot = dirname(__DIR__, 3);
+require_once $_projectRoot . '/auth/middleware.php';
+require_once $_projectRoot . '/rutas.php';
 protegerPorRol('cajera', 'sobres');
+require_once $_projectRoot . '/config/db.php';
 
-$page_title = 'Sobres de Alex — Consolidado';
-include $base . 'includes/head.php';
-include $base . 'includes/sidebar.php';
+$page_title = 'Sobre de Alex — Control de Efectivo Físico';
+include $_projectRoot . '/includes/head.php';
+include $_projectRoot . '/includes/sidebar.php';
 
-$fecha = $_GET['fecha'] ?? date('Y-m-d');
+$fecha = date('Y-m-d');
 ?>
 
-<div class="main-content" id="app-sobres" v-cloak>
-  <div class="topbar border-bottom-0 shadow-sm" style="background: linear-gradient(to right, #ffffff, #f8f9fa);">
-    <button class="btn-burger" onclick="handleMenuClick()"><i class="bi bi-list fs-4"></i></button>
-    <div class="d-flex align-items-center gap-1">
-      <h4 class="mb-0 fw-bold text-dark" style="letter-spacing: -0.5px;">Sobre de Alex</h4>
-      <span class="text-muted small d-none d-lg-inline ps-2 border-start ms-2">Control de efectivo físico</span>
-    </div>
-    <div class="ms-auto d-flex gap-2 align-items-center">
-      <!-- Selector de Modo -->
-      <div class="btn-group btn-group-sm me-2" role="group">
-        <button type="button" class="btn fw-bold px-3" :class="modo === 'diario' ? 'btn-primary' : 'btn-outline-primary'" @click="setModo('diario')">DIARIO</button>
-        <button type="button" class="btn fw-bold px-3 position-relative" :class="modo === 'mensual' ? 'btn-primary' : 'btn-outline-primary'" @click="setModo('mensual')">
-          MENSUAL
-          <span v-if="modo === 'mensual'" class="badge bg-light text-dark ms-2" style="font-size:11px; vertical-align:middle;">{{ dias.length }} días</span>
+<!-- Importar Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Inter', 'system-ui', 'sans-serif'],
+        },
+        colors: {
+          emerald: {
+            50: '#ecfdf5',
+            500: '#10b981',
+            600: '#059669',
+            700: '#047857',
+            800: '#065f46',
+            900: '#064e3b',
+          }
+        }
+      }
+    }
+  }
+</script>
+
+<div class="main-content bg-slate-50 min-h-screen font-sans font-normal text-slate-800" id="app-sobres" v-cloak>
+  <!-- TOPBAR HEADER CON GLASSMORPHISM -->
+  <header class="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-200/80 px-6 py-4 transition-all shadow-sm">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3 w-full sm:w-auto">
+        <button class="btn-burger p-2 hover:bg-slate-100 rounded-xl transition-colors text-slate-700" onclick="handleMenuClick()">
+          <i class="bi bi-list text-2xl"></i>
+        </button>
+        <div class="flex flex-col">
+          <div class="flex items-center gap-2.5">
+            <h1 class="text-2xl font-black bg-gradient-to-r from-emerald-600 via-teal-600 to-indigo-600 bg-clip-text text-transparent tracking-tight">
+              Sobre de Alex
+            </h1>
+            <span class="bg-emerald-50 text-emerald-700 border border-emerald-200/80 px-3 py-0.5 rounded-full text-xs font-bold tracking-wide shadow-xs flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              {{ dias.length }} DÍAS ACTIVOS
+            </span>
+          </div>
+          <p class="text-xs text-slate-500 font-medium tracking-wide uppercase mt-0.5">Control Financiero de Efectivo Físico en Caja</p>
+        </div>
+      </div>
+
+      <!-- CONTROLES Y FILTROS -->
+      <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-end">
+        <!-- Selector Mes / Año -->
+        <div class="flex items-center bg-white border border-slate-200/80 rounded-2xl p-1 shadow-xs hover:border-slate-300 transition-colors">
+          <select class="bg-transparent text-sm font-bold text-slate-700 pl-3 pr-2 py-1.5 focus:outline-none cursor-pointer" v-model="mesFiltro" @change="consultar">
+            <option v-for="(n, i) in meses" :key="i" :value="i+1">{{ n }}</option>
+          </select>
+          <div class="h-4 w-[1px] bg-slate-200 mx-1"></div>
+          <select class="bg-transparent text-sm font-bold text-slate-700 pl-2 pr-3 py-1.5 focus:outline-none cursor-pointer" v-model="anioFiltro" @change="consultar">
+            <option v-for="a in anios" :key="a" :value="a">{{ a }}</option>
+          </select>
+        </div>
+
+        <!-- Botón Debug -->
+        <button @click="toggleDebug" class="flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 border border-slate-200 px-3.5 py-2 rounded-2xl text-xs font-bold transition-all shadow-xs hover:shadow-sm">
+          <i class="bi bi-bug-fill text-indigo-500 text-sm"></i>
+          <span class="hidden md:inline">Debug</span>
+        </button>
+
+        <!-- Botón Imprimir -->
+        <button @click="imprimirReporte" class="flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white px-5 py-2 rounded-2xl text-xs font-bold transition-all shadow-lg shadow-emerald-600/20 hover:shadow-xl hover:shadow-emerald-600/30 active:scale-95">
+          <i class="bi bi-printer-fill text-sm"></i>
+          <span>Imprimir Reporte</span>
         </button>
       </div>
-
-      <!-- Filtros Dinámicos -->
-      <div v-if="modo === 'diario'" class="d-flex align-items-center">
-        <input type="date" class="form-control form-control-sm border-0 bg-light shadow-none" v-model="fechaFiltro" @change="consultar" style="width: 125px; font-size: 13px;">
-      </div>
-      <div v-else class="d-flex align-items-center gap-1">
-        <select class="form-select form-select-sm border-0 bg-light shadow-none" v-model="mesFiltro" @change="consultar" style="width: 110px; font-size: 13px;">
-          <option v-for="(n, i) in meses" :value="i+1">{{ n }}</option>
-        </select>
-        <select class="form-select form-select-sm border-0 bg-light shadow-none" v-model="anioFiltro" @change="consultar" style="width: 80px; font-size: 13px;">
-          <option v-for="a in anios" :value="a">{{ a }}</option>
-        </select>
-      </div>
-
-      <button class="btn btn-outline-secondary btn-sm fw-bold px-2 px-sm-3 d-flex align-items-center gap-1 me-1" @click="toggleDebug" style="height: 31px; font-size: 11.5px;">
-        <i class="bi bi-bug-fill"></i>
-        <span class="d-none d-sm-inline">Debug</span>
-      </button>
-
-      <button class="btn btn-success btn-sm fw-bold px-2 px-sm-3 d-flex align-items-center gap-1" @click="imprimirReporte" style="height: 31px; font-size: 11.5px;">
-        <i class="bi bi-printer-fill"></i>
-        <span class="d-none d-sm-inline">Imprimir</span>
-      </button>
     </div>
-  </div>
+  </header>
 
-  <div class="page-body">
-    <div v-if="loading" class="text-center py-5">
-      <div class="spinner-border text-success"></div>
+  <main class="max-w-7xl mx-auto px-6 py-8">
+    <div v-if="loading" class="min-h-[400px] flex flex-col items-center justify-center gap-4">
+      <div class="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+      <p class="text-sm font-bold text-slate-500 tracking-wide animate-pulse">Sincronizando flujos y cierres de caja...</p>
     </div>
 
-    <div class="row justify-content-center" v-else>
-      <div class="col-lg-11">
-        
-        <!-- RESUMEN POR TURNO (solo DIARIO) -->
-        <div v-if="modo === 'diario'" class="row g-3 mb-4">
-          <!-- MAÑANA -->
-          <div class="col-md-6">
-            <div class="card border-0 shadow-sm h-100" style="border-radius:12px; border-top: 4px solid #0d6efd !important;">
-              <div class="card-body p-3">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                  <span class="badge bg-primary bg-opacity-10 text-primary px-2 py-1 rounded-pill fw-bold" style="font-size: 11px;">TURNO MAÑANA</span>
-                  <i class="bi bi-sun fs-5 text-warning"></i>
-                </div>
-                
-                <div class="row text-center my-2">
-                  <div class="col-4 border-end">
-                    <div class="small fw-bold text-muted mb-0" style="font-size: 10px;">SOLES</div>
-                    <div class="fs-5 fw-bold text-dark">S/ {{ formatMoney(reporte.MAÑANA.PEN) }}</div>
-                  </div>
-                  <div class="col-4 border-end">
-                    <div class="small fw-bold text-muted mb-0" style="font-size: 10px;">DÓLARES</div>
-                    <div class="fs-5 fw-bold text-primary">$ {{ formatMoney(reporte.MAÑANA.USD) }}</div>
-                  </div>
-                  <div class="col-4">
-                    <div class="small fw-bold text-muted mb-0" style="font-size: 10px;">PESOS</div>
-                    <div class="fs-5 fw-bold text-success">$ {{ formatMoney(reporte.MAÑANA.CLP, 0) }}</div>
-                  </div>
-                </div>
-
-                <div class="mt-2 p-2 bg-light rounded border border-light">
-                  <div class="small fw-bold text-secondary mb-0" style="font-size: 11px;"><i class="bi bi-scissors me-1"></i>Extracciones:</div>
-                  <div class="small text-muted italic" style="font-size: 11px;" v-html="reporte.MAÑANA.egresos_detalle || 'Ninguna'"></div>
-                </div>
-              </div>
+    <div v-else class="space-y-8">
+      <!-- LAS 3 GRANDES TARJETAS RESUMEN DEL MES -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Ingresos -->
+        <div class="bg-white border border-slate-200/60 rounded-3xl p-6 shadow-xl shadow-slate-100 relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
+          <div class="absolute -right-6 -top-6 w-24 h-24 bg-blue-500/10 rounded-full blur-xl pointer-events-none"></div>
+          <div class="flex items-center justify-between mb-4">
+            <span class="bg-blue-50 text-blue-600 border border-blue-200/60 px-3 py-1 rounded-full text-xs font-extrabold tracking-wider uppercase flex items-center gap-1.5">
+              <i class="bi bi-arrow-down-left-circle-fill"></i> Ingresos Efectivo
+            </span>
+            <div class="w-10 h-10 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600">
+              <i class="bi bi-cash-stack text-lg"></i>
             </div>
           </div>
-
-          <!-- TARDE -->
-          <div class="col-md-6">
-            <div class="card border-0 shadow-sm h-100" style="border-radius:12px; border-top: 4px solid #e65100 !important;">
-              <div class="card-body p-3">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                  <span class="badge bg-orange-subtle text-orange px-2 py-1 rounded-pill fw-bold" style="background-color: #fff3e0; color: #e65100; font-size: 11px;">TURNO TARDE</span>
-                  <i class="bi bi-moon-stars fs-5 text-primary"></i>
-                </div>
-                
-                <div class="row text-center my-2">
-                  <div class="col-4 border-end">
-                    <div class="small fw-bold text-muted mb-0" style="font-size: 10px;">SOLES</div>
-                    <div class="fs-5 fw-bold text-dark">S/ {{ formatMoney(reporte.TARDE.PEN) }}</div>
-                  </div>
-                  <div class="col-4 border-end">
-                    <div class="small fw-bold text-muted mb-0" style="font-size: 10px;">DÓLARES</div>
-                    <div class="fs-5 fw-bold text-primary">$ {{ formatMoney(reporte.TARDE.USD) }}</div>
-                  </div>
-                  <div class="col-4">
-                    <div class="small fw-bold text-muted mb-0" style="font-size: 10px;">PESOS</div>
-                    <div class="fs-5 fw-bold text-success">$ {{ formatMoney(reporte.TARDE.CLP, 0) }}</div>
-                  </div>
-                </div>
-
-                <div class="mt-2 p-2 bg-light rounded border border-light">
-                  <div class="small fw-bold text-secondary mb-0" style="font-size: 11px;"><i class="bi bi-scissors me-1"></i>Extracciones:</div>
-                  <div class="small text-muted italic" style="font-size: 11px;" v-html="reporte.TARDE.egresos_detalle || 'Ninguna'"></div>
-                </div>
-              </div>
-            </div>
+          <div class="text-3xl font-black text-slate-900 tracking-tight">
+            S/ {{ formatMoney(totalesMes.ingresos.PEN) }}
           </div>
-        </div>
-        <!-- RESUMEN MENSUAL (diseño alternativo, aparece abajo en MENSUAL) -->
-        <div v-if="modo === 'mensual'" class="card border-0 shadow-sm mb-2" style="border-radius:10px; border-left:6px solid #1b5e20; background:#ffffff;">
-          <div class="card-body p-3 px-4">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <div>
-                <div class="small text-muted">Resumen Mensual</div>
-                <div class="h6 fw-bold mb-0">Totales del mes seleccionado</div>
-              </div>
-              <div class="text-end small text-muted">{{ meses[mesFiltro-1] }} {{ anioFiltro }}</div>
-            </div>
-
-            <div class="row text-center align-items-center g-0">
-              <div class="col-4">
-                <div class="small text-muted mb-0" style="font-size: 11px;">TOTAL SOLES</div>
-                <h4 class="fw-bold mb-0 text-dark">S/ {{ formatMoney(totalSoles) }}</h4>
-              </div>
-              <div class="col-4 border-start" style="border-left:1px solid rgba(0,0,0,0.05)">
-                <div class="small text-muted mb-0" style="font-size: 11px;">TOTAL DÓLARES</div>
-                <h4 class="fw-bold mb-0 text-primary">$ {{ formatMoney(reporte.MAÑANA.USD + reporte.TARDE.USD) }}</h4>
-              </div>
-              <div class="col-4 border-start" style="border-left:1px solid rgba(0,0,0,0.05)">
-                <div class="small text-muted mb-0" style="font-size: 11px;">TOTAL PESOS</div>
-                <h4 class="fw-bold mb-0 text-success">$ {{ formatMoney(reporte.MAÑANA.CLP + reporte.TARDE.CLP,0) }}</h4>
-              </div>
-            </div>
+          <div class="mt-3 flex items-center gap-3 text-xs font-bold text-slate-500 bg-slate-50/80 p-2.5 rounded-xl border border-slate-100">
+            <span class="flex items-center gap-1"><span class="text-sm">🇺🇸</span> $ {{ formatMoney(totalesMes.ingresos.USD) }} USD</span>
+            <span class="text-slate-300">|</span>
+            <span class="flex items-center gap-1"><span class="text-sm">🇨🇱</span> $ {{ formatMoney(totalesMes.ingresos.CLP, 0) }} CLP</span>
           </div>
         </div>
 
-        <!-- TOTAL CONSOLIDADO (mostrar arriba sólo en DIARIO) -->
-        <div v-if="modo === 'diario'" class="card border-0 shadow text-white mb-2" style="border-radius:12px; background: linear-gradient(135deg, #1b5e20, #2e7d32);">
-          <div class="card-body p-3 px-4">
-            <div class="text-center mb-2 opacity-75 fw-bold" style="letter-spacing: 1px; font-size: 10px;">Entrega Consolidada de Efectivo</div>
-            
-            <div class="row text-center align-items-center g-0">
-              <div class="col-4">
-                <div class="small opacity-75 mb-0" style="font-size: 9px;">TOTAL SOLES</div>
-                <h4 class="fw-bold mb-0">S/ {{ formatMoney(totalSoles) }}</h4>
-              </div>
-              <div class="col-4 border-start border-white border-opacity-25">
-                <div class="small opacity-75 mb-0" style="font-size: 9px;">TOTAL DÓLARES</div>
-                <h4 class="fw-bold mb-0">$ {{ formatMoney(reporte.MAÑANA.USD + reporte.TARDE.USD) }}</h4>
-              </div>
-              <div class="col-4 border-start border-white border-opacity-25">
-                <div class="small opacity-75 mb-0" style="font-size: 9px;">TOTAL PESOS</div>
-                <h4 class="fw-bold mb-0">$ {{ formatMoney(reporte.MAÑANA.CLP + reporte.TARDE.CLP, 0) }}</h4>
-              </div>
+        <!-- Extracciones -->
+        <div class="bg-white border border-slate-200/60 rounded-3xl p-6 shadow-xl shadow-slate-100 relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
+          <div class="absolute -right-6 -top-6 w-24 h-24 bg-rose-500/10 rounded-full blur-xl pointer-events-none"></div>
+          <div class="flex items-center justify-between mb-4">
+            <span class="bg-rose-50 text-rose-600 border border-rose-200/60 px-3 py-1 rounded-full text-xs font-extrabold tracking-wider uppercase flex items-center gap-1.5">
+              <i class="bi bi-arrow-up-right-circle-fill"></i> Retiros y Egresos
+            </span>
+            <div class="w-10 h-10 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600">
+              <i class="bi bi-wallet2 text-lg"></i>
             </div>
           </div>
-        </div>
-        <!-- Lista de días para vista mensual -->
-        <div v-if="modo === 'mensual'" class="mt-3">
-          <div v-for="dia in dias" :key="dia.fecha" class="mb-3">
-            <div class="card shadow-sm border-0">
-              <div class="card-body p-3">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                  <div class="fw-bold">{{ formatDate(dia.fecha) }}</div>
-                </div>
-
-                <div class="row g-3">
-                  <div class="col-md-6">
-                    <div class="card border-0 h-100" style="border-radius:10px; border-top: 3px solid #0d6efd;">
-                      <div class="card-body p-2 text-center">
-                        <div class="small fw-bold text-muted" style="font-size: 10px;">SOLES</div>
-                        <div class="fs-6 fw-bold">S/ {{ formatMoney(dia.MAÑANA.PEN) }}</div>
-                        <div class="small fw-bold text-secondary mt-2">Extracciones:</div>
-                        <div class="small text-muted" v-html="dia.MAÑANA.egresos_detalle || 'Ninguna'"></div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col-md-6">
-                    <div class="card border-0 h-100" style="border-radius:10px; border-top: 3px solid #e65100;">
-                      <div class="card-body p-2 text-center">
-                        <div class="small fw-bold text-muted" style="font-size: 10px;">SOLES</div>
-                        <div class="fs-6 fw-bold">S/ {{ formatMoney(dia.TARDE.PEN) }}</div>
-                        <div class="small fw-bold text-secondary mt-2">Extracciones:</div>
-                        <div class="small text-muted" v-html="dia.TARDE.egresos_detalle || 'Ninguna'"></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="card border-0 shadow text-white mt-3" style="border-radius:8px; background: linear-gradient(135deg, #1b5e20, #2e7d32);">
-                  <div class="card-body p-2 text-center">
-                    <div class="small opacity-75" style="font-size: 10px;">TOTAL DEL DÍA</div>
-                    <div class="fw-bold fs-5">S/ {{ formatMoney(dia.TOTAL.PEN) }} &nbsp; | &nbsp; $ {{ formatMoney(dia.TOTAL.USD) }} &nbsp; | &nbsp; $ {{ formatMoney(dia.TOTAL.CLP,0) }}</div>
-                    <div class="small text-light mt-1">{{ formatDate(dia.fecha) }}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div class="text-3xl font-black text-rose-600 tracking-tight">
+            - S/ {{ formatMoney(totalesMes.egresos.PEN) }}
+          </div>
+          <div class="mt-3 flex items-center gap-3 text-xs font-bold text-slate-500 bg-rose-50/50 p-2.5 rounded-xl border border-rose-100/50">
+            <span class="flex items-center gap-1"><span class="text-sm">🇺🇸</span> - $ {{ formatMoney(totalesMes.egresos.USD) }} USD</span>
+            <span class="text-rose-200">|</span>
+            <span class="flex items-center gap-1"><span class="text-sm">🇨🇱</span> - $ {{ formatMoney(totalesMes.egresos.CLP, 0) }} CLP</span>
           </div>
         </div>
 
-        <div class="alert alert-warning border-0 shadow-sm py-2 px-3 mb-0 d-flex align-items-center" style="font-size: 11px;">
-            <i class="bi bi-info-circle-fill me-2"></i>
-            <div v-if="modo === 'diario'">
-              <strong>Nota:</strong> Los montos mostrados corresponden al cierre de sobres del día seleccionado.
+        <!-- Fondo Neto Acumulado -->
+        <div class="bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900 text-white rounded-3xl p-7 shadow-2xl shadow-emerald-900/30 relative overflow-hidden transition-all duration-300 hover:scale-[1.02]">
+          <div class="absolute right-0 top-0 w-64 h-64 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none"></div>
+          <div class="absolute -left-10 -bottom-10 w-48 h-48 bg-teal-500/20 rounded-full blur-2xl pointer-events-none"></div>
+          <div class="flex items-center justify-between mb-4 relative z-10">
+            <span class="bg-white/10 backdrop-blur-md text-emerald-200 border border-white/20 px-3.5 py-1 rounded-full text-xs font-extrabold tracking-wider uppercase flex items-center gap-2">
+              <i class="bi bi-shield-check text-emerald-400"></i> Fondo Neto en Caja
+            </span>
+            <div class="w-10 h-10 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 flex items-center justify-center text-emerald-300">
+              <i class="bi bi-safe2 text-xl"></i>
             </div>
-            <div v-else>
-              <strong>Nota:</strong> Los montos mostrados son el total consolidado del mes seleccionado.
-            </div>
-        </div>
-
-        <!-- Panel de depuración (solo visible con Debug activado) -->
-        <div v-if="debug" class="card mt-3">
-          <div class="card-body p-3" style="font-size:13px;">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <strong>Debug - Respuesta cruda</strong>
-              <div>
-                <span class="small text-muted me-2">[URL]</span>
-                <code class="small">{{ lastUrl }}</code>
-                <button class="btn btn-sm btn-outline-secondary ms-2" @click="debug = false">Cerrar</button>
-              </div>
-            </div>
-            <div class="mb-2 small text-muted">Filtros: Mes {{ mesFiltro }}, Año {{ anioFiltro }}, Modo: {{ modo }}</div>
-            <pre style="max-height:220px; overflow:auto; background:#f8f9fa; padding:10px; border-radius:6px;">{{ lastResponseStr }}</pre>
-            <div class="mt-2"><strong>Consolidado calculado:</strong></div>
-            <pre style="max-height:120px; overflow:auto; background:#f8f9fa; padding:10px; border-radius:6px;">{{ lastConsolidadoStr }}</pre>
+          </div>
+          <div class="text-4xl font-black text-white tracking-tight relative z-10 flex items-baseline gap-2">
+            <span class="text-emerald-400 font-bold text-2xl">S/</span> {{ formatMoney(totalesMes.neto.PEN) }}
+          </div>
+          <div class="mt-4 flex items-center gap-3 text-xs font-bold text-emerald-100/80 bg-white/10 backdrop-blur-md p-3 rounded-2xl border border-white/10 relative z-10">
+            <span class="flex items-center gap-1.5"><span class="text-sm">🇺🇸</span> $ {{ formatMoney(totalesMes.neto.USD) }} USD</span>
+            <span class="text-emerald-500/60">|</span>
+            <span class="flex items-center gap-1.5"><span class="text-sm">🇨🇱</span> $ {{ formatMoney(totalesMes.neto.CLP, 0) }} CLP</span>
           </div>
         </div>
-
       </div>
+
+      <!-- BANNER DE TÍTULO DE LA MATRIZ DE DÍAS -->
+      <div class="flex items-center justify-between pt-4 border-b border-slate-200/80 pb-3">
+        <div class="flex items-center gap-3">
+          <div class="w-3 h-8 rounded-lg bg-emerald-500"></div>
+          <h2 class="text-xl font-bold text-slate-900 tracking-tight">Desglose Diario Consolidado</h2>
+        </div>
+        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Matriz de 31 Bloques</span>
+      </div>
+
+      <!-- MATRIZ COMPACTA DE 31 TARJETAS DIARIAS (ESTILO CALENDARIO PREMIUM) -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 gap-3.5">
+        <div v-for="dia in dias" :key="dia.fecha" 
+             class="bg-white rounded-2xl border border-slate-200/80 p-3.5 shadow-xs flex flex-col justify-between transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-emerald-500/40 group relative overflow-hidden min-w-0"
+             :class="{'ring-1 ring-emerald-500/30 bg-gradient-to-b from-emerald-50/30 via-white to-white': dia.TOTAL.PEN > 0 || dia.TOTAL.USD > 0 || dia.TOTAL.CLP > 0}">
+          
+          <div v-if="dia.TOTAL.PEN > 0 || dia.TOTAL.USD > 0 || dia.TOTAL.CLP > 0" class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-500"></div>
+          
+          <div>
+            <!-- Encabezado de la Tarjeta -->
+            <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+              <span class="font-extrabold text-slate-900 text-xs group-hover:text-emerald-600 transition-colors whitespace-nowrap tracking-tight">
+                {{ formatDateShort(dia.fecha) }}
+              </span>
+              <span class="px-2 py-0.5 rounded-md text-[9px] font-black tracking-wider uppercase whitespace-nowrap flex items-center gap-1"
+                    :class="(dia.TOTAL.PEN > 0 || dia.TOTAL.USD > 0 || dia.TOTAL.CLP > 0) ? 'bg-emerald-100/80 text-emerald-700' : 'bg-slate-100 text-slate-400'">
+                <i class="bi" :class="(dia.TOTAL.PEN > 0 || dia.TOTAL.USD > 0 || dia.TOTAL.CLP > 0) ? 'bi-check-circle-fill text-[8px]' : 'bi-dash-circle text-[8px]'"></i>
+                {{ (dia.TOTAL.PEN > 0 || dia.TOTAL.USD > 0 || dia.TOTAL.CLP > 0) ? 'ACTIVO' : 'SIN MOVS' }}
+              </span>
+            </div>
+
+            <!-- Métricas Comprimidas -->
+            <div class="space-y-1.5 text-[11px] font-medium">
+              <!-- Soles -->
+              <div class="flex items-center justify-between p-1.5 px-2 rounded-xl bg-slate-50/90 group-hover:bg-emerald-50/60 transition-colors">
+                <span class="flex items-center gap-1 text-slate-500 font-semibold whitespace-nowrap flex-shrink-0 text-[10.5px]">
+                  <span>🇵🇪</span> Soles
+                </span>
+                <span class="font-black text-slate-900 text-[11.5px] whitespace-nowrap pl-1">
+                  S/ {{ formatMoney(dia.TOTAL.PEN) }}
+                </span>
+              </div>
+
+              <!-- Dólares -->
+              <div class="flex items-center justify-between p-1.5 px-2 rounded-xl bg-slate-50/90 group-hover:bg-emerald-50/60 transition-colors">
+                <span class="flex items-center gap-1 text-slate-500 font-semibold whitespace-nowrap flex-shrink-0 text-[10.5px]">
+                  <span>🇺🇸</span> Dólares
+                </span>
+                <span class="font-black text-blue-600 text-[11.5px] whitespace-nowrap pl-1">
+                  $ {{ formatMoney(dia.TOTAL.USD) }}
+                </span>
+              </div>
+
+              <!-- Pesos -->
+              <div class="flex items-center justify-between p-1.5 px-2 rounded-xl bg-slate-50/90 group-hover:bg-emerald-50/60 transition-colors">
+                <span class="flex items-center gap-1 text-slate-500 font-semibold whitespace-nowrap flex-shrink-0 text-[10.5px]">
+                  <span>🇨🇱</span> Pesos
+                </span>
+                <span class="font-black text-emerald-600 text-[11.5px] whitespace-nowrap pl-1">
+                  $ {{ formatMoney(dia.TOTAL.CLP, 0) }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Retiros / Extracciones Comprimidos -->
+          <div v-if="getDetalleExtractions(dia)" class="mt-3 pt-2 border-t border-dashed border-rose-200">
+            <div class="bg-rose-50 border border-rose-100 rounded-xl p-2 text-rose-700 text-[11px] flex items-start gap-1.5 group-hover:bg-rose-100/60 transition-colors">
+              <i class="bi bi-box-arrow-up-right text-rose-500 text-xs mt-0.5 flex-shrink-0"></i>
+              <div class="font-bold tracking-tight text-ellipsis overflow-hidden">
+                <div class="text-[9px] uppercase font-black tracking-wider text-rose-500 mb-0.5 whitespace-nowrap">Retiros Registrados</div>
+                <span :title="getDetalleExtractions(dia)" class="line-clamp-2 text-[10.5px] leading-tight">
+                  {{ getDetalleExtractions(dia) }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div v-else class="mt-3 pt-2 border-t border-slate-100 text-center">
+            <span class="text-[10px] text-slate-300 uppercase tracking-wider font-bold whitespace-nowrap">Sin retiros del sobre</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel Debug -->
+      <div v-if="debug" class="bg-slate-900 text-slate-200 rounded-3xl p-6 shadow-2xl overflow-hidden font-mono text-xs space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-indigo-500"></span>
+            <span class="font-bold text-white text-sm">Terminal Debug - JSON Crudo</span>
+          </div>
+          <button @click="debug = false" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-xl transition-colors font-sans font-bold">
+            Cerrar Terminal
+          </button>
+        </div>
+        <div class="text-slate-400">
+          <span class="text-indigo-400">[URL Endpoint]</span> {{ lastUrl }}
+        </div>
+        <pre class="bg-slate-950 p-4 rounded-2xl max-h-96 overflow-auto text-emerald-400 leading-relaxed">{{ lastResponseStr }}</pre>
+      </div>
+
     </div>
-  </div>
+  </main>
 </div>
 
 <script>
@@ -265,21 +274,10 @@ $fecha = $_GET['fecha'] ?? date('Y-m-d');
 
 <style>
   [v-cloak] { display: none !important; }
-  .text-orange { color: #e65100 !important; }
-  .bg-orange-subtle { background-color: #fff3e0 !important; }
-
-  @media (max-width: 768px) {
-    .main-content { padding: 0 !important; }
-    .page-body { padding: 12px 10px !important; }
-    .topbar h4 { font-size: 1.1rem; }
-    .topbar input[type="date"] { width: 110px !important; padding: 4px 6px !important; }
-    
-    .fs-5 { font-size: 1.1rem !important; }
-    h4 { font-size: 1.25rem !important; }
-    
-    .card-body { padding: 12px !important; }
-    .badge { font-size: 9px !important; padding: 4px 8px !important; }
-  }
+  /* Ocultar barra de desplazamiento en tarjetas si es necesario */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+  ::-webkit-scrollbar-track { background: transparent; }
 </style>
 
-<?php include $base . 'includes/footer.php'; ?>
+<?php include $_projectRoot . '/includes/footer.php'; ?>

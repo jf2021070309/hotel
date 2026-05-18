@@ -72,6 +72,32 @@ createApp({
     /** @type {Object} Tipos de cambio del día para visualización. */
     const tc = reactive({ USD: 3.7, CLP: 0.0039 });
 
+    /** @type {Object} Totales acumulados netos del mes en curso. */
+    const acumuladoMensual = reactive({
+      PEN: '0.00',
+      USD: '0.00',
+      CLP: '0'
+    });
+
+    const loadAcumuladoMensual = async () => {
+      if (!cabecera.fecha) return;
+      const parts = cabecera.fecha.split('-');
+      if (parts.length < 2) return;
+      const anio = parts[0];
+      const mes  = parseInt(parts[1], 10);
+      try {
+        const res = await axios.get(`${BASE}resumen_alex_mensual&mes=${mes}&anio=${anio}`);
+        if (res.data.ok && res.data.data?.totales?.neto) {
+          const neto = res.data.data.totales.neto;
+          acumuladoMensual.PEN = parseFloat(neto.PEN || 0).toFixed(2);
+          acumuladoMensual.USD = parseFloat(neto.USD || 0).toFixed(2);
+          acumuladoMensual.CLP = parseFloat(neto.CLP || 0).toFixed(0);
+        }
+      } catch (e) {
+        console.error('Error cargando acumulado mensual:', e);
+      }
+    };
+
     /**
      * Carga inicial de datos: categorías y detalle del turno si es edición.
      * @async
@@ -99,8 +125,8 @@ createApp({
             egresos.value  = (d.egresos || []).map(e => ({
               ...e,
               _usaSobre: !!(e.sobre_fecha || e.sobre_turno),
-              sobre_fecha: e.sobre_fecha || '',
-              sobre_turno: e.sobre_turno || 'MAÑANA'
+              sobre_fecha: e.sobre_fecha || cabecera.fecha,
+              sobre_turno: e.sobre_turno || cabecera.turno
             }));
             
             if (d.tc) {
@@ -117,6 +143,8 @@ createApp({
           cabecera.nota_entrega = '';
           setTimeout(() => triggerAutoSave(), 500); 
         }
+
+        await loadAcumuladoMensual();
 
       } catch (e) {
         console.error(e);
@@ -161,25 +189,22 @@ createApp({
     });
 
     /**
-     * Saldo neto de Efectivo en Soles (PEN) que debe estar en el sobre físico.
+     * Saldo de Efectivo en Soles (PEN) ingresado en este turno.
      * @type {ComputedRef<string>}
      */
     const efectivoEnSobrePEN = computed(() => {
       let inEfectivoPEN = ingresos.value.filter(m => m.medio_pago === 'EFECTIVO' && m.moneda === 'PEN').reduce((acc, m) => acc + (parseFloat(m.monto)||0), 0);
-      let egEfectivoPEN = egresos.value.filter(m => m.medio_pago === 'EFECTIVO' && m.moneda === 'PEN').reduce((acc, m) => acc + (parseFloat(m.monto)||0), 0);
-      return (inEfectivoPEN - egEfectivoPEN).toFixed(2);
+      return inEfectivoPEN.toFixed(2);
     });
 
     const efectivoEnSobreUSD = computed(() => {
       let inEfectivo = ingresos.value.filter(m => m.medio_pago === 'EFECTIVO' && m.moneda === 'USD').reduce((acc, m) => acc + (parseFloat(m.monto)||0), 0);
-      let egEfectivo = egresos.value.filter(m => m.medio_pago === 'EFECTIVO' && m.moneda === 'USD').reduce((acc, m) => acc + (parseFloat(m.monto)||0), 0);
-      return (inEfectivo - egEfectivo).toFixed(2);
+      return inEfectivo.toFixed(2);
     });
 
     const efectivoEnSobreCLP = computed(() => {
       let inEfectivo = ingresos.value.filter(m => m.medio_pago === 'EFECTIVO' && m.moneda === 'CLP').reduce((acc, m) => acc + (parseFloat(m.monto)||0), 0);
-      let egEfectivo = egresos.value.filter(m => m.medio_pago === 'EFECTIVO' && m.moneda === 'CLP').reduce((acc, m) => acc + (parseFloat(m.monto)||0), 0);
-      return (inEfectivo - egEfectivo).toFixed(0);
+      return inEfectivo.toFixed(0);
     });
 
     /**
@@ -190,6 +215,7 @@ createApp({
       if (!esEditable.value) return;
       const t = tipo === 'ingresos' ? 'Ingreso' : 'Egreso';
       const arr = tipo === 'ingresos' ? ingresos : egresos;
+      const usaSobre = tipo === 'egresos';
       arr.value.push({
         categoria_id: null,
         categoria: '',
@@ -198,9 +224,9 @@ createApp({
         monto: '',
         medio_pago: 'EFECTIVO',
         observacion: '',
-        _usaSobre: false,
+        _usaSobre: usaSobre,
         sobre_fecha: cabecera.fecha,
-        sobre_turno: 'MAÑANA'
+        sobre_turno: cabecera.turno
       });
     };
 
@@ -257,6 +283,10 @@ createApp({
       updateBadgeEstado();
     });
 
+    watch(() => cabecera.fecha, () => {
+      loadAcumuladoMensual();
+    });
+
     /**
      * Persiste los datos del turno en el servidor.
      * Puede opcionalmente cerrar el turno permanentemente.
@@ -300,6 +330,7 @@ createApp({
         if (res.data.ok) {
           id.value = res.data.data.id; 
           esNuevo.value = false;
+          loadAcumuladoMensual();
           
           if (cerrarFinal) {
             const resCerrar = await axios.post(`${BASE}cerrar`, { id: id.value });
@@ -388,7 +419,7 @@ createApp({
     return {
       loading, isSaving, esNuevo, esEditable,
       cabecera, ingresos, egresos, categorias,
-      totalesDia, efectivoEnSobrePEN, efectivoEnSobreUSD, efectivoEnSobreCLP,
+      totalesDia, efectivoEnSobrePEN, efectivoEnSobreUSD, efectivoEnSobreCLP, acumuladoMensual,
       agregarMovimiento, eliminarMovimiento, onCategoriaChange, guardarTurno, marcarDepositado, reabrirTurno,
       SERVER_DATA,
       focusedField, fmtMonto

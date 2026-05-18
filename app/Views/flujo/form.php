@@ -162,7 +162,7 @@ $turnoQuery = $_GET['turno'] ?? 'MAÑANA';
                     <th style="width:12%;">MONEDA</th>
                     <th style="width:12%;">MONTO</th>
                     <th style="width:30%;">OBSERVACIÓN</th>
-                    <th style="width:21%;">DE SOBRE?</th>
+                    <th style="width:21%;">DESCONTA DE FONDO</th>
                     <th style="width:5%;" v-if="esEditable"></th>
                   </tr>
                 </thead>
@@ -210,17 +210,13 @@ $turnoQuery = $_GET['turno'] ?? 'MAÑANA';
                       </div>
                     </td>
                     <td>
-                        <div v-if="mov.medio_pago === 'EFECTIVO'" class="d-flex flex-column gap-1">
+                        <div v-if="mov.medio_pago === 'EFECTIVO'" class="d-flex align-items-center gap-2">
                             <div class="form-check form-switch mb-0">
                                 <input class="form-check-input" type="checkbox" :id="'chkSobre' + index" v-model="mov._usaSobre" :disabled="!esEditable">
-                                <label class="form-check-label" :for="'chkSobre' + index" style="font-size: 9px;">Vincular</label>
-                            </div>
-                            <div v-if="mov._usaSobre" class="d-flex gap-1 animate__animated animate__fadeIn">
-                                <input type="date" class="form-control form-control-sm p-1" v-model="mov.sobre_fecha" :disabled="!esEditable" style="font-size: 10px; width: 105px;">
-                                <select class="form-select form-select-sm p-1" v-model="mov.sobre_turno" :disabled="!esEditable" style="font-size: 10px; width: 75px;">
-                                    <option value="MAÑANA">MAÑ.</option>
-                                    <option value="TARDE">TARD.</option>
-                                </select>
+                                <label class="form-check-label fw-bold" :for="'chkSobre' + index" style="font-size: 11px;">
+                                    <span v-if="mov._usaSobre" class="text-success"><i class="bi bi-check-circle-fill me-1"></i>Fondo Mensual</span>
+                                    <span v-else class="text-muted"><i class="bi bi-x-circle me-1"></i>No descontar</span>
+                                </label>
                             </div>
                         </div>
                         <div v-else class="text-muted small italic" style="font-size: 10px;">Solo efectivo</div>
@@ -264,21 +260,27 @@ $turnoQuery = $_GET['turno'] ?? 'MAÑANA';
               <span class="fw-bold fs-6 text-danger">- S/ {{ totalesDia.egreso_pen }}</span>
             </div>
             
-            <div class="alert alert-success border-2 text-center py-3 mb-4">
+            <div class="alert alert-success border-2 text-center py-3 mb-3 shadow-sm">
               <div class="small fw-bold text-success mb-1" style="letter-spacing:1px;">SE ENTREGA A ALEX (S/ SOBRE)</div>
               <h2 class="mb-0 fw-bold">S/ {{ efectivoEnSobrePEN }}</h2>
-              <div class="small text-muted mt-1">(Neto del sobre en soles)</div>
+              <div class="small text-muted mt-1">(Ingresos en efectivo del turno)</div>
+            </div>
+
+            <div class="alert alert-warning border-2 text-center py-3 mb-4 shadow-sm" style="background-color: #fffbeb; border-color: #f59e0b;">
+              <div class="small fw-bold mb-1" style="color: #b45309; letter-spacing:1px;">ACUMULADO MENSUAL NETO DEL SOBRE</div>
+              <h2 class="mb-0 fw-bold" style="color: #b45309;">S/ {{ acumuladoMensual.PEN }}</h2>
+              <div class="small mt-1" style="color: #d97706;">(Ingresos del mes - Egresos del mes)</div>
             </div>
 
             <div class="mb-4">
-              <div class="text-muted small fw-bold mb-2">EXTRANJERO FÍSICO (SOBRE):</div>
-              <div class="d-flex justify-content-between align-items-center mb-1 bg-white p-2 rounded">
+              <div class="text-muted small fw-bold mb-2">EXTRANJERO FÍSICO (ENTREGA TURNO / MES):</div>
+              <div class="d-flex justify-content-between align-items-center mb-1 bg-white p-2 rounded shadow-sm">
                 <span class="fw-bold text-success"><i class="bi bi-cash me-1"></i>USD Dólares</span>
-                <span class="fw-bold">$ {{ efectivoEnSobreUSD }}</span>
+                <span class="fw-bold">$ {{ efectivoEnSobreUSD }} <span class="text-muted small" style="font-size:11px;">(Mes: $ {{ acumuladoMensual.USD }})</span></span>
               </div>
-              <div class="d-flex justify-content-between align-items-center bg-white p-2 rounded">
+              <div class="d-flex justify-content-between align-items-center bg-white p-2 rounded shadow-sm">
                 <span class="fw-bold text-primary"><i class="bi bi-cash-stack me-1"></i>CLP Pesos</span>
-                <span class="fw-bold">$ {{ efectivoEnSobreCLP }}</span>
+                <span class="fw-bold">$ {{ efectivoEnSobreCLP }} <span class="text-muted small" style="font-size:11px;">(Mes: $ {{ acumuladoMensual.CLP }})</span></span>
               </div>
             </div>
 

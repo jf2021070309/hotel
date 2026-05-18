@@ -23,8 +23,17 @@ include $_projectRoot . '/includes/sidebar.php';
   .cuadro-wrapper {
     overflow-x: auto;
     overflow-y: auto;
-    flex: 1 1 auto;     /* grow to fill remaining space */
+    flex: 1 1 auto;
     border-radius: 0 0 10px 10px;
+    cursor: grab;
+    user-select: none;
+  }
+  .cuadro-wrapper.grabbing {
+    cursor: grabbing !important;
+  }
+  .cuadro-wrapper.grabbing * {
+    cursor: grabbing !important;
+    user-select: none;
   }
 
   /* ── Table ─────────────────────────────────────────────── */
@@ -96,6 +105,29 @@ include $_projectRoot . '/includes/sidebar.php';
     background: #FFFDE7 !important;
   }
 
+  /* ── Footer Totales PAX ────────────────────────────────── */
+  .cuadro-table tfoot th,
+  .cuadro-table tfoot td {
+    background: #111111;
+    color: #fff;
+    font-weight: 700;
+    position: sticky;
+    bottom: 0;
+    z-index: 25;
+    border-top: 2px solid #d4af37;
+    height: 34px;
+  }
+  .cuadro-table tfoot td.col-hab {
+    left: 0;
+    z-index: 35;
+    background: #111111;
+    color: #d4af37;
+    border-right: 2px solid #c0c0c0;
+  }
+  .cuadro-table tfoot td.today-col-tot {
+    background: #A68966 !important;
+  }
+
   /* ── Hover Highlighting ─────────────────────────────────── */
   .cuadro-table tbody tr:hover td.col-hab {
     background-color: #f0f0f0 !important;
@@ -116,17 +148,20 @@ include $_projectRoot . '/includes/sidebar.php';
 
   /* ── Stay block ────────────────────────────────────────── */
   .stay-block {
-    border-radius: 3px;
-    padding: 2px 5px;
+    border-radius: 4px;
+    padding: 4px 6px 8px 6px;
     cursor: pointer;
     overflow: hidden;
     position: absolute;
     top: 1px;
     left: 1px;
     height: calc(100% - 2px);
+    box-sizing: border-box;
     display: flex;
     flex-direction: column;
     justify-content: center;
+    align-items: flex-start;
+    gap: 3px;
     transition: filter .15s, box-shadow .15s;
     border: 1px solid rgba(0,0,0,.08);
     z-index: 5;
@@ -151,24 +186,33 @@ include $_projectRoot . '/includes/sidebar.php';
   }
   .stay-block .titular {
     font-weight: 700;
-    font-size: 10px;
+    font-size: 11px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     line-height: 1.2;
+    display: block;
+    width: 100%;
+    text-align: left;
+    margin: 0;
   }
   .stay-block .badge-pax {
-    font-size: 8px;
-    padding: 1px 0;
-    display: inline-block;
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
     font-weight: 700;
-    margin-top: 1px;
+    margin: 0;
+    width: fit-content;
+    line-height: 1;
   }
 
   /* ── View-mode row heights ─────────────────────────────── */
-  .vm-compact tbody tr  { height: 26px; }
-  .vm-normal  tbody tr  { height: 36px; }
-  .vm-ampliado tbody tr { height: 50px; }
+  .vm-compact tbody tr  { height: 28px; }
+  .vm-normal  tbody tr  { height: 42px; }
+  .vm-ampliado tbody tr { height: 56px; }
 
   /* ── Room Categories ─────────────────────────────────── */
   .cat-triple      { border-left: 5px solid #3F51B5 !important; background: #E8EAF6 !important; }
@@ -191,7 +235,7 @@ include $_projectRoot . '/includes/sidebar.php';
   .res-inhouse { background: #0288D1 !important; color: #fff !important; border: 1px solid #01579B !important; }
   
   .res-booking .titular, .res-directo .titular, .res-inhouse .titular { color: #fff !important; }
-  .res-booking .badge-pax, .res-directo .badge-pax, .res-inhouse .badge-pax { background: transparent; color: #fff; }
+  .res-booking .badge-pax, .res-directo .badge-pax, .res-inhouse .badge-pax { background: rgba(0,0,0,0.25) !important; color: #fff !important; }
   
   /* Mantener el resto para otros elementos */
   .est-limpieza, .est-sucio { background: #9E9E9E; color: #fff; box-shadow: inset 0 0 10px rgba(0,0,0,0.1); }
@@ -528,14 +572,16 @@ include $_projectRoot . '/includes/sidebar.php';
                   :style="{ width: colWidth + 'px', height: rowHeight + 'px' }"
                   @click="onCeldaClick(hab, d)">
 
-                <!-- Stay block: only render on first day of stay -->
-                <div v-if="esInicioStay(hab, d)"
+                <!-- Stay block: render on every day of stay independently -->
+                <div v-if="getCeldaStay(hab, d)"
                      class="stay-block animate__animated animate__fadeIn shadow-sm"
                      :class="getStayColorClass(getCeldaStay(hab, d))"
-                     :style="{ width: (calcCols(getCeldaStay(hab, d)) * colWidth - 5) + 'px' }"
+                     :style="{ width: (colWidth - 3) + 'px' }"
                      @click.stop="abrirDetalle(getCeldaStay(hab, d))">
-                  <span class="titular">{{ getCeldaStay(hab, d).titular }}</span>
-                  <span v-if="viewMode !== 'compacto'" class="badge-pax">{{ getCeldaStay(hab, d).pax }} PAX</span>
+                  <span class="titular" :title="getCeldaStay(hab, d).titular">{{ getCeldaStay(hab, d).titular }}</span>
+                  <span v-if="viewMode !== 'compacto'" class="badge-pax">
+                    <i class="bi bi-people-fill"></i> {{ getCeldaStay(hab, d).pax }} PAX
+                  </span>
 
                   <!-- Micro-barra de pago -->
                   <div class="stay-progress-container">
@@ -560,6 +606,22 @@ include $_projectRoot . '/includes/sidebar.php';
               </td>
             </tr>
           </tbody>
+          <tfoot>
+            <tr class="row-totales-pax" style="height: 34px;">
+              <td class="col-hab fw-bold bg-dark text-warning" style="position: sticky; left: 0; z-index: 35; padding: 6px 10px; font-size: 11px;">
+                <i class="bi bi-people-fill me-2" style="color: #d4af37;"></i>TOTAL PAX
+              </td>
+              <td v-for="d in diasEnMes" :key="d" 
+                  class="col-day text-center fw-bold bg-dark text-white" 
+                  :class="{ 'today-col-tot': d === hoyDia && mesActual === mesHoy && anioActual === anioHoy }"
+                  style="vertical-align: middle; padding: 0; font-size: 11px;">
+                <span v-if="getPaxTotalDia(d) > 0" class="badge bg-warning text-dark px-2 py-1" style="font-size: 10px;">
+                  {{ getPaxTotalDia(d) }}
+                </span>
+                <span v-else class="text-muted" style="opacity: 0.3;">-</span>
+              </td>
+            </tr>
+          </tfoot>
         </table>
       </div>
     </div>

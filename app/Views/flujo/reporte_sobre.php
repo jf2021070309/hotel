@@ -84,14 +84,24 @@ foreach ($flujo['egresos'] as $mov) {
     ];
 }
 
-// Efectivo en sobre (Solo Ingresos EFECTIVO - Egresos EFECTIVO)
-$egresoEfectivo = 0;
-foreach ($flujo['egresos'] as $mov) {
-    if ($mov['medio_pago'] === 'EFECTIVO' || $mov['medio_pago'] === 'SOLES EFECTIVO' || $mov['medio_pago'] === 'DOLARES EFECTIVO' || $mov['medio_pago'] === 'PESOS EFECTIVO') {
-        $egresoEfectivo += $convertir($mov['monto'], $mov['moneda']);
+// Efectivo a entregar del turno (Solo Ingresos EFECTIVO)
+$efectivoEnSobre = $ingresoEfectivo;
+
+// Acumulado Mensual Neto
+$parts = explode('-', $flujo['fecha']);
+$anio = (int)($parts[0] ?? date('Y'));
+$mes  = (int)($parts[1] ?? date('n'));
+$resumenMensual = $model->getReporteAlexMensual($mes, $anio);
+$mensualSolesNeto = 0;
+$mensualDolaresNeto = 0;
+$mensualPesosNeto = 0;
+foreach ($resumenMensual as $diaItem) {
+    if (isset($diaItem['TOTAL'])) {
+        $mensualSolesNeto += (float)($diaItem['TOTAL']['PEN'] ?? 0);
+        $mensualDolaresNeto += (float)($diaItem['TOTAL']['USD'] ?? 0);
+        $mensualPesosNeto += (float)($diaItem['TOTAL']['CLP'] ?? 0);
     }
 }
-$efectivoEnSobre = $ingresoEfectivo - $egresoEfectivo;
 
 ?>
 <!DOCTYPE html>
@@ -213,14 +223,28 @@ $efectivoEnSobre = $ingresoEfectivo - $egresoEfectivo;
     </div>
     <?php endif; ?>
 
-    <!-- SOBRE FÍSICO -->
-    <div class="caja-final">
+    <!-- SOBRE FÍSICO (TURNO Y ACUMULADO MENSUAL) -->
+    <div class="caja-final mb-3">
         <div class="d-flex justify-content-between align-items-center">
             <div>
-                <div style="font-weight: bold; letter-spacing: 1px; color: #333;">EFECTIVO FÍSICO A ENTREGAR</div>
-                <div class="small mt-1" style="color: #666;">Total Ingresos en Efectivo - Total Egresos en Efectivo</div>
+                <div style="font-weight: bold; letter-spacing: 1px; color: #0056b3;">ENTREGA DE EFECTIVO DEL TURNO</div>
+                <div class="small mt-1" style="color: #666;">Ingresos cobrados en efectivo durante el turno</div>
             </div>
             <div class="monto-grande">S/ <?= number_format($efectivoEnSobre, 2) ?></div>
+        </div>
+    </div>
+
+    <div style="background: #fffbeb; border: 2px solid #f59e0b; padding: 15px; border-radius: 8px;">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <div style="font-weight: bold; letter-spacing: 1px; color: #b45309;">FONDO ACUMULADO MENSUAL (SOBRE NETO)</div>
+                <div class="small mt-1" style="color: #d97706;">Ingresos Efectivo del mes - Egresos Efectivo del mes</div>
+            </div>
+            <div style="font-size: 22px; font-weight: bold; color: #b45309;">S/ <?= number_format($mensualSolesNeto, 2) ?></div>
+        </div>
+        <div class="d-flex justify-content-between mt-2 pt-2 border-top border-warning small text-muted">
+            <span>Dólares (USD): $ <?= number_format($mensualDolaresNeto, 2) ?></span>
+            <span>Pesos (CLP): $ <?= number_format($mensualPesosNeto, 0) ?></span>
         </div>
     </div>
 

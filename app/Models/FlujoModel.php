@@ -369,7 +369,7 @@ class FlujoModel {
 
         foreach ($egresos as $e) {
             if (isset($reporte[$e['turno']])) {
-                $reporte[$e['turno']][$e['moneda']] -= (float)$e['total_egreso'];
+                // No restamos del turno diario porque los egresos descuentan del pozo mensual
                 $reporte[$e['turno']]['egresos_detalle'] = $e['detalle_egresos'];
             }
         }
@@ -379,6 +379,14 @@ class FlujoModel {
 
     public function getReporteAlexMensual(int $mes, int $anio): array {
         $reporte = [];
+        $diasEnMes = cal_days_in_month(CAL_GREGORIAN, $mes, $anio);
+        for ($d = 1; $d <= $diasEnMes; $d++) {
+            $f = sprintf("%04d-%02d-%02d", $anio, $mes, $d);
+            $reporte[$f] = $this->initDiaAlex();
+        }
+
+        $totIngresos = ['PEN' => 0, 'USD' => 0, 'CLP' => 0];
+        $totEgresos  = ['PEN' => 0, 'USD' => 0, 'CLP' => 0];
 
         // 1. Ingresos (Efectivo)
         $sqlIng = "
@@ -395,8 +403,9 @@ class FlujoModel {
         while ($row = $stmtIng->fetch(PDO::FETCH_ASSOC)) {
             $f = $row['fecha'];
             $t = $row['turno'];
-            if (!isset($reporte[$f])) $reporte[$f] = $this->initDiaAlex();
-            
+            if (isset($totIngresos[$row['moneda']])) {
+                $totIngresos[$row['moneda']] += (float)$row['total'];
+            }
             if (isset($reporte[$f][$t])) {
                 $reporte[$f][$t][$row['moneda']] += (float)$row['total'];
                 $reporte[$f]['TOTAL'][$row['moneda']] += (float)$row['total'];
@@ -421,11 +430,10 @@ class FlujoModel {
         while ($row = $stmtEgr->fetch(PDO::FETCH_ASSOC)) {
             $f = $row['fecha'];
             $t = $row['turno'];
-            if (!isset($reporte[$f])) $reporte[$f] = $this->initDiaAlex();
-            
+            if (isset($totEgresos[$row['moneda']])) {
+                $totEgresos[$row['moneda']] += (float)$row['total'];
+            }
             if (isset($reporte[$f][$t])) {
-                $reporte[$f][$t][$row['moneda']] -= (float)$row['total'];
-                $reporte[$f]['TOTAL'][$row['moneda']] -= (float)$row['total'];
                 if (!empty($row['detalle'])) {
                     $reporte[$f][$t]['egresos_detalle'] = (empty($reporte[$f][$t]['egresos_detalle']) ? '' : $reporte[$f][$t]['egresos_detalle'] . ', ') . $row['detalle'];
                 }
@@ -433,7 +441,18 @@ class FlujoModel {
         }
 
         ksort($reporte); // Asegurar orden cronológico
-        return $reporte;
+        return [
+            'dias' => $reporte,
+            'totales' => [
+                'ingresos' => $totIngresos,
+                'egresos'  => $totEgresos,
+                'neto'     => [
+                    'PEN' => $totIngresos['PEN'] - $totEgresos['PEN'],
+                    'USD' => $totIngresos['USD'] - $totEgresos['USD'],
+                    'CLP' => $totIngresos['CLP'] - $totEgresos['CLP']
+                ]
+            ]
+        ];
     }
 
     private function initDiaAlex(): array {

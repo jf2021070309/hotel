@@ -553,28 +553,28 @@ INSERT INTO `habitaciones` (`numero`, `tipo`, `piso`, `estado`, `precio_base`) V
 ('205', 'PLATINIUM SUITE',      2, 'libre', 300.00),
 
 ('301', 'TRIPLE',               3, 'libre', 500.00),
-('302', 'EJECUTIVA SUPERIOR',   3, 'libre', 0.00),
-('303', 'DOBLE',                3, 'libre', 0.00),
-('304', 'MATRIMONIAL SUPERIOR', 3, 'libre', 0.00),  
-('305', 'PLATINIUM SUITE',      3, 'libre', 0.00),
+('302', 'EJECUTIVA SUPERIOR',   3, 'libre', 150.00),
+('303', 'DOBLE',                3, 'libre', 180.00),
+('304', 'MATRIMONIAL SUPERIOR', 3, 'libre', 220.00),  
+('305', 'PLATINIUM SUITE',      3, 'libre', 260.00),
 
-('401', 'TRIPLE',               4, 'libre', 0.00),
-('402', 'EJECUTIVA SUPERIOR',   4, 'libre', 0.00),
-('403', 'DOBLE',                4, 'libre', 0.00),
-('404', 'MATRIMONIAL SUPERIOR', 4, 'libre', 0.00),  
-('405', 'PLATINIUM SUITE',      4, 'libre', 0.00),
+('401', 'TRIPLE',               4, 'libre', 200.00),
+('402', 'EJECUTIVA SUPERIOR',   4, 'libre', 150.00),
+('403', 'DOBLE',                4, 'libre', 180.00),
+('404', 'MATRIMONIAL SUPERIOR', 4, 'libre', 220.00),  
+('405', 'PLATINIUM SUITE',      4, 'libre', 260.00),
 
-('501', 'TRIPLE',               5, 'libre', 0.00),
-('502', 'EJECUTIVA SUPERIOR',   5, 'libre', 0.00),
-('503', 'DOBLE',                5, 'libre', 0.00),
-('504', 'MATRIMONIAL SUPERIOR', 5, 'libre', 0.00),
-('505', 'PLATINIUM SUITE',      5, 'libre', 0.00),
+('501', 'TRIPLE',               5, 'libre', 200.00),
+('502', 'EJECUTIVA SUPERIOR',   5, 'libre', 150.00),
+('503', 'DOBLE',                5, 'libre', 180.00),
+('504', 'MATRIMONIAL SUPERIOR', 5, 'libre', 220.00),
+('505', 'PLATINIUM SUITE',      5, 'libre', 260.00),
 
-('601', 'TRIPLE',               6, 'libre', 0.00),
-('602', 'EJECUTIVA SUPERIOR',   6, 'libre', 0.00),
-('603', 'DOBLE',                6, 'libre', 0.00),
-('604', 'MATRIMONIAL SUPERIOR', 6, 'libre', 0.00),  
-('605', 'PLATINIUM SUITE',      6, 'libre', 0.00);
+('601', 'TRIPLE',               6, 'libre', 200.00),
+('602', 'EJECUTIVA SUPERIOR',   6, 'libre', 150.00),
+('603', 'DOBLE',                6, 'libre', 180.00),
+('604', 'MATRIMONIAL SUPERIOR', 6, 'libre', 220.00),  
+('605', 'PLATINIUM SUITE',      6, 'libre', 260.00);
 
 
 INSERT INTO `finanzas_categorias` (`modulo`, `tipo`, `nombre`, `orden`) VALUES

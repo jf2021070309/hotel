@@ -64,15 +64,15 @@ createApp({
 
     // ─── Computed ──────────────────────────────────────────────────────
     const colWidth = computed(() => {
-      if (viewMode.value === 'compacto') return 38;
-      if (viewMode.value === 'ampliado') return 110;
-      return 65; // normal
+      if (viewMode.value === 'compacto') return 45;
+      if (viewMode.value === 'ampliado') return 140;
+      return 85; // normal
     });
 
     const rowHeight = computed(() => {
-      if (viewMode.value === 'compacto') return 26;
-      if (viewMode.value === 'ampliado') return 50;
-      return 36; // normal
+      if (viewMode.value === 'compacto') return 28;
+      if (viewMode.value === 'ampliado') return 56;
+      return 42; // normal
     });
 
     const pisos = computed(() => {
@@ -105,7 +105,9 @@ createApp({
     });
 
     // ─── API ───────────────────────────────────────────────────────────
-    const cargarDatos = async (silent = false) => {
+    const cargarDatos = async (silent = false, forceToday = false) => {
+      const wrapper = document.querySelector('.cuadro-wrapper');
+      const prevScroll = wrapper ? wrapper.scrollLeft : 0;
       if (!silent) loading.value = true;
       try {
         const res = await axios.get(
@@ -122,12 +124,33 @@ createApp({
         console.error('Error cargando datos:', e);
       } finally {
         if (!silent) loading.value = false;
+        setTimeout(() => {
+          if (forceToday) {
+            scrollToToday();
+          } else {
+            const w = document.querySelector('.cuadro-wrapper');
+            if (w && prevScroll > 0) {
+              w.scrollLeft = prevScroll;
+            }
+          }
+        }, 50);
       }
     };
 
     // ─── Helpers de celda ─────────────────────────────────────────────
     const getCeldaStay = (hab, dia) => {
       return hab.stays.find(s => s.dia_inicio <= dia && s.dia_fin > dia) || null;
+    };
+
+    const getPaxTotalDia = (dia) => {
+      let total = 0;
+      for (const hab of habitacionesFiltradas.value) {
+        const stay = getCeldaStay(hab, dia);
+        if (stay && stay.pax) {
+          total += Number(stay.pax) || 0;
+        }
+      }
+      return total;
     };
 
     const esInicioStay = (hab, dia) => {
@@ -221,8 +244,9 @@ createApp({
             timer: 1500,
             showConfirmButton: false
           });
-          await cargarDatos();
+          await cargarDatos(false, true);
           habitaciones.value = enrichHabs(habitaciones.value);
+          scrollToToday();
         } else {
           Swal.fire('Error', res.data.msg || 'No se pudo cambiar el estado', 'error');
         }
@@ -375,7 +399,7 @@ createApp({
             timer: 1500,
             showConfirmButton: false
           });
-          await cargarDatos();
+          await cargarDatos(false, true);
           habitaciones.value = enrichHabs(habitaciones.value);
           scrollToToday();
         } else {
@@ -491,7 +515,8 @@ createApp({
       try {
         await axios.post(`${ROOMING_API}checkout`, { id: stay.id });
         bootstrap.Modal.getInstance(document.getElementById('modalDetalleReservas'))?.hide();
-        await cargarDatos();
+        await cargarDatos(false, true);
+        scrollToToday();
         Swal.fire({ icon: 'success', title: 'Checkout realizado', timer: 1500, showConfirmButton: false });
       } catch (e) {
         Swal.fire('Error', 'No se pudo realizar el checkout', 'error');
@@ -516,7 +541,8 @@ createApp({
         if (res.data.ok) {
           bootstrap.Modal.getInstance(document.getElementById('modalDetalleReservas'))?.hide();
           Swal.fire({ icon: 'success', title: '¡Check-in realizado!', timer: 2000, showConfirmButton: false });
-          await cargarDatos();
+          await cargarDatos(false, true);
+          scrollToToday();
         } else {
           Swal.fire('Error', res.data.msg, 'error');
         }
@@ -545,8 +571,9 @@ createApp({
         const res = await axios.post(`${BASE}checkin`, { id: stay.id });
         if (res.data.ok) {
           cerrarDetalle();
-          await cargarDatos();
+          await cargarDatos(false, true);
           habitaciones.value = enrichHabs(habitaciones.value);
+          scrollToToday();
           Swal.fire({ icon: 'success', title: 'Reserva confirmada', timer: 1800, showConfirmButton: false });
         } else {
           Swal.fire('Error', res.data.msg, 'error');
@@ -575,8 +602,9 @@ createApp({
         const res = await axios.post(`${BASE}rechazar`, { id: stay.id });
         if (res.data.ok) {
           cerrarDetalle();
-          await cargarDatos();
+          await cargarDatos(false, true);
           habitaciones.value = enrichHabs(habitaciones.value);
+          scrollToToday();
           Swal.fire({ icon: 'success', title: 'Reserva rechazada', timer: 1800, showConfirmButton: false });
         } else {
           Swal.fire('Error', res.data.msg, 'error');
@@ -626,6 +654,55 @@ createApp({
       return 'res-directo';
     };
 
+    // ─── Drag to scroll ───────────────────────────────────────────────
+    const initDragToScroll = () => {
+      const slider = document.querySelector('.cuadro-wrapper');
+      if (!slider) return;
+
+      let isDown = false;
+      let startX;
+      let scrollLeft;
+      let isDragging = false;
+
+      slider.addEventListener('mousedown', (e) => {
+        if (e.target.closest('.modal') || e.target.closest('.context-menu')) return;
+        isDown = true;
+        isDragging = false;
+        slider.classList.add('grabbing');
+        startX = e.pageX - slider.offsetLeft;
+        scrollLeft = slider.scrollLeft;
+      });
+
+      slider.addEventListener('mouseleave', () => {
+        isDown = false;
+        slider.classList.remove('grabbing');
+      });
+
+      slider.addEventListener('mouseup', () => {
+        isDown = false;
+        slider.classList.remove('grabbing');
+      });
+
+      slider.addEventListener('mousemove', (e) => {
+        if (!isDown) return;
+        e.preventDefault();
+        const x = e.pageX - slider.offsetLeft;
+        const walk = (x - startX) * 1.5;
+        if (Math.abs(walk) > 5) {
+          isDragging = true;
+        }
+        slider.scrollLeft = scrollLeft - walk;
+      });
+
+      slider.addEventListener('click', (e) => {
+        if (isDragging) {
+          e.stopPropagation();
+          e.preventDefault();
+          isDragging = false;
+        }
+      }, true);
+    };
+
     // ─── Polling ──────────────────────────────────────────────────────
     const iniciarPolling = () => {
       if (pollingTimer) clearInterval(pollingTimer);
@@ -640,6 +717,7 @@ createApp({
       habitaciones.value = enrichHabs(habitaciones.value);
       iniciarPolling();
       scrollToToday();
+      setTimeout(initDragToScroll, 300);
 
       if (activeQuickGuest.value) {
         Swal.fire({ 
@@ -669,7 +747,7 @@ createApp({
       habitacionesFiltradas, staysHoyMovil,
       // methods
       cargarDatos, cambiarMes, irHoy,
-      getCeldaStay, esInicioStay, esDiaEstadoEspecial, calcCols,
+      getCeldaStay, getPaxTotalDia, esInicioStay, esDiaEstadoEspecial, calcCols,
       getDiaSemana, onCeldaClick, abrirDetalle,
       openContextMenu, handleCtxAction, ctxMenu,
       guardarPagoRapido, checkout,

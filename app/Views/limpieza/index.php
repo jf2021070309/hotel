@@ -33,6 +33,11 @@ include $base . 'includes/sidebar.php';
                 style="border: 1px solid #111;">
                 <i class="bi bi-magic me-1 text-warning"></i> Generar Lista de Hoy
             </button>
+            <!-- Reset nocturno manual (marca hab. ocupadas como sucias) -->
+            <button class="btn btn-outline-warning shadow-sm fw-bold" @click="resetNocturno()" :disabled="loading"
+                title="Marca todas las habitaciones ocupadas como SUCIAS (limpieza de noche)">
+                <i class="bi bi-moon-stars-fill me-1"></i> Reset Nocturno
+            </button>
             <a href="<?= route('limpieza/reporte.php', $base) ?>" class="btn btn-outline-danger shadow-sm">
                 <i class="bi bi-clipboard2-check me-1"></i> Reporte / Checklist
             </a>

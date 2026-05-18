@@ -106,6 +106,46 @@ const appConfig = {
             loading.value = false;
         };
 
+        // ── Reset Nocturno Manual ────────────────────────────────────────────
+        const resetNocturno = async () => {
+            const confirm = await Swal.fire({
+                title: '¿Ejecutar Reset Nocturno?',
+                html: `<p class="mb-1">Esta acción marcará como <strong>SUCIAS</strong> todas las habitaciones que están <strong>ocupadas</strong> con estadía activa.</p>
+                       <p class="text-muted small mb-0">Aparecerán en este panel para que el personal de limpieza las atienda.</p>`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: '<i class="bi bi-moon-stars-fill me-1"></i> Sí, ejecutar',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#ffc107',
+                cancelButtonColor: '#6c757d',
+            });
+
+            if (!confirm.isConfirmed) return;
+
+            loading.value = true;
+            try {
+                const res = await axios.post(apiUrl('../../../api/limpieza.php?action=noche_reset'));
+                if (res.data.ok) {
+                    const n = res.data.detalle?.habitaciones_procesadas ?? 0;
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'success',
+                        title: `Reset nocturno OK — ${n} habitación(es) marcadas como SUCIAS`,
+                        showConfirmButton: false,
+                        timer: 3500,
+                    });
+                    await fetchHoy(); // refrescar panel
+                } else {
+                    Swal.fire('Error', res.data.msg || 'No se pudo ejecutar el reset.', 'error');
+                }
+            } catch (e) {
+                Swal.fire('Error de conexión', e.message, 'error');
+                console.error('[Limpieza] resetNocturno error', e);
+            }
+            loading.value = false;
+        };
+
         const tareaEdit = ref({});
         let tareaTarget = null;
 
@@ -212,7 +252,7 @@ const appConfig = {
 
         return {
             loading, yaGenerado, lista, filtro, filtroFecha, stats, listaFiltrada, personalLimpieza,
-            generarLista, tareaEdit, toggleListo, fmtHora, fetchPorFecha,
+            generarLista, resetNocturno, tareaEdit, toggleListo, fmtHora, fetchPorFecha,
             getTipoClass, getEstadoClass, getColorTop,
             getRoomStateClass,
             listaHistorial, filtroHist,

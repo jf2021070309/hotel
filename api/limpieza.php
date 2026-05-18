@@ -7,6 +7,7 @@ require_once '../config/db.php';
 require_once '../auth/session.php';
 require_once '../app/Models/LimpiezaModel.php';
 require_once '../app/Controllers/LimpiezaController.php';
+require_once '../api/cron.php'; // expone la función nocheReset()
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -50,6 +51,20 @@ switch ($action) {
         $model = new LimpiezaModel($pdo);
         $data = $model->getCalculoPropuesta($fecha);
         echo json_encode(['success' => true, 'data' => $data]);
+        break;
+
+    // ── Reset nocturno manual (solo admin / cajera) ──────────────────────────
+    case 'noche_reset':
+        try {
+            $resultado = nocheReset($pdo);
+            echo json_encode([
+                'ok'      => true,
+                'msg'     => 'Reset nocturno ejecutado: ' . $resultado['habitaciones_procesadas'] . ' habitaciones marcadas como sucias.',
+                'detalle' => $resultado,
+            ], JSON_UNESCAPED_UNICODE);
+        } catch (Exception $e) {
+            echo json_encode(['ok' => false, 'msg' => $e->getMessage()]);
+        }
         break;
 
     default:

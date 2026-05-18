@@ -181,7 +181,9 @@ class RoomingModel {
             $stmtHab = $this->pdo->prepare("UPDATE habitaciones SET estado = 'ocupado' WHERE id = ?");
             $stmtHab->execute([$data['hab_id']]);
 
-            $this->upsertLimpiezaCheckout((int)$data['hab_id'], $data['fecha_out']);
+            // No crear tarea de limpieza al registrar el check-in.
+            // La tarea de limpieza debe generarse únicamente en el checkout (finalizarStay)
+            // o desde reservas programadas. Evitamos llamadas automáticas aquí.
 
             if ($mustCommit) $this->pdo->commit();
             return $stay_id;
@@ -281,7 +283,8 @@ class RoomingModel {
                 ]);
             }
 
-            $this->upsertLimpiezaCheckout((int)$data['hab_id'], $data['fecha_out']);
+            // Al actualizar una estadía no forzamos la creación de la tarea de limpieza.
+            // Las limpiezas de salida se gestionan en el proceso de checkout o desde reservas.
 
             if ($mustCommit) $this->pdo->commit();
             return true;

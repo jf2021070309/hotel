@@ -11,7 +11,7 @@ class LimpiezaModel {
 
     public function getDetalleDia(string $fecha): array {
         // --- AUTO SYNC MANUAL STATES ---
-        $stmtHabs = $this->pdo->query("SELECT id, numero, estado FROM habitaciones WHERE estado IN ('limpieza', 'mantenimiento')");
+        $stmtHabs = $this->pdo->query("SELECT id, numero, estado FROM habitaciones WHERE estado IN ('limpieza', 'sucio', 'mantenimiento')");
         $dirtyRooms = $stmtHabs->fetchAll(PDO::FETCH_ASSOC);
 
         // Determinar un usuario válido para asignar a los registros de limpieza.
@@ -49,14 +49,15 @@ class LimpiezaModel {
         }
         // --------------------------------
 
-        $sql = "SELECT r.*, u.nombre as responsable_nombre, h.estado as room_estado
-                FROM limpieza_registros r
-                LEFT JOIN usuarios u ON r.usuario_id = u.id
-                JOIN habitaciones h ON r.habitacion_id = h.id
-                WHERE r.fecha = ? 
-                ORDER BY r.prioridad ASC, r.habitacion ASC";
+        $sql = "SELECT r.*, u.nombre as responsable_nombre, h.estado as room_estado,
+                   (SELECT COALESCE(s.pax_total, NULL) FROM rooming_stays s WHERE s.habitacion_id = h.id AND s.fecha_registro <= ? AND s.fecha_checkout > ? LIMIT 1) as pax
+            FROM limpieza_registros r
+            LEFT JOIN usuarios u ON r.usuario_id = u.id
+            JOIN habitaciones h ON r.habitacion_id = h.id
+            WHERE r.fecha = ? 
+            ORDER BY r.prioridad ASC, r.habitacion ASC";
         $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([$fecha]);
+        $stmt->execute([$fecha, $fecha, $fecha]);
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         foreach ($rows as &$row) {
@@ -165,7 +166,7 @@ class LimpiezaModel {
                                'Registro Manual' as titular,
                                NULL as fecha_checkout
                         FROM habitaciones h
-                        WHERE h.estado IN ('limpieza', 'mantenimiento')";
+                        WHERE h.estado IN ('limpieza', 'sucio', 'mantenimiento')";
 
         // Ejecutar y unir
         $stmtS = $this->pdo->prepare($sqlSalidas); $stmtS->execute([$fecha]);

@@ -35,6 +35,15 @@ $view_base_href = view_base_href_for_request();
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <!-- Axios CDN -->
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <!-- Tailwind CDN (runtime) - quick utility for enhanced UI -->
+  <script>
+    // Disable Tailwind's preflight to avoid resetting Bootstrap styles
+    window.tailwind = window.tailwind || {};
+    window.tailwind.config = window.tailwind.config || {};
+    window.tailwind.config.corePlugins = window.tailwind.config.corePlugins || {};
+    window.tailwind.config.corePlugins.preflight = false;
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
 <?php if ($export_enabled): ?>
   <!-- Exportación PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>

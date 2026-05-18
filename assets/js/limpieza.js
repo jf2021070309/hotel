@@ -40,9 +40,18 @@ const appConfig = {
             return match ? match[1] : val;
         };
 
+        const apiUrl = (rel) => {
+            try {
+                const base = document.baseURI || window.location.href;
+                return new URL(rel, base).href;
+            } catch (e) {
+                return rel;
+            }
+        };
+
         const fetchPersonal = async () => {
             try {
-                const res = await axios.get('/api/usuarios.php?action=personal_limpieza');
+                const res = await axios.get(apiUrl('../../../api/usuarios.php?action=personal_limpieza'));
                 personalLimpieza.value = res.data.data || [];
                 console.debug('[Limpieza] fetchPersonal ->', {
                     ok: !!res.data, status: res.status, dataLength: (res.data && res.data.data) ? res.data.data.length : 0,
@@ -57,7 +66,7 @@ const appConfig = {
                 const hoy = new Date().toLocaleDateString('en-CA');
                 const action = filtroFecha.value === hoy ? 'hoy' : `detalle_fecha&fecha=${filtroFecha.value}`;
                 
-                const res = await axios.get(`/api/limpieza.php?action=${action}`);
+                const res = await axios.get(apiUrl(`../../../api/limpieza.php?action=${action}`));
                 console.groupCollapsed('%c[Limpieza] fetchHoy', 'color:teal;font-weight:bold', { action, fecha: filtroFecha.value, server: new Date().toISOString() });
                 console.debug('response', res.data);
                 if (res.data.ok) {
@@ -83,7 +92,7 @@ const appConfig = {
         const generarLista = async () => {
             loading.value = true;
             try {
-                const res = await axios.post('/api/limpieza.php?action=generar');
+                const res = await axios.post(apiUrl('../../../api/limpieza.php?action=generar'));
                 console.debug('[Limpieza] generarLista ->', res.data);
                 if (res.data.ok) {
                     Swal.fire('¡Listo!', res.data.msg, 'success');
@@ -108,7 +117,7 @@ const appConfig = {
 
             loading.value = true;
             try {
-                const res = await axios.post('/api/limpieza.php?action=actualizar', formData);
+                const res = await axios.post(apiUrl('../../../api/limpieza.php?action=actualizar'), formData);
                 console.debug('[Limpieza] toggleListo ->', {id: h.id, nuevoEstado, response: res.data});
                 if (res.data.ok) {
                     const msg = nuevoEstado === 'lista' ? 'Habitación marcada como lista' : 'Habitación marcada como pendiente';
@@ -128,6 +137,7 @@ const appConfig = {
 
         const getColorTop = (h) => {
             if (h.estado === 'mantenimiento' || h.tipo_limpieza === 'estimacion') return '#343a40'; 
+            if (h.estado === 'sucio') return '#9ca3af';
             if (h.estado === 'lista') return '#198754';
             if (h.tipo_limpieza === 'salida') return '#dc3545';
             if (h.tipo_limpieza === 'estadía') return '#ffc107';
@@ -146,14 +156,68 @@ const appConfig = {
             if (est === 'pendiente')  return 'bg-light text-dark border';
             if (est === 'en proceso' || est === 'en_proceso') return 'bg-warning text-dark';
             if (est === 'mantenimiento') return 'bg-danger text-white border border-danger';
+            if (est === 'sucio') return 'bg-dark text-white';
             return 'bg-success text-white';
+        };
+
+        const getRoomStateClass = (state) => {
+            const s = String(state).toLowerCase();
+            if (s === 'mantenimiento') return 'bg-danger text-white';
+            if (s === 'sucio') return 'bg-dark text-white';
+            if (s === 'limpieza') return 'bg-secondary text-white';
+            return 'bg-light text-dark';
+        };
+
+        // Tailwind class helpers for stronger visual cues
+        const getRoomStateTwClass = (state) => {
+            const s = String(state || '').toLowerCase();
+            if (s === 'mantenimiento') return 'bg-red-600 text-white';
+            if (s === 'sucio') return 'bg-amber-800 text-white';
+            if (s === 'limpieza') return 'bg-gray-500 text-white';
+            return 'bg-gray-100 text-gray-800';
+        };
+
+        const getRoomBgTwClass = (state) => {
+            const s = String(state || '').toLowerCase();
+            if (s === 'mantenimiento') return 'bg-red-50';
+            if (s === 'sucio') return 'bg-amber-50';
+            if (s === 'limpieza') return 'bg-gray-100';
+            if (s === 'ocupado' || s === 'ocupada') return 'bg-pink-50';
+            return 'bg-white';
+        };
+
+        const getEstadoTwClass = (estado) => {
+            const e = String(estado || '').toLowerCase();
+            if (e === 'pendiente') return 'bg-gray-100 text-gray-800 border';
+            if (e === 'en proceso' || e === 'en_proceso') return 'bg-yellow-300 text-gray-900';
+            if (e === 'mantenimiento') return 'bg-red-600 text-white';
+            if (e === 'sucio') return 'bg-amber-800 text-white';
+            if (e === 'lista') return 'bg-green-600 text-white';
+            return 'bg-green-600 text-white';
+        };
+
+        const getTipoTwClass = (t) => {
+            if (t === 'salida') return 'bg-red-500 text-white';
+            if (t === 'estimacion') return 'bg-gray-800 text-white';
+            if (t === 'estadía') return 'bg-yellow-400 text-gray-800';
+            return 'bg-teal-400 text-gray-800';
+        };
+
+        const getColorTopTwClass = (h) => {
+            if (!h) return '';
+            if (h.estado === 'mantenimiento' || h.tipo_limpieza === 'estimacion') return 'border-t-4 border-gray-800';
+            if (h.estado === 'sucio') return 'border-t-4 border-amber-800';
+            if (h.estado === 'lista') return 'border-t-4 border-green-600';
+            if (h.tipo_limpieza === 'salida') return 'border-t-4 border-red-500';
+            if (h.tipo_limpieza === 'estadía') return 'border-t-4 border-yellow-400';
+            return 'border-t-4 border-cyan-400';
         };
 
         // HISTORIAL
         const fetchHistorial = async () => {
             loading.value = true;
             try {
-                const res = await axios.get(`/api/limpieza.php?action=listar&mes=${filtroHist.value.mes}&anio=${filtroHist.value.anio}`);
+                const res = await axios.get(apiUrl(`../../../api/limpieza.php?action=listar&mes=${filtroHist.value.mes}&anio=${filtroHist.value.anio}`));
                 console.debug('[Limpieza] fetchHistorial ->', { mes: filtroHist.value.mes, anio: filtroHist.value.anio, resp: res.data });
                 if (res.data.ok) listaHistorial.value = res.data.data;
             } catch (e) { console.error(e); }
@@ -162,7 +226,7 @@ const appConfig = {
 
         const verDetalle = (fecha) => {
             fechaDetalle.value = fecha;
-            axios.get('/api/limpieza.php?action=detalle&fecha=' + fecha).then(res => {
+            axios.get(apiUrl('../../../api/limpieza.php?action=detalle&fecha=' + fecha)).then(res => {
                 console.debug('[Limpieza] verDetalle ->', { fecha, resp: res.data });
                 if (res.data.ok) {
                     detalleDia.value = res.data.data;
@@ -195,6 +259,9 @@ const appConfig = {
             loading, yaGenerado, lista, filtro, filtroFecha, stats, listaFiltrada, personalLimpieza,
             generarLista, tareaEdit, toggleListo, fmtHora, fetchPorFecha,
             getTipoClass, getEstadoClass, getColorTop,
+            getRoomStateClass,
+            // Tailwind helpers
+            getRoomStateTwClass, getEstadoTwClass, getTipoTwClass, getColorTopTwClass, getRoomBgTwClass,
             listaHistorial, filtroHist,
             detalleDia, fechaDetalle, fetchHistorial, verDetalle, formatFecha, formatFechaHora
         };

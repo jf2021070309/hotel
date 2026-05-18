@@ -259,6 +259,7 @@ window.openSidebar = function() {
   if (sidebar) sidebar.classList.add('open');
   if (overlay) overlay.classList.add('active');
   document.body.style.overflow = 'hidden';
+  console.debug('[Sidebar] openSidebar called');
 };
 
 window.closeSidebar = function() {
@@ -267,6 +268,7 @@ window.closeSidebar = function() {
   if (sidebar) sidebar.classList.remove('open');
   if (overlay) overlay.classList.remove('active');
   document.body.style.overflow = '';
+  console.debug('[Sidebar] closeSidebar called');
 };
 
 window.closeSidebarOnMobile = function() {
@@ -279,6 +281,7 @@ document.addEventListener('click', (e) => {
   if (btn) {
     e.preventDefault();
     window.handleMenuClick();
+    console.debug('[Sidebar] btn-burger clicked', {target: e.target, time: Date.now()});
   }
 });
 
@@ -299,6 +302,7 @@ window.toggleSidebar = function() {
     const icon = btn.querySelector('i');
     if (icon) icon.className = isCollapsed ? 'bi bi-chevron-right' : 'bi bi-chevron-left';
   }
+  console.debug('[Sidebar] toggleSidebar -> collapsed=', sidebar.classList.contains('collapsed'));
 };
 
 // --- SIDEBAR SCROLL PERSISTENCE ---
@@ -337,6 +341,7 @@ window.toggleSidebar = function() {
         const icon = btn.querySelector('i');
         if (icon) icon.className = 'bi bi-chevron-right';
       }
+      console.debug('[Sidebar] restored collapsed state from localStorage');
     });
   }
 })();

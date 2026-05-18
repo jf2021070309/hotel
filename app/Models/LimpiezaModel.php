@@ -143,8 +143,8 @@ class LimpiezaModel {
                        JOIN habitaciones h ON s.habitacion_id = h.id
                        WHERE s.estado IN ('activo', 'late_checkout', 'finalizado') AND s.fecha_checkout = ?";
         
-        // 2. Estadías (Ocupadas pero no salen hoy)
-        $sqlEstadias = "SELECT s.habitacion_id, h.numero as habitacion, 'estadía' as tipo, 'normal' as prioridad,
+        // 2. Reposos (Ocupadas pero no salen hoy)
+        $sqlEstadias = "SELECT s.habitacion_id, h.numero as habitacion, 'reposo' as tipo, 'normal' as prioridad,
                                (SELECT nombre_completo FROM rooming_pax WHERE stay_id = s.id AND es_titular=1 LIMIT 1) as titular,
                                s.fecha_checkout
                         FROM rooming_stays s

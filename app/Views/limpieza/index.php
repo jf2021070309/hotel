@@ -71,7 +71,7 @@ include $base . 'includes/sidebar.php';
                     <select class="form-select form-select-sm" v-model="filtro.tipo">
                         <option value="todos">Todos</option>
                         <option value="salida">Salida</option>
-                        <option value="estadía">Estadía</option>
+                        <option value="reposo">Reposo</option>
                         <option value="programada">Programada</option>
                     </select>
                 </div>

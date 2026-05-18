@@ -20,7 +20,7 @@ include $base . 'includes/sidebar.php';
     .print-section { page-break-before: always; }
   }
   .tipo-salida   { border-left: 5px solid #dc3545 !important; }
-  .tipo-estadia  { border-left: 5px solid #ffc107 !important; }
+  .tipo-reposo  { border-left: 5px solid #ffc107 !important; }
   .tipo-reserva  { border-left: 5px solid #20c997 !important; }
   .check-item    { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px dashed #dee2e6; font-size: 13px; }
   .check-item:last-child { border-bottom: none; }
@@ -62,10 +62,10 @@ include $base . 'includes/sidebar.php';
           </div>
         </div>
         <div class="col-4">
-          <div class="card border-0 shadow-sm tipo-estadia p-3 text-center">
+          <div class="card border-0 shadow-sm tipo-reposo p-3 text-center">
             <div class="mini fw-bold text-warning text-uppercase mb-1">🟡 Repaso</div>
-            <div class="h2 mb-0 fw-bold">{{ grupos.estadia.length }}</div>
-            <div class="mini text-muted">estadía activa</div>
+            <div class="h2 mb-0 fw-bold">{{ grupos.reposo.length }}</div>
+            <div class="mini text-muted">reposo</div>
           </div>
         </div>
         <div class="col-4">
@@ -114,15 +114,15 @@ include $base . 'includes/sidebar.php';
             </div>
           </div>
 
-          <!-- SECCIÓN: REPASO (ESTADÍA) -->
-          <div v-if="grupos.estadia.length > 0" class="mb-5">
+          <!-- SECCIÓN: REPASO (REPOSO) -->
+          <div v-if="grupos.reposo.length > 0" class="mb-5">
             <div class="d-flex align-items-center gap-2 mb-3">
               <div class="badge bg-warning text-dark px-3 py-2 fs-6">🟡 REPASO DIARIO</div>
               <span class="text-muted small">Huésped sigue hospedado</span>
             </div>
             <div class="row g-3">
-              <div class="col-md-6" v-for="h in grupos.estadia" :key="h.id">
-                <div class="card border-0 shadow-sm tipo-estadia" :class="h.estado === 'lista' ? 'estado-done' : ''">
+              <div class="col-md-6" v-for="h in grupos.reposo" :key="h.id">
+                <div class="card border-0 shadow-sm tipo-reposo" :class="h.estado === 'lista' ? 'estado-done' : ''">
                   <div class="card-body p-3">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                       <div class="d-flex gap-3 align-items-center">
@@ -208,9 +208,9 @@ include $base . 'includes/sidebar.php';
             </table>
         </template>
 
-        <!-- Repaso -->
-        <template v-if="grupos.estadia.length > 0">
-            <h5 class="fw-bold text-dark border-bottom border-dark p-2 mb-0 mt-2">🟡 REPASO (Estadía Continua)</h5>
+        <!-- Reposo -->
+        <template v-if="grupos.reposo.length > 0">
+            <h5 class="fw-bold text-dark border-bottom border-dark p-2 mb-0 mt-2">🟡 REPASO (Reposo Continuo)</h5>
             <table class="table table-bordered border-dark mb-4" style="font-size: 14px; width: 100%;">
                 <thead>
                     <tr class="table-light border-dark">
@@ -219,7 +219,7 @@ include $base . 'includes/sidebar.php';
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="h in grupos.estadia" :key="h.id">
+                    <tr v-for="h in grupos.reposo" :key="h.id">
                         <td class="text-center fw-bold fs-3 align-middle py-4">{{ h.habitacion }}</td>
                         <td class="py-4"></td>
                     </tr>
@@ -258,7 +258,7 @@ include $base . 'includes/sidebar.php';
         </div>
       </div>
 
-      <div v-if="!grupos.salida.length && !grupos.estadia.length && !grupos.reserva.length" class="text-center py-5 text-muted">
+      <div v-if="!grupos.salida.length && !grupos.reposo.length && !grupos.reserva.length" class="text-center py-5 text-muted">
         <i class="bi bi-inbox fs-1 d-block mb-3 opacity-25"></i>
         No hay tareas de limpieza para esta fecha. Genera la lista desde el Panel de Limpieza.
       </div>
@@ -305,7 +305,7 @@ createApp({
 
     const grupos = computed(() => ({
       salida:  lista.value.filter(h => h.tipo_limpieza === 'salida' || h.tipo_limpieza === 'estimacion'),
-      estadia: lista.value.filter(h => h.tipo_limpieza === 'estadía'),
+      reposo: lista.value.filter(h => h.tipo_limpieza === 'reposo'),
       reserva: lista.value.filter(h => h.tipo_limpieza === 'programada'),
     }));
 

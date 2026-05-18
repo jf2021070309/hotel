@@ -20,7 +20,7 @@ const appConfig = {
 
         const stats = computed(() => ({
             salida:     lista.value.filter(h => h.tipo_limpieza === 'salida' || h.tipo_limpieza === 'estimacion').length,
-            estadia:    lista.value.filter(h => h.tipo_limpieza === 'estadía').length,
+            reposo:     lista.value.filter(h => h.tipo_limpieza === 'reposo').length,
             programada: lista.value.filter(h => h.tipo_limpieza === 'programada').length
         }));
 
@@ -74,7 +74,7 @@ const appConfig = {
                     yaGenerado.value = res.data.ya_generado || (filtroFecha.value !== hoy);
                     console.debug('lista length', lista.value.length, 'stats', {
                         salida: lista.value.filter(h => h.tipo_limpieza === 'salida' || h.tipo_limpieza === 'estimacion').length,
-                        estadia: lista.value.filter(h => h.tipo_limpieza === 'estadía').length,
+                        reposo: lista.value.filter(h => h.tipo_limpieza === 'reposo').length,
                         programada: lista.value.filter(h => h.tipo_limpieza === 'programada').length
                     });
                 } else {
@@ -180,14 +180,14 @@ const appConfig = {
             if (h.estado === 'sucio') return '#9ca3af';
             if (h.estado === 'lista') return '#198754';
             if (h.tipo_limpieza === 'salida') return '#dc3545';
-            if (h.tipo_limpieza === 'estadía') return '#ffc107';
+            if (h.tipo_limpieza === 'reposo') return '#ffc107';
             return '#0dcaf0';
         };
 
         const getTipoClass = (t) => {
             if (t === 'salida')    return 'bg-danger';
             if (t === 'estimacion') return 'bg-dark text-white';
-            if (t === 'estadía')   return 'bg-warning text-dark';
+            if (t === 'reposo')   return 'bg-warning text-dark';
             return 'bg-info text-dark';
         };
 

@@ -172,8 +172,8 @@ createApp({
                 // Para simplificar, consultamos al API de limpieza que ya tiene lógica para ocupación por fecha
                 const res = await axios.get(`<?= $base ?>api/limpieza.php?action=propuesta&fecha=${fecha.value}`);
                 if (res.data.success) {
-                    // Filtramos solo las que son 'salida' o 'estadía' (que son las ocupadas)
-                    const ocupadas = (res.data.data || []).filter(h => h.tipo === 'salida' || h.tipo === 'estadía');
+                    // Filtramos solo las que son 'salida' o 'reposo' (que son las ocupadas)
+                    const ocupadas = (res.data.data || []).filter(h => h.tipo === 'salida' || h.tipo === 'reposo');
                     
                     // Mapeamos al formato que espera la tabla
                     habitaciones.value = ocupadas.map(h => ({

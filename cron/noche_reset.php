@@ -73,11 +73,11 @@ $stmtInsert = $pdo->prepare("
     INSERT INTO limpieza_registros
         (fecha, habitacion_id, habitacion, tipo_limpieza, prioridad, estado, usuario_id)
     VALUES
-        (:fecha, :hab_id, :habitacion, 'estadía', 'normal', 'pendiente', :uid)
+        (:fecha, :hab_id, :habitacion, 'reposo', 'normal', 'pendiente', :uid)
 ");
 $stmtReset  = $pdo->prepare(
     "UPDATE limpieza_registros
-     SET estado = 'pendiente', tipo_limpieza = 'estadía', hora_inicio = NULL, hora_fin = NULL
+     SET estado = 'pendiente', tipo_limpieza = 'reposo', hora_inicio = NULL, hora_fin = NULL
      WHERE id = :id AND estado IN ('lista', 'sucio', 'pendiente')"
 );
 

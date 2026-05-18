@@ -53,17 +53,19 @@ include $_projectRoot . '/includes/head.php';
 
   .clientes-actions-row {
     justify-content: flex-end;
-    margin-left: auto;
   }
 
   .clientes-search {
     width: min(340px, 100%);
   }
 
+  .clientes-action-buttons {
+    margin-left: auto;
+  }
+
   @media (max-width: 1320px) {
     .clientes-actions-row {
       justify-content: flex-end;
-      margin-left: 0;
     }
 
     .clientes-search {
@@ -76,7 +78,7 @@ include $_projectRoot . '/includes/head.php';
   @media (max-width: 768px) {
     .clientes-filter-control,
     .clientes-actions-row,
-    .clientes-actions-row > .d-flex {
+    .clientes-action-buttons {
       width: 100%;
     }
 
@@ -84,7 +86,11 @@ include $_projectRoot . '/includes/head.php';
       flex-basis: 100%;
     }
 
-    .clientes-actions-row > .d-flex .btn {
+    .clientes-action-buttons {
+      margin-left: 0;
+    }
+
+    .clientes-action-buttons .btn {
       flex: 1 1 0;
       justify-content: center;
     }
@@ -151,7 +157,7 @@ include $_projectRoot . '/includes/head.php';
             </div>
 
             <!-- Botones de Acción -->
-            <div class="d-flex gap-2 justify-content-end">
+            <div class="d-flex gap-2 justify-content-end clientes-action-buttons">
               <!-- Botón Exportar Excel -->
               <button @click="exportarExcel" 
                       class="btn btn-success px-3 shadow-sm fw-bold d-flex align-items-center gap-2 text-nowrap transition-all" 

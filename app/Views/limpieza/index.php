@@ -154,7 +154,7 @@ include $base . 'includes/sidebar.php';
                                     style="font-size: 0.85rem;">
                                     {{ h.estado.toUpperCase() }}
                                 </span>
-                                <div class="d-flex gap-1">
+                                <div class="d-flex flex-wrap gap-1">
                                     <span class="badge" :class="getTipoClass(h.tipo_limpieza)"
                                         style="font-size: 0.75rem;">
                                         {{ h.tipo_limpieza.toUpperCase() }}

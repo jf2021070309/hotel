@@ -31,74 +31,83 @@ include $_projectRoot . '/includes/head.php';
     </div>
 
     <div class="page-body">
-      <!-- FILTROS Y ACCIONES -->
-      <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4 w-100">
-        <!-- Grupo de Filtros Izquierda -->
-        <div class="d-flex flex-wrap gap-2">
-          <!-- Filtro por Frecuencia -->
-          <div class="btn-group bg-white p-1 shadow-sm rounded-3 border" role="group" style="height: 42px;">
-            <button type="button" class="btn btn-sm px-3 fw-bold rounded-2 transition-all d-flex align-items-center gap-2"
-              :class="filtroFrecuente === 'todos' ? 'btn-dark text-white' : 'btn-white text-secondary border-0'"
-              @click="filtroFrecuente = 'todos'">
-              <i class="bi bi-people"></i> Todos
-            </button>
-            <button type="button" class="btn btn-sm px-3 fw-bold rounded-2 transition-all d-flex align-items-center gap-2"
-              :class="filtroFrecuente === 'frecuentes' ? 'btn-warning text-dark' : 'btn-white text-secondary border-0'"
-              @click="filtroFrecuente = 'frecuentes'">
-              <i class="bi bi-star-fill text-dark"></i> Frecuentes
-            </button>
-            <button type="button" class="btn btn-sm px-3 fw-bold rounded-2 transition-all d-flex align-items-center gap-2"
-              :class="filtroFrecuente === 'regulares' ? 'btn-secondary text-white' : 'btn-white text-secondary border-0'"
-              @click="filtroFrecuente = 'regulares'">
-              <i class="bi bi-star text-secondary"></i> Regulares (Sin Estrella)
-            </button>
+      <!-- FILTROS Y ACCIONES PREMIUM -->
+      <div class="card border-0 shadow-sm p-3 mb-4" style="border-radius: 12px; background: #ffffff; border: 1px solid rgba(0,0,0,0.05) !important;">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+          
+          <!-- Grupo de Filtros Izquierda -->
+          <div class="d-flex flex-wrap gap-2 align-items-center">
+            <!-- Filtro por Frecuencia -->
+            <div class="btn-group bg-white p-1 shadow-sm rounded-3 border" role="group" style="height: 42px;">
+              <button type="button" class="btn btn-sm px-3 fw-bold rounded-2 transition-all d-flex align-items-center gap-2 text-nowrap"
+                :class="filtroFrecuente === 'todos' ? 'btn-dark text-white' : 'btn-white text-secondary border-0'"
+                @click="filtroFrecuente = 'todos'">
+                <i class="bi bi-people"></i> Todos
+              </button>
+              <button type="button" class="btn btn-sm px-3 fw-bold rounded-2 transition-all d-flex align-items-center gap-2 text-nowrap"
+                :class="filtroFrecuente === 'frecuentes' ? 'btn-warning text-dark' : 'btn-white text-secondary border-0'"
+                @click="filtroFrecuente = 'frecuentes'">
+                <i class="bi bi-star-fill text-dark"></i> Frecuentes
+              </button>
+              <button type="button" class="btn btn-sm px-3 fw-bold rounded-2 transition-all d-flex align-items-center gap-2 text-nowrap"
+                :class="filtroFrecuente === 'regulares' ? 'btn-secondary text-white' : 'btn-white text-secondary border-0'"
+                @click="filtroFrecuente = 'regulares'">
+                <i class="bi bi-star text-secondary"></i> Regulares
+              </button>
+            </div>
+
+            <!-- Filtro por Tipo de Cliente (Personas vs Empresas) -->
+            <div class="btn-group bg-white p-1 shadow-sm rounded-3 border" role="group" style="height: 42px;">
+              <button type="button" class="btn btn-sm px-3 fw-bold rounded-2 transition-all d-flex align-items-center gap-2 text-nowrap"
+                :class="filtroTipo === 'todos' ? 'btn-dark text-white' : 'btn-white text-secondary border-0'"
+                @click="filtroTipo = 'todos'">
+                <i class="bi bi-person-lines-fill"></i> Todos los Tipos
+              </button>
+              <button type="button" class="btn btn-sm px-3 fw-bold rounded-2 transition-all d-flex align-items-center gap-2 text-nowrap"
+                :class="filtroTipo === 'personas' ? 'btn-info text-white' : 'btn-white text-secondary border-0'"
+                @click="filtroTipo = 'personas'">
+                <i class="bi bi-person"></i> Personas (DNI)
+              </button>
+              <button type="button" class="btn btn-sm px-3 fw-bold rounded-2 transition-all d-flex align-items-center gap-2 text-nowrap"
+                :class="filtroTipo === 'empresas' ? 'btn-primary text-white' : 'btn-white text-secondary border-0'"
+                @click="filtroTipo = 'empresas'">
+                <i class="bi bi-building"></i> Empresas (RUC)
+              </button>
+            </div>
           </div>
 
-          <!-- Filtro por Tipo de Cliente (Personas vs Empresas) -->
-          <div class="btn-group bg-white p-1 shadow-sm rounded-3 border" role="group" style="height: 42px;">
-            <button type="button" class="btn btn-sm px-3 fw-bold rounded-2 transition-all d-flex align-items-center gap-2"
-              :class="filtroTipo === 'todos' ? 'btn-dark text-white' : 'btn-white text-secondary border-0'"
-              @click="filtroTipo = 'todos'">
-              <i class="bi bi-person-lines-fill"></i> Todos los Tipos
-            </button>
-            <button type="button" class="btn btn-sm px-3 fw-bold rounded-2 transition-all d-flex align-items-center gap-2"
-              :class="filtroTipo === 'personas' ? 'btn-info text-white' : 'btn-white text-secondary border-0'"
-              @click="filtroTipo = 'personas'">
-              <i class="bi bi-person"></i> Personas (DNI)
-            </button>
-            <button type="button" class="btn btn-sm px-3 fw-bold rounded-2 transition-all d-flex align-items-center gap-2"
-              :class="filtroTipo === 'empresas' ? 'btn-primary text-white' : 'btn-white text-secondary border-0'"
-              @click="filtroTipo = 'empresas'">
-              <i class="bi bi-building"></i> Empresas (RUC)
-            </button>
-          </div>
-        </div>
+          <!-- Búsqueda y Acciones (Derecha) -->
+          <div class="d-flex flex-wrap gap-2 align-items-center flex-grow-1 flex-md-grow-0 justify-content-end">
+            <!-- Buscador Premium -->
+            <div class="input-group border shadow-sm bg-white" style="border-radius: 8px; overflow: hidden; width: 100%; max-width: 320px; height: 42px;">
+               <span class="input-group-text bg-white border-0 ps-3">
+                  <i class="bi bi-search text-muted"></i>
+               </span>
+               <input type="text" 
+                      class="form-control border-0 shadow-none py-2" 
+                      placeholder="Buscar por nombre o documento..." 
+                      v-model="buscar"
+                      style="font-size: 13px; font-weight: 600;">
+               <button v-if="buscar" @click="buscar=''" class="btn btn-white border-0 text-muted px-2"><i class="bi bi-x-lg"></i></button>
+            </div>
 
-        <div class="d-flex flex-grow-1 flex-md-grow-0 gap-2">
-          <!-- Buscador Premium -->
-          <div class="input-group border shadow-sm bg-white" style="border-radius: 8px; overflow: hidden; max-width: 350px;">
-             <span class="input-group-text bg-white border-0 ps-3">
-                <i class="bi bi-search text-muted"></i>
-             </span>
-             <input type="text" 
-                    class="form-control border-0 shadow-none py-2" 
-                    placeholder="Buscar por nombre, documento o RUC..." 
-                    v-model="buscar"
-                    style="font-size: 13px; font-weight: 600;">
-             <button v-if="buscar" @click="buscar=''" class="btn btn-white border-0 text-muted px-2"><i class="bi bi-x-lg"></i></button>
+            <!-- Botones de Acción -->
+            <div class="d-flex gap-2 justify-content-end">
+              <!-- Botón Exportar Excel -->
+              <button @click="exportarExcel" 
+                      class="btn btn-success px-3 shadow-sm fw-bold d-flex align-items-center gap-2 text-nowrap transition-all" 
+                      style="border-radius: 8px; font-size: 13px; height: 42px; background-color: #198754; border-color: #198754;">
+                 <i class="bi bi-file-earmark-excel"></i> Exportar
+              </button>
+              <!-- Botón Nuevo -->
+              <button @click="abrirModalNuevo" 
+                      class="btn btn-dark px-3 shadow-sm fw-bold d-flex align-items-center gap-2 text-nowrap transition-all" 
+                      style="border-radius: 8px; font-size: 13px; height: 42px;">
+                 <i class="bi bi-plus-lg text-warning"></i> Nuevo Registro
+              </button>
+            </div>
           </div>
-          <!-- Botón Exportar Excel -->
-          <button @click="exportarExcel" 
-                  class="btn btn-success px-3 shadow-sm fw-bold d-flex align-items-center gap-2" 
-                  style="border-radius: 8px; font-size: 13px; background-color: #198754; border-color: #198754;">
-             <i class="bi bi-file-earmark-excel"></i> Exportar
-          </button>
-          <!-- Botón Nuevo -->
-          <button @click="abrirModalNuevo" 
-                  class="btn btn-dark px-3 shadow-sm fw-bold d-flex align-items-center gap-2" 
-                  style="border-radius: 8px; font-size: 13px;">
-             <i class="bi bi-plus-lg text-warning"></i> Nuevo Registro
-          </button>
+
         </div>
       </div>
 
@@ -133,10 +142,9 @@ include $_projectRoot . '/includes/head.php';
               <tr v-else v-for="(c, i) in clientesFiltrados" :key="c.dni" class="row-hover">
                 <td class="ps-4 text-muted fw-bold">{{ i + 1 }}</td>
                 <td>
-                  <div class="d-flex align-items-center gap-1">
-                    <span class="fw-bold text-dark" style="font-size: 14px;">{{ c.nombre }}</span>
+                  <div class="d-flex align-items-center gap-3">
                     <!-- Estrella interactiva premium -->
-                    <span class="d-inline-flex align-items-center justify-content-center ms-2" style="width: 24px; height: 24px;">
+                    <span class="d-inline-flex align-items-center justify-content-center" style="width: 24px; height: 24px; flex-shrink: 0;">
                       <!-- Con estrella (frecuente manual) -->
                       <i v-if="c.vip == 1" 
                          @click.stop="toggleVipStatus(c)" 
@@ -152,9 +160,12 @@ include $_projectRoot . '/includes/head.php';
                          title="Marcar como VIP / Destacado ★">
                       </i>
                     </span>
-                  </div>
-                  <div class="text-muted small fw-semibold" v-if="c.ciudad">
-                    <i class="bi bi-geo-alt-fill text-muted me-1"></i>{{ c.ciudad }}
+                    <div>
+                      <div class="fw-bold text-dark" style="font-size: 14px;">{{ c.nombre }}</div>
+                      <div class="text-muted small fw-semibold mt-1" v-if="c.ciudad">
+                        <i class="bi bi-geo-alt-fill text-muted me-1"></i>{{ c.ciudad }}
+                      </div>
+                    </div>
                   </div>
                 </td>
                 <td>

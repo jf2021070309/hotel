@@ -9,6 +9,18 @@ require_once __DIR__ . '/../app/Controllers/YapeController.php';
 
 protegerPorRol('cajera', 'yape');
 
+ini_set('display_errors', '0');
+set_error_handler(function(int $severity, string $message, string $file, int $line): bool {
+    if (!(error_reporting() & $severity)) {
+        return false;
+    }
+    error_log("Yape API PHP warning: $message in $file:$line");
+    return true;
+});
+set_exception_handler(function(Throwable $e): void {
+    json_response(false, null, 500, 'Error interno Yape: ' . $e->getMessage());
+});
+
 $action = $_GET['action'] ?? '';
 $method = $_SERVER['REQUEST_METHOD'];
 $input  = json_decode(file_get_contents('php://input'), true) ?? [];

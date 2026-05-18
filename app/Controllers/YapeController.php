@@ -5,6 +5,7 @@
 class YapeController {
     private YapeModel $model;
     private $audit;
+    private PDO $pdo;
 
     public function __construct(PDO $pdo) {
         require_once __DIR__ . '/../Models/YapeModel.php';
@@ -13,6 +14,20 @@ class YapeController {
         $this->model = new YapeModel($pdo);
         $this->audit = new AuditoriaModel($pdo);
         $this->pdo = $pdo;
+    }
+
+    private function registrarAuditoriaSeguro(string $accion, string $modulo, string $detalle): void {
+        try {
+            $this->audit->registrar(
+                $_SESSION['auth_id'] ?? null,
+                $_SESSION['auth_nombre'] ?? null,
+                $accion,
+                $modulo,
+                $detalle
+            );
+        } catch (Throwable $e) {
+            error_log('No se pudo registrar auditoria: ' . $e->getMessage());
+        }
     }
 
     public function listar(): array {
@@ -82,11 +97,11 @@ class YapeController {
         try {
             $newId = $this->model->guardar($data, $detalles);
             $msg = $id > 0 ? "Registro Yape $newId actualizado." : "Registro Yape $newId creado.";
-            if ($id == 0) $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'YAPE_CREADO', 'FINANZAS', $msg);
+            if ($id == 0) $this->registrarAuditoriaSeguro('YAPE_CREADO', 'FINANZAS', $msg);
             
             // Re-fetch to return latest updated info
             return ['ok' => true, 'msg' => 'Borrador guardado', 'data' => $this->model->getDetalle($newId)];
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             // Check for duplicate key error on uk_fecha_turno_yape safely mapped
             if (strpos($e->getMessage(), 'Duplicate entry') !== false) {
                 return ['ok' => false, 'msg' => 'Ya existe un registro para esta fecha y turno debido a colisión en la base de datos.'];
@@ -98,25 +113,30 @@ class YapeController {
     public function crearDia(array $input): array {
         $fecha = $_POST['fecha'] ?? $input['fecha'] ?? date('Y-m-d');
         $montoInicial = (float)($input['yape_recibido'] ?? 0);
+        $usuarioId = (int)($_SESSION['auth_id'] ?? 0);
+
+        if ($usuarioId <= 0) {
+            return ['ok' => false, 'msg' => 'Sesión inválida. Vuelve a iniciar sesión e inténtalo nuevamente.'];
+        }
 
         if ($this->model->verificarUnico($fecha, 'MAÑANA') || $this->model->verificarUnico($fecha, 'TARDE')) {
             return ['ok' => false, 'msg' => "Ya existen registros para la fecha $fecha."];
         }
 
         try {
-            $this->model->ejecutarTransaccionCierre(function($pdo) use ($fecha, $montoInicial) {
+            $this->model->ejecutarTransaccionCierre(function($pdo) use ($fecha, $montoInicial, $usuarioId) {
                 // Crear MAÑANA
                 $stmtM = $pdo->prepare("INSERT INTO gastos_yape (fecha, turno, yape_recibido, total_gastado, vuelto, observacion, estado, usuario_id) VALUES (?, 'MAÑANA', ?, 0, ?, '', 'borrador', ?)");
-                $stmtM->execute([$fecha, $montoInicial, $montoInicial, $_SESSION['auth_id']]);
+                $stmtM->execute([$fecha, $montoInicial, $montoInicial, $usuarioId]);
                 
                 // Crear TARDE
                 $stmtT = $pdo->prepare("INSERT INTO gastos_yape (fecha, turno, yape_recibido, total_gastado, vuelto, observacion, estado, usuario_id) VALUES (?, 'TARDE', 0, 0, 0, '', 'borrador', ?)");
-                $stmtT->execute([$fecha, $_SESSION['auth_id']]);
+                $stmtT->execute([$fecha, $usuarioId]);
             });
 
-            $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'YAPE_CREADO_DIA', 'FINANZAS', "Se inicializó el día $fecha con un monto inicial de $montoInicial.");
+            $this->registrarAuditoriaSeguro('YAPE_CREADO_DIA', 'FINANZAS', "Se inicializó el día $fecha con un monto inicial de $montoInicial.");
             return ['ok' => true, 'msg' => 'Se han creado los turnos MAÑANA y TARDE para el día indicado.'];
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             if (strpos($e->getMessage(), 'Duplicate entry') !== false) {
                 return ['ok' => false, 'msg' => 'Ya existe un registro para esta fecha debido a colisión en base de datos.'];
             }
@@ -137,7 +157,7 @@ class YapeController {
             return $this->model->ejecutarTransaccionCierre(function($pdo) use ($id, $registro, $vuelto) {
                 // 1. Cerrar registro
                 $this->model->cambiarEstado($id, 'cerrado');
-                $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'YAPE_CERRADO', 'FINANZAS', "Gastos Yape $id cerrado. Vuelto sobrante = S/$vuelto");
+                $this->registrarAuditoriaSeguro('YAPE_CERRADO', 'FINANZAS', "Gastos Yape $id cerrado. Vuelto sobrante = S/$vuelto");
 
                 // 2. Si hay vuelto, mandarlo al Flujo de Caja
                 if ($vuelto > 0) {

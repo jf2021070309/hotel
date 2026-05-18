@@ -96,10 +96,13 @@ createApp({
         if (res.data.ok) {
           dataListaOriginal.value = res.data.data;
           aplicarFiltrosFront();
+        } else if (!silent) {
+          Swal.fire('Error', res.data?.msg || 'No se pudo listar los registros Yape.', 'error');
         }
       } catch (e) {
         console.error("Error al listar registros Yape", e);
-        Swal.fire('Error', 'Fallo de red al listar', 'error');
+        const msg = e.response?.data?.msg || e.message || 'Fallo de red al listar';
+        Swal.fire('Error', msg, 'error');
       } finally {
         if (!silent) loading.value = false;
       }
@@ -145,10 +148,11 @@ createApp({
               Swal.fire({ icon: 'success', title: 'Día inicializado correctamente', toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
               listar();
           } else {
-              Swal.fire('Error', res.data.msg, 'error');
+              Swal.fire('Error', res.data?.msg || 'No se pudo crear el día Yape.', 'error');
           }
       } catch (e) {
-          Swal.fire('Error', e.response?.data?.msg || 'Fallo de conexión.', 'error');
+          const msg = e.response?.data?.msg || e.message || 'Fallo de conexión.';
+          Swal.fire('Error', msg, 'error');
       }
     };
 

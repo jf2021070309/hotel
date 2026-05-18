@@ -308,7 +308,7 @@ CREATE TABLE IF NOT EXISTS `limpieza_registros` (
   `fecha` date NOT NULL,
   `habitacion_id` int(10) unsigned NOT NULL,
   `habitacion` varchar(10) NOT NULL,
-  `tipo_limpieza` enum('estimacion','estadía','salida','programada') NOT NULL,
+  `tipo_limpieza` enum('estimacion','reposo','salida','programada') NOT NULL,
   `prioridad` enum('baja','normal','alta') DEFAULT 'normal',
   `estado` enum('pendiente','en proceso','lista') DEFAULT 'pendiente',
   `hora_inicio` datetime DEFAULT NULL,

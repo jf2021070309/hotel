@@ -14,10 +14,11 @@ include $_projectRoot . '/includes/head.php';
 
 <style>
   .clientes-toolbar {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    display: flex;
+    flex-wrap: wrap;
     gap: 14px;
-    align-items: center;
+    align-items: flex-end;
+    justify-content: space-between;
   }
 
   .clientes-filter-row,
@@ -52,6 +53,7 @@ include $_projectRoot . '/includes/head.php';
 
   .clientes-actions-row {
     justify-content: flex-end;
+    margin-left: auto;
   }
 
   .clientes-search {
@@ -59,12 +61,9 @@ include $_projectRoot . '/includes/head.php';
   }
 
   @media (max-width: 1320px) {
-    .clientes-toolbar {
-      grid-template-columns: 1fr;
-    }
-
     .clientes-actions-row {
-      justify-content: space-between;
+      justify-content: flex-end;
+      margin-left: 0;
     }
 
     .clientes-search {

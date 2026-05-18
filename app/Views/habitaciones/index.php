@@ -213,7 +213,7 @@ include '../../../includes/sidebar.php';
 .badge-libre { background-color: #d1fae5; color: #065f46; border: 1px solid #34d399; }
 .badge-ocupado { background-color: #fee2e2; color: #991b1b; border: 1px solid #f87171; }
 .badge-reservado { background-color: #fef3c7; color: #92400e; border: 1px solid #fbbf24; }
-.badge-limpieza { background-color: #e0f2fe; color: #075985; border: 1px solid #38bdf8; }
+.badge-limpieza { background-color: #efebe9; color: #5d4037; border: 1px solid #bcaaa4; }
 .badge-mantenimiento { background-color: #f1f5f9; color: #475569; border: 1px solid #94a3b8; }
 .text-sm { font-size: 0.85rem; }
 .table-hover tbody tr:hover { background-color: #f8f9fa !important; }

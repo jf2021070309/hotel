@@ -238,7 +238,7 @@ include $_projectRoot . '/includes/sidebar.php';
   .res-booking .badge-pax, .res-directo .badge-pax, .res-inhouse .badge-pax { background: rgba(0,0,0,0.25) !important; color: #fff !important; }
   
   /* Mantener el resto para otros elementos */
-  .est-limpieza, .est-sucio { background: #9E9E9E; color: #fff; box-shadow: inset 0 0 10px rgba(0,0,0,0.1); }
+  .est-limpieza, .est-sucio { background: #795548; color: #fff; box-shadow: inset 0 0 10px rgba(0,0,0,0.15); }
   .est-mantenimiento { background: #E53935; color: #fff; box-shadow: inset 0 0 10px rgba(0,0,0,0.2); }
 
   /* ── Summary pills ─────────────────────────────────────── */

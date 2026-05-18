@@ -19,7 +19,7 @@ const appConfig = {
         const fechaDetalle = ref('');
 
         const stats = computed(() => ({
-            salida:     lista.value.filter(h => h.tipo_limpieza === 'salida').length,
+            salida:     lista.value.filter(h => h.tipo_limpieza === 'salida' || h.tipo_limpieza === 'estimacion').length,
             estadia:    lista.value.filter(h => h.tipo_limpieza === 'estadía').length,
             programada: lista.value.filter(h => h.tipo_limpieza === 'programada').length
         }));
@@ -108,7 +108,7 @@ const appConfig = {
         };
 
         const getColorTop = (h) => {
-            if (h.estado === 'mantenimiento') return '#343a40'; 
+            if (h.estado === 'mantenimiento' || h.tipo_limpieza === 'estimacion') return '#343a40'; 
             if (h.estado === 'lista') return '#198754';
             if (h.tipo_limpieza === 'salida') return '#dc3545';
             if (h.tipo_limpieza === 'estadía') return '#ffc107';
@@ -117,6 +117,7 @@ const appConfig = {
 
         const getTipoClass = (t) => {
             if (t === 'salida')    return 'bg-danger';
+            if (t === 'estimacion') return 'bg-dark text-white';
             if (t === 'estadía')   return 'bg-warning text-dark';
             return 'bg-info text-dark';
         };

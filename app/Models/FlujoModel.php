@@ -59,11 +59,19 @@ class FlujoModel {
                 u.nombre AS operador,
                 COALESCE(SUM(CASE WHEN m.tipo='Ingreso' THEN 
                     (CASE WHEN m.moneda='USD' THEN m.monto * COALESCE((SELECT factor FROM tipos_cambio WHERE fecha=f.fecha AND moneda_origen='USD' LIMIT 1), 3.7)
-                          WHEN m.moneda='CLP' THEN m.monto * COALESCE((SELECT factor FROM tipos_cambio WHERE fecha=f.fecha AND moneda_origen='CLP' LIMIT 1), 0.0039)
+                          WHEN m.moneda='CLP' THEN 
+                              (CASE WHEN COALESCE((SELECT factor FROM tipos_cambio WHERE fecha=f.fecha AND moneda_origen='CLP' LIMIT 1), 256.41) > 1 
+                                    THEN m.monto / COALESCE((SELECT NULLIF(factor, 0) FROM tipos_cambio WHERE fecha=f.fecha AND moneda_origen='CLP' LIMIT 1), 256.41)
+                                    ELSE m.monto * COALESCE((SELECT factor FROM tipos_cambio WHERE fecha=f.fecha AND moneda_origen='CLP' LIMIT 1), 0.0039)
+                               END)
                           ELSE m.monto END) ELSE 0 END), 0) AS total_ingresos,
                 COALESCE(SUM(CASE WHEN m.tipo='Egreso' THEN 
                     (CASE WHEN m.moneda='USD' THEN m.monto * COALESCE((SELECT factor FROM tipos_cambio WHERE fecha=f.fecha AND moneda_origen='USD' LIMIT 1), 3.7)
-                          WHEN m.moneda='CLP' THEN m.monto * COALESCE((SELECT factor FROM tipos_cambio WHERE fecha=f.fecha AND moneda_origen='CLP' LIMIT 1), 0.0039)
+                          WHEN m.moneda='CLP' THEN 
+                              (CASE WHEN COALESCE((SELECT factor FROM tipos_cambio WHERE fecha=f.fecha AND moneda_origen='CLP' LIMIT 1), 256.41) > 1 
+                                    THEN m.monto / COALESCE((SELECT NULLIF(factor, 0) FROM tipos_cambio WHERE fecha=f.fecha AND moneda_origen='CLP' LIMIT 1), 256.41)
+                                    ELSE m.monto * COALESCE((SELECT factor FROM tipos_cambio WHERE fecha=f.fecha AND moneda_origen='CLP' LIMIT 1), 0.0039)
+                               END)
                           ELSE m.monto END) ELSE 0 END), 0) AS total_egresos,
                 COALESCE(SUM(CASE WHEN m.medio_pago='EFECTIVO' AND m.tipo='Ingreso' THEN m.monto ELSE 0 END), 0) 
               - COALESCE(SUM(CASE WHEN m.medio_pago='EFECTIVO' AND m.tipo='Egreso'  THEN m.monto ELSE 0 END), 0) AS efectivo_sobre
@@ -103,7 +111,7 @@ class FlujoModel {
         $stmtTC = $this->pdo->prepare("SELECT moneda_origen, factor FROM tipos_cambio WHERE fecha = ?");
         $stmtTC->execute([$flujo['fecha']]);
         $tcData = $stmtTC->fetchAll(PDO::FETCH_ASSOC);
-        $tc = ['USD' => 3.7, 'CLP' => 0.0039]; // Fallbacks
+        $tc = ['USD' => 3.7, 'CLP' => 256.41]; // Fallbacks
         foreach($tcData as $row) { $tc[$row['moneda_origen']] = (float)$row['factor']; }
         $flujo['tc'] = $tc;
 
@@ -262,11 +270,19 @@ class FlujoModel {
                 f.turno,
                 COALESCE(SUM(CASE WHEN m.tipo='Ingreso' THEN 
                     (CASE WHEN m.moneda='USD' THEN m.monto * COALESCE((SELECT factor FROM tipos_cambio WHERE fecha=f.fecha AND moneda_origen='USD' LIMIT 1), 3.7)
-                          WHEN m.moneda='CLP' THEN m.monto * COALESCE((SELECT factor FROM tipos_cambio WHERE fecha=f.fecha AND moneda_origen='CLP' LIMIT 1), 0.0039)
+                          WHEN m.moneda='CLP' THEN 
+                              (CASE WHEN COALESCE((SELECT factor FROM tipos_cambio WHERE fecha=f.fecha AND moneda_origen='CLP' LIMIT 1), 256.41) > 1 
+                                    THEN m.monto / COALESCE((SELECT NULLIF(factor, 0) FROM tipos_cambio WHERE fecha=f.fecha AND moneda_origen='CLP' LIMIT 1), 256.41)
+                                    ELSE m.monto * COALESCE((SELECT factor FROM tipos_cambio WHERE fecha=f.fecha AND moneda_origen='CLP' LIMIT 1), 0.0039)
+                               END)
                           ELSE m.monto END) ELSE 0 END), 0) AS total_ingresos,
                 COALESCE(SUM(CASE WHEN m.tipo='Egreso' THEN 
                     (CASE WHEN m.moneda='USD' THEN m.monto * COALESCE((SELECT factor FROM tipos_cambio WHERE fecha=f.fecha AND moneda_origen='USD' LIMIT 1), 3.7)
-                          WHEN m.moneda='CLP' THEN m.monto * COALESCE((SELECT factor FROM tipos_cambio WHERE fecha=f.fecha AND moneda_origen='CLP' LIMIT 1), 0.0039)
+                          WHEN m.moneda='CLP' THEN 
+                              (CASE WHEN COALESCE((SELECT factor FROM tipos_cambio WHERE fecha=f.fecha AND moneda_origen='CLP' LIMIT 1), 256.41) > 1 
+                                    THEN m.monto / COALESCE((SELECT NULLIF(factor, 0) FROM tipos_cambio WHERE fecha=f.fecha AND moneda_origen='CLP' LIMIT 1), 256.41)
+                                    ELSE m.monto * COALESCE((SELECT factor FROM tipos_cambio WHERE fecha=f.fecha AND moneda_origen='CLP' LIMIT 1), 0.0039)
+                               END)
                           ELSE m.monto END) ELSE 0 END), 0) AS total_egresos,
                 COALESCE(SUM(CASE WHEN m.medio_pago='EFECTIVO' AND m.tipo='Ingreso' AND m.moneda='PEN' THEN m.monto ELSE 0 END), 0) 
               - COALESCE(SUM(CASE WHEN m.medio_pago='EFECTIVO' AND m.tipo='Egreso'  AND m.moneda='PEN' THEN m.monto ELSE 0 END), 0) AS efectivo_pen,

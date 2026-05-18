@@ -171,7 +171,9 @@ createApp({
     const toSoles = (mov) => {
       let m = parseFloat(mov.monto) || 0;
       if (mov.moneda === 'USD') m *= tc.USD;
-      if (mov.moneda === 'CLP') m *= tc.CLP;
+      if (mov.moneda === 'CLP') {
+        m = tc.CLP > 1 ? (m / tc.CLP) : (m * tc.CLP);
+      }
       return m;
     };
 
@@ -205,6 +207,20 @@ createApp({
     const efectivoEnSobreCLP = computed(() => {
       let inEfectivo = ingresos.value.filter(m => m.medio_pago === 'EFECTIVO' && m.moneda === 'CLP').reduce((acc, m) => acc + (parseFloat(m.monto)||0), 0);
       return inEfectivo.toFixed(0);
+    });
+
+    const totalesMonedas = computed(() => {
+      let penIn = ingresos.value.filter(m => m.moneda === 'PEN').reduce((acc, m) => acc + (parseFloat(m.monto) || 0), 0);
+      let penEg = egresos.value.filter(m => m.moneda === 'PEN').reduce((acc, m) => acc + (parseFloat(m.monto) || 0), 0);
+      let usdIn = ingresos.value.filter(m => m.moneda === 'USD').reduce((acc, m) => acc + (parseFloat(m.monto) || 0), 0);
+      let usdEg = egresos.value.filter(m => m.moneda === 'USD').reduce((acc, m) => acc + (parseFloat(m.monto) || 0), 0);
+      let clpIn = ingresos.value.filter(m => m.moneda === 'CLP').reduce((acc, m) => acc + (parseFloat(m.monto) || 0), 0);
+      let clpEg = egresos.value.filter(m => m.moneda === 'CLP').reduce((acc, m) => acc + (parseFloat(m.monto) || 0), 0);
+      return {
+        PEN: { ingresos: penIn.toFixed(2), egresos: penEg.toFixed(2) },
+        USD: { ingresos: usdIn.toFixed(2), egresos: usdEg.toFixed(2) },
+        CLP: { ingresos: clpIn.toFixed(0), egresos: clpEg.toFixed(0) }
+      };
     });
 
     /**
@@ -419,7 +435,7 @@ createApp({
     return {
       loading, isSaving, esNuevo, esEditable,
       cabecera, ingresos, egresos, categorias,
-      totalesDia, efectivoEnSobrePEN, efectivoEnSobreUSD, efectivoEnSobreCLP, acumuladoMensual,
+      totalesDia, efectivoEnSobrePEN, efectivoEnSobreUSD, efectivoEnSobreCLP, acumuladoMensual, totalesMonedas,
       agregarMovimiento, eliminarMovimiento, onCategoriaChange, guardarTurno, marcarDepositado, reabrirTurno,
       SERVER_DATA,
       focusedField, fmtMonto

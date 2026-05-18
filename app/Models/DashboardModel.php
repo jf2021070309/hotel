@@ -44,7 +44,7 @@ class DashboardModel {
         $stmtTC = $this->pdo->prepare("SELECT moneda_origen, factor FROM tipos_cambio WHERE fecha = ?");
         $stmtTC->execute([$fecha]);
         $tcData = $stmtTC->fetchAll(PDO::FETCH_ASSOC);
-        $tc = ['USD' => 3.7, 'CLP' => 0.0039]; 
+        $tc = ['USD' => 3.7, 'CLP' => 256.41]; 
         foreach($tcData as $row) { $tc[$row['moneda_origen']] = (float)$row['factor']; }
 
         // 3. Ingresos y Egresos del Flujo de Caja (Incluye pagos de Rooming)

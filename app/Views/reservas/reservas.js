@@ -276,8 +276,8 @@ createApp({
                 </div>
               </button>
 
-              <button id="btn-opt-sucio" class="btn btn-secondary py-3 fw-bold text-start shadow-sm d-flex align-items-center gap-3 border-0" style="background: linear-gradient(135deg, #757575, #424242); border-radius: 12px;">
-                <div class="bg-white text-secondary rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 38px; height: 38px;">
+              <button id="btn-opt-sucio" class="btn btn-secondary py-3 fw-bold text-start shadow-sm d-flex align-items-center gap-3 border-0" style="background: linear-gradient(135deg, #8D6E63, #5D4037); border-radius: 12px;">
+                <div class="bg-white rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 38px; height: 38px; color: #5D4037;">
                   <i class="bi bi-droplet-half fs-5"></i>
                 </div>
                 <div class="text-white">

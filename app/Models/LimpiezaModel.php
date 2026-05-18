@@ -10,14 +10,50 @@ class LimpiezaModel {
     }
 
     public function getDetalleDia(string $fecha): array {
-        $sql = "SELECT r.*, u.nombre as responsable_nombre 
+        // --- AUTO SYNC MANUAL STATES ---
+        $stmtHabs = $this->pdo->query("SELECT id, numero, estado FROM habitaciones WHERE estado IN ('limpieza', 'mantenimiento')");
+        $dirtyRooms = $stmtHabs->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($dirtyRooms as $room) {
+            $stmtCheck = $this->pdo->prepare("SELECT id, estado FROM limpieza_registros WHERE fecha = ? AND habitacion_id = ?");
+            $stmtCheck->execute([$fecha, $room['id']]);
+            $existing = $stmtCheck->fetch(PDO::FETCH_ASSOC);
+
+            if (!$existing) {
+                $tipo = ($room['estado'] === 'mantenimiento') ? 'estimacion' : 'salida';
+                $prioridad = ($room['estado'] === 'mantenimiento') ? 'alta' : 'normal';
+
+                $stmtInsert = $this->pdo->prepare("
+                    INSERT INTO limpieza_registros (fecha, habitacion_id, habitacion, tipo_limpieza, prioridad, estado, usuario_id)
+                    VALUES (?, ?, ?, ?, ?, 'pendiente', 1)
+                ");
+                $stmtInsert->execute([$fecha, $room['id'], $room['numero'], $tipo, $prioridad]);
+            } else {
+                if ($room['estado'] === 'limpieza' && $existing['estado'] === 'lista') {
+                    $stmtReset = $this->pdo->prepare("UPDATE limpieza_registros SET estado = 'pendiente', hora_fin = NULL WHERE id = ?");
+                    $stmtReset->execute([$existing['id']]);
+                }
+            }
+        }
+        // --------------------------------
+
+        $sql = "SELECT r.*, u.nombre as responsable_nombre, h.estado as room_estado
                 FROM limpieza_registros r
                 LEFT JOIN usuarios u ON r.usuario_id = u.id
+                JOIN habitaciones h ON r.habitacion_id = h.id
                 WHERE r.fecha = ? 
                 ORDER BY r.prioridad ASC, r.habitacion ASC";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([$fecha]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($rows as &$row) {
+            if ($row['room_estado'] === 'mantenimiento') {
+                $row['estado'] = 'mantenimiento';
+            }
+        }
+
+        return $rows;
     }
 
     public function listarHistorial(int $mes, int $anio): array {
@@ -99,11 +135,48 @@ class LimpiezaModel {
                            JOIN habitaciones h ON s.habitacion_id = h.id
                            WHERE s.estado = 'reservado' AND DATE(s.fecha_registro) IN (?, DATE_ADD(?, INTERVAL 1 DAY))";
 
+        // 4. Manuales (Limpieza o Mantenimiento manual)
+        $sqlManuales = "SELECT h.id as habitacion_id, h.numero as habitacion, 
+                               CASE WHEN h.estado = 'mantenimiento' THEN 'estimacion' ELSE 'salida' END as tipo,
+                               CASE WHEN h.estado = 'mantenimiento' THEN 'alta' ELSE 'normal' END as prioridad,
+                               'Registro Manual' as titular,
+                               NULL as fecha_checkout
+                        FROM habitaciones h
+                        WHERE h.estado IN ('limpieza', 'mantenimiento')";
+
         // Ejecutar y unir
         $stmtS = $this->pdo->prepare($sqlSalidas); $stmtS->execute([$fecha]);
         $stmtE = $this->pdo->prepare($sqlEstadias); $stmtE->execute([$fecha, $fecha]);
         $stmtP = $this->pdo->prepare($sqlProgramadas); $stmtP->execute([$fecha, $fecha]);
+        $stmtM = $this->pdo->prepare($sqlManuales); $stmtM->execute();
 
-        return array_merge($stmtS->fetchAll(PDO::FETCH_ASSOC), $stmtE->fetchAll(PDO::FETCH_ASSOC), $stmtP->fetchAll(PDO::FETCH_ASSOC));
+        $todos = array_merge(
+            $stmtS->fetchAll(PDO::FETCH_ASSOC), 
+            $stmtE->fetchAll(PDO::FETCH_ASSOC), 
+            $stmtP->fetchAll(PDO::FETCH_ASSOC),
+            $stmtM->fetchAll(PDO::FETCH_ASSOC)
+        );
+
+        // Deduplicar por habitacion_id
+        $resultado = [];
+        $idsVistos = [];
+        foreach ($todos as $item) {
+            $habId = $item['habitacion_id'];
+            if (!in_array($habId, $idsVistos)) {
+                $resultado[] = $item;
+                $idsVistos[] = $habId;
+            } else {
+                if ($item['tipo'] === 'estimacion' || $item['tipo'] === 'salida') {
+                    foreach ($resultado as $idx => $res) {
+                        if ($res['habitacion_id'] == $habId) {
+                            $resultado[$idx] = $item;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        return $resultado;
     }
 }

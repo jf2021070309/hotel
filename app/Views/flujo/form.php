@@ -250,39 +250,71 @@ $turnoQuery = $_GET['turno'] ?? 'MAÑANA';
           <div class="card-header bg-dark text-white border-0 text-center py-3" style="border-radius:12px 12px 0 0;">
             <h5 class="mb-0"><i class="bi bi-calculator me-2"></i>RESUMEN</h5>
           </div>
-          <div class="card-body bg-light p-4">
-            <div class="d-flex justify-content-between mb-2">
-              <span class="text-muted">Total Ingresos:</span>
-              <span class="fw-bold fs-6">S/ {{ totalesDia.ingreso_pen }}</span>
-            </div>
-            <div class="d-flex justify-content-between mb-3 border-bottom pb-3">
-              <span class="text-muted">Total Egresos:</span>
-              <span class="fw-bold fs-6 text-danger">- S/ {{ totalesDia.egreso_pen }}</span>
-            </div>
-            
-            <div class="alert alert-success border-2 text-center py-3 mb-3 shadow-sm">
-              <div class="small fw-bold text-success mb-1" style="letter-spacing:1px;">SE ENTREGA A ALEX (S/ SOBRE)</div>
-              <h2 class="mb-0 fw-bold">S/ {{ efectivoEnSobrePEN }}</h2>
-              <div class="small text-muted mt-1">(Ingresos en efectivo del turno)</div>
+          <div class="card-body bg-light p-3">
+            <!-- INGRESOS Y EGRESOS MULTIDIVISA (MISMO TAMAÑO) -->
+            <div class="mb-3">
+              <div class="text-muted small fw-bold mb-2 pb-1 border-bottom" style="letter-spacing:0.5px; text-transform:uppercase; font-size:11px;">
+                <i class="bi bi-wallet2 me-1"></i> Total Turno (Ingresos / Egresos)
+              </div>
+              
+              <div class="row g-2">
+                <!-- PEN Card -->
+                <div class="col-12">
+                  <div class="bg-white rounded shadow-sm border border-light" style="border-radius: 10px; padding: 10px 12px;">
+                    <div class="d-flex align-items-center mb-1">
+                      <span class="badge bg-dark text-white fw-bold me-2" style="font-size:9px; padding: 3px 6px;">PEN</span>
+                      <span class="fw-bold text-dark" style="font-size:12px;">Soles Peruanos</span>
+                    </div>
+                    <div class="d-flex justify-content-between small mb-0.5" style="font-size: 11.5px;">
+                      <span class="text-muted">Total Ingresos:</span>
+                      <span class="fw-bold text-success">S/ {{ totalesMonedas.PEN.ingresos }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between small" style="font-size: 11.5px;">
+                      <span class="text-muted">Total Egresos:</span>
+                      <span class="fw-bold text-danger">- S/ {{ totalesMonedas.PEN.egresos }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- USD Card -->
+                <div class="col-12">
+                  <div class="bg-white rounded shadow-sm border border-light" style="border-radius: 10px; padding: 10px 12px;">
+                    <div class="d-flex align-items-center mb-1">
+                      <span class="badge bg-success text-white fw-bold me-2" style="font-size:9px; padding: 3px 6px;">USD</span>
+                      <span class="fw-bold text-dark" style="font-size:12px;">Dólares</span>
+                    </div>
+                    <div class="d-flex justify-content-between small mb-0.5" style="font-size: 11.5px;">
+                      <span class="text-muted">Total Ingresos:</span>
+                      <span class="fw-bold text-success">$ {{ totalesMonedas.USD.ingresos }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between small" style="font-size: 11.5px;">
+                      <span class="text-muted">Total Egresos:</span>
+                      <span class="fw-bold text-danger">- $ {{ totalesMonedas.USD.egresos }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- CLP Card -->
+                <div class="col-12">
+                  <div class="bg-white rounded shadow-sm border border-light" style="border-radius: 10px; padding: 10px 12px;">
+                    <div class="d-flex align-items-center mb-1">
+                      <span class="badge bg-primary text-white fw-bold me-2" style="font-size:9px; padding: 3px 6px;">CLP</span>
+                      <span class="fw-bold text-dark" style="font-size:12px;">Pesos Chilenos</span>
+                    </div>
+                    <div class="d-flex justify-content-between small mb-0.5" style="font-size: 11.5px;">
+                      <span class="text-muted">Total Ingresos:</span>
+                      <span class="fw-bold text-success">$ {{ totalesMonedas.CLP.ingresos }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between small" style="font-size: 11.5px;">
+                      <span class="text-muted">Total Egresos:</span>
+                      <span class="fw-bold text-danger">- $ {{ totalesMonedas.CLP.egresos }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <div class="alert alert-warning border-2 text-center py-3 mb-4 shadow-sm" style="background-color: #fffbeb; border-color: #f59e0b;">
-              <div class="small fw-bold mb-1" style="color: #b45309; letter-spacing:1px;">ACUMULADO MENSUAL NETO DEL SOBRE</div>
-              <h2 class="mb-0 fw-bold" style="color: #b45309;">S/ {{ acumuladoMensual.PEN }}</h2>
-              <div class="small mt-1" style="color: #d97706;">(Ingresos del mes - Egresos del mes)</div>
-            </div>
 
-            <div class="mb-4">
-              <div class="text-muted small fw-bold mb-2">EXTRANJERO FÍSICO (ENTREGA TURNO / MES):</div>
-              <div class="d-flex justify-content-between align-items-center mb-1 bg-white p-2 rounded shadow-sm">
-                <span class="fw-bold text-success"><i class="bi bi-cash me-1"></i>USD Dólares</span>
-                <span class="fw-bold">$ {{ efectivoEnSobreUSD }} <span class="text-muted small" style="font-size:11px;">(Mes: $ {{ acumuladoMensual.USD }})</span></span>
-              </div>
-              <div class="d-flex justify-content-between align-items-center bg-white p-2 rounded shadow-sm">
-                <span class="fw-bold text-primary"><i class="bi bi-cash-stack me-1"></i>CLP Pesos</span>
-                <span class="fw-bold">$ {{ efectivoEnSobreCLP }} <span class="text-muted small" style="font-size:11px;">(Mes: $ {{ acumuladoMensual.CLP }})</span></span>
-              </div>
-            </div>
 
             <div class="mb-3 text-center" v-if="esEditable && !loading">
               <span v-if="isSaving" class="badge bg-info-subtle text-info border border-info px-3 py-2" style="font-size: 11px;">

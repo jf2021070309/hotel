@@ -304,7 +304,7 @@ createApp({
     ];
 
     const grupos = computed(() => ({
-      salida:  lista.value.filter(h => h.tipo_limpieza === 'salida'),
+      salida:  lista.value.filter(h => h.tipo_limpieza === 'salida' || h.tipo_limpieza === 'estimacion'),
       estadia: lista.value.filter(h => h.tipo_limpieza === 'estadía'),
       reserva: lista.value.filter(h => h.tipo_limpieza === 'programada'),
     }));

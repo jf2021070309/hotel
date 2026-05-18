@@ -322,6 +322,11 @@ createApp({
 
 
     const resetForm = () => {
+      // Limpiar IDs y campos dinámicos de control para evitar cruces
+      delete form.stay.id;
+      delete form.stay.estado;
+      delete form.stay.tipo_hab_declarado;
+
       Object.assign(form.stay, {
         habitacion_id: '',
         fecha_registro: new Date().toISOString().split('T')[0],
@@ -340,6 +345,10 @@ createApp({
         total_cobrado: 0,
         total_cobrado_orig: 0,
         estado_pago: 'pendiente',
+        procedencia: '',
+        observaciones: '',
+        ruc_factura: '',
+        razon_social: '',
         recargo_pos: false
       });
       form.pax = [{

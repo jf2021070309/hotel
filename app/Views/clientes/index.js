@@ -242,7 +242,7 @@ createApp({
                         toast: true,
                         position: 'top-end',
                         icon: 'success',
-                        title: nuevoEstado === 1 ? '¡Estrella agregada!' : '¡Estrella removida!',
+                        title: nuevoEstado === 1 ? '¡Cliente Frecuente Añadido!' : '¡Cliente Frecuente Removido!',
                         showConfirmButton: false,
                         timer: 1500
                     });

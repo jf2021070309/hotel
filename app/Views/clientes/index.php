@@ -13,24 +13,16 @@ include $_projectRoot . '/includes/head.php';
 ?>
 
 <style>
+  /* ── Toolbar: una sola fila horizontal ─────────────────────── */
   .clientes-toolbar {
     display: flex;
     flex-wrap: wrap;
-    gap: 14px;
-    align-items: flex-end;
-    justify-content: space-between;
-  }
-
-  .clientes-filter-row,
-  .clientes-actions-row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
     gap: 10px;
+    align-items: flex-end;
   }
 
   .clientes-filter-control {
-    min-width: 190px;
+    min-width: 160px;
   }
 
   .clientes-filter-label {
@@ -51,45 +43,31 @@ include $_projectRoot . '/includes/head.php';
     box-shadow: 0 2px 6px rgba(15, 23, 42, .06);
   }
 
-  .clientes-actions-row {
-    justify-content: flex-end;
-  }
-
+  /* El buscador ocupa el espacio restante en la fila */
   .clientes-search {
-    width: min(340px, 100%);
+    flex: 1 1 220px;
+    min-width: 200px;
+    max-width: 380px;
   }
 
+  /* Los botones no crecen */
   .clientes-action-buttons {
-    margin-left: auto;
-  }
-
-  @media (max-width: 1320px) {
-    .clientes-actions-row {
-      justify-content: flex-end;
-    }
-
-    .clientes-search {
-      flex: 1 1 320px;
-      width: auto;
-      max-width: none;
-    }
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
   }
 
   @media (max-width: 768px) {
-    .clientes-filter-control,
-    .clientes-actions-row,
+    .clientes-filter-control {
+      flex: 1 1 140px;
+    }
+    .clientes-search {
+      flex: 1 1 100%;
+      max-width: none;
+    }
     .clientes-action-buttons {
       width: 100%;
     }
-
-    .clientes-search {
-      flex-basis: 100%;
-    }
-
-    .clientes-action-buttons {
-      margin-left: 0;
-    }
-
     .clientes-action-buttons .btn {
       flex: 1 1 0;
       justify-content: center;
@@ -119,58 +97,52 @@ include $_projectRoot . '/includes/head.php';
       <!-- FILTROS Y ACCIONES PREMIUM -->
       <div class="card border-0 shadow-sm p-3 mb-4" style="border-radius: 12px; background: #ffffff; border: 1px solid rgba(0,0,0,0.05) !important;">
         <div class="clientes-toolbar">
-          
-          <!-- Grupo de Filtros Izquierda -->
-          <div class="clientes-filter-row">
-            <div class="clientes-filter-control">
-              <label class="clientes-filter-label" for="filtroFrecuenteClientes">Frecuencia</label>
-              <select id="filtroFrecuenteClientes" class="form-select form-select-sm clientes-filter-select" v-model="filtroFrecuente">
-                <option value="todos">Todos</option>
-                <option value="frecuentes">Frecuentes</option>
-                <option value="regulares">Regulares</option>
-              </select>
-            </div>
 
-            <div class="clientes-filter-control">
-              <label class="clientes-filter-label" for="filtroTipoClientes">Tipo de cliente</label>
-              <select id="filtroTipoClientes" class="form-select form-select-sm clientes-filter-select" v-model="filtroTipo">
-                <option value="todos">Todos los tipos</option>
-                <option value="personas">Personas (DNI)</option>
-                <option value="empresas">Empresas (RUC)</option>
-              </select>
-            </div>
+          <!-- Filtro: Frecuencia -->
+          <div class="clientes-filter-control">
+            <label class="clientes-filter-label" for="filtroFrecuenteClientes">Frecuencia</label>
+            <select id="filtroFrecuenteClientes" class="form-select form-select-sm clientes-filter-select" v-model="filtroFrecuente">
+              <option value="todos">Todos</option>
+              <option value="frecuentes">Frecuentes</option>
+              <option value="regulares">Regulares</option>
+            </select>
           </div>
 
-          <!-- Búsqueda y Acciones (Derecha) -->
-          <div class="clientes-actions-row">
-            <!-- Buscador Premium -->
-            <div class="input-group border shadow-sm bg-white clientes-search" style="border-radius: 8px; overflow: hidden; height: 42px;">
-               <span class="input-group-text bg-white border-0 ps-3">
-                  <i class="bi bi-search text-muted"></i>
-               </span>
-               <input type="text" 
-                      class="form-control border-0 shadow-none py-2" 
-                      placeholder="Buscar por nombre o documento..." 
-                      v-model="buscar"
-                      style="font-size: 13px; font-weight: 600;">
-               <button v-if="buscar" @click="buscar=''" class="btn btn-white border-0 text-muted px-2"><i class="bi bi-x-lg"></i></button>
-            </div>
+          <!-- Filtro: Tipo de cliente -->
+          <div class="clientes-filter-control">
+            <label class="clientes-filter-label" for="filtroTipoClientes">Tipo de cliente</label>
+            <select id="filtroTipoClientes" class="form-select form-select-sm clientes-filter-select" v-model="filtroTipo">
+              <option value="todos">Todos los tipos</option>
+              <option value="personas">Personas (DNI)</option>
+              <option value="empresas">Empresas (RUC)</option>
+            </select>
+          </div>
 
-            <!-- Botones de Acción -->
-            <div class="d-flex gap-2 justify-content-end clientes-action-buttons">
-              <!-- Botón Exportar Excel -->
-              <button @click="exportarExcel" 
-                      class="btn btn-success px-3 shadow-sm fw-bold d-flex align-items-center gap-2 text-nowrap transition-all" 
-                      style="border-radius: 8px; font-size: 13px; height: 42px; background-color: #198754; border-color: #198754;">
-                 <i class="bi bi-file-earmark-excel"></i> Exportar
-              </button>
-              <!-- Botón Nuevo -->
-              <button @click="abrirModalNuevo" 
-                      class="btn btn-dark px-3 shadow-sm fw-bold d-flex align-items-center gap-2 text-nowrap transition-all" 
-                      style="border-radius: 8px; font-size: 13px; height: 42px;">
-                 <i class="bi bi-plus-lg text-warning"></i> Nuevo Registro
-              </button>
-            </div>
+          <!-- Buscador Premium -->
+          <div class="input-group border shadow-sm bg-white clientes-search" style="border-radius: 8px; overflow: hidden; height: 38px;">
+            <span class="input-group-text bg-white border-0 ps-3">
+              <i class="bi bi-search text-muted"></i>
+            </span>
+            <input type="text"
+                   class="form-control border-0 shadow-none py-2"
+                   placeholder="Buscar por nombre o documento..."
+                   v-model="buscar"
+                   style="font-size: 13px; font-weight: 600;">
+            <button v-if="buscar" @click="buscar=''" class="btn btn-white border-0 text-muted px-2"><i class="bi bi-x-lg"></i></button>
+          </div>
+
+          <!-- Botones de Acción -->
+          <div class="clientes-action-buttons">
+            <button @click="exportarExcel"
+                    class="btn btn-success px-3 shadow-sm fw-bold d-flex align-items-center gap-2 text-nowrap transition-all"
+                    style="border-radius: 8px; font-size: 13px; height: 38px; background-color: #198754; border-color: #198754;">
+              <i class="bi bi-file-earmark-excel"></i> Exportar
+            </button>
+            <button @click="abrirModalNuevo"
+                    class="btn btn-dark px-3 shadow-sm fw-bold d-flex align-items-center gap-2 text-nowrap transition-all"
+                    style="border-radius: 8px; font-size: 13px; height: 38px;">
+              <i class="bi bi-plus-lg text-warning"></i> Nuevo Registro
+            </button>
           </div>
 
         </div>

@@ -66,8 +66,8 @@ include $_projectRoot . '/includes/head.php';
               </select>
             </div>
             <div class="col-12 col-md-2">
-              <input type="date" class="form-control form-control-sm fw-bold text-secondary shadow-sm" style="font-size: 11px;"
-                v-model="filtroFecha" @change="cargarDatos">
+              <input type="date" class="form-control form-control-sm fw-bold text-secondary shadow-sm"
+                style="font-size: 11px;" v-model="filtroFecha" @change="cargarDatos">
             </div>
             <div class="col col-md-auto ms-auto text-end">
               <button class="btn btn-light btn-sm shadow-sm px-3" @click="cargarDatos" :disabled="loading">
@@ -94,7 +94,6 @@ include $_projectRoot . '/includes/head.php';
           <table class="table table-hover align-middle mb-0">
             <thead class="table-dark text-white text-uppercase" style="font-size: 11px; letter-spacing: 0.5px;">
               <tr>
-                <th class="ps-4" style="width: 60px;">ID</th>
                 <th style="width: 100px;">HAB.</th>
                 <th style="width: 250px; max-width: 250px;">HUÉSPED TITULAR</th>
                 <th style="width: 160px;">FECHAS</th>
@@ -110,10 +109,9 @@ include $_projectRoot . '/includes/head.php';
                   <div class="spinner-border text-primary"></div>
                 </td>
               </tr>
-              <tr v-else v-for="s in staysFiltrados" :key="s.id" :class="{'row-unpaid': s.estado_pago !== 'pagado' && s.estado !== 'cancelado'}">
-                <td class="ps-4">
-                  <span class="badge bg-light text-dark border fw-bold">#{{ s.id }}</span>
-                </td>
+              <tr v-else v-for="s in staysFiltrados" :key="s.id"
+                :class="{'row-unpaid': s.estado_pago !== 'pagado' && s.estado !== 'cancelado'}">
+
                 <td>
                   <div class="fw-bold fs-5" style="color: #111;">#{{ s.hab_numero }}</div>
                   <span class="badge" :class="getEstadBadge(s.estado)" style="font-size: 8px; padding: 4px 8px;">{{
@@ -144,13 +142,17 @@ include $_projectRoot . '/includes/head.php';
                 <td class="text-end fw-bold">
                   <div class="text-dark">{{ s.moneda_pago == 'USD' ? '$' : (s.moneda_pago == 'CLP' ? 'P$' : 'S/') }} {{
                     fmtCur(s.total_pago) }}</div>
-                  <div class="text-success small d-flex align-items-center justify-content-end gap-1" style="font-size: 10px;">
-                    <span>Abono {{ s.moneda_pago == 'USD' ? '$' : (s.moneda_pago == 'CLP' ? 'P$' : 'S/') }} {{ fmtCur(s.total_cobrado_orig || s.total_cobrado) }}</span>
-                    <i v-if="s.divisas_count > 1" class="bi bi-globe-americas text-info" title="Pago Multidivisa" style="font-size: 11px;"></i>
+                  <div class="text-success small d-flex align-items-center justify-content-end gap-1"
+                    style="font-size: 10px;">
+                    <span>Abono {{ s.moneda_pago == 'USD' ? '$' : (s.moneda_pago == 'CLP' ? 'P$' : 'S/') }} {{
+                      fmtCur(s.total_cobrado_orig || s.total_cobrado) }}</span>
+                    <i v-if="s.divisas_count > 1" class="bi bi-globe-americas text-info" title="Pago Multidivisa"
+                      style="font-size: 11px;"></i>
                   </div>
                 </td>
                 <td class="text-center">
-                  <span v-if="s.estado === 'cancelado'" class="badge bg-secondary" style="font-size: 9px;">ANULADO</span>
+                  <span v-if="s.estado === 'cancelado'" class="badge bg-secondary"
+                    style="font-size: 9px;">ANULADO</span>
                   <span v-else class="badge" :class="getPagoClass(s.estado_pago)" style="font-size: 9px;">{{
                     s.estado_pago.toUpperCase() }}</span>
                 </td>
@@ -167,11 +169,12 @@ include $_projectRoot . '/includes/head.php';
                       title="Activar Check-in" @click="activarReserva(s)">
                       <i class="bi bi-person-check-fill"></i>
                     </button>
-                    <button v-if="s.estado !== 'reservado'" class="btn btn-white btn-sm border" title="Detalle" @click="verDetalle(s)">
+                    <button v-if="s.estado !== 'reservado'" class="btn btn-white btn-sm border" title="Detalle"
+                      @click="verDetalle(s)">
                       <i class="bi bi-eye text-primary"></i>
                     </button>
-                    <button v-if="s.estado !== 'cancelado' && s.estado !== 'reservado'" class="btn btn-white btn-sm border" title="Editar"
-                      @click="abrirEdicion(s)">
+                    <button v-if="s.estado !== 'cancelado' && s.estado !== 'reservado'"
+                      class="btn btn-white btn-sm border" title="Editar" @click="abrirEdicion(s)">
                       <i class="bi bi-pencil-square text-secondary"></i>
                     </button>
                     <button v-if="s.estado !== 'reservado' && s.estado !== 'cancelado'"
@@ -316,13 +319,14 @@ include $_projectRoot . '/includes/head.php';
               <tbody>
                 <template v-for="(fila, idx) in reportePax.filas" :key="idx">
                   <!-- Fila por cada PAX -->
-                  <tr :class="[fila.es_titular ? 'table-light fw-semibold' : '', fila.excluir ? 'opacity-50 bg-light-subtle' : '']"
+                  <tr
+                    :class="[fila.es_titular ? 'table-light fw-semibold' : '', fila.excluir ? 'opacity-50 bg-light-subtle' : '']"
                     :style="fila.es_titular ? 'border-top:2px solid #dee2e6;' : 'background:#fafafa;'">
                     <!-- CHECK BOX EXCLUIR -->
                     <td class="text-center px-1">
-                      <input v-if="fila.es_titular" type="checkbox" v-model="fila.excluir" class="form-check-input" 
-                        @change="toggleStayExclusion(fila)"
-                        title="Marcar para ocultar en Excel" style="cursor:pointer; width:16px; height:16px;">
+                      <input v-if="fila.es_titular" type="checkbox" v-model="fila.excluir" class="form-check-input"
+                        @change="toggleStayExclusion(fila)" title="Marcar para ocultar en Excel"
+                        style="cursor:pointer; width:16px; height:16px;">
                       <span v-else class="text-muted opacity-25">•</span>
                     </td>
                     <!-- OPERADOR -->
@@ -371,7 +375,7 @@ include $_projectRoot . '/includes/head.php';
                     <!-- DOCUMENTO TIPO -->
                     <td class="px-2 text-center">
                       <span class="badge bg-dark" style="font-size:9px;">{{ fila.documento_tipo }}</span>
-                    </td>  <!-- NÚMERO DOC -->
+                    </td> <!-- NÚMERO DOC -->
                     <td class="px-2 text-center fw-bold">{{ fila.documento_num }}</td>
                     <!-- CELULAR -->
                     <td class="px-2 text-center">{{ fila.celular || '—' }}</td>
@@ -479,10 +483,11 @@ include $_projectRoot . '/includes/head.php';
         </div>
         <div class="modal-body p-4">
           <p class="text-muted small mb-4">Selecciona las columnas que deseas incluir en tu reporte Excel:</p>
-          
+
           <div class="row g-2">
             <div v-for="(col, idx) in selColumnas" :key="idx" class="col-6">
-              <div class="form-check p-2 border rounded hover-bg-light" style="cursor:pointer;" @click="col.checked = !col.checked">
+              <div class="form-check p-2 border rounded hover-bg-light" style="cursor:pointer;"
+                @click="col.checked = !col.checked">
                 <input class="form-check-input ms-0 me-2" type="checkbox" v-model="col.checked" @click.stop>
                 <label class="form-check-label small fw-bold text-secondary" style="cursor:pointer;">
                   {{ col.label }}
@@ -493,12 +498,13 @@ include $_projectRoot . '/includes/head.php';
         </div>
         <div class="modal-footer border-0 p-4 pt-0">
           <div class="w-100 d-flex justify-content-between">
-            <button class="btn btn-light btn-sm fw-bold" @click="selColumnas.forEach(c => c.checked = true)">Todos</button>
+            <button class="btn btn-light btn-sm fw-bold"
+              @click="selColumnas.forEach(c => c.checked = true)">Todos</button>
             <div class="d-flex gap-2">
-               <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancelar</button>
-               <button type="button" class="btn btn-success px-5 fw-bold shadow" @click="confirmarExportacion">
-                 <i class="bi bi-download me-1"></i> Descargar
-               </button>
+              <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancelar</button>
+              <button type="button" class="btn btn-success px-5 fw-bold shadow" @click="confirmarExportacion">
+                <i class="bi bi-download me-1"></i> Descargar
+              </button>
             </div>
           </div>
         </div>
@@ -515,8 +521,10 @@ include $_projectRoot . '/includes/head.php';
         <div class="bg-primary p-3 text-white position-relative">
           <div class="d-flex justify-content-between align-items-center">
             <div>
-              <h4 class="mb-0 fw-bold"><i class="bi bi-person-badge me-2"></i>{{ form.stay.id ? 'Editar Registro #' + form.stay.id : 'Registro de Check-in' }}</h4>
-              <p class="mb-0 opacity-75 small text-uppercase fw-bold"><i class="bi bi-house-door me-1"></i> Formulario de ingreso de huéspedes</p>
+              <h4 class="mb-0 fw-bold"><i class="bi bi-person-badge me-2"></i>{{ form.stay.id ? 'Editar Registro #' +
+                form.stay.id : 'Registro de Check-in' }}</h4>
+              <p class="mb-0 opacity-75 small text-uppercase fw-bold"><i class="bi bi-house-door me-1"></i> Formulario
+                de ingreso de huéspedes</p>
             </div>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
           </div>
@@ -532,11 +540,12 @@ include $_projectRoot . '/includes/head.php';
                     <div class="modal-section-title text-primary border-primary border-opacity-25 pb-2 mb-4">
                       <i class="bi bi-calendar-check me-1"></i> 1. HABITACIÓN Y ESTADÍA
                     </div>
-                    
+
                     <div class="mb-4">
                       <label class="form-label small fw-bold text-muted">HABITACIÓN DISPONIBLE</label>
-                      <select v-model="form.stay.habitacion_id" id="inputHabitacion" class="form-select border-light shadow-sm" required
-                        @change="onHabChange" style="border-radius: 10px;">
+                      <select v-model="form.stay.habitacion_id" id="inputHabitacion"
+                        class="form-select border-light shadow-sm" required @change="onHabChange"
+                        style="border-radius: 10px;">
                         <option value="">Seleccione...</option>
                         <option v-for="h in habitacionesLibres" :key="h.id" :value="h.id">
                           #{{ h.numero }} - {{ h.tipo }} (S/ {{ h.precio_base }})
@@ -547,32 +556,35 @@ include $_projectRoot . '/includes/head.php';
                     <div class="row g-2 mb-4">
                       <div class="col-6">
                         <label class="form-label small fw-bold text-muted">CHECK-IN</label>
-                        <input type="date" v-model="form.stay.fecha_registro" class="form-control border-light shadow-sm" required
-                          @change="calcularNoches" style="border-radius: 10px;">
+                        <input type="date" v-model="form.stay.fecha_registro"
+                          class="form-control border-light shadow-sm" required @change="calcularNoches"
+                          style="border-radius: 10px;">
                       </div>
                       <div class="col-6">
                         <label class="form-label small fw-bold text-muted">HORA</label>
-                        <input type="time" v-model="form.stay.hora_checkin" class="form-control border-light shadow-sm" required style="border-radius: 10px;">
+                        <input type="time" v-model="form.stay.hora_checkin" class="form-control border-light shadow-sm"
+                          required style="border-radius: 10px;">
                       </div>
                     </div>
 
                     <div class="row g-2 mb-4">
                       <div class="col-6">
                         <label class="form-label small fw-bold text-muted">NOCHES</label>
-                        <input type="number" v-model="form.stay.noches" class="form-control border-light shadow-sm" min="1" required
-                          @input="onNochesChange" style="border-radius: 10px;">
+                        <input type="number" v-model="form.stay.noches" class="form-control border-light shadow-sm"
+                          min="1" required @input="onNochesChange" style="border-radius: 10px;">
                       </div>
                       <div class="col-6">
                         <label class="form-label small fw-bold text-muted">CHECK-OUT EST.</label>
                         <div class="p-2 bg-light rounded-3 fw-bold text-center border" style="font-size: 14px;">
-                           {{ form.stay.fecha_checkout || '—' }}
+                          {{ form.stay.fecha_checkout || '—' }}
                         </div>
                       </div>
                     </div>
 
                     <div class="mb-4">
                       <label class="form-label small fw-bold text-muted">CANAL DE RESERVA</label>
-                      <select v-model="form.stay.medio_reserva" class="form-select border-light shadow-sm" required style="border-radius: 10px;">
+                      <select v-model="form.stay.medio_reserva" class="form-select border-light shadow-sm" required
+                        style="border-radius: 10px;">
                         <option value="DIRECTO">DIRECTO</option>
                         <option value="LLAMADA">LLAMADA</option>
                         <option value="WHATSAPP">WHATSAPP</option>
@@ -586,7 +598,8 @@ include $_projectRoot . '/includes/head.php';
                         <i class="bi bi-sticky text-warning"></i> OBSERVACIONES
                         <span class="text-muted fw-normal" style="font-size:10px;">(opcional)</span>
                       </label>
-                      <textarea v-model="form.stay.observaciones" class="form-control form-control-sm border-light shadow-sm" rows="3"
+                      <textarea v-model="form.stay.observaciones"
+                        class="form-control form-control-sm border-light shadow-sm" rows="3"
                         placeholder="Nota interna de la estancia..."
                         style="resize:none; font-size:12px; border-radius: 10px;"></textarea>
                     </div>
@@ -598,37 +611,41 @@ include $_projectRoot . '/includes/head.php';
               <div class="col-md-5">
                 <div class="card border-0 shadow-sm rounded-4 h-100">
                   <div class="card-body p-3">
-                    <div class="modal-section-title text-success border-success border-opacity-25 pb-2 mb-4 d-flex justify-content-between align-items-center">
+                    <div
+                      class="modal-section-title text-success border-success border-opacity-25 pb-2 mb-4 d-flex justify-content-between align-items-center">
                       <span><i class="bi bi-people me-1"></i> 2. HUÉSPEDES (PAX)</span>
-                      <button type="button" class="btn btn-success btn-sm px-3 shadow-sm" @click="agregarPax" style="border-radius: 8px;">
+                      <button type="button" class="btn btn-success btn-sm px-3 shadow-sm" @click="agregarPax"
+                        style="border-radius: 8px;">
                         <i class="bi bi-plus-lg"></i> Añadir
                       </button>
                     </div>
 
                     <div v-for="(pax, idx) in form.pax" :key="idx"
-                      class="p-3 bg-white rounded-4 mb-4 position-relative border border-opacity-50" 
+                      class="p-3 bg-white rounded-4 mb-4 position-relative border border-opacity-50"
                       :class="pax.es_titular ? 'border-primary' : 'border-light'"
                       style="box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
-                      
+
                       <!-- Switch Titular en esquina superior derecha -->
                       <div class="position-absolute" style="top: 12px; right: 12px; z-index: 2;">
-                        <div class="form-check form-switch m-0 d-flex align-items-center gap-2 bg-light px-2 py-1 rounded-pill border shadow-sm">
-                          <input class="form-check-input m-0 cursor-pointer" type="checkbox" role="switch" :id="'switchTit'+idx"
-                            :checked="pax.es_titular" @change="setTitular(idx)">
-                          <label class="form-check-label micro-text fw-bold text-dark cursor-pointer mb-0" :for="'switchTit'+idx">TITULAR</label>
+                        <div
+                          class="form-check form-switch m-0 d-flex align-items-center gap-2 bg-light px-2 py-1 rounded-pill border shadow-sm">
+                          <input class="form-check-input m-0 cursor-pointer" type="checkbox" role="switch"
+                            :id="'switchTit'+idx" :checked="pax.es_titular" @change="setTitular(idx)">
+                          <label class="form-check-label micro-text fw-bold text-dark cursor-pointer mb-0"
+                            :for="'switchTit'+idx">TITULAR</label>
                         </div>
                       </div>
 
                       <button v-if="idx > 0" type="button" class="btn-close position-absolute"
-                        style="font-size:10px; top: -10px; right: -10px; background-color: white; border: 1px solid #ddd; padding: 8px; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" 
+                        style="font-size:10px; top: -10px; right: -10px; background-color: white; border: 1px solid #ddd; padding: 8px; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"
                         @click="form.pax.splice(idx, 1)"></button>
-                      
+
                       <!-- TIPO DOC + NÚMERO (first, to trigger autocomplete) -->
                       <div class="row g-2 mb-3 mt-3">
                         <div class="col-4">
                           <label class="micro-text fw-bold text-muted mb-1">TIPO DOC</label>
-                          <select v-model="pax.documento_tipo" class="form-select form-select-sm border-light bg-light" style="border-radius: 8px;"
-                            @change="onDocTipoChange(pax, idx)">
+                          <select v-model="pax.documento_tipo" class="form-select form-select-sm border-light bg-light"
+                            style="border-radius: 8px;" @change="onDocTipoChange(pax, idx)">
                             <option value="DNI">DNI</option>
                             <option value="CE">CE</option>
                             <option value="PASA">PASAPORTE</option>
@@ -640,8 +657,7 @@ include $_projectRoot . '/includes/head.php';
                             <input type="text" v-model="pax.documento_num" :id="'inputDocNum'+idx"
                               class="form-control form-control-sm border-light bg-light fw-bold"
                               :placeholder="pax.documento_tipo === 'DNI' ? '8 dígitos...' : pax.documento_tipo === 'CE' ? 'Carnet...' : 'Pasaporte...'"
-                              required
-                              @input="buscarPax(pax, idx); lookupDocumento(pax, idx)"
+                              required @input="buscarPax(pax, idx); lookupDocumento(pax, idx)"
                               @blur="ocultarSugerencias(idx)" autocomplete="off"
                               :maxlength="pax.documento_tipo === 'DNI' ? 8 : 20">
                             <!-- Spinner lookup activo -->
@@ -660,12 +676,14 @@ include $_projectRoot . '/includes/head.php';
                             style="top:100%; left:0; max-height:200px; overflow-y:auto; border-radius: 10px;">
                             <div v-for="s in sugerencias[idx]" :key="s.documento_num"
                               class="px-3 py-2 cursor-pointer border-bottom d-flex align-items-center justify-content-between hover-light"
-                              style="cursor:pointer; font-size:12px;" @mousedown.prevent="aplicarSugerencia(pax, idx, s)">
+                              style="cursor:pointer; font-size:12px;"
+                              @mousedown.prevent="aplicarSugerencia(pax, idx, s)">
                               <div class="d-flex align-items-center gap-2">
                                 <span class="badge bg-primary bg-opacity-10 text-primary">{{ s.documento_tipo }}</span>
                                 <span class="fw-bold">{{ s.documento_num }}</span>
                               </div>
-                              <span class="text-muted small ps-2 overflow-hidden text-nowrap" style="max-width: 150px;">{{ s.nombre_completo }}</span>
+                              <span class="text-muted small ps-2 overflow-hidden text-nowrap"
+                                style="max-width: 150px;">{{ s.nombre_completo }}</span>
                             </div>
                           </div>
                         </div>
@@ -682,12 +700,13 @@ include $_projectRoot . '/includes/head.php';
                       <div class="row g-2 mb-3">
                         <div class="col-6">
                           <label class="micro-text fw-bold text-muted mb-1">NACIONALIDAD</label>
-                          <input type="text" v-model="pax.nacionalidad" class="form-control form-control-sm border-light bg-light"
-                            placeholder="Ej: Peruana">
+                          <input type="text" v-model="pax.nacionalidad"
+                            class="form-control form-control-sm border-light bg-light" placeholder="Ej: Peruana">
                         </div>
                         <div class="col-6">
                           <label class="micro-text fw-bold text-muted mb-1">CIUDAD</label>
-                          <input type="text" v-model="pax.ciudad" class="form-control form-control-sm border-light bg-light" placeholder="Ej: Lima">
+                          <input type="text" v-model="pax.ciudad"
+                            class="form-control form-control-sm border-light bg-light" placeholder="Ej: Lima">
                         </div>
                       </div>
 
@@ -696,30 +715,34 @@ include $_projectRoot . '/includes/head.php';
                         <div class="row g-2 mb-3">
                           <div class="col-6">
                             <label class="micro-text fw-bold text-muted mb-1">CELULAR</label>
-                            <input type="text" v-model="pax.celular" class="form-control form-control-sm border-primary border-opacity-25 bg-light"
+                            <input type="text" v-model="pax.celular"
+                              class="form-control form-control-sm border-primary border-opacity-25 bg-light"
                               placeholder="999 888 777">
                           </div>
                           <div class="col-6">
                             <label class="micro-text fw-bold text-muted mb-1">EMAIL</label>
-                            <input type="email" v-model="pax.email" class="form-control form-control-sm border-primary border-opacity-25 bg-light"
+                            <input type="email" v-model="pax.email"
+                              class="form-control form-control-sm border-primary border-opacity-25 bg-light"
                               placeholder="ejemplo@correo.com">
                           </div>
                         </div>
                         <div class="form-check form-switch mb-2">
                           <input class="form-check-input" type="checkbox" v-model="pax.es_corporativo"
                             :id="'checkCorp'+idx">
-                          <label class="form-check-label small fw-bold text-primary ms-2" :for="'checkCorp'+idx" style="cursor:pointer;">
+                          <label class="form-check-label small fw-bold text-primary ms-2" :for="'checkCorp'+idx"
+                            style="cursor:pointer;">
                             <i class="bi bi-briefcase-fill me-1"></i>¿Es una empresa? (Corporativo)
                           </label>
                         </div>
-                        <div v-if="pax.es_corporativo" class="animate__animated animate__fadeIn bg-primary bg-opacity-10 p-3 rounded-4 border border-primary border-opacity-25">
+                        <div v-if="pax.es_corporativo"
+                          class="animate__animated animate__fadeIn bg-primary bg-opacity-10 p-3 rounded-4 border border-primary border-opacity-25">
                           <div class="row g-2">
                             <div class="col-5">
                               <label class="micro-text fw-bold text-primary mb-1">RUC</label>
                               <div class="position-relative">
-                                <input type="text" v-model="pax.ruc_empresa" class="form-control form-control-sm border-primary"
-                                  placeholder="RUC..." maxlength="11"
-                                  @input="form.stay.ruc_factura = pax.ruc_empresa; lookupRuc(pax, idx)">
+                                <input type="text" v-model="pax.ruc_empresa"
+                                  class="form-control form-control-sm border-primary" placeholder="RUC..."
+                                  maxlength="11" @input="form.stay.ruc_factura = pax.ruc_empresa; lookupRuc(pax, idx)">
                                 <span v-if="rucLoading[idx]"
                                   class="position-absolute top-50 end-0 translate-middle-y me-2 spinner-border spinner-border-sm text-primary"
                                   style="width:12px;height:12px;border-width:2px;">
@@ -731,7 +754,8 @@ include $_projectRoot . '/includes/head.php';
                             </div>
                             <div class="col-7">
                               <label class="micro-text fw-bold text-primary mb-1">RAZÓN SOCIAL</label>
-                              <input type="text" v-model="pax.empresa" class="form-control form-control-sm border-primary"
+                              <input type="text" v-model="pax.empresa"
+                                class="form-control form-control-sm border-primary"
                                 placeholder="Se autocompleta con RUC..." :required="pax.es_corporativo"
                                 @input="form.stay.razon_social = pax.empresa">
                             </div>
@@ -739,13 +763,13 @@ include $_projectRoot . '/includes/head.php';
                         </div>
                       </div>
 
-                      </div>
+                    </div>
 
                     <div class="p-4 rounded-4 border-dashed bg-white border border-secondary border-opacity-25">
                       <label class="form-label small fw-bold text-secondary mb-2 d-flex align-items-center gap-2">
                         <i class="bi bi-car-front-fill"></i> TRAE VEHÍCULO - ANOTA TU PLACA
                       </label>
-                      <input type="text" v-model="form.stay.carro" class="form-control border-light bg-light fw-bold" 
+                      <input type="text" v-model="form.stay.carro" class="form-control border-light bg-light fw-bold"
                         placeholder="Escriba la placa aquí... (opcional)">
                     </div>
                   </div>
@@ -763,21 +787,22 @@ include $_projectRoot . '/includes/head.php';
                     <!-- TOTAL BASE (PEN) + DIVISA -->
                     <div class="bg-light p-3 rounded-4 border border-secondary border-opacity-25 mb-4 shadow-sm">
                       <div class="d-flex align-items-center gap-2 mb-1">
-                         <div class="flex-grow-1">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                          <label class="form-label micro-text fw-bold text-secondary mb-0">TOTAL BASE (PEN)</label>
+                        <div class="flex-grow-1">
+                          <div class="d-flex justify-content-between align-items-center mb-1">
+                            <label class="form-label micro-text fw-bold text-secondary mb-0">TOTAL BASE (PEN)</label>
+                          </div>
+                          <div class="d-flex align-items-baseline gap-1">
+                            <span class="fw-bold text-dark" style="font-size: 20px;">S/</span>
+                            <input type="number" v-model="form.stay.total_pago" id="inputMontoPago"
+                              class="form-control form-control-lg border-0 bg-transparent fw-bold text-dark p-0"
+                              step="0.50" min="0" @input="recalcularMoneda" style="font-size: 24px; box-shadow: none;">
+                          </div>
                         </div>
-                        <div class="d-flex align-items-baseline gap-1">
-                           <span class="fw-bold text-dark" style="font-size: 20px;">S/</span>
-                           <input type="number" v-model="form.stay.total_pago" id="inputMontoPago"
-                             class="form-control form-control-lg border-0 bg-transparent fw-bold text-dark p-0" step="0.50" min="0"
-                             @input="recalcularMoneda" style="font-size: 24px; box-shadow: none;">
-                        </div>
-                         </div>
                       </div>
                       <div class="border-top border-secondary border-opacity-25 pt-2 mt-2">
                         <label class="form-label micro-text fw-bold text-muted mb-1">DIVISA DE COBRO</label>
-                        <select v-model="form.stay.moneda_pago" class="form-select form-select-sm border-0 bg-transparent fw-bold text-secondary"
+                        <select v-model="form.stay.moneda_pago"
+                          class="form-select form-select-sm border-0 bg-transparent fw-bold text-secondary"
                           @change="recalcularMoneda">
                           <option value="PEN">S/ Soles (PEN)</option>
                           <option value="USD">$ Dólares (USD)</option>
@@ -795,7 +820,9 @@ include $_projectRoot . '/includes/head.php';
                           class="form-control form-control-sm fw-bold text-center border-primary border-opacity-50"
                           style="width:75px;" step="0.0001" @input="recalcularMoneda">
                       </div>
-                      <div class="text-center py-2 bg-white rounded-3 border border-white shadow-sm fw-bold text-primary" style="font-size: 18px;">
+                      <div
+                        class="text-center py-2 bg-white rounded-3 border border-white shadow-sm fw-bold text-primary"
+                        style="font-size: 18px;">
                         {{ form.stay.moneda_pago == 'USD' ? '$' : 'CLP' }} {{ fmtCur(form.stay.monto_original) }}
                       </div>
                     </div>
@@ -803,9 +830,11 @@ include $_projectRoot . '/includes/head.php';
                     <!-- MÉTODO DE PAGO -->
                     <div class="mb-4">
                       <label class="form-label small fw-bold text-muted mb-2">MÉTODO DE PAGO</label>
-                      <select v-model="form.stay.metodo_pago" id="inputMetodoPago" class="form-select border-light shadow-sm" style="border-radius: 10px;">
+                      <select v-model="form.stay.metodo_pago" id="inputMetodoPago"
+                        class="form-select border-light shadow-sm" style="border-radius: 10px;">
                         <option value="">Seleccione...</option>
-                        <option v-for="m in mediosPago" :key="m.id" :value="m.nombre" :disabled="m.activo != 1">{{ m.nombre }}</option>
+                        <option v-for="m in mediosPago" :key="m.id" :value="m.nombre" :disabled="m.activo != 1">{{
+                          m.nombre }}</option>
                       </select>
                     </div>
 
@@ -813,7 +842,8 @@ include $_projectRoot . '/includes/head.php';
                       <label class="form-label small fw-bold text-muted mb-2">MODALIDAD DE COBRO</label>
                       <div class="row g-2">
                         <div class="col-6">
-                          <div class="p-2 border rounded-3 text-center cursor-pointer transition-all h-100 d-flex flex-column align-items-center justify-content-center"
+                          <div
+                            class="p-2 border rounded-3 text-center cursor-pointer transition-all h-100 d-flex flex-column align-items-center justify-content-center"
                             :class="form.tipoPago === 'completo' ? 'bg-primary text-white border-primary shadow' : 'bg-white text-muted'"
                             @click="cambiarTipoPago('completo')" style="cursor:pointer; min-height: 50px;">
                             <i class="bi bi-wallet2 mb-1"></i>
@@ -821,7 +851,8 @@ include $_projectRoot . '/includes/head.php';
                           </div>
                         </div>
                         <div class="col-6">
-                          <div class="p-2 border rounded-3 text-center cursor-pointer transition-all h-100 d-flex flex-column align-items-center justify-content-center"
+                          <div
+                            class="p-2 border rounded-3 text-center cursor-pointer transition-all h-100 d-flex flex-column align-items-center justify-content-center"
                             :class="form.tipoPago === 'adelanto' ? 'bg-dark text-white border-dark shadow' : 'bg-white text-muted'"
                             @click="cambiarTipoPago('adelanto')" style="cursor:pointer; min-height: 50px;">
                             <i class="bi bi-credit-card-2-front mb-1"></i>
@@ -832,9 +863,11 @@ include $_projectRoot . '/includes/head.php';
                     </div>
 
                     <div class="mb-4 animate__animated animate__fadeIn" v-if="form.tipoPago === 'adelanto'">
-                      <label class="form-label small fw-bold text-dark mb-1">MONTO ADELANTADO ({{ form.stay.moneda_pago }})</label>
-                      <input type="number" v-model="form.adelanto" class="form-control form-control-sm border-dark fw-bold" min="0.01"
-                        step="0.01" @input="onAdelantoChange" placeholder="0.00" style="font-size: 16px;">
+                      <label class="form-label small fw-bold text-dark mb-1">MONTO ADELANTADO ({{ form.stay.moneda_pago
+                        }})</label>
+                      <input type="number" v-model="form.adelanto"
+                        class="form-control form-control-sm border-dark fw-bold" min="0.01" step="0.01"
+                        @input="onAdelantoChange" placeholder="0.00" style="font-size: 16px;">
                       <div class="small mt-1" :class="adelantoExcede ? 'text-danger fw-bold' : 'text-muted'">
                         <span v-if="adelantoExcede">Supera el total.</span>
                         <span v-else>Saldo: {{ form.stay.moneda_pago }} {{ fmtCur(saldoPendienteOriginal) }}</span>
@@ -846,7 +879,8 @@ include $_projectRoot . '/includes/head.php';
                       <div class="row g-2">
                         <div class="col-7">
                           <label class="form-label micro-text fw-bold text-muted mb-1">COMPROBANTE</label>
-                          <select v-model="form.stay.tipo_comprobante" class="form-select form-select-sm border-0 fw-bold bg-transparent">
+                          <select v-model="form.stay.tipo_comprobante"
+                            class="form-select form-select-sm border-0 fw-bold bg-transparent">
                             <option value="BOLETA">BOLETA</option>
                             <option value="FACTURA">FACTURA</option>
                             <option value="RECIBO">FX</option>
@@ -854,8 +888,8 @@ include $_projectRoot . '/includes/head.php';
                         </div>
                         <div class="col-5">
                           <label class="form-label micro-text fw-bold text-muted mb-1">N° REF. (Opcional)</label>
-                          <input type="text" v-model="form.stay.num_comprobante" class="form-control form-control-sm border-0 bg-transparent fw-bold"
-                            placeholder="1372">
+                          <input type="text" v-model="form.stay.num_comprobante"
+                            class="form-control form-control-sm border-0 bg-transparent fw-bold" placeholder="1372">
                         </div>
                       </div>
                     </div>
@@ -866,9 +900,10 @@ include $_projectRoot . '/includes/head.php';
             </div>
           </div>
           <div class="modal-footer border-0 p-4 pt-0 bg-light d-flex justify-content-between align-items-center">
-            <button type="button" class="btn btn-link text-muted text-decoration-none fw-bold" data-bs-dismiss="modal">Cerrar sin guardar</button>
-            <button type="submit" id="btnRegistrarCheckin" class="btn btn-primary px-5 py-2 rounded-pill shadow-lg fw-bold"
-              :disabled="loading || adelantoInvalido">
+            <button type="button" class="btn btn-link text-muted text-decoration-none fw-bold"
+              data-bs-dismiss="modal">Cerrar sin guardar</button>
+            <button type="submit" id="btnRegistrarCheckin"
+              class="btn btn-primary px-5 py-2 rounded-pill shadow-lg fw-bold" :disabled="loading || adelantoInvalido">
               <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
               <i class="bi bi-check-circle-fill me-2"></i>
               {{ form.stay.id ? 'Guardar Cambios' : 'Registrar Check-in' }}
@@ -932,7 +967,8 @@ include $_projectRoot . '/includes/head.php';
                       </div>
                       <div>
                         <div class="fw-bold text-dark" style="font-size: 13px;">{{ p.nombre_completo }}</div>
-                        <div class="text-muted small">{{ p.documento_tipo }}: {{ p.documento_num }} | {{ p.nacionalidad }}</div>
+                        <div class="text-muted small">{{ p.documento_tipo }}: {{ p.documento_num }} | {{ p.nacionalidad
+                          }}</div>
                         <div v-if="p.celular || p.email" class="text-primary mt-1" style="font-size: 11px;">
                           <span v-if="p.celular"><i class="bi bi-telephone-fill me-1"></i>{{ p.celular }}</span>
                           <span v-if="p.email" class="ms-2"><i class="bi bi-envelope-fill me-1"></i>{{ p.email }}</span>
@@ -1018,14 +1054,18 @@ include $_projectRoot . '/includes/head.php';
                         <tbody>
                           <tr v-for="pag in selectedStay.pagos" :key="pag.id">
                             <td class="ps-2">
-                              <div class="fw-bold text-dark text-uppercase small" style="font-size: 10px;">{{ pag.tipo_pago }}</div>
-                              <div class="text-muted mini" style="font-size: 9px;">{{ pag.created_at.split(' ')[1] }} | {{ pag.cajero_nom }}</div>
+                              <div class="fw-bold text-dark text-uppercase small" style="font-size: 10px;">{{
+                                pag.tipo_pago }}</div>
+                              <div class="text-muted mini" style="font-size: 9px;">{{ pag.created_at.split(' ')[1] }} |
+                                {{ pag.cajero_nom }}</div>
                             </td>
                             <td class="text-end pe-2 align-middle">
-                                <span class="badge bg-light text-dark border me-1" style="font-size: 9px;">{{ pag.moneda }}</span>
-                                <span class="fw-bold text-success" style="font-size: 13px;">
-                                    {{ pag.moneda == 'USD' ? '$' : (pag.moneda == 'CLP' ? 'P$' : 'S/') }} {{ fmtCur(pag.monto) }}
-                                </span>
+                              <span class="badge bg-light text-dark border me-1" style="font-size: 9px;">{{ pag.moneda
+                                }}</span>
+                              <span class="fw-bold text-success" style="font-size: 13px;">
+                                {{ pag.moneda == 'USD' ? '$' : (pag.moneda == 'CLP' ? 'P$' : 'S/') }} {{
+                                fmtCur(pag.monto) }}
+                              </span>
                             </td>
                           </tr>
                         </tbody>
@@ -1095,7 +1135,8 @@ include $_projectRoot . '/includes/head.php';
                 <div class="small text-muted mini fw-bold text-uppercase">Total a Cobrar</div>
                 <div class="h3 fw-bold text-primary mb-0 d-flex flex-column align-items-end">
                   <div>S/ {{ consumoForm.total }}</div>
-                  <small class="text-muted">{{ monedaEstadiaSimbolo }} {{ consumoFormTotalEnMonedaEstadia.toFixed(2) }}</small>
+                  <small class="text-muted">{{ monedaEstadiaSimbolo }} {{ consumoFormTotalEnMonedaEstadia.toFixed(2)
+                    }}</small>
                 </div>
               </div>
             </div>
@@ -1106,7 +1147,7 @@ include $_projectRoot . '/includes/head.php';
                 <div class="col-6">
                   <div class="p-2 border rounded text-center cursor-pointer"
                     :class="consumoForm.pago_inmediato ? 'bg-white text-muted' : 'bg-primary text-white'"
-                    @click="consumoForm.pago_inmediato = false; consumoForm.metodo_pago = null; consumoForm.recargo_pos = false">
+                    @click="consumoForm.pago_inmediato = false; consumoForm.metodo_pago = null; consumoForm.recargo_pos = false; calcularTotalConsumo()">
                     <i class="bi bi-clock-history mb-1 d-block"></i>
                     <span class="mini fw-bold">CARGAR A HAB.</span>
                   </div>
@@ -1114,7 +1155,7 @@ include $_projectRoot . '/includes/head.php';
                 <div class="col-6">
                   <div class="p-2 border rounded text-center cursor-pointer"
                     :class="consumoForm.pago_inmediato ? 'bg-success text-white' : 'bg-white text-muted'"
-                    @click="consumoForm.pago_inmediato = true">
+                    @click="consumoForm.pago_inmediato = true; calcularTotalConsumo()">
                     <i class="bi bi-cash-stack mb-1 d-block"></i>
                     <span class="mini fw-bold">PAGO AL CONTADO</span>
                   </div>
@@ -1134,6 +1175,25 @@ include $_projectRoot . '/includes/head.php';
                   + S/ {{ (parseFloat(consumoForm.total) * 0.05 / 1.05).toFixed(2) }}
                 </span>
               </div>
+
+              <div class="row g-2 mb-2">
+                <div class="col-6">
+                  <label class="form-label small fw-bold">Moneda</label>
+                  <select class="form-select border-primary" v-model="consumoForm.moneda" @change="calcularTotalConsumo" required>
+                    <option value="PEN">S/. (PEN)</option>
+                    <option value="USD">$ (USD)</option>
+                    <option value="CLP">P$ (CLP)</option>
+                  </select>
+                </div>
+                <div class="col-6">
+                  <label class="form-label small fw-bold">Monto a Cobrar</label>
+                  <div class="input-group">
+                    <span class="input-group-text bg-light text-muted">{{ monedaConsumoSimbolo }}</span>
+                    <input type="text" class="form-control fw-bold" :value="consumoForm.monto" readonly>
+                  </div>
+                </div>
+              </div>
+
               <label class="form-label small fw-bold">Medio de Pago</label>
               <select class="form-select" v-model="consumoForm.metodo_pago" required>
                 <option v-for="m in mediosPago" :key="m.id" :value="m.nombre">{{ m.nombre }}</option>
@@ -1181,21 +1241,19 @@ include $_projectRoot . '/includes/head.php';
           <form @submit.prevent="guardarPago">
             <!-- Botones de Acceso Rápido de Moneda -->
             <div class="d-flex gap-2 mb-3">
-                <button type="button" class="btn btn-sm flex-fill fw-bold border shadow-sm" 
-                    :class="pagoForm.moneda === 'PEN' ? 'btn-primary' : 'btn-light'"
-                    @click="cambiarMonedaPago('PEN')">
-                    <i class="bi bi-cash me-1"></i> SOLES
-                </button>
-                <button type="button" class="btn btn-sm flex-fill fw-bold border shadow-sm" 
-                    :class="pagoForm.moneda === 'USD' ? 'btn-success' : 'btn-light'"
-                    @click="cambiarMonedaPago('USD')">
-                    <i class="bi bi-currency-dollar me-1"></i> DÓLARES
-                </button>
-                <button type="button" class="btn btn-sm flex-fill fw-bold border shadow-sm" 
-                    :class="pagoForm.moneda === 'CLP' ? 'btn-info text-white' : 'btn-light'"
-                    @click="cambiarMonedaPago('CLP')">
-                    <i class="bi bi-coin me-1"></i> PESOS
-                </button>
+              <button type="button" class="btn btn-sm flex-fill fw-bold border shadow-sm"
+                :class="pagoForm.moneda === 'PEN' ? 'btn-primary' : 'btn-light'" @click="cambiarMonedaPago('PEN')">
+                <i class="bi bi-cash me-1"></i> SOLES
+              </button>
+              <button type="button" class="btn btn-sm flex-fill fw-bold border shadow-sm"
+                :class="pagoForm.moneda === 'USD' ? 'btn-success' : 'btn-light'" @click="cambiarMonedaPago('USD')">
+                <i class="bi bi-currency-dollar me-1"></i> DÓLARES
+              </button>
+              <button type="button" class="btn btn-sm flex-fill fw-bold border shadow-sm"
+                :class="pagoForm.moneda === 'CLP' ? 'btn-info text-white' : 'btn-light'"
+                @click="cambiarMonedaPago('CLP')">
+                <i class="bi bi-coin me-1"></i> PESOS
+              </button>
             </div>
 
             <div class="row g-3 mb-3">
@@ -1208,22 +1266,22 @@ include $_projectRoot . '/includes/head.php';
                     <option value="USD">$</option>
                     <option value="CLP">P$</option>
                   </select>
-                  <input type="number" class="form-control border-primary fw-bold" v-model="pagoForm.monto" step="1" required
-                    @input="recalcularPago">
+                  <input type="number" class="form-control border-primary fw-bold" v-model="pagoForm.monto" step="1"
+                    required @input="recalcularPago">
                 </div>
                 <!-- Indicador de lectura de millar para montos grandes -->
-                <div v-if="pagoForm.moneda === 'CLP' && parseFloat(pagoForm.monto) > 0" 
-                     class="mt-1 mini fw-bold text-primary animate__animated animate__fadeIn">
-                    Lectura: P$ {{ parseInt(pagoForm.monto).toLocaleString('es-CL') }}
+                <div v-if="pagoForm.moneda === 'CLP' && parseFloat(pagoForm.monto) > 0"
+                  class="mt-1 mini fw-bold text-primary animate__animated animate__fadeIn">
+                  Lectura: P$ {{ parseInt(pagoForm.monto).toLocaleString('es-CL') }}
                 </div>
               </div>
               <div class="col-md-6">
                 <label class="form-label small fw-bold text-muted">
-                    Equivalente en PEN (Soles)
+                  Equivalente en PEN (Soles)
                 </label>
                 <div class="input-group input-group-sm">
-                    <span class="input-group-text bg-light fw-bold border-0">S/</span>
-                    <input type="number" class="form-control form-control-sm bg-light fw-bold text-secondary"
+                  <span class="input-group-text bg-light fw-bold border-0">S/</span>
+                  <input type="number" class="form-control form-control-sm bg-light fw-bold text-secondary"
                     v-model="pagoForm.monto_pen" readonly>
                 </div>
               </div>
@@ -1231,39 +1289,46 @@ include $_projectRoot . '/includes/head.php';
 
             <!-- Sección de configuración de pago con aire lateral -->
             <div class="px-2">
-                <div class="mb-4">
-                    <div class="d-flex justify-content-between align-items-center mb-3 px-3 py-2 bg-info bg-opacity-10 rounded border border-info border-opacity-25">
-                        <div class="form-check form-switch mb-0 ps-0 d-flex align-items-center gap-2">
-                        <input class="form-check-input m-0" type="checkbox" id="checkPosPago" v-model="pagoForm.recargo_pos"
-                            @change="recalcularPago(true)" style="cursor:pointer;">
-                        <label class="form-check-label small fw-bold text-info mb-0" for="checkPosPago">POS (+5%)</label>
-                        </div>
-                        <span v-if="pagoForm.recargo_pos" class="badge bg-danger" style="font-size:10px;">
-                        + {{ pagoForm.moneda }} {{ (parseFloat(pagoForm.monto) * 0.05 / 1.05).toFixed(2) }}
-                        </span>
-                    </div>
-
-                    <div class="mt-4">
-                        <label class="form-label small fw-bold text-muted text-uppercase" style="font-size: 10px; letter-spacing: 0.5px;">Método de Pago</label>
-                        <select class="form-select border-light shadow-sm" v-model="pagoForm.tipo" required style="border-radius: 8px;">
-                            <option value="">Seleccione...</option>
-                            <option v-for="m in mediosPago" :key="m.id" :value="m.nombre" :disabled="m.activo != 1">
-                            {{ m.nombre }}
-                            </option>
-                        </select>
-                    </div>
+              <div class="mb-4">
+                <div
+                  class="d-flex justify-content-between align-items-center mb-3 px-3 py-2 bg-info bg-opacity-10 rounded border border-info border-opacity-25">
+                  <div class="form-check form-switch mb-0 ps-0 d-flex align-items-center gap-2">
+                    <input class="form-check-input m-0" type="checkbox" id="checkPosPago" v-model="pagoForm.recargo_pos"
+                      @change="recalcularPago(true)" style="cursor:pointer;">
+                    <label class="form-check-label small fw-bold text-info mb-0" for="checkPosPago">POS (+5%)</label>
+                  </div>
+                  <span v-if="pagoForm.recargo_pos" class="badge bg-danger" style="font-size:10px;">
+                    + {{ pagoForm.moneda }} {{ (parseFloat(pagoForm.monto) * 0.05 / 1.05).toFixed(2) }}
+                  </span>
                 </div>
 
-                <div class="row g-3 mb-4 mt-3">
-                    <div class="col-6">
-                        <label class="form-label small fw-bold text-muted text-uppercase" style="font-size: 10px; letter-spacing: 0.5px;">Fecha</label>
-                        <input type="date" class="form-control border-light shadow-sm" v-model="pagoForm.fecha" required style="border-radius: 8px;">
-                    </div>
-                    <div class="col-6">
-                        <label class="form-label small fw-bold text-muted text-uppercase" style="font-size: 10px; letter-spacing: 0.5px;">N° Recibo / Ref.</label>
-                        <input type="text" class="form-control border-light shadow-sm" v-model="pagoForm.recibo" placeholder="Ref. opcional" style="border-radius: 8px;">
-                    </div>
+                <div class="mt-4">
+                  <label class="form-label small fw-bold text-muted text-uppercase"
+                    style="font-size: 10px; letter-spacing: 0.5px;">Método de Pago</label>
+                  <select class="form-select border-light shadow-sm" v-model="pagoForm.tipo" required
+                    style="border-radius: 8px;">
+                    <option value="">Seleccione...</option>
+                    <option v-for="m in mediosPago" :key="m.id" :value="m.nombre" :disabled="m.activo != 1">
+                      {{ m.nombre }}
+                    </option>
+                  </select>
                 </div>
+              </div>
+
+              <div class="row g-3 mb-4 mt-3">
+                <div class="col-6">
+                  <label class="form-label small fw-bold text-muted text-uppercase"
+                    style="font-size: 10px; letter-spacing: 0.5px;">Fecha</label>
+                  <input type="date" class="form-control border-light shadow-sm" v-model="pagoForm.fecha" required
+                    style="border-radius: 8px;">
+                </div>
+                <div class="col-6">
+                  <label class="form-label small fw-bold text-muted text-uppercase"
+                    style="font-size: 10px; letter-spacing: 0.5px;">N° Recibo / Ref.</label>
+                  <input type="text" class="form-control border-light shadow-sm" v-model="pagoForm.recibo"
+                    placeholder="Ref. opcional" style="border-radius: 8px;">
+                </div>
+              </div>
             </div>
 
             <div class="mt-2 d-grid">
@@ -1303,15 +1368,37 @@ include $_projectRoot . '/includes/head.php';
     overflow-y: auto;
   }
 
-  .text-dark-gray { color: #343a40 !important; }
-  .bg-dark-gray { background-color: #343a40 !important; }
-  .border-dark-gray { border-color: #343a40 !important; }
+  .text-dark-gray {
+    color: #343a40 !important;
+  }
 
-  .border-dashed { border-style: dashed !important; }
-  .hover-light:hover { background-color: #f8f9fa !important; }
-  .transition-all { transition: all 0.2s ease-in-out; }
-  .cursor-pointer { cursor: pointer; }
-  .hover-scale:hover { transform: scale(1.02); }
+  .bg-dark-gray {
+    background-color: #343a40 !important;
+  }
+
+  .border-dark-gray {
+    border-color: #343a40 !important;
+  }
+
+  .border-dashed {
+    border-style: dashed !important;
+  }
+
+  .hover-light:hover {
+    background-color: #f8f9fa !important;
+  }
+
+  .transition-all {
+    transition: all 0.2s ease-in-out;
+  }
+
+  .cursor-pointer {
+    cursor: pointer;
+  }
+
+  .hover-scale:hover {
+    transform: scale(1.02);
+  }
 
   .btn-white {
     background: white;

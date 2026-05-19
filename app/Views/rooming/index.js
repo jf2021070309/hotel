@@ -81,7 +81,12 @@ createApp({
       cantidad: 1,
       total: 0,
       pago_inmediato: false,
-      metodo_pago: null
+      metodo_pago: null,
+      recargo_pos: false,
+      moneda: 'PEN',
+      monto: 0,
+      monto_pen: 0,
+      tc: 1
     });
 
     // Total del consumo en la moneda de la estadía (para display en el modal)
@@ -96,6 +101,13 @@ createApp({
       if (monedaEstadia === 'USD') return totalPen / tcEstadia;
       if (monedaEstadia === 'CLP') return totalPen * tcEstadia;
       return totalPen;
+    });
+
+    const monedaConsumoSimbolo = computed(() => {
+      const m = consumoForm.moneda || 'PEN';
+      if (m === 'USD') return '$';
+      if (m === 'CLP') return 'P$';
+      return 'S/';
     });
 
     // Símbolo de la moneda de la estadía
@@ -797,7 +809,11 @@ createApp({
         total: 0,
         pago_inmediato: false,
         metodo_pago: null,
-        recargo_pos: false
+        recargo_pos: false,
+        moneda: 'PEN',
+        monto: 0,
+        monto_pen: 0,
+        tc: 1
       });
       // Recargar inventario para tener stock fresco
       const resInv = await axios.get('../../../api/inventario.php?action=listar');
@@ -832,6 +848,21 @@ createApp({
           if (mPos) consumoForm.metodo_pago = mPos.nombre;
         }
       }
+
+      // Calcular montos de pago según la moneda seleccionada
+      const tcPago = consumoForm.moneda === 'PEN' ? 1 : parseFloat(tcs.value[consumoForm.moneda]) || 1;
+      consumoForm.tc = tcPago;
+      
+      const totalPen = parseFloat(consumoForm.total) || 0;
+      consumoForm.monto_pen = totalPen.toFixed(2);
+
+      let amount = totalPen;
+      if (consumoForm.moneda === 'USD') {
+        amount = totalPen / tcPago;
+      } else if (consumoForm.moneda === 'CLP') {
+        amount = totalPen * tcPago;
+      }
+      consumoForm.monto = amount.toFixed(2);
     };
 
     const guardarConsumo = async () => {
@@ -1316,6 +1347,7 @@ createApp({
       // CONSUMOS
       inventario, inventarioAgrupado, stayParaConsumo, consumosStay, consumoForm,
       abrirConsumo, onProductoChange, calcularTotalConsumo, guardarConsumo,
+      consumoFormTotalEnMonedaEstadia, monedaEstadiaSimbolo, monedaConsumoSimbolo,
       // AUTOCOMPLETE PAX
       sugerencias, buscarPax, aplicarSugerencia, ocultarSugerencias,
       // LOOKUP DNI / RUC

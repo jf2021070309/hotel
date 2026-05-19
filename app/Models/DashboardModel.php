@@ -27,44 +27,22 @@ class DashboardModel {
         $this->pdo->query("UPDATE rooming_stays SET estado = 'cancelado' WHERE estado = 'reservado' AND fecha_checkout < CURRENT_DATE");
 
         // 1. KPI Ocupación
-        $stmtF = $this->pdo->prepare(""
-            SELECT id, estado, usuario_id FROM flujo_caja 
-            WHERE fecha = ? AND turno = ? AND usuario_id = ? 
-            ORDER BY id DESC LIMIT 1
-        ""
-        );
-        $stmtF->execute([$fecha, $turno, $usuarioId]);
-        $flujoRow = $stmtF->fetch(PDO::FETCH_ASSOC);
+        $stmtOcup = $this->pdo->prepare("
+            SELECT COUNT(id) as total, 
+                   (SELECT COUNT(DISTINCT habitacion_id) FROM rooming_stays WHERE estado IN ('activo','late_checkout') AND fecha_registro <= ? AND fecha_checkout > ?) as ocupadas 
+            FROM habitaciones
+        ");
+        $stmtOcup->execute([$fecha, $fecha]);
+        $ocupacion = $stmtOcup->fetch(PDO::FETCH_ASSOC);
 
-        $owner_name = null;
-        $using_other_flujo = false;
+        // 2. KPI PAX Hoy
+        $stmtPax = $this->pdo->prepare("SELECT SUM(pax_total) FROM rooming_stays WHERE estado IN ('activo','late_checkout') AND fecha_registro <= ? AND fecha_checkout > ?");
+        $stmtPax->execute([$fecha, $fecha]);
+        $pax_hoy = (int)$stmtPax->fetchColumn();
 
-        // Si el usuario no tiene su propio turno abierto, intentar usar cualquier turno 'borrador' del mismo turno
-        if (!$flujoRow) {
-            $stmtFb = $this->pdo->prepare("SELECT id, estado, usuario_id FROM flujo_caja WHERE fecha = ? AND turno = ? AND estado = 'borrador' ORDER BY id DESC LIMIT 1");
-            $stmtFb->execute([$fecha, $turno]);
-            $fb = $stmtFb->fetch(PDO::FETCH_ASSOC);
-            if ($fb) {
-                $flujoRow = $fb;
-                $using_other_flujo = true;
-                // obtener nombre del usuario que abrió ese turno para mostrarlo en UI
-                if (!empty($fb['usuario_id'])) {
-                    $stmtU = $this->pdo->prepare("SELECT nombre FROM usuarios WHERE id = ?");
-                    $stmtU->execute([$fb['usuario_id']]);
-                    $owner_name = $stmtU->fetchColumn() ?: null;
-                }
-            }
-        }
-
-        $mi_turno = [
-            'id' => $flujoRow ? $flujoRow['id'] : null,
-            'ingresos' => 0,
-            'egresos' => 0,
-            'efectivo_sobre' => 0,
-            'estado' => $flujoRow ? $flujoRow['estado'] : 'inexistente',
-            'using_other_flujo' => $using_other_flujo,
-            'owner_name' => $owner_name
-        ];
+        // Extraer TC del día para cálculos
+        $stmtTC = $this->pdo->prepare("SELECT moneda_origen, factor FROM tipos_cambio WHERE fecha = ?");
+        $stmtTC->execute([$fecha]);
         $tcData = $stmtTC->fetchAll(PDO::FETCH_ASSOC);
         $tc = ['USD' => 3.7, 'CLP' => 256.41]; 
         foreach($tcData as $row) { $tc[$row['moneda_origen']] = (float)$row['factor']; }
@@ -266,19 +244,41 @@ class DashboardModel {
 
         // 4. Mi Turno (Current flow)
         $stmtF = $this->pdo->prepare("
-            SELECT id, estado FROM flujo_caja 
+            SELECT id, estado, usuario_id FROM flujo_caja 
             WHERE fecha = ? AND turno = ? AND usuario_id = ? 
             ORDER BY id DESC LIMIT 1
         ");
         $stmtF->execute([$fecha, $turno, $usuarioId]);
         $flujoRow = $stmtF->fetch(PDO::FETCH_ASSOC);
 
+        $owner_name = null;
+        $using_other_flujo = false;
+
+        // Si el usuario no tiene su propio turno abierto, intentar usar cualquier turno 'borrador' del mismo turno
+        if (!$flujoRow) {
+            $stmtFb = $this->pdo->prepare("SELECT id, estado, usuario_id FROM flujo_caja WHERE fecha = ? AND turno = ? AND estado = 'borrador' ORDER BY id DESC LIMIT 1");
+            $stmtFb->execute([$fecha, $turno]);
+            $fb = $stmtFb->fetch(PDO::FETCH_ASSOC);
+            if ($fb) {
+                $flujoRow = $fb;
+                $using_other_flujo = true;
+                // obtener nombre del usuario que abrió ese turno para mostrarlo en UI
+                if (!empty($fb['usuario_id'])) {
+                    $stmtU = $this->pdo->prepare("SELECT nombre FROM usuarios WHERE id = ?");
+                    $stmtU->execute([$fb['usuario_id']]);
+                    $owner_name = $stmtU->fetchColumn() ?: null;
+                }
+            }
+        }
+
         $mi_turno = [
             'id' => $flujoRow ? $flujoRow['id'] : null,
             'ingresos' => 0,
             'egresos' => 0,
             'efectivo_sobre' => 0,
-            'estado' => $flujoRow ? $flujoRow['estado'] : 'inexistente'
+            'estado' => $flujoRow ? $flujoRow['estado'] : 'inexistente',
+            'using_other_flujo' => $using_other_flujo,
+            'owner_name' => $owner_name
         ];
 
         if ($flujoRow) {

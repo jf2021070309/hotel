@@ -80,10 +80,10 @@ class ConsumoController {
                 // Pago Inmediato: Registrar anticipo + Flujo
                 $this->roomModel->registrarPago([
                     'stay_id'   => $stayId,
-                    'monto'     => $total,
-                    'moneda'    => 'PEN',
-                    'monto_pen' => $total,
-                    'tc'        => 1.0,
+                    'monto'     => (float)($input['monto'] ?? $total),
+                    'moneda'    => $input['moneda'] ?? 'PEN',
+                    'monto_pen' => (float)($input['monto_pen'] ?? $total),
+                    'tc'        => (float)($input['tc'] ?? 1.0),
                     'tipo'      => $metodo,
                     'recargo_pos' => $input['recargo_pos'] ?? false,
                     'recibo'    => 'CONSUMO-' . date('His'),

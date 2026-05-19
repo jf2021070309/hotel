@@ -4,6 +4,8 @@
  */
 $base = '../../../';
 require_once $base . 'auth/session.php';
+require_once $base . 'auth/middleware.php';
+protegerPorRol('limpieza', 'desayunos');
 $page_title = 'Control de Desayunos — Hotel Manager';
 $export_enabled = true;
 include $base . 'includes/head.php';

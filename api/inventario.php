@@ -4,7 +4,10 @@
  */
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../auth/session.php';
+require_once __DIR__ . '/../auth/middleware.php';
 require_once __DIR__ . '/../app/Controllers/InventarioController.php';
+
+protegerPorRol('cajera', 'inventario');
 
 // Temporarily define InventarioController if it doesn't exist yet or just use the model
 // Let's create the controller first

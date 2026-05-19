@@ -4,6 +4,8 @@
  */
 $base = '../../../';
 require_once $base . 'auth/session.php';
+require_once $base . 'auth/middleware.php';
+protegerPorRol('limpieza', 'limpieza');
 $page_title = 'Panel de Limpieza — Hotel Manager';
 include $base . 'includes/head.php';
 include $base . 'includes/sidebar.php';

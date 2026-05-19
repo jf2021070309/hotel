@@ -5,9 +5,12 @@
  */
 require_once '../config/db.php';
 require_once '../auth/session.php';
+require_once '../auth/middleware.php';
 require_once '../app/Models/LimpiezaModel.php';
 require_once '../app/Controllers/LimpiezaController.php';
 require_once '../api/cron.php'; // expone la función nocheReset()
+
+protegerPorRol('limpieza', 'limpieza');
 
 header('Content-Type: application/json; charset=utf-8');
 

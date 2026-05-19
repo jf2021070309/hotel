@@ -9,7 +9,10 @@
  */
 require_once '../config/db.php';
 require_once '../auth/session.php';
+require_once '../auth/middleware.php';
 require_once '../app/Controllers/DashboardController.php';
+
+protegerPorRol('cajera', 'dashboard');
 
 header('Content-Type: application/json; charset=utf-8');
 

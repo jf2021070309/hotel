@@ -5,6 +5,8 @@
  */
 $base = '../../../';
 require_once $base . 'auth/session.php';
+require_once $base . 'auth/middleware.php';
+protegerPorRol('limpieza', 'limpieza');
 $fecha = $_GET['fecha'] ?? date('Y-m-d');
 $page_title = 'Reporte Housekeeping ' . date('d/m/Y', strtotime($fecha));
 include $base . 'includes/head.php';

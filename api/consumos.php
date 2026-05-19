@@ -4,7 +4,10 @@
  */
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../auth/session.php';
+require_once __DIR__ . '/../auth/middleware.php';
 require_once __DIR__ . '/../app/Controllers/ConsumoController.php';
+
+protegerPorRol('cajera', 'rooming');
 
 $action = $_GET['action'] ?? '';
 $input  = json_decode(file_get_contents('php://input'), true) ?? [];

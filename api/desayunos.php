@@ -5,7 +5,10 @@
  */
 require_once '../config/db.php';
 require_once '../auth/session.php';
+require_once '../auth/middleware.php';
 require_once '../app/Controllers/DesayunoController.php';
+
+protegerPorRol('limpieza', 'desayunos');
 
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');

@@ -56,25 +56,8 @@ class ConsumoController {
             $this->invModel->descontarStock($productoId, $cantidad);
 
             // 3. Sincronización Financiera y Aumento de Deuda
-            // Siempre aumentamos el total_pago del stay para que el balance sea correcto
-            // Pero necesitamos convertir el monto si la moneda de la estadía es diferente
-            $stay = $this->roomModel->getStayDetail($stayId);
-            if ($stay) {
-                $stayCurrency = $stay['moneda_pago'] ?? 'PEN';
-                $stayTc = (float)($stay['tc_aplicado'] ?? 1.0);
-
-                if ($stayCurrency !== 'PEN' && $stayTc > 0) {
-                    // Convertir de PEN a la moneda de la estadía
-                    $totalEnMonedaEstadia = $total / $stayTc;
-                    $this->roomModel->incrementarTotal($stayId, $totalEnMonedaEstadia);
-                } else {
-                    // La estadía ya está en PEN o no hay tasa de cambio, sumar directamente
-                    $this->roomModel->incrementarTotal($stayId, $total);
-                }
-            } else {
-                // Si no podemos obtener los detalles de la estadía, comportamiento original
-                $this->roomModel->incrementarTotal($stayId, $total);
-            }
+            // Aumentar la deuda del stay en PEN. El modelo se encarga de la conversión interna a la divisa original del stay.
+            $this->roomModel->incrementarTotal($stayId, $total);
 
             if ($metodo !== null) {
                 // Pago Inmediato: Registrar anticipo + Flujo

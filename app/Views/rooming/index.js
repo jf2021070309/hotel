@@ -234,9 +234,17 @@ createApp({
 
     const saldoPendienteStay = computed(() => {
       if (!selectedStay.value) return 0;
-      const total = parseFloat(selectedStay.value.total_pago) || 0;
-      const abonado = parseFloat(selectedStay.value.total_cobrado_orig || selectedStay.value.total_cobrado) || 0;
-      return total - abonado;
+      const totalOriginal = selectedStay.value.moneda_pago !== 'PEN' ? (parseFloat(selectedStay.value.monto_original) || 0) : (parseFloat(selectedStay.value.total_pago) || 0);
+      const cobradoOriginal = selectedStay.value.moneda_pago !== 'PEN' ? (parseFloat(selectedStay.value.total_cobrado_orig) || 0) : (parseFloat(selectedStay.value.total_cobrado) || 0);
+      return Math.max(0, totalOriginal - cobradoOriginal);
+    });
+
+    const saldoPendienteStayParaPago = computed(() => {
+      if (!stayParaPago.value) return 0;
+      const s = stayParaPago.value;
+      const totalOriginal = s.moneda_pago !== 'PEN' ? (parseFloat(s.monto_original) || 0) : (parseFloat(s.total_pago) || 0);
+      const cobradoOriginal = s.moneda_pago !== 'PEN' ? (parseFloat(s.total_cobrado_orig) || 0) : (parseFloat(s.total_cobrado) || 0);
+      return Math.max(0, totalOriginal - cobradoOriginal);
     });
 
     // MÉTODOS
@@ -909,7 +917,9 @@ createApp({
       stayParaPago.value = stay;
       pagoForm.stay_id = stay.id;
       // Saldo pendiente en moneda original
-      const saldoOrig = parseFloat(stay.total_pago) - parseFloat(stay.total_cobrado_orig || 0);
+      const totalOriginal = stay.moneda_pago !== 'PEN' ? (parseFloat(stay.monto_original) || 0) : (parseFloat(stay.total_pago) || 0);
+      const cobradoOriginal = stay.moneda_pago !== 'PEN' ? (parseFloat(stay.total_cobrado_orig) || 0) : (parseFloat(stay.total_cobrado) || 0);
+      const saldoOrig = Math.max(0, totalOriginal - cobradoOriginal);
       pagoForm.monto = saldoOrig.toFixed(2);
       pagoForm.moneda = stay.moneda_pago;
       pagoForm.recargo_pos = false;
@@ -969,7 +979,9 @@ createApp({
       const stay = stayParaPago.value;
 
       // Saldo pendiente en SU MONEDA ORIGINAL
-      const saldoPendOrig = parseFloat(stay.total_pago) - parseFloat(stay.total_cobrado_orig || 0);
+      const totalOriginal = stay.moneda_pago !== 'PEN' ? (parseFloat(stay.monto_original) || 0) : (parseFloat(stay.total_pago) || 0);
+      const cobradoOriginal = stay.moneda_pago !== 'PEN' ? (parseFloat(stay.total_cobrado_orig) || 0) : (parseFloat(stay.total_cobrado) || 0);
+      const saldoPendOrig = Math.max(0, totalOriginal - cobradoOriginal);
 
       // Convertir ese saldo pendiente original a PEN primeramente
       const tcStay = stay.moneda_pago === 'PEN' ? 1 : parseFloat(tcs.value[stay.moneda_pago]) || 1;
@@ -1355,7 +1367,7 @@ createApp({
       lookupLoading, lookupOk, rucLoading, rucOk,
       // REPORTE PAX
       reportePax, abrirReportePax, cargarReportePax, exportarReportePax,
-      totalConsumoStay, saldoPendienteStay
+      totalConsumoStay, saldoPendienteStay, saldoPendienteStayParaPago
     };
   }
 }).mount('#app-rooming');

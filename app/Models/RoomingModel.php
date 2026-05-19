@@ -224,7 +224,6 @@ class RoomingModel {
                 tipo_comprobante = :comprobante, num_comprobante = :num_comp, 
                 ruc_factura = :ruc, razon_social = :razon_social, observaciones = :obs, 
                 procedencia = :procedencia, carro = :carro,
-                total_cobrado = :cobrado, total_cobrado_orig = :cobrado_orig, estado_pago = :est_pago,
                 estado = :estado
                 WHERE id = :id";
             
@@ -253,9 +252,6 @@ class RoomingModel {
                 'obs'         => $data['obs'],
                 'procedencia' => $data['procedencia'] ?? '',
                 'carro'       => $data['carro'] ?? 'NO',
-                'cobrado'     => $data['cobrado'],
-                'cobrado_orig'=> $data['cobrado_orig'],
-                'est_pago'    => $data['est_pago'],
                 'estado'      => $data['estado'] ?? 'activo',
                 'id'          => $id
             ]);
@@ -283,8 +279,8 @@ class RoomingModel {
                 ]);
             }
 
-            // Al actualizar una estadía no forzamos la creación de la tarea de limpieza.
-            // Las limpiezas de salida se gestionan en el proceso de checkout o desde reservas.
+            // Recalcular y actualizar totales cobrados dinámicamente según la moneda actual y TC de la estadía
+            $this->actualizarResumenPagos($id);
 
             if ($mustCommit) $this->pdo->commit();
             return true;
@@ -461,9 +457,24 @@ class RoomingModel {
         $stmt->execute([$totalCobrado, $totalCobradoOrig, $estadoPago, $stay_id]);
     }
 
-    public function incrementarTotal(int $stayId, float $monto): bool {
-        $stmt = $this->pdo->prepare("UPDATE rooming_stays SET total_pago = total_pago + ? WHERE id = ?");
-        $res = $stmt->execute([$monto, $stayId]);
+    public function incrementarTotal(int $stayId, float $montoPen): bool {
+        $stmtStay = $this->pdo->prepare("SELECT moneda_pago, tc_aplicado FROM rooming_stays WHERE id = ?");
+        $stmtStay->execute([$stayId]);
+        $stay = $stmtStay->fetch(PDO::FETCH_ASSOC);
+        if (!$stay) return false;
+
+        $moneda = $stay['moneda_pago'] ?? 'PEN';
+        $tc = (float)($stay['tc_aplicado'] ?? 1.0);
+
+        $montoOrig = $montoPen;
+        if ($moneda === 'USD') {
+            $montoOrig = $tc > 0 ? $montoPen / $tc : 0;
+        } else if ($moneda === 'CLP') {
+            $montoOrig = $montoPen * $tc;
+        }
+
+        $stmt = $this->pdo->prepare("UPDATE rooming_stays SET total_pago = total_pago + ?, monto_original = monto_original + ? WHERE id = ?");
+        $res = $stmt->execute([$montoPen, $montoOrig, $stayId]);
         if ($res) {
             $this->actualizarResumenPagos($stayId);
         }

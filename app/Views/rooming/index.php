@@ -141,7 +141,7 @@ include $_projectRoot . '/includes/head.php';
                 </td>
                 <td class="text-end fw-bold">
                   <div class="text-dark">{{ s.moneda_pago == 'USD' ? '$' : (s.moneda_pago == 'CLP' ? 'P$' : 'S/') }} {{
-                    fmtCur(s.total_pago) }}</div>
+                    fmtCur(s.moneda_pago !== 'PEN' ? s.monto_original : s.total_pago) }}</div>
                   <div class="text-success small d-flex align-items-center justify-content-end gap-1"
                     style="font-size: 10px;">
                     <span>Abono {{ s.moneda_pago == 'USD' ? '$' : (s.moneda_pago == 'CLP' ? 'P$' : 'S/') }} {{
@@ -401,7 +401,7 @@ include $_projectRoot . '/includes/head.php';
                     <td class="px-2 text-end fw-bold" style="color:#0f3460;">
                       <span v-if="fila.es_titular">
                         {{ fila.moneda_pago == 'USD' ? '$' : (fila.moneda_pago == 'CLP' ? 'P$' : 'S/') }} {{
-                        fmtCur(fila.total_pago) }}
+                        fmtCur(fila.moneda_pago !== 'PEN' ? fila.monto_original : fila.total_pago) }}
                       </span>
                       <span v-else class="text-muted">—</span>
                     </td>
@@ -1232,8 +1232,7 @@ include $_projectRoot . '/includes/head.php';
               <div class="text-end">
                 <div class="small text-muted fw-bold text-uppercase">Saldo Pendiente</div>
                 <div class="fw-bold text-danger fs-5">{{ stayParaPago.moneda_pago == 'USD' ? '$' :
-                  (stayParaPago.moneda_pago == 'CLP' ? 'P$' : 'PEN') }} {{ (stayParaPago.total_pago -
-                  stayParaPago.total_cobrado_orig).toFixed(2) }}</div>
+                  (stayParaPago.moneda_pago == 'CLP' ? 'P$' : 'S/') }} {{ fmtCur(saldoPendienteStayParaPago) }}</div>
               </div>
             </div>
           </div>

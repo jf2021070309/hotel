@@ -395,7 +395,7 @@ class FlujoModel {
 
     public function getReporteAlexMensual(int $mes, int $anio): array {
         $reporte = [];
-        $diasEnMes = cal_days_in_month(CAL_GREGORIAN, $mes, $anio);
+        $diasEnMes = date('t', strtotime("$anio-$mes-01"));
         for ($d = 1; $d <= $diasEnMes; $d++) {
             $f = sprintf("%04d-%02d-%02d", $anio, $mes, $d);
             $reporte[$f] = $this->initDiaAlex();

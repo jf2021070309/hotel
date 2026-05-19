@@ -84,6 +84,29 @@ createApp({
       metodo_pago: null
     });
 
+    // Total del consumo en la moneda de la estadía (para display en el modal)
+    const consumoFormTotalEnMonedaEstadia = computed(() => {
+      if (!stayParaConsumo.value || parseFloat(consumoForm.total || 0) === 0) return 0;
+
+      const totalPen = parseFloat(consumoForm.total) || 0;
+      const monedaEstadia = stayParaConsumo.value.moneda_pago || 'PEN';
+      const tcEstadia = parseFloat(tcs.value[monedaEstadia]) || 1;
+
+      if (monedaEstadia === 'PEN') return totalPen;
+      if (monedaEstadia === 'USD') return totalPen / tcEstadia;
+      if (monedaEstadia === 'CLP') return totalPen * tcEstadia;
+      return totalPen;
+    });
+
+    // Símbolo de la moneda de la estadía
+    const monedaEstadiaSimbolo = computed(() => {
+      if (!stayParaConsumo.value) return 'S/';
+      const m = stayParaConsumo.value.moneda_pago;
+      if (m === 'USD') return '$';
+      if (m === 'CLP') return 'P$';
+      return 'S/';
+    });
+
     const form = reactive({
       stay: {
         habitacion_id: '',

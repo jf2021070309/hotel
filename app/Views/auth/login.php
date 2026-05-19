@@ -255,8 +255,7 @@ if (estaAutenticado()) {
             <div class="footer-copyright">
                 Sistema de Gestión Hotelera v2.1. &nbsp;|&nbsp;
                 <a href="#" style="color:#bbb; text-decoration:none;">Soporte</a> &nbsp;|&nbsp;
-                <a href="#" style="color:#bbb; text-decoration:none;">Privacidad</a><br>
-                &copy; 2026 PLATINIUM HOSPITALITY GROUP. ALL RIGHTS RESERVED.
+                <a href="#" style="color:#bbb; text-decoration:none;">Privacidad</a>
             </div>
         </div>
     </div>

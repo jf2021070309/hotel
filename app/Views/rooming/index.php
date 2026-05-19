@@ -1097,7 +1097,10 @@ include $_projectRoot . '/includes/head.php';
               </div>
               <div class="col-6 text-center">
                 <div class="small text-muted mini fw-bold text-uppercase">Total a Cobrar</div>
-                <div class="h3 fw-bold text-primary mb-0">S/ {{ consumoForm.total }}</div>
+                <div class="h3 fw-bold text-primary mb-0 d-flex flex-column align-items-end">
+                  <div>S/ {{ consumoForm.total }}</div>
+                  <small class="text-muted">{{ monedaEstadiaSimbolo }} {{ consumoFormTotalEnMonedaEstadia.toFixed(2) }}</small>
+                </div>
               </div>
             </div>
 

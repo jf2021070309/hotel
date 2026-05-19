@@ -643,7 +643,7 @@ include $_projectRoot . '/includes/sidebar.php';
                   <div v-if="getCeldaStay(hab, d).observaciones && getCeldaStay(hab, d).observaciones.trim() !== ''" class="note-indicator"></div>
                   
                   <div v-if="getCeldaStay(hab, d).observaciones && getCeldaStay(hab, d).observaciones.trim() !== ''" class="stay-tooltip text-dark">
-                    <strong style="color: #0288D1; display: block; margin-bottom: 3px; font-size: 12px;">{{ getCeldaStay(hab, d).titular }}</strong>
+                    <strong style="color: #0288D1; display: block; margin-bottom: 3px; font-size: 12px;">Observaciones</strong>
                     {{ getCeldaStay(hab, d).observaciones }}
                   </div>
                   

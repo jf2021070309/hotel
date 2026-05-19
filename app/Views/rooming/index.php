@@ -766,10 +766,6 @@ include $_projectRoot . '/includes/head.php';
                          <div class="flex-grow-1">
                         <div class="d-flex justify-content-between align-items-center mb-1">
                           <label class="form-label micro-text fw-bold text-secondary mb-0">TOTAL BASE (PEN)</label>
-                          <button type="button" class="btn btn-link btn-sm p-0 text-primary" @click="onHabChange" 
-                            title="Sincronizar con el precio actual de la habitación">
-                            <i class="bi bi-arrow-clockwise"></i> <span style="font-size: 10px;">Sincronizar</span>
-                          </button>
                         </div>
                         <div class="d-flex align-items-baseline gap-1">
                            <span class="fw-bold text-dark" style="font-size: 20px;">S/</span>

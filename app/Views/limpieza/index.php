@@ -18,6 +18,50 @@ include $base . 'includes/sidebar.php';
         background-color: #f4f7fa;
         min-height: 100vh;
     }
+
+    .btn-action-custom {
+        border-radius: 50rem;
+        padding: 0.4rem 1.1rem;
+        font-weight: 700;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        transition: all 0.2s ease-in-out;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        text-decoration: none;
+    }
+    .btn-action-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .btn-action-warning {
+        background-color: #fff8e1;
+        color: #b78103;
+        border: 1px solid #ffe082;
+    }
+    .btn-action-warning:hover {
+        background-color: #ffecb3;
+        color: #b78103;
+    }
+    .btn-action-dark {
+        background: linear-gradient(135deg, #212529, #343a40);
+        color: #fff;
+        border: none;
+    }
+    .btn-action-dark:hover {
+        background: linear-gradient(135deg, #111, #212529);
+        color: #fff;
+    }
+    .btn-action-light {
+        background-color: #fff;
+        color: #495057;
+        border: 1px solid #dee2e6;
+    }
+    .btn-action-light:hover {
+        background-color: #f8f9fa;
+        color: #212529;
+    }
 </style>
 
 <div class="main-content" id="app-limpieza" v-cloak>
@@ -29,23 +73,18 @@ include $base . 'includes/sidebar.php';
             <p class="mb-0 small text-muted fw-semibold">Gestión de estados y prioridades por habitación</p>
         </div>
         <div class="ms-auto d-flex align-items-center gap-2">
-            <button v-if="!yaGenerado" class="btn-primary-custom shadow-sm" @click="generarLista()" :disabled="loading"
-                style="border: 1px solid #111;">
-                <i class="bi bi-magic me-1 text-warning"></i> Generar Lista de Hoy
+            <button v-if="!yaGenerado" class="btn btn-action-custom btn-action-dark" @click="generarLista()" :disabled="loading">
+                <i class="bi bi-magic text-warning"></i> Generar Lista
             </button>
-            <!-- Reset nocturno manual (marca hab. ocupadas como sucias) -->
-            <button class="btn btn-outline-warning shadow-sm fw-bold" @click="resetNocturno()" :disabled="loading"
+            <button class="btn btn-action-custom btn-action-warning" @click="resetNocturno()" :disabled="loading"
                 title="Marca todas las habitaciones ocupadas como SUCIAS (limpieza de noche)">
-                <i class="bi bi-moon-stars-fill me-1"></i> Reset Nocturno
+                <i class="bi bi-moon-stars-fill text-warning"></i> Reset Nocturno
             </button>
-            <a href="<?= route('limpieza/reporte.php', $base) ?>" class="btn btn-outline-danger shadow-sm">
-                <i class="bi bi-clipboard2-check me-1"></i> Reporte / Checklist
+            <a href="<?= route('reportes/ficha_servicio.php', $base) ?>" class="btn btn-action-custom btn-action-dark">
+                <i class="bi bi-printer-fill text-warning"></i> Ficha de Servicio
             </a>
-            <a href="<?= route('reportes/ficha_servicio.php', $base) ?>" class="btn btn-dark shadow-sm">
-                <i class="bi bi-printer me-1 text-warning"></i> Ficha de Servicio
-            </a>
-            <a href="<?= route('limpieza/historial.php', $base) ?>" class="btn btn-outline-secondary shadow-sm">
-                <i class="bi bi-clock-history me-1"></i> Ver Historial
+            <a href="<?= route('limpieza/historial.php', $base) ?>" class="btn btn-action-custom btn-action-light">
+                <i class="bi bi-clock-history text-muted"></i> Historial
             </a>
         </div>
     </div>
@@ -115,7 +154,7 @@ include $base . 'includes/sidebar.php';
                                     style="font-size: 0.85rem;">
                                     {{ h.estado.toUpperCase() }}
                                 </span>
-                                <div class="d-flex gap-1">
+                                <div class="d-flex flex-wrap gap-1">
                                     <span class="badge" :class="getTipoClass(h.tipo_limpieza)"
                                         style="font-size: 0.75rem;">
                                         {{ h.tipo_limpieza.toUpperCase() }}

@@ -47,7 +47,7 @@ include $base . 'includes/sidebar.php';
                     <i class="bi bi-file-earmark-excel-fill me-1"></i> EXCEL
                 </button>
 
-                <a href="<?= route('reportes/ficha_servicio.php', $base) ?>" class="btn btn-dark btn-sm shadow-sm fw-bold px-3 border border-warning" style="height: 31px;">
+                <a :href="'<?= $base ?>app/Views/reportes/ficha_desayunos.php?fecha=' + actual.fecha" target="_blank" class="btn btn-dark btn-sm shadow-sm fw-bold px-3 border border-warning" style="height: 31px;">
                     <i class="bi bi-printer-fill me-1 text-warning"></i> FICHA
                 </a>
 

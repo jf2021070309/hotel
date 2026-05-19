@@ -151,7 +151,6 @@ include $_projectRoot . '/includes/sidebar.php';
     border-radius: 4px;
     padding: 4px 6px 8px 6px;
     cursor: pointer;
-    overflow: hidden;
     position: absolute;
     top: 1px;
     left: 1px;
@@ -174,6 +173,7 @@ include $_projectRoot . '/includes/sidebar.php';
     height: 4px;
     background: rgba(0,0,0,0.15);
     z-index: 10;
+    border-radius: 0 0 4px 4px;
   }
   .stay-progress-bar {
     height: 100%;
@@ -207,6 +207,65 @@ include $_projectRoot . '/includes/sidebar.php';
     margin: 0;
     width: fit-content;
     line-height: 1;
+  }
+  .note-indicator {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 0;
+    height: 0;
+    border-top: 10px solid #dc3545;
+    border-left: 10px solid transparent;
+    z-index: 15;
+  }
+
+  .stay-tooltip {
+    visibility: hidden;
+    opacity: 0;
+    position: absolute;
+    bottom: 100%;
+    left: 10px;
+    transform: translateY(5px);
+    background: #fff;
+    color: #333;
+    text-align: left;
+    padding: 8px 12px;
+    border-radius: 6px;
+    z-index: 9999;
+    font-size: 11.5px;
+    font-weight: 500;
+    white-space: pre-wrap;
+    width: max-content;
+    max-width: 250px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    border: 1px solid #ddd;
+    transition: opacity 0.15s, transform 0.15s;
+    pointer-events: none;
+    line-height: 1.4;
+  }
+  .stay-tooltip::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 10px;
+    border-width: 6px;
+    border-style: solid;
+    border-color: #fff transparent transparent transparent;
+  }
+  .stay-tooltip::before {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 9px;
+    border-width: 7px;
+    border-style: solid;
+    border-color: #ddd transparent transparent transparent;
+    z-index: -1;
+  }
+  .stay-block:hover .stay-tooltip {
+    visibility: visible;
+    opacity: 1;
+    transform: translateY(-5px);
   }
 
   /* ── View-mode row heights ─────────────────────────────── */
@@ -580,7 +639,15 @@ include $_projectRoot . '/includes/sidebar.php';
                      :class="getStayColorClass(getCeldaStay(hab, d))"
                      :style="{ width: (colWidth - 3) + 'px' }"
                      @click.stop="abrirDetalle(getCeldaStay(hab, d))">
-                  <span class="titular" :title="getCeldaStay(hab, d).titular">{{ getCeldaStay(hab, d).titular }}</span>
+                     
+                  <div v-if="getCeldaStay(hab, d).observaciones && getCeldaStay(hab, d).observaciones.trim() !== ''" class="note-indicator"></div>
+                  
+                  <div v-if="getCeldaStay(hab, d).observaciones && getCeldaStay(hab, d).observaciones.trim() !== ''" class="stay-tooltip text-dark">
+                    <strong style="color: #0288D1; display: block; margin-bottom: 3px; font-size: 12px;">Observaciones</strong>
+                    {{ getCeldaStay(hab, d).observaciones }}
+                  </div>
+                  
+                  <span class="titular">{{ getCeldaStay(hab, d).titular }}</span>
                   <span v-if="viewMode !== 'compacto'" class="badge-pax">
                     <i class="bi bi-people-fill"></i> {{ getCeldaStay(hab, d).pax }} PAX
                   </span>

@@ -208,6 +208,16 @@ include $_projectRoot . '/includes/sidebar.php';
     width: fit-content;
     line-height: 1;
   }
+  .note-indicator {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 0;
+    height: 0;
+    border-top: 10px solid #dc3545;
+    border-left: 10px solid transparent;
+    z-index: 15;
+  }
 
   /* ── View-mode row heights ─────────────────────────────── */
   .vm-compact tbody tr  { height: 28px; }
@@ -579,8 +589,12 @@ include $_projectRoot . '/includes/sidebar.php';
                      class="stay-block animate__animated animate__fadeIn shadow-sm"
                      :class="getStayColorClass(getCeldaStay(hab, d))"
                      :style="{ width: (colWidth - 3) + 'px' }"
+                     :title="getCeldaStay(hab, d).observaciones ? getCeldaStay(hab, d).titular + '\n---\n' + getCeldaStay(hab, d).observaciones : getCeldaStay(hab, d).titular"
                      @click.stop="abrirDetalle(getCeldaStay(hab, d))">
-                  <span class="titular" :title="getCeldaStay(hab, d).titular">{{ getCeldaStay(hab, d).titular }}</span>
+                     
+                  <div v-if="getCeldaStay(hab, d).observaciones && getCeldaStay(hab, d).observaciones.trim() !== ''" class="note-indicator"></div>
+                  
+                  <span class="titular">{{ getCeldaStay(hab, d).titular }}</span>
                   <span v-if="viewMode !== 'compacto'" class="badge-pax">
                     <i class="bi bi-people-fill"></i> {{ getCeldaStay(hab, d).pax }} PAX
                   </span>

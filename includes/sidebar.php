@@ -26,6 +26,20 @@ function isActive(string $page, string $folder_): string {
     $map = clean_route_map();
     $clean = $map[$path] ?? null;
 
+    if ($clean === null && $folder_ !== '') {
+        // Intentar con prefijo del folder (ej: admin/usuarios.php)
+        $alternativePath = $folder_ . '/' . $path;
+        if (isset($map[$alternativePath])) {
+            $clean = $map[$alternativePath];
+        } else {
+            // Intentar con prefijo completo de app/Views/ (ej: app/Views/reportes/mendoza.php)
+            $alternativePath2 = 'app/Views/' . $folder_ . '/' . $path;
+            if (isset($map[$alternativePath2])) {
+                $clean = $map[$alternativePath2];
+            }
+        }
+    }
+
     if ($clean === null) {
         if ($folder_ === '' && ($requestPath === '' || $requestPath === 'index.php')) {
             return 'active';

@@ -79,8 +79,8 @@ include $base . 'includes/sidebar.php';
                 <i class="bi bi-magic text-warning"></i> Generar Lista
             </button>
             <button class="btn btn-action-custom btn-action-warning" @click="resetNocturno()" :disabled="loading"
-                title="Marca todas las habitaciones ocupadas con estadía activa como SUCIAS">
-                <i class="bi bi-exclamation-circle-fill text-warning"></i> Marcar Ocupadas Sucias
+                title="Marca todas las habitaciones ocupadas con estadía activa como SUCIAS para su limpieza diaria">
+                <i class="bi bi-sun-fill text-warning"></i> Limpieza Diaria
             </button>
             <a href="<?= route('reportes/ficha_servicio.php', $base) ?>" class="btn btn-action-custom btn-action-dark">
                 <i class="bi bi-printer-fill text-warning"></i> Ficha de Servicio

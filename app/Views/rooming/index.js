@@ -247,6 +247,49 @@ createApp({
       return Math.max(0, totalOriginal - cobradoOriginal);
     });
 
+    const simboloMoneda = computed(() => {
+      const m = form.stay.moneda_pago || 'PEN';
+      if (m === 'USD') return '$';
+      if (m === 'CLP') return 'P$';
+      return 'S/';
+    });
+
+    const montoFinalMostrado = computed({
+      get() {
+        const totalPen = parseFloat(form.stay.total_pago) || 0;
+        const tc = parseFloat(form.stay.tc_aplicado) || 1;
+        if (form.stay.moneda_pago === 'USD') {
+          return tc > 0 ? (totalPen / tc).toFixed(2) : '0.00';
+        } else if (form.stay.moneda_pago === 'CLP') {
+          return (totalPen * tc).toFixed(2);
+        }
+        return totalPen.toFixed(2);
+      },
+      set(val) {
+        const amount = parseFloat(val) || 0;
+        const tc = parseFloat(form.stay.tc_aplicado) || 1;
+        if (form.stay.moneda_pago === 'USD') {
+          form.stay.total_pago = (amount * tc).toFixed(2);
+        } else if (form.stay.moneda_pago === 'CLP') {
+          form.stay.total_pago = tc > 0 ? (amount / tc).toFixed(2) : '0.00';
+        } else {
+          form.stay.total_pago = amount.toFixed(2);
+        }
+        recalcularMoneda();
+      }
+    });
+
+    const onPrecioDiarioChange = () => {
+      const noches = Math.max(1, parseInt(form.stay.noches) || 1);
+      const precioDiario = parseFloat(form.stay.precio_diario) || 0;
+      let base = precioDiario * noches;
+      if (form.stay.recargo_pos) {
+        base *= 1.05;
+      }
+      form.stay.total_pago = base.toFixed(2);
+      recalcularMoneda();
+    };
+
     // MÉTODOS
     const cargarHabitacionesDisponibles = async () => {
       const fi = form.stay.fecha_registro;
@@ -378,6 +421,7 @@ createApp({
         noches: 1,
         medio_reserva: 'DIRECTO',
         total_pago: 0,
+        precio_diario: 0,
         moneda_pago: 'PEN',
         monto_original: 0,
         tc_aplicado: 1,
@@ -408,10 +452,10 @@ createApp({
     const onHabChange = () => {
       const h = habitacionSeleccionada.value;
       if (h) {
-        // En rooming el precio base siempre es PEN
-        const precioBase = parseFloat(h.precio_base) || 0;
+        // En rooming el precio de la habitación por defecto ahora es 0.
+        form.stay.precio_diario = 0;
         const noches = Math.max(1, parseInt(form.stay.noches) || 1);
-        let base = precioBase * noches;
+        let base = 0;
 
         // Si el POS está activo, aplicamos el recargo al nuevo precio base
         if (form.stay.recargo_pos) {
@@ -466,6 +510,13 @@ createApp({
           recargo_pos: parseFloat(data.recargo_tarjeta || 0) > 0,
           estado: isActivating ? 'activo' : data.estado // Si es activar, pasamos a activo, sino conservamos
         });
+
+        // Calcular el precio diario cargado
+        let precioDiario = (parseFloat(data.total_pago) || 0) / (parseInt(data.noches) || 1);
+        if (parseFloat(data.recargo_tarjeta || 0) > 0) {
+          precioDiario = precioDiario / 1.05;
+        }
+        form.stay.precio_diario = precioDiario.toFixed(2);
 
         // Asegurar que la habitación actual aparezca en el selector (aunque sea ocupada)
         if (!habitacionesLibres.value.some(h => h.id == data.habitacion_id)) {
@@ -526,7 +577,17 @@ createApp({
       if (!isNaN(d.getTime())) {
         d.setDate(d.getDate() + n);
         form.stay.fecha_checkout = d.toISOString().split('T')[0];
-        onHabChange();
+        
+        // Multiplicar el precio diario por el número de noches sin resetearlo a 0
+        const noches = Math.max(1, n);
+        const precioDiario = parseFloat(form.stay.precio_diario) || 0;
+        let base = precioDiario * noches;
+        if (form.stay.recargo_pos) {
+          base *= 1.05;
+        }
+        form.stay.total_pago = base.toFixed(2);
+        
+        recalcularMoneda();
         cargarHabitacionesDisponibles();
       }
     };
@@ -536,6 +597,10 @@ createApp({
     };
 
     const recalcularMoneda = () => {
+      const oldTotalOrig = parseFloat(form.stay.monto_original) || parseFloat(form.stay.total_pago) || 0;
+      const oldAdelanto = parseFloat(form.adelanto) || 0;
+      const ratio = oldTotalOrig > 0 ? (oldAdelanto / oldTotalOrig) : 1;
+
       const tc = form.stay.moneda_pago === 'PEN' ? 1 : parseFloat(tcs.value[form.stay.moneda_pago]) || 1;
       form.stay.tc_aplicado = tc;
 
@@ -551,6 +616,9 @@ createApp({
       form.stay.monto_original = foreign.toFixed(2);
       if (form.tipoPago === 'completo') {
         form.adelanto = foreign.toFixed(2);
+      } else {
+        const newAdelantoVal = Math.min(foreign, foreign * ratio);
+        form.adelanto = newAdelantoVal.toFixed(2);
       }
       onAdelantoChange();
     };
@@ -1222,7 +1290,19 @@ createApp({
       return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     };
 
-    const fmtFecha = (f) => f;
+    const fmtFecha = (f) => {
+      if (!f) return '';
+      const datePart = f.split(' ')[0];
+      const parts = datePart.split('-');
+      if (parts.length === 3) {
+        const yyyy = parts[0];
+        const mm = parts[1];
+        const dd = parts[2];
+        const yy = yyyy.length === 4 ? yyyy.substring(2) : yyyy;
+        return `${dd}/${mm}/${yy}`;
+      }
+      return f;
+    };
     const getPagoClass = (p) => {
       if (p === 'pagado') return 'bg-success';
       if (p === 'adelanto') return 'bg-info text-dark';
@@ -1333,6 +1413,21 @@ createApp({
       if (form.stay.habitacion_id) onHabChange();
     });
 
+    watch(() => form.stay.metodo_pago, (nuevoMetodo) => {
+      if (!nuevoMetodo) return;
+      const metodo = nuevoMetodo.toUpperCase();
+      let nuevaMoneda = 'PEN';
+      if (metodo.includes('DOLARES') || metodo.includes('DÓLARES')) {
+        nuevaMoneda = 'USD';
+      } else if (metodo.includes('PESOS')) {
+        nuevaMoneda = 'CLP';
+      }
+      if (form.stay.moneda_pago !== nuevaMoneda) {
+        form.stay.moneda_pago = nuevaMoneda;
+        recalcularMoneda();
+      }
+    });
+
     onUnmounted(() => {
       if (pollingTimer) clearInterval(pollingTimer);
     });
@@ -1351,7 +1446,7 @@ createApp({
       selColumnas, abrirConfigExportar, confirmarExportacion,
       stays, habitacionesLibres, tcs, loading, busqueda, filtroPiso, filtroPago, form,
       staysFiltrados, selectedStay, stayParaPago, mediosPago, pagoForm,
-      abrirCheckin, onHabChange, calcularNoches, onNochesChange, recalcularMoneda,
+      abrirCheckin, onHabChange, calcularNoches, onNochesChange, recalcularMoneda, simboloMoneda, montoFinalMostrado, onPrecioDiarioChange,
       onAdelantoChange, agregarPax, setTitular, guardarCheckin, verDetalle, cargarDatos,
       fmtFecha, getPagoClass, getEstadBadge, procederCheckout, abrirPago, recalcularPago, cambiarMonedaPago, guardarPago,
       abrirEdicion, activarReserva, cambiarTipoPago, fmtCur, isEditingAdelanto, adelantoExcede, getMetodoPagoIcon,

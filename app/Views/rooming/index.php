@@ -541,56 +541,60 @@ include $_projectRoot . '/includes/head.php';
                       <i class="bi bi-calendar-check me-1"></i> 1. HABITACIÓN Y ESTADÍA
                     </div>
 
-                    <div class="mb-4">
-                      <label class="form-label small fw-bold text-muted">HABITACIÓN DISPONIBLE</label>
-                      <select v-model="form.stay.habitacion_id" id="inputHabitacion"
-                        class="form-select border-light shadow-sm" required @change="onHabChange"
-                        style="border-radius: 10px;">
-                        <option value="">Seleccione...</option>
-                        <option v-for="h in habitacionesLibres" :key="h.id" :value="h.id">
-                          #{{ h.numero }} - {{ h.tipo }} (S/ {{ h.precio_base }})
-                        </option>
-                      </select>
+                    <div class="row g-2 mb-3">
+                      <div class="col-8">
+                        <label class="form-label small fw-bold text-muted">HABITACIÓN DISPONIBLE</label>
+                        <select v-model="form.stay.habitacion_id" id="inputHabitacion"
+                          class="form-select border-light shadow-sm" required @change="onHabChange"
+                          style="border-radius: 10px;">
+                          <option value="">Seleccione...</option>
+                          <option v-for="h in habitacionesLibres" :key="h.id" :value="h.id">
+                            #{{ h.numero }} - {{ h.tipo }}
+                          </option>
+                        </select>
+                      </div>
+                      <div class="col-4">
+                        <label class="form-label small fw-bold text-muted">PRECIO (S/)</label>
+                        <input type="number" v-model="form.stay.precio_diario"
+                          class="form-control border-light shadow-sm bg-white fw-bold text-primary"
+                          min="0" step="0.50" required @input="onPrecioDiarioChange"
+                          style="border-radius: 10px;" placeholder="0.00">
+                      </div>
                     </div>
 
-                    <div class="row g-2 mb-4">
-                      <div class="col-6">
+                    <div class="row g-2 mb-3">
+                      <div class="col-8">
                         <label class="form-label small fw-bold text-muted">CHECK-IN</label>
                         <input type="date" v-model="form.stay.fecha_registro"
                           class="form-control border-light shadow-sm" required @change="calcularNoches"
                           style="border-radius: 10px;">
                       </div>
-                      <div class="col-6">
-                        <label class="form-label small fw-bold text-muted">HORA</label>
-                        <input type="time" v-model="form.stay.hora_checkin" class="form-control border-light shadow-sm"
-                          required style="border-radius: 10px;">
-                      </div>
-                    </div>
-
-                    <div class="row g-2 mb-4">
-                      <div class="col-6">
+                      <div class="col-4">
                         <label class="form-label small fw-bold text-muted">NOCHES</label>
                         <input type="number" v-model="form.stay.noches" class="form-control border-light shadow-sm"
                           min="1" required @input="onNochesChange" style="border-radius: 10px;">
                       </div>
-                      <div class="col-6">
-                        <label class="form-label small fw-bold text-muted">CHECK-OUT EST.</label>
-                        <div class="p-2 bg-light rounded-3 fw-bold text-center border" style="font-size: 14px;">
-                          {{ form.stay.fecha_checkout || '—' }}
-                        </div>
-                      </div>
                     </div>
 
-                    <div class="mb-4">
-                      <label class="form-label small fw-bold text-muted">CANAL DE RESERVA</label>
-                      <select v-model="form.stay.medio_reserva" class="form-select border-light shadow-sm" required
-                        style="border-radius: 10px;">
-                        <option value="DIRECTO">DIRECTO</option>
-                        <option value="LLAMADA">LLAMADA</option>
-                        <option value="WHATSAPP">WHATSAPP</option>
-                        <option value="BOOKING">BOOKING</option>
-                        <option value="CORREO">CORREO</option>
-                      </select>
+                    <div class="row g-2 mb-3">
+                      <div class="col-6">
+                        <label class="form-label small fw-bold text-muted">CHECK-OUT EST.</label>
+                        <div class="bg-light rounded-3 fw-bold text-center border shadow-sm d-flex align-items-center justify-content-center" 
+                          style="font-size: 13px; height: 38px; border-radius: 10px;">
+                          {{ fmtFecha(form.stay.fecha_checkout) || '—' }}
+                        </div>
+                      </div>
+                      <div class="col-6">
+                        <label class="form-label small fw-bold text-muted">CANAL DE RESERVA</label>
+                        <select v-model="form.stay.medio_reserva" class="form-select border-light shadow-sm" required
+                          style="border-radius: 10px;">
+                          <option value="DIRECTO">DIRECTO</option>
+                          <option value="LLAMADA">LLAMADA</option>
+                          <option value="WHATSAPP">WHATSAPP</option>
+                          <option value="BOOKING">BOOKING</option>
+                          <option value="CORREO">CORREO</option>
+                        </select>
+                      </div>
                     </div>
 
                     <div class="mb-2">
@@ -599,7 +603,7 @@ include $_projectRoot . '/includes/head.php';
                         <span class="text-muted fw-normal" style="font-size:10px;">(opcional)</span>
                       </label>
                       <textarea v-model="form.stay.observaciones"
-                        class="form-control form-control-sm border-light shadow-sm" rows="3"
+                        class="form-control form-control-sm border-light shadow-sm" rows="2"
                         placeholder="Nota interna de la estancia..."
                         style="resize:none; font-size:12px; border-radius: 10px;"></textarea>
                     </div>
@@ -784,48 +788,23 @@ include $_projectRoot . '/includes/head.php';
                       <i class="bi bi-cash-coin me-1"></i> 3. PAGO Y REGISTRO
                     </div>
 
-                    <!-- TOTAL BASE (PEN) + DIVISA -->
+                                        <!-- TOTAL BASE (PEN) + DIVISA -->
                     <div class="bg-light p-3 rounded-4 border border-secondary border-opacity-25 mb-4 shadow-sm">
                       <div class="d-flex align-items-center gap-2 mb-1">
                         <div class="flex-grow-1">
                           <div class="d-flex justify-content-between align-items-center mb-1">
-                            <label class="form-label micro-text fw-bold text-secondary mb-0">TOTAL BASE (PEN)</label>
+                            <label class="form-label micro-text fw-bold text-secondary mb-0">TOTAL A PAGAR ({{ form.stay.moneda_pago }})</label>
                           </div>
                           <div class="d-flex align-items-baseline gap-1">
-                            <span class="fw-bold text-dark" style="font-size: 20px;">S/</span>
-                            <input type="number" v-model="form.stay.total_pago" id="inputMontoPago"
+                            <span class="fw-bold text-dark" style="font-size: 20px;">{{ simboloMoneda }}</span>
+                            <input type="number" v-model="montoFinalMostrado" id="inputMontoPago"
                               class="form-control form-control-lg border-0 bg-transparent fw-bold text-dark p-0"
-                              step="0.50" min="0" @input="recalcularMoneda" style="font-size: 24px; box-shadow: none;">
+                              step="0.01" min="0" style="font-size: 24px; box-shadow: none;">
                           </div>
                         </div>
                       </div>
-                      <div class="border-top border-secondary border-opacity-25 pt-2 mt-2">
-                        <label class="form-label micro-text fw-bold text-muted mb-1">DIVISA DE COBRO</label>
-                        <select v-model="form.stay.moneda_pago"
-                          class="form-select form-select-sm border-0 bg-transparent fw-bold text-secondary"
-                          @change="recalcularMoneda">
-                          <option value="PEN">S/ Soles (PEN)</option>
-                          <option value="USD">$ Dólares (USD)</option>
-                          <option value="CLP">P$ Pesos (CLP)</option>
-                        </select>
-                      </div>
                     </div>
 
-                    <!-- TC compacto (solo si divisa != PEN) -->
-                    <div v-if="form.stay.moneda_pago !== 'PEN'"
-                      class="mb-4 p-3 rounded-4 border border-primary border-opacity-25 bg-primary bg-opacity-10 animate__animated animate__fadeIn">
-                      <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="micro-text fw-bold text-primary">TIPO DE CAMBIO</span>
-                        <input type="number" v-model="tcs[form.stay.moneda_pago]"
-                          class="form-control form-control-sm fw-bold text-center border-primary border-opacity-50"
-                          style="width:75px;" step="0.0001" @input="recalcularMoneda">
-                      </div>
-                      <div
-                        class="text-center py-2 bg-white rounded-3 border border-white shadow-sm fw-bold text-primary"
-                        style="font-size: 18px;">
-                        {{ form.stay.moneda_pago == 'USD' ? '$' : 'CLP' }} {{ fmtCur(form.stay.monto_original) }}
-                      </div>
-                    </div>
 
                     <!-- MÉTODO DE PAGO -->
                     <div class="mb-4">
@@ -838,25 +817,25 @@ include $_projectRoot . '/includes/head.php';
                       </select>
                     </div>
 
-                    <div class="mb-4">
+                    <div class="mb-3">
                       <label class="form-label small fw-bold text-muted mb-2">MODALIDAD DE COBRO</label>
                       <div class="row g-2">
                         <div class="col-6">
                           <div
-                            class="p-2 border rounded-3 text-center cursor-pointer transition-all h-100 d-flex flex-column align-items-center justify-content-center"
+                            class="p-2 border rounded-3 text-center cursor-pointer transition-all d-flex align-items-center justify-content-center gap-2"
                             :class="form.tipoPago === 'completo' ? 'bg-primary text-white border-primary shadow' : 'bg-white text-muted'"
-                            @click="cambiarTipoPago('completo')" style="cursor:pointer; min-height: 50px;">
-                            <i class="bi bi-wallet2 mb-1"></i>
-                            <span class="mini fw-bold">TOTAL</span>
+                            @click="cambiarTipoPago('completo')" style="cursor:pointer; height: 38px; border-radius: 10px;">
+                            <i class="bi bi-wallet2"></i>
+                            <span class="fw-bold" style="font-size: 11px;">TOTAL</span>
                           </div>
                         </div>
                         <div class="col-6">
                           <div
-                            class="p-2 border rounded-3 text-center cursor-pointer transition-all h-100 d-flex flex-column align-items-center justify-content-center"
+                            class="p-2 border rounded-3 text-center cursor-pointer transition-all d-flex align-items-center justify-content-center gap-2"
                             :class="form.tipoPago === 'adelanto' ? 'bg-dark text-white border-dark shadow' : 'bg-white text-muted'"
-                            @click="cambiarTipoPago('adelanto')" style="cursor:pointer; min-height: 50px;">
-                            <i class="bi bi-credit-card-2-front mb-1"></i>
-                            <span class="mini fw-bold">ADELANTO</span>
+                            @click="cambiarTipoPago('adelanto')" style="cursor:pointer; height: 38px; border-radius: 10px;">
+                            <i class="bi bi-credit-card-2-front"></i>
+                            <span class="fw-bold" style="font-size: 11px;">ADELANTO</span>
                           </div>
                         </div>
                       </div>

@@ -20,6 +20,8 @@ createApp({
     const adelantoExcede = ref(false);
     const filtroPiso = ref('');
     const filtroPago = ref('');
+    const filtroEstado = ref('activos');
+    const filtroFecha = ref('');
     const selectedStay = ref(null);
     const stayParaPago = ref(null);
     const mediosPago = ref([]);
@@ -180,11 +182,23 @@ createApp({
           s.hab_numero.toString().includes(q)
         );
       }
+      if (filtroEstado.value === 'activos') {
+        data = data.filter(s => s.estado === 'activo' || s.estado === 'late_checkout');
+      } else if (filtroEstado.value === 'reservado') {
+        data = data.filter(s => s.estado === 'reservado');
+      } else if (filtroEstado.value === 'cancelado') {
+        data = data.filter(s => s.estado === 'cancelado');
+      } else if (filtroEstado.value === 'finalizado') {
+        data = data.filter(s => s.estado === 'finalizado');
+      }
       if (filtroPiso.value) {
         data = data.filter(s => s.hab_piso == filtroPiso.value);
       }
       if (filtroPago.value) {
         data = data.filter(s => s.estado_pago === filtroPago.value);
+      }
+      if (filtroFecha.value) {
+        data = data.filter(s => s.fecha_registro === filtroFecha.value);
       }
       return data;
     });
@@ -869,18 +883,20 @@ createApp({
       }
     };
 
-    const onMetodoPagoConsumoChange = () => {
-      if (consumoForm.metodo_pago === 'SOLES EFECTIVO') {
-        consumoForm.pago_inmediato = true;
-        consumoForm.recargo_pos = false;
-      } else if (consumoForm.metodo_pago === 'POS SOLES') {
-        consumoForm.pago_inmediato = true;
+    const onPosConsumoToggle = () => {
+      if (consumoForm.recargo_pos) {
+        consumoForm.metodo_pago = 'POS SOLES';
+      } else {
+        consumoForm.metodo_pago = 'SOLES EFECTIVO';
+      }
+      calcularTotalConsumo();
+    };
+
+    const onMetodoPagoDropdownChange = () => {
+      if (consumoForm.metodo_pago === 'POS SOLES') {
         consumoForm.recargo_pos = true;
       } else {
-        // CARGAR A HABITACION
-        consumoForm.pago_inmediato = false;
         consumoForm.recargo_pos = false;
-        consumoForm.metodo_pago = null;
       }
       calcularTotalConsumo();
     };
@@ -1494,7 +1510,7 @@ createApp({
     return {
       toggleStayExclusion,
       selColumnas, abrirConfigExportar, confirmarExportacion,
-      stays, habitacionesLibres, tcs, loading, busqueda, filtroPiso, filtroPago, form,
+      stays, habitacionesLibres, tcs, loading, busqueda, filtroPiso, filtroPago, filtroEstado, filtroFecha, form,
       staysFiltrados, selectedStay, stayParaPago, mediosPago, pagoForm,
       abrirCheckin, onHabChange, calcularNoches, onNochesChange, recalcularMoneda, simboloMoneda, montoFinalMostrado, onPrecioDiarioChange,
       onAdelantoChange, agregarPax, setTitular, guardarCheckin, verDetalle, cargarDatos,
@@ -1503,7 +1519,7 @@ createApp({
       saldoPendienteOriginal, adelantoInvalido,
       // CONSUMOS
       inventario, inventarioAgrupado, stayParaConsumo, consumosStay, consumoForm,
-      abrirConsumo, onProductoChange, onMetodoPagoConsumoChange, calcularTotalConsumo, guardarConsumo,
+      abrirConsumo, onProductoChange, onPosConsumoToggle, onMetodoPagoDropdownChange, calcularTotalConsumo, guardarConsumo,
       consumoFormTotalEnMonedaEstadia, monedaEstadiaSimbolo, monedaConsumoSimbolo,
       // AUTOCOMPLETE PAX
       sugerencias, buscarPax, aplicarSugerencia, ocultarSugerencias,

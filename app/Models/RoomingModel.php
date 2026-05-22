@@ -56,7 +56,7 @@ class RoomingModel {
                 (SELECT COALESCE(SUM(total), 0) FROM rooming_consumos WHERE stay_id = s.id) as total_consumos
                 FROM rooming_stays s 
                 JOIN habitaciones h ON s.habitacion_id = h.id 
-                WHERE s.estado IN ('activo', 'reservado', 'late_checkout', 'cancelado') 
+                WHERE s.estado IN ('activo', 'reservado', 'late_checkout', 'cancelado', 'finalizado') 
                 ORDER BY s.id DESC";
         return $this->pdo->query($sql)->fetchAll();
     }

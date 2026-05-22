@@ -41,12 +41,22 @@ include $_projectRoot . '/includes/head.php';
       <div class="card border-0 shadow-sm mb-4" style="border-radius:12px;">
         <div class="card-body p-3">
           <div class="row g-2 align-items-center">
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-md-3">
               <div class="input-group input-group-sm rounded shadow-sm">
                 <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
                 <input type="text" class="form-control border-start-0 bg-white fw-bold text-secondary"
                   style="font-size: 12px;" v-model="busqueda" placeholder="Buscar huésped / hab...">
               </div>
+            </div>
+            <div class="col-6 col-md-2">
+              <select class="form-select form-select-sm fw-bold text-secondary shadow-sm" style="font-size: 11px;"
+                v-model="filtroEstado">
+                <option value="activos">Huéspedes Activos</option>
+                <option value="reservado">En Reserva</option>
+                <option value="cancelado">Cancelados</option>
+                <option value="finalizado">Checkouts (Salidas)</option>
+                <option value="todos">Todos los Estados</option>
+              </select>
             </div>
             <div class="col-6 col-md-2">
               <select class="form-select form-select-sm fw-bold text-secondary shadow-sm" style="font-size: 11px;"
@@ -65,9 +75,9 @@ include $_projectRoot . '/includes/head.php';
                 <option value="pagado">Pagado</option>
               </select>
             </div>
-            <div class="col-12 col-md-2">
+            <div class="col-6 col-md-2">
               <input type="date" class="form-control form-control-sm fw-bold text-secondary shadow-sm"
-                style="font-size: 11px;" v-model="filtroFecha" @change="cargarDatos">
+                style="font-size: 11px;" v-model="filtroFecha">
             </div>
             <div class="col col-md-auto ms-auto text-end">
               <button class="btn btn-light btn-sm shadow-sm px-3" @click="cargarDatos" :disabled="loading">
@@ -196,19 +206,19 @@ include $_projectRoot . '/includes/head.php';
                       @click="verDetalle(s)">
                       <i class="bi bi-eye text-primary"></i>
                     </button>
-                    <button v-if="s.estado !== 'cancelado' && s.estado !== 'reservado'"
+                    <button v-if="s.estado !== 'cancelado' && s.estado !== 'reservado' && s.estado !== 'finalizado'"
                       class="btn btn-white btn-sm border" title="Editar" @click="abrirEdicion(s)">
                       <i class="bi bi-pencil-square text-secondary"></i>
                     </button>
-                    <button v-if="s.estado !== 'reservado' && s.estado !== 'cancelado'"
+                    <button v-if="s.estado !== 'reservado' && s.estado !== 'cancelado' && s.estado !== 'finalizado'"
                       class="btn btn-white btn-sm border" title="Registrar Consumo" @click="abrirConsumo(s)">
                       <i class="bi bi-cup-straw text-warning"></i>
                     </button>
-                    <button v-if="s.estado !== 'reservado' && s.estado !== 'cancelado'"
+                    <button v-if="s.estado !== 'reservado' && s.estado !== 'cancelado' && s.estado !== 'finalizado'"
                       class="btn btn-white btn-sm border" title="Registrar Pago" @click="abrirPago(s)">
                       <i class="bi bi-wallet2 text-success"></i>
                     </button>
-                    <button v-if="s.estado !== 'reservado' && s.estado !== 'cancelado'"
+                    <button v-if="s.estado !== 'reservado' && s.estado !== 'cancelado' && s.estado !== 'finalizado'"
                       class="btn btn-white btn-sm border" title="Checkout" @click="procederCheckout(s)">
                       <i class="bi bi-door-closed text-danger"></i>
                     </button>
@@ -1165,34 +1175,55 @@ include $_projectRoot . '/includes/head.php';
             </div>
 
             <div class="mb-3">
-              <label class="form-label small fw-bold text-muted mb-2">FORMA DE PAGO / MEDIO DE PAGO</label>
-              <select class="form-select border-light shadow-sm" v-model="consumoForm.metodo_pago" @change="onMetodoPagoConsumoChange" style="border-radius: 10px;">
-                <option :value="null">CARGAR A HABITACIÓN</option>
+              <label class="form-label small fw-bold">Forma de Pago</label>
+              <div class="row g-2">
+                <div class="col-6">
+                  <div class="p-2 border rounded text-center cursor-pointer"
+                    :class="consumoForm.pago_inmediato ? 'bg-white text-muted' : 'bg-primary text-white'"
+                    @click="consumoForm.pago_inmediato = false; consumoForm.metodo_pago = null; consumoForm.recargo_pos = false; calcularTotalConsumo()">
+                    <i class="bi bi-clock-history mb-1 d-block"></i>
+                    <span class="mini fw-bold">CARGAR A HAB.</span>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="p-2 border rounded text-center cursor-pointer"
+                    :class="consumoForm.pago_inmediato ? 'bg-success text-white' : 'bg-white text-muted'"
+                    @click="consumoForm.pago_inmediato = true; consumoForm.metodo_pago = 'SOLES EFECTIVO'; consumoForm.recargo_pos = false; calcularTotalConsumo()">
+                    <i class="bi bi-cash-stack mb-1 d-block"></i>
+                    <span class="mini fw-bold">PAGO AL CONTADO</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div v-if="consumoForm.pago_inmediato" class="mb-3 animate__animated animate__fadeIn">
+              <div
+                class="d-flex justify-content-between align-items-center mb-2 px-2 py-1 bg-info bg-opacity-10 rounded border border-info border-opacity-25">
+                <div class="form-check form-switch mb-0 ps-0 d-flex align-items-center gap-2">
+                  <input class="form-check-input m-0" type="checkbox" id="checkPosConsumo"
+                    v-model="consumoForm.recargo_pos" @change="onPosConsumoToggle" style="cursor:pointer;">
+                  <label class="form-check-label small fw-bold text-info mb-0" for="checkPosConsumo">POS (+5%)</label>
+                </div>
+                <span v-if="consumoForm.recargo_pos" class="badge bg-danger" style="font-size:10px;">
+                  + S/ {{ (parseFloat(consumoForm.total) * 0.05 / 1.05).toFixed(2) }}
+                </span>
+              </div>
+
+              <div class="row g-2 mb-2">
+                <div class="col-12">
+                  <label class="form-label small fw-bold">Monto a Cobrar</label>
+                  <div class="input-group">
+                    <span class="input-group-text bg-light text-muted fw-bold">S/</span>
+                    <input type="text" class="form-control fw-bold" :value="consumoForm.monto" readonly>
+                  </div>
+                </div>
+              </div>
+
+              <label class="form-label small fw-bold">Medio de Pago</label>
+              <select class="form-select" v-model="consumoForm.metodo_pago" required @change="onMetodoPagoDropdownChange">
                 <option value="SOLES EFECTIVO">SOLES EFECTIVO</option>
                 <option value="POS SOLES">POS SOLES</option>
               </select>
-            </div>
-
-            <!-- Recargo e Información si es Pago Inmediato al Contado -->
-            <div v-if="consumoForm.pago_inmediato" class="mb-3 animate__animated animate__fadeIn p-3 bg-light rounded border border-success border-opacity-25" style="border-radius: 12px;">
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="small fw-bold text-success">PAGO INMEDIATO AL CONTADO</span>
-                <span v-if="consumoForm.recargo_pos" class="badge bg-danger animate__animated animate__pulse animate__infinite" style="font-size:10px;">
-                  POS +5%
-                </span>
-              </div>
-              <div class="row g-2">
-                <div class="col-12">
-                  <label class="form-label small fw-bold text-muted mb-1">Monto a Cobrar</label>
-                  <div class="input-group input-group-sm">
-                    <span class="input-group-text bg-light text-muted fw-bold">S/</span>
-                    <input type="text" class="form-control fw-bold text-success" :value="consumoForm.monto" readonly style="font-size: 14px;">
-                  </div>
-                  <small v-if="consumoForm.recargo_pos" class="text-danger mini mt-1 d-block" style="font-size: 10px;">
-                    * Incluye recargo de 5% por transacción POS: + S/ {{ (parseFloat(consumoForm.total) * 0.05 / 1.05).toFixed(2) }}
-                  </small>
-                </div>
-              </div>
             </div>
 
             <div class="mt-4 d-grid">

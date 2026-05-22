@@ -1314,7 +1314,7 @@ createApp({
                   }
                 }
 
-                showToast(`¡Cliente Frecuente detectado!`, 'success');
+                showToast(`¡Cliente registrado detectado!`, 'success');
               } catch (err) {
                 console.error('Error al instanciar checkin rápido:', err);
               }

@@ -194,7 +194,7 @@ include $_projectRoot . '/includes/head.php';
                          @click.stop="toggleVipStatus(c)" 
                          class="bi bi-star text-secondary opacity-25 fs-5 cursor-pointer hover-scale hover-color-warning d-inline-block" 
                          style="transition: all 0.2s;"
-                         title="Marcar como VIP / Destacado ★">
+                         title="Marcar como Cliente Frecuente ★">
                       </i>
                     </span>
                     <div>
@@ -419,7 +419,7 @@ include $_projectRoot . '/includes/head.php';
               <div class="form-check form-switch d-flex align-items-center gap-2 mb-2">
                 <input class="form-check-input cursor-pointer" type="checkbox" v-model="nuevoCliente.vip" id="switchVip">
                 <label class="form-check-label text-muted fw-bold text-uppercase cursor-pointer mb-0" for="switchVip" style="font-size: 11px; letter-spacing: 0.5px;">
-                  <i class="bi bi-star-fill text-warning me-1"></i> ¿Destacar con Estrella? (Huésped VIP)
+                  <i class="bi bi-star-fill text-warning me-1"></i> ¿Destacar con Estrella? (Cliente Frecuente)
                 </label>
               </div>
 

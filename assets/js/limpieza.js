@@ -106,15 +106,15 @@ const appConfig = {
             loading.value = false;
         };
 
-        // ── Reset Nocturno Manual ────────────────────────────────────────────
+        // ── Marcar Ocupadas como Sucias Manual ────────────────────────────────────────────
         const resetNocturno = async () => {
             const confirm = await Swal.fire({
-                title: '¿Ejecutar Reset Nocturno?',
-                html: `<p class="mb-1">Esta acción marcará como <strong>SUCIAS</strong> todas las habitaciones que están <strong>ocupadas</strong> con estadía activa.</p>
+                title: '¿Marcar ocupadas como sucias?',
+                html: `<p class="mb-1">Esta acción marcará como <strong>SUCIAS</strong> todas las habitaciones que están <strong>ocupadas actualmente</strong> con estadía activa.</p>
                        <p class="text-muted small mb-0">Aparecerán en este panel para que el personal de limpieza las atienda.</p>`,
                 icon: 'question',
                 showCancelButton: true,
-                confirmButtonText: '<i class="bi bi-moon-stars-fill me-1"></i> Sí, ejecutar',
+                confirmButtonText: '<i class="bi bi-exclamation-circle-fill me-1"></i> Sí, marcar sucias',
                 cancelButtonText: 'Cancelar',
                 confirmButtonColor: '#ffc107',
                 cancelButtonColor: '#6c757d',
@@ -131,13 +131,13 @@ const appConfig = {
                         toast: true,
                         position: 'top-end',
                         icon: 'success',
-                        title: `Reset nocturno OK — ${n} habitación(es) marcadas como SUCIAS`,
+                        title: `¡Listo! ${n} habitación(es) ocupada(s) marcadas como SUCIAS`,
                         showConfirmButton: false,
                         timer: 3500,
                     });
                     await fetchHoy(); // refrescar panel
                 } else {
-                    Swal.fire('Error', res.data.msg || 'No se pudo ejecutar el reset.', 'error');
+                    Swal.fire('Error', res.data.msg || 'No se pudo marcar las habitaciones.', 'error');
                 }
             } catch (e) {
                 Swal.fire('Error de conexión', e.message, 'error');

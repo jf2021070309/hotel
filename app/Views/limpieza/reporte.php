@@ -67,7 +67,7 @@ include $base . 'includes/sidebar.php';
           <div class="card border-0 shadow-sm tipo-reposo p-3 text-center">
             <div class="mini fw-bold text-warning text-uppercase mb-1">🟡 Repaso</div>
             <div class="h2 mb-0 fw-bold">{{ grupos.reposo.length }}</div>
-            <div class="mini text-muted">reposo</div>
+            <div class="mini text-muted">repaso</div>
           </div>
         </div>
         <div class="col-4">
@@ -212,7 +212,7 @@ include $base . 'includes/sidebar.php';
 
         <!-- Reposo -->
         <template v-if="grupos.reposo.length > 0">
-            <h5 class="fw-bold text-dark border-bottom border-dark p-2 mb-0 mt-2">🟡 REPASO (Reposo Continuo)</h5>
+            <h5 class="fw-bold text-dark border-bottom border-dark p-2 mb-0 mt-2">🟡 REPASO (Repaso Continuo)</h5>
             <table class="table table-bordered border-dark mb-4" style="font-size: 14px; width: 100%;">
                 <thead>
                     <tr class="table-light border-dark">

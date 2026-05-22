@@ -79,8 +79,8 @@ include $base . 'includes/sidebar.php';
                 <i class="bi bi-magic text-warning"></i> Generar Lista
             </button>
             <button class="btn btn-action-custom btn-action-warning" @click="resetNocturno()" :disabled="loading"
-                title="Marca todas las habitaciones ocupadas como SUCIAS (limpieza de noche)">
-                <i class="bi bi-moon-stars-fill text-warning"></i> Reset Nocturno
+                title="Marca todas las habitaciones ocupadas con estadía activa como SUCIAS">
+                <i class="bi bi-exclamation-circle-fill text-warning"></i> Marcar Ocupadas Sucias
             </button>
             <a href="<?= route('reportes/ficha_servicio.php', $base) ?>" class="btn btn-action-custom btn-action-dark">
                 <i class="bi bi-printer-fill text-warning"></i> Ficha de Servicio
@@ -112,7 +112,7 @@ include $base . 'includes/sidebar.php';
                     <select class="form-select form-select-sm" v-model="filtro.tipo">
                         <option value="todos">Todos</option>
                         <option value="salida">Salida</option>
-                        <option value="reposo">Reposo</option>
+                        <option value="reposo">Repaso</option>
                         <option value="programada">Programada</option>
                     </select>
                 </div>
@@ -159,7 +159,7 @@ include $base . 'includes/sidebar.php';
                                 <div class="d-flex flex-wrap gap-1">
                                     <span class="badge" :class="getTipoClass(h.tipo_limpieza)"
                                         style="font-size: 0.75rem;">
-                                        {{ h.tipo_limpieza.toUpperCase() }}
+                                        {{ h.tipo_limpieza === 'reposo' ? 'REPASO' : h.tipo_limpieza.toUpperCase() }}
                                     </span>
                                         <span class="badge bg-secondary" style="font-size: 0.75rem;"
                                             title="Ocupantes esperados">

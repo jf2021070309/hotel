@@ -52,6 +52,7 @@ include $_projectRoot . '/includes/head.php';
               <select class="form-select form-select-sm fw-bold text-secondary shadow-sm" style="font-size: 11px;"
                 v-model="filtroEstado">
                 <option value="activos">Huéspedes Activos</option>
+                <option value="late_checkout">Late Checkouts</option>
                 <option value="reservado">En Reserva</option>
                 <option value="cancelado">Cancelados</option>
                 <option value="finalizado">Checkouts (Salidas)</option>
@@ -166,19 +167,21 @@ include $_projectRoot . '/includes/head.php';
                   <div class="mb-1">
                     <span>Ingreso: <span class="fw-bold">{{ fmtFecha(s.fecha_registro) }}</span></span>
                   </div>
-                  <div>
+                  <div class="mb-1">
                     <span><i class="bi bi-box-arrow-out-right text-danger me-1"></i> Salida: <span class="fw-bold">{{
                         fmtFecha(s.fecha_checkout) }}</span></span>
+                  </div>
+                  <div v-if="s.estado === 'late_checkout' && s.fecha_checkout_original && s.fecha_checkout_original !== s.fecha_checkout"
+                       class="text-warning mb-1" style="font-size: 11px;">
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i>Salida original: <span class="text-decoration-line-through fw-bold">{{ fmtFecha(s.fecha_checkout_original) }}</span>
                   </div>
                   <div class="text-muted mt-1" style="font-size: 11px;">Noches: 0{{ s.noches }} </div>
                 </td>
                 <td class="text-end fw-bold">
-                  <div class="text-dark">{{ s.moneda_pago == 'USD' ? '$' : (s.moneda_pago == 'CLP' ? 'P$' : 'S/') }} {{
-                    fmtCur(s.moneda_pago !== 'PEN' ? s.monto_original : s.total_pago) }}</div>
+                  <div class="text-dark">S/ {{ fmtCur(s.total_pago) }}</div>
                   <div class="text-success small d-flex align-items-center justify-content-end gap-1"
                     style="font-size: 10px;">
-                    <span>Abono {{ s.moneda_pago == 'USD' ? '$' : (s.moneda_pago == 'CLP' ? 'P$' : 'S/') }} {{
-                      fmtCur(s.total_cobrado_orig || s.total_cobrado) }}</span>
+                    <span>Abono S/ {{ fmtCur(s.total_cobrado) }}</span>
                     <i v-if="s.divisas_count > 1" class="bi bi-globe-americas text-info" title="Pago Multidivisa"
                       style="font-size: 11px;"></i>
                   </div>
@@ -217,6 +220,10 @@ include $_projectRoot . '/includes/head.php';
                     <button v-if="s.estado !== 'reservado' && s.estado !== 'cancelado' && s.estado !== 'finalizado'"
                       class="btn btn-white btn-sm border" title="Registrar Pago" @click="abrirPago(s)">
                       <i class="bi bi-wallet2 text-success"></i>
+                    </button>
+                    <button v-if="s.estado !== 'reservado' && s.estado !== 'cancelado' && s.estado !== 'finalizado'"
+                      class="btn btn-white btn-sm border" title="Late Checkout (Ampliar Estadía)" @click="abrirLateCheckout(s)">
+                      <i class="bi bi-calendar-plus text-info"></i>
                     </button>
                     <button v-if="s.estado !== 'reservado' && s.estado !== 'cancelado' && s.estado !== 'finalizado'"
                       class="btn btn-white btn-sm border" title="Checkout" @click="procederCheckout(s)">
@@ -977,7 +984,13 @@ include $_projectRoot . '/includes/head.php';
                 </div>
                 <div class="col-md-3">
                   <div class="text-muted text-uppercase fw-bold mb-1" style="font-size: 11px;">Check-out</div>
-                  <div class="text-dark fw-semibold">{{ selectedStay.fecha_checkout }}</div>
+                  <div class="text-dark fw-semibold">
+                    {{ selectedStay.fecha_checkout }}
+                    <div v-if="selectedStay.estado === 'late_checkout' && selectedStay.fecha_checkout_original && selectedStay.fecha_checkout_original !== selectedStay.fecha_checkout"
+                         class="text-warning mt-1 small" style="font-size: 10px; line-height: 1.2;">
+                      <i class="bi bi-clock-history me-1"></i>Original: <span class="text-decoration-line-through fw-bold">{{ selectedStay.fecha_checkout_original }}</span>
+                    </div>
+                  </div>
                 </div>
                 <div class="col-md-3">
                   <div class="text-muted text-uppercase fw-bold mb-1" style="font-size: 11px;">Estadía</div>
@@ -1047,20 +1060,15 @@ include $_projectRoot . '/includes/head.php';
                     <tbody>
                       <tr>
                         <td class="text-muted py-1">Monto Hospedaje</td>
-                        <td class="text-end fw-bold py-1 text-dark">{{ selectedStay.moneda_pago == 'USD' ? '$' :
-                          (selectedStay.moneda_pago == 'CLP' ? 'P$' : 'S/') }} {{
-                          fmtCur(selectedStay.monto_original) }}</td>
+                        <td class="text-end fw-bold py-1 text-dark">S/ {{ fmtCur(selectedStay.total_pago) }}</td>
                       </tr>
                       <tr>
                         <td class="text-muted py-1">Consumo Adicional</td>
-                        <td class="text-end fw-bold py-1 text-primary">{{ selectedStay.moneda_pago == 'USD' ? '$' :
-                          (selectedStay.moneda_pago == 'CLP' ? 'P$' : 'S/') }} {{ fmtCur(totalConsumoStay) }}</td>
+                        <td class="text-end fw-bold py-1 text-primary">S/ {{ fmtCur(totalConsumoStay) }}</td>
                       </tr>
                       <tr class="border-bottom">
                         <td class="text-muted py-1">Monto Abonado</td>
-                        <td class="text-end fw-bold py-1 text-success">{{ selectedStay.moneda_pago == 'USD' ? '$' :
-                          (selectedStay.moneda_pago == 'CLP' ? 'P$' : 'S/') }} {{
-                          fmtCur(selectedStay.total_cobrado_orig || selectedStay.total_cobrado) }}</td>
+                        <td class="text-end fw-bold py-1 text-success">S/ {{ fmtCur(selectedStay.total_cobrado) }}</td>
                       </tr>
                       <tr>
                         <td class="py-2 fw-bold text-dark" style="font-size: 15px;">SALDO PENDIENTE</td>
@@ -1073,8 +1081,7 @@ include $_projectRoot . '/includes/head.php';
                             <i class="bi bi-check-circle-fill me-1"></i> PAGADO
                           </span>
                           <span v-else>
-                            {{ selectedStay.moneda_pago == 'USD' ? '$' : (selectedStay.moneda_pago == 'CLP' ? 'P$' :
-                            'S/') }} {{ fmtCur(saldoPendienteStay) }}
+                            S/ {{ fmtCur(saldoPendienteStay) }}
                           </span>
                         </td>
                       </tr>
@@ -1098,8 +1105,7 @@ include $_projectRoot . '/includes/head.php';
                               <span class="badge bg-light text-dark border me-1" style="font-size: 9px;">{{ pag.moneda
                                 }}</span>
                               <span class="fw-bold text-success" style="font-size: 13px;">
-                                {{ pag.moneda == 'USD' ? '$' : (pag.moneda == 'CLP' ? 'P$' : 'S/') }} {{
-                                fmtCur(pag.monto) }}
+                                S/ {{ fmtCur(pag.monto) }}
                               </span>
                             </td>
                           </tr>

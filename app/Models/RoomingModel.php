@@ -115,13 +115,13 @@ class RoomingModel {
         if ($mustCommit) $this->pdo->beginTransaction();
         try {
             $sql = "INSERT INTO rooming_stays (
-                operador, fecha_registro, fecha_checkout, hora_checkin, medio_reserva, 
+                operador, fecha_registro, fecha_checkout, fecha_checkout_original, hora_checkin, medio_reserva, 
                 habitacion_id, tipo_hab_declarado, noches, pax_total, total_pago, 
                 moneda_pago, monto_original, tc_aplicado, recargo_tarjeta, metodo_pago, 
                 tipo_comprobante, num_comprobante, ruc_factura, razon_social, cobrador, procedencia, 
                 carro, observaciones, usuario_id, checkin_realizado, total_cobrado, total_cobrado_orig, estado_pago
             ) VALUES (
-                :operador, :fecha_reg, :fecha_out, :hora_in, :medio, 
+                :operador, :fecha_reg, :fecha_out, :fecha_out_original, :hora_in, :medio, 
                 :hab_id, :tipo_hab, :noches, :pax_total, :total, 
                 :moneda, :monto_orig, :tc, :recargo, :metodo, 
                 :comprobante, :num_comp, :ruc, :razon_social, :cobrador, :procedencia, 
@@ -132,6 +132,7 @@ class RoomingModel {
                 'operador'      => $data['operador'],
                 'fecha_reg'     => $data['fecha_reg'],
                 'fecha_out'     => $data['fecha_out'],
+                'fecha_out_original' => $data['fecha_out'],
                 'hora_in'       => $data['hora_in'],
                 'medio'         => $data['medio'],
                 'hab_id'        => $data['hab_id'],
@@ -218,9 +219,10 @@ class RoomingModel {
         $mustCommit = !$this->pdo->inTransaction();
         if ($mustCommit) $this->pdo->beginTransaction();
         try {
-            // Update stay info
             $sql = "UPDATE rooming_stays SET 
-                fecha_registro = :fecha_reg, fecha_checkout = :fecha_out, 
+                fecha_registro = :fecha_reg, 
+                fecha_checkout = :fecha_out, 
+                fecha_checkout_original = IF(estado != 'late_checkout', :fecha_out_original, fecha_checkout_original),
                 hora_checkin = :hora_in, medio_reserva = :medio, 
                 habitacion_id = :hab_id, tipo_hab_declarado = :tipo_hab, 
                 noches = :noches, pax_total = :pax_total, total_pago = :total, 
@@ -239,6 +241,7 @@ class RoomingModel {
             $stmt->execute([
                 'fecha_reg'   => $data['fecha_reg'],
                 'fecha_out'   => $data['fecha_out'],
+                'fecha_out_original' => $data['fecha_out'],
                 'hora_in'     => $data['hora_in'],
                 'medio'       => $data['medio'],
                 'hab_id'      => $data['hab_id'],
@@ -517,6 +520,7 @@ class RoomingModel {
                 s.operador,
                 s.fecha_registro,
                 s.fecha_checkout,
+                s.fecha_checkout_original,
                 s.hora_checkin,
                 h.numero        AS hab_numero,
                 s.tipo_hab_declarado,
@@ -569,6 +573,7 @@ class RoomingModel {
                     operador = :operador,
                     fecha_registro = :fecha_registro,
                     fecha_checkout = :fecha_checkout,
+                    fecha_checkout_original = IF(estado != 'late_checkout', :fecha_checkout_original, fecha_checkout_original),
                     hora_checkin = :hora_checkin,
                     habitacion_id = COALESCE(:habitacion_id, habitacion_id),
                     tipo_hab_declarado = :tipo_hab_declarado,
@@ -634,6 +639,7 @@ class RoomingModel {
                         'operador'           => $row['operador'] ?? '',
                         'fecha_registro'     => $fechaReg,
                         'fecha_checkout'     => $fechaOut,
+                        'fecha_checkout_original' => $fechaOut,
                         'hora_checkin'       => $row['hora_checkin'] ?? '',
                         'habitacion_id'      => $habId,
                         'tipo_hab_declarado' => $row['tipo_hab_declarado'] ?? '',

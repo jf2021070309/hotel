@@ -93,31 +93,15 @@ createApp({
 
     // Total del consumo en la moneda de la estadía (para display en el modal)
     const consumoFormTotalEnMonedaEstadia = computed(() => {
-      if (!stayParaConsumo.value || parseFloat(consumoForm.total || 0) === 0) return 0;
-
-      const totalPen = parseFloat(consumoForm.total) || 0;
-      const monedaEstadia = stayParaConsumo.value.moneda_pago || 'PEN';
-      const tcEstadia = parseFloat(tcs.value[monedaEstadia]) || 1;
-
-      if (monedaEstadia === 'PEN') return totalPen;
-      if (monedaEstadia === 'USD') return totalPen / tcEstadia;
-      if (monedaEstadia === 'CLP') return totalPen * tcEstadia;
-      return totalPen;
+      return parseFloat(consumoForm.total) || 0;
     });
 
     const monedaConsumoSimbolo = computed(() => {
-      const m = consumoForm.moneda || 'PEN';
-      if (m === 'USD') return '$';
-      if (m === 'CLP') return 'P$';
       return 'S/';
     });
 
     // Símbolo de la moneda de la estadía
     const monedaEstadiaSimbolo = computed(() => {
-      if (!stayParaConsumo.value) return 'S/';
-      const m = stayParaConsumo.value.moneda_pago;
-      if (m === 'USD') return '$';
-      if (m === 'CLP') return 'P$';
       return 'S/';
     });
 
@@ -183,7 +167,9 @@ createApp({
         );
       }
       if (filtroEstado.value === 'activos') {
-        data = data.filter(s => s.estado === 'activo' || s.estado === 'late_checkout');
+        data = data.filter(s => s.estado === 'activo');
+      } else if (filtroEstado.value === 'late_checkout') {
+        data = data.filter(s => s.estado === 'late_checkout');
       } else if (filtroEstado.value === 'reservado') {
         data = data.filter(s => s.estado === 'reservado');
       } else if (filtroEstado.value === 'cancelado') {
@@ -980,10 +966,11 @@ createApp({
       loading.value = false;
       stayParaPago.value = stay;
       pagoForm.stay_id = stay.id;
-      // Saldo pendiente
+      // Saldo pendiente (incluyendo consumos adicionales de bebidas/snacks)
       const totalOriginal = parseFloat(stay.total_pago) || 0;
+      const totalConsumos = parseFloat(stay.total_consumos) || 0;
       const cobradoOriginal = parseFloat(stay.total_cobrado) || 0;
-      const saldoOrig = Math.max(0, totalOriginal - cobradoOriginal);
+      const saldoOrig = Math.max(0, (totalOriginal + totalConsumos) - cobradoOriginal);
       pagoForm.monto = saldoOrig.toFixed(2);
       pagoForm.moneda = 'PEN';
       pagoForm.recargo_pos = false;
@@ -1033,7 +1020,9 @@ createApp({
 
       const s = stayParaPago.value;
       if (s) {
-        const saldo = parseFloat(s.total_pago) - parseFloat(s.total_cobrado);
+        const totalOriginal = parseFloat(s.total_pago) || 0;
+        const totalConsumos = parseFloat(s.total_consumos) || 0;
+        const saldo = Math.max(0, (totalOriginal + totalConsumos) - parseFloat(s.total_cobrado));
         const montoPen = parseFloat(pagoForm.monto_pen) || 0;
 
         // Validar si el monto excede el saldo (con margen de error de 0.05 por redondeos)
@@ -1089,6 +1078,128 @@ createApp({
           cargarDatos(true);
         } catch (err) {
           showToast('Error en el proceso', 'error');
+        }
+      }
+    };
+
+    const abrirLateCheckout = async (s) => {
+      const totalPago = parseFloat(s.total_pago) || 0;
+      const nochesActuales = parseInt(s.noches) || 1;
+      const precioDiario = nochesActuales > 0 ? totalPago / nochesActuales : totalPago;
+
+      const { value: formValues } = await Swal.fire({
+        title: 'Ampliar Estadía / Late Checkout',
+        html: `
+          <div class="text-start" style="font-size:14px; color:#495057;">
+            <div class="mb-2"><strong>Habitación:</strong> #${s.hab_numero || s.habitacion_id}</div>
+            <div class="mb-3"><strong>Huésped Principal:</strong> ${s.pax_titular || 'Huésped'}</div>
+            <hr class="my-2">
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <label class="form-label fw-bold small mb-1">Fecha Registro</label>
+                <input type="text" class="form-control form-control-sm bg-light" value="${s.fecha_registro}" readonly>
+              </div>
+              <div class="col-6">
+                <label class="form-label fw-bold small mb-1">Precio por Noche</label>
+                <input type="text" class="form-control form-control-sm bg-light" value="S/ ${precioDiario.toFixed(2)}" readonly>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-bold small mb-1">Nueva Fecha de Salida</label>
+              <input type="date" id="swal-nueva-fecha" class="form-control form-control-sm" value="${s.fecha_checkout}" min="${s.fecha_registro}">
+            </div>
+            <div class="row g-2 mb-2">
+              <div class="col-6">
+                <label class="form-label fw-bold small mb-1">Nuevas Noches</label>
+                <input type="number" id="swal-nuevas-noches" class="form-control form-control-sm" value="${s.noches}" min="1">
+              </div>
+              <div class="col-6">
+                <label class="form-label fw-bold small mb-1">Nuevo Total (S/)</label>
+                <input type="number" id="swal-nuevo-total" class="form-control form-control-sm" value="${s.total_pago}" step="0.01" min="0">
+              </div>
+            </div>
+            <div class="text-muted small mt-2"><i class="bi bi-info-circle"></i> Al cambiar las noches o la fecha, el monto total se recalcula automáticamente basado en el precio original por noche, pero puedes editarlo manualmente.</div>
+          </div>
+        `,
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonText: 'Guardar Cambios',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#0dcaf0',
+        didOpen: () => {
+          const inputFecha = document.getElementById('swal-nueva-fecha');
+          const inputNoches = document.getElementById('swal-nuevas-noches');
+          const inputTotal = document.getElementById('swal-nuevo-total');
+          
+          const fechaReg = new Date(s.fecha_registro + 'T00:00:00');
+          
+          const calcularNoches = (fechaFinStr) => {
+            const fechaFin = new Date(fechaFinStr + 'T00:00:00');
+            const diffTime = fechaFin - fechaReg;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            return diffDays > 0 ? diffDays : 1;
+          };
+          
+          inputFecha.addEventListener('change', () => {
+            const noches = calcularNoches(inputFecha.value);
+            inputNoches.value = noches;
+            inputTotal.value = (noches * precioDiario).toFixed(2);
+          });
+          
+          inputNoches.addEventListener('input', () => {
+            const noches = parseInt(inputNoches.value) || 1;
+            const nuevaFecha = new Date(fechaReg);
+            nuevaFecha.setDate(fechaReg.getDate() + noches);
+            
+            const yyyy = nuevaFecha.getFullYear();
+            const mm = String(nuevaFecha.getMonth() + 1).padStart(2, '0');
+            const dd = String(nuevaFecha.getDate()).padStart(2, '0');
+            inputFecha.value = `${yyyy}-${mm}-${dd}`;
+            
+            inputTotal.value = (noches * precioDiario).toFixed(2);
+          });
+        },
+        preConfirm: () => {
+          const fecha = document.getElementById('swal-nueva-fecha').value;
+          const noches = parseInt(document.getElementById('swal-nuevas-noches').value);
+          const total = parseFloat(document.getElementById('swal-nuevo-total').value);
+          
+          if (!fecha) {
+            Swal.showValidationMessage('Selecciona una fecha de salida');
+            return false;
+          }
+          if (isNaN(noches) || noches < 1) {
+            Swal.showValidationMessage('Las noches deben ser al menos 1');
+            return false;
+          }
+          if (isNaN(total) || total < 0) {
+            Swal.showValidationMessage('El monto total debe ser un número válido');
+            return false;
+          }
+          
+          return { fecha_checkout: fecha, noches, total_pago: total };
+        }
+      });
+
+      if (formValues) {
+        try {
+          Swal.fire({ title: 'Guardando ampliación...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+          
+          const response = await axios.post('../../../api/rooming.php?action=late_checkout', {
+            id: s.id,
+            fecha_checkout: formValues.fecha_checkout,
+            noches: formValues.noches,
+            total_pago: formValues.total_pago
+          });
+          
+          if (response.data && response.data.ok) {
+            Swal.fire('¡Éxito!', response.data.msg || 'La estadía ha sido ampliada correctamente.', 'success');
+            cargarDatos(true);
+          } else {
+            Swal.fire('Atención', response.data.msg || 'No se pudo guardar la ampliación.', 'warning');
+          }
+        } catch (error) {
+          Swal.fire('Error', error.response?.data?.msg || 'Error al conectar con el servidor.', 'error');
         }
       }
     };
@@ -1514,7 +1625,7 @@ createApp({
       staysFiltrados, selectedStay, stayParaPago, mediosPago, pagoForm,
       abrirCheckin, onHabChange, calcularNoches, onNochesChange, recalcularMoneda, simboloMoneda, montoFinalMostrado, onPrecioDiarioChange,
       onAdelantoChange, agregarPax, setTitular, guardarCheckin, verDetalle, cargarDatos,
-      fmtFecha, getPagoClass, getEstadBadge, procederCheckout, abrirPago, recalcularPago, cambiarMonedaPago, guardarPago,
+      fmtFecha, getPagoClass, getEstadBadge, procederCheckout, abrirLateCheckout, abrirPago, recalcularPago, cambiarMonedaPago, guardarPago,
       abrirEdicion, activarReserva, cambiarTipoPago, fmtCur, isEditingAdelanto, adelantoExcede, getMetodoPagoIcon,
       saldoPendienteOriginal, adelantoInvalido,
       // CONSUMOS

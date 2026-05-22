@@ -35,7 +35,7 @@ switch ($action) {
         json_response_obj($controller->registrarPago($input));
         break;
     case 'late_checkout':
-        json_response_obj($controller->lateCheckout((int)$input['id']));
+        json_response_obj($controller->lateCheckout($input));
         break;
     case 'reporte_pax':
         $mes  = (int)($_GET['mes']  ?? date('n'));

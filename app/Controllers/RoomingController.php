@@ -271,13 +271,71 @@ class RoomingController {
         return ['ok' => false, 'msg' => "No se pudo realizar el checkout"];
     }
 
-    public function lateCheckout(int $id) {
-        $stmt = $this->pdo->prepare("UPDATE rooming_stays SET estado = 'late_checkout' WHERE id = ?");
-        if ($stmt->execute([$id])) {
-            $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'LATE_CHECKOUT', 'ROOMING', "Late checkout stay ID: $id");
-            return ['ok' => true, 'msg' => 'Late checkout aplicado'];
+    public function lateCheckout(array $input) {
+        $id = (int)($input['id'] ?? 0);
+        if ($id <= 0) {
+            return ['ok' => false, 'msg' => 'ID de estadía inválido'];
         }
-        return ['ok' => false, 'msg' => 'No se pudo aplicar late checkout'];
+
+        $fechaCheckout = $input['fecha_checkout'] ?? null;
+        $noches = (int)($input['noches'] ?? 0);
+        $totalPago = (float)($input['total_pago'] ?? 0.0);
+
+        if (!$fechaCheckout || $noches <= 0) {
+            return ['ok' => false, 'msg' => 'Fecha o número de noches inválidos'];
+        }
+
+        // Obtener detalles actuales de la estadía
+        $stmt = $this->pdo->prepare("SELECT * FROM rooming_stays WHERE id = ?");
+        $stmt->execute([$id]);
+        $stay = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$stay) {
+            return ['ok' => false, 'msg' => 'Estadía no encontrada'];
+        }
+
+        // Recalcular el estado de pago
+        $totalCobrado = (float)($stay['total_cobrado'] ?? 0.0);
+        
+        // Si el total cobrado cubre el nuevo total
+        if ($totalCobrado >= $totalPago - 0.01) {
+            $estadoPago = 'pagado';
+        } elseif ($totalCobrado > 0.01) {
+            $estadoPago = 'adelanto';
+        } else {
+            $estadoPago = 'pendiente';
+        }
+
+        // Actualizar la estadía
+        $stmtUpdate = $this->pdo->prepare("
+            UPDATE rooming_stays 
+            SET fecha_checkout = ?, 
+                noches = ?, 
+                total_pago = ?, 
+                estado_pago = ?, 
+                estado = 'late_checkout' 
+            WHERE id = ?
+        ");
+
+        if ($stmtUpdate->execute([$fechaCheckout, $noches, $totalPago, $estadoPago, $id])) {
+            // Obtener número de habitación para la auditoría
+            $habNum = '';
+            if (!empty($stay['habitacion_id'])) {
+                $stmtHab = $this->pdo->prepare("SELECT numero FROM habitaciones WHERE id = ?");
+                $stmtHab->execute([$stay['habitacion_id']]);
+                $habNum = $stmtHab->fetchColumn() ?: '';
+            }
+            if (!$habNum && !empty($stay['hab_numero'])) {
+                $habNum = $stay['hab_numero'];
+            }
+            
+            $msgAuditoria = "Ampliación de estadía (Late Checkout) en Habitación #$habNum. Nuevas noches: $noches, Nuevo total: S/ " . number_format($totalPago, 2) . ", Nuevo checkout: $fechaCheckout";
+            $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'LATE_CHECKOUT', 'ROOMING', $msgAuditoria);
+
+            return ['ok' => true, 'msg' => 'Estadía ampliada (Late Checkout) guardada con éxito'];
+        }
+
+        return ['ok' => false, 'msg' => 'No se pudo guardar la ampliación de estadía'];
     }
 
     public function registrarPago(array $input) {

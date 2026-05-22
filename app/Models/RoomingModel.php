@@ -52,7 +52,8 @@ class RoomingModel {
 
         $sql = "SELECT s.*, h.numero as hab_numero, h.tipo as hab_tipo,
                 (SELECT nombre_completo FROM rooming_pax WHERE stay_id = s.id AND es_titular = 1 LIMIT 1) as titular_nombre,
-                (SELECT COUNT(DISTINCT moneda) FROM anticipos WHERE stay_id = s.id) as divisas_count
+                (SELECT COUNT(DISTINCT moneda) FROM anticipos WHERE stay_id = s.id) as divisas_count,
+                (SELECT COALESCE(SUM(total), 0) FROM rooming_consumos WHERE stay_id = s.id) as total_consumos
                 FROM rooming_stays s 
                 JOIN habitaciones h ON s.habitacion_id = h.id 
                 WHERE s.estado IN ('activo', 'reservado', 'late_checkout', 'cancelado') 
@@ -79,6 +80,10 @@ class RoomingModel {
         ");
         $stmt->execute([$id]);
         $stay['pagos'] = $stmt->fetchAll();
+
+        $stmtCons = $this->pdo->prepare("SELECT SUM(total) FROM rooming_consumos WHERE stay_id = ?");
+        $stmtCons->execute([$id]);
+        $stay['total_consumos'] = (float)$stmtCons->fetchColumn();
 
         return $stay;
     }
@@ -446,10 +451,17 @@ class RoomingModel {
         ]);
         $totalCobradoOrig = (float)$stmt->fetchColumn();
 
-        // 4. Estado de pago (basado en PEN, que es la moneda contable base)
+        // 4. Obtener total de consumos cargados
+        $stmtCons = $this->pdo->prepare("SELECT SUM(total) FROM rooming_consumos WHERE stay_id = ?");
+        $stmtCons->execute([$stay_id]);
+        $totalConsumos = (float)$stmtCons->fetchColumn();
+
+        $grandTotal = $totalPago + $totalConsumos;
+
+        // 5. Estado de pago (basado en PEN, que es la moneda contable base)
         $estadoPago = 'pendiente';
         if ($totalCobrado > 0) {
-            if ($totalCobrado >= $totalPago) $estadoPago = 'pagado';
+            if ($totalCobrado >= $grandTotal - 0.05) $estadoPago = 'pagado';
             else $estadoPago = 'parcial';
         }
 
@@ -458,23 +470,8 @@ class RoomingModel {
     }
 
     public function incrementarTotal(int $stayId, float $montoPen): bool {
-        $stmtStay = $this->pdo->prepare("SELECT moneda_pago, tc_aplicado FROM rooming_stays WHERE id = ?");
-        $stmtStay->execute([$stayId]);
-        $stay = $stmtStay->fetch(PDO::FETCH_ASSOC);
-        if (!$stay) return false;
-
-        $moneda = $stay['moneda_pago'] ?? 'PEN';
-        $tc = (float)($stay['tc_aplicado'] ?? 1.0);
-
-        $montoOrig = $montoPen;
-        if ($moneda === 'USD') {
-            $montoOrig = $tc > 0 ? $montoPen / $tc : 0;
-        } else if ($moneda === 'CLP') {
-            $montoOrig = $montoPen * $tc;
-        }
-
-        $stmt = $this->pdo->prepare("UPDATE rooming_stays SET total_pago = total_pago + ?, monto_original = monto_original + ? WHERE id = ?");
-        $res = $stmt->execute([$montoPen, $montoOrig, $stayId]);
+        $stmt = $this->pdo->prepare("UPDATE rooming_stays SET total_pago = total_pago + ? WHERE id = ?");
+        $res = $stmt->execute([$montoPen, $stayId]);
         if ($res) {
             $this->actualizarResumenPagos($stayId);
         }
@@ -542,7 +539,8 @@ class RoomingModel {
                 p.ciudad,
                 p.celular,
                 p.email,
-                p.es_titular
+                p.es_titular,
+                p.id            AS pax_id
             FROM rooming_stays s
             JOIN habitaciones h  ON h.id = s.habitacion_id
             JOIN rooming_pax p   ON p.stay_id = s.id
@@ -554,5 +552,146 @@ class RoomingModel {
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute(['mes' => $mes, 'anio' => $anio]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Actualiza masivamente los datos editados desde la vista del Reporte PAX (excel editable).
+     */
+    public function updateReportePax(array $rows): array {
+        try {
+            $this->pdo->beginTransaction();
+
+            // Preparar consultas para actualización
+            $stmtHab = $this->pdo->prepare("SELECT id FROM habitaciones WHERE numero = ? LIMIT 1");
+
+            $stmtStay = $this->pdo->prepare("
+                UPDATE rooming_stays SET
+                    operador = :operador,
+                    fecha_registro = :fecha_registro,
+                    fecha_checkout = :fecha_checkout,
+                    hora_checkin = :hora_checkin,
+                    habitacion_id = COALESCE(:habitacion_id, habitacion_id),
+                    tipo_hab_declarado = :tipo_hab_declarado,
+                    pax_total = :pax_total,
+                    medio_reserva = :medio_reserva,
+                    total_pago = :total_pago,
+                    moneda_pago = :moneda_pago,
+                    monto_original = :monto_original,
+                    estado = :estado,
+                    metodo_pago = :metodo_pago,
+                    tipo_comprobante = :tipo_comprobante,
+                    num_comprobante = :num_comprobante,
+                    cobrador = :cobrador,
+                    carro = :carro,
+                    observaciones = :observaciones
+                WHERE id = :stay_id
+            ");
+
+            $stmtPax = $this->pdo->prepare("
+                UPDATE rooming_pax SET
+                    nombre_completo = :nombre_completo,
+                    documento_tipo = :documento_tipo,
+                    documento_num = :documento_num,
+                    nacionalidad = :nacionalidad,
+                    ciudad = :ciudad,
+                    celular = :celular,
+                    email = :email
+                WHERE id = :pax_id
+            ");
+
+            $updatedStays = [];
+            foreach ($rows as $row) {
+                $stayId = isset($row['stay_id']) ? (int)$row['stay_id'] : null;
+                $paxId  = isset($row['pax_id'])  ? (int)$row['pax_id']  : null;
+
+                if (!$stayId || !$paxId) {
+                    continue;
+                }
+
+                if (!in_array($stayId, $updatedStays)) {
+                    $habId = null;
+                    if (!empty($row['hab_numero'])) {
+                        $numHab = ltrim($row['hab_numero'], '#');
+                        $stmtHab->execute([$numHab]);
+                        $habId = $stmtHab->fetchColumn() ?: null;
+                    }
+
+                    $fechaReg = $this->parseFechaParaDB($row['fecha_registro'] ?? null);
+                    $fechaOut = $this->parseFechaParaDB($row['fecha_checkout'] ?? null);
+
+                    $estado = ($row['estado'] ?? '') === 'late_checkout' ? 'late_checkout' : 'activo';
+                    if (isset($row['estado'])) {
+                        if ($row['estado'] === 'SI' || $row['estado'] === 'late_checkout' || $row['estado'] === 'late') {
+                            $estado = 'late_checkout';
+                        } else if ($row['estado'] === 'NO') {
+                            $estado = 'activo';
+                        } else {
+                            $estado = $row['estado'];
+                        }
+                    }
+
+                    $stmtStay->execute([
+                        'operador'           => $row['operador'] ?? '',
+                        'fecha_registro'     => $fechaReg,
+                        'fecha_checkout'     => $fechaOut,
+                        'hora_checkin'       => $row['hora_checkin'] ?? '',
+                        'habitacion_id'      => $habId,
+                        'tipo_hab_declarado' => $row['tipo_hab_declarado'] ?? '',
+                        'pax_total'          => isset($row['pax_total']) ? (int)$row['pax_total'] : 1,
+                        'medio_reserva'      => $row['medio_reserva'] ?? '',
+                        'total_pago'         => isset($row['total_pago']) ? (float)$row['total_pago'] : 0.0,
+                        'moneda_pago'        => $row['moneda_pago'] ?? 'PEN',
+                        'monto_original'     => isset($row['monto_original']) ? (float)$row['monto_original'] : 0.0,
+                        'estado'             => $estado,
+                        'metodo_pago'        => $row['metodo_pago'] ?? '',
+                        'tipo_comprobante'   => $row['tipo_comprobante'] ?? '',
+                        'num_comprobante'    => $row['num_comprobante'] ?? '',
+                        'cobrador'           => $row['cobrador'] ?? '',
+                        'carro'              => $row['carro'] ?? '',
+                        'observaciones'      => $row['observaciones'] ?? '',
+                        'stay_id'            => $stayId
+                    ]);
+
+                    $updatedStays[] = $stayId;
+                }
+
+                $stmtPax->execute([
+                    'nombre_completo' => $row['nombre_completo'] ?? '',
+                    'documento_tipo'  => $row['documento_tipo'] ?? '',
+                    'documento_num'   => $row['documento_num'] ?? '',
+                    'nacionalidad'    => $row['nacionalidad'] ?? '',
+                    'ciudad'          => $row['ciudad'] ?? '',
+                    'celular'         => $row['celular'] ?? '',
+                    'email'           => $row['email'] ?? '',
+                    'pax_id'          => $paxId
+                ]);
+            }
+
+            $this->pdo->commit();
+            return ['ok' => true, 'msg' => 'Reporte guardado exitosamente'];
+        } catch (Exception $e) {
+            if ($this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
+            return ['ok' => false, 'msg' => $e->getMessage()];
+        }
+    }
+
+    private function parseFechaParaDB(?string $fecha): ?string {
+        if (!$fecha) return null;
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $fecha)) {
+            return $fecha;
+        }
+        // Soporta dd/mm/yy y dd/mm/yyyy
+        if (preg_match('/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/', $fecha, $matches)) {
+            $day = str_pad($matches[1], 2, '0', STR_PAD_LEFT);
+            $month = str_pad($matches[2], 2, '0', STR_PAD_LEFT);
+            $year = $matches[3];
+            if (strlen($year) === 2) {
+                $year = '20' . $year;
+            }
+            return "$year-$month-$day";
+        }
+        return $fecha;
     }
 }

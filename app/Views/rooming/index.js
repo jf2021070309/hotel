@@ -209,11 +209,7 @@ createApp({
     });
 
     const totalOriginal = computed(() => {
-      const totalPen = parseFloat(form.stay.total_pago) || 0;
-      const tc = parseFloat(form.stay.tc_aplicado) || 1;
-      if (form.stay.moneda_pago === 'USD') return tc > 0 ? totalPen / tc : 0;
-      if (form.stay.moneda_pago === 'CLP') return totalPen * tc;
-      return totalPen;
+      return parseFloat(form.stay.total_pago) || 0;
     });
 
     const saldoPendienteOriginal = computed(() => {
@@ -224,57 +220,37 @@ createApp({
 
     const totalConsumoStay = computed(() => {
       if (!selectedStay.value || !consumosStay.value) return 0;
-      const totalPen = consumosStay.value.reduce((acc, c) => acc + parseFloat(c.total || 0), 0);
-      if (selectedStay.value.moneda_pago === 'PEN') return totalPen;
-      const tc = parseFloat(selectedStay.value.tc_aplicado) || 1;
-      if (selectedStay.value.moneda_pago === 'CLP') return totalPen * tc;
-      if (selectedStay.value.moneda_pago === 'USD') return totalPen / tc;
-      return totalPen;
+      return consumosStay.value.reduce((acc, c) => acc + parseFloat(c.total || 0), 0);
     });
 
     const saldoPendienteStay = computed(() => {
       if (!selectedStay.value) return 0;
-      const totalOriginal = selectedStay.value.moneda_pago !== 'PEN' ? (parseFloat(selectedStay.value.monto_original) || 0) : (parseFloat(selectedStay.value.total_pago) || 0);
-      const cobradoOriginal = selectedStay.value.moneda_pago !== 'PEN' ? (parseFloat(selectedStay.value.total_cobrado_orig) || 0) : (parseFloat(selectedStay.value.total_cobrado) || 0);
-      return Math.max(0, totalOriginal - cobradoOriginal);
+      const totalOriginal = parseFloat(selectedStay.value.total_pago) || 0;
+      const consumos = totalConsumoStay.value;
+      const cobradoOriginal = parseFloat(selectedStay.value.total_cobrado) || 0;
+      return Math.max(0, (totalOriginal + consumos) - cobradoOriginal);
     });
 
     const saldoPendienteStayParaPago = computed(() => {
       if (!stayParaPago.value) return 0;
       const s = stayParaPago.value;
-      const totalOriginal = s.moneda_pago !== 'PEN' ? (parseFloat(s.monto_original) || 0) : (parseFloat(s.total_pago) || 0);
-      const cobradoOriginal = s.moneda_pago !== 'PEN' ? (parseFloat(s.total_cobrado_orig) || 0) : (parseFloat(s.total_cobrado) || 0);
-      return Math.max(0, totalOriginal - cobradoOriginal);
+      const totalOriginal = parseFloat(s.total_pago) || 0;
+      const consumos = parseFloat(s.total_consumos) || 0;
+      const cobradoOriginal = parseFloat(s.total_cobrado) || 0;
+      return Math.max(0, (totalOriginal + consumos) - cobradoOriginal);
     });
 
     const simboloMoneda = computed(() => {
-      const m = form.stay.moneda_pago || 'PEN';
-      if (m === 'USD') return '$';
-      if (m === 'CLP') return 'P$';
       return 'S/';
     });
 
     const montoFinalMostrado = computed({
       get() {
-        const totalPen = parseFloat(form.stay.total_pago) || 0;
-        const tc = parseFloat(form.stay.tc_aplicado) || 1;
-        if (form.stay.moneda_pago === 'USD') {
-          return tc > 0 ? (totalPen / tc).toFixed(2) : '0.00';
-        } else if (form.stay.moneda_pago === 'CLP') {
-          return (totalPen * tc).toFixed(2);
-        }
-        return totalPen.toFixed(2);
+        return (parseFloat(form.stay.total_pago) || 0).toFixed(2);
       },
       set(val) {
         const amount = parseFloat(val) || 0;
-        const tc = parseFloat(form.stay.tc_aplicado) || 1;
-        if (form.stay.moneda_pago === 'USD') {
-          form.stay.total_pago = (amount * tc).toFixed(2);
-        } else if (form.stay.moneda_pago === 'CLP') {
-          form.stay.total_pago = tc > 0 ? (amount / tc).toFixed(2) : '0.00';
-        } else {
-          form.stay.total_pago = amount.toFixed(2);
-        }
+        form.stay.total_pago = amount.toFixed(2);
         recalcularMoneda();
       }
     });
@@ -601,23 +577,15 @@ createApp({
       const oldAdelanto = parseFloat(form.adelanto) || 0;
       const ratio = oldTotalOrig > 0 ? (oldAdelanto / oldTotalOrig) : 1;
 
-      const tc = form.stay.moneda_pago === 'PEN' ? 1 : parseFloat(tcs.value[form.stay.moneda_pago]) || 1;
-      form.stay.tc_aplicado = tc;
+      form.stay.moneda_pago = 'PEN';
+      form.stay.tc_aplicado = 1;
 
       const totalPen = parseFloat(form.stay.total_pago) || 0;
-
-      // Calcular equivalente en moneda extranjera
-      let foreign = totalPen;
-      if (form.stay.moneda_pago === 'USD') {
-        foreign = totalPen / tc;
-      } else if (form.stay.moneda_pago === 'CLP') {
-        foreign = totalPen * tc;
-      }
-      form.stay.monto_original = foreign.toFixed(2);
+      form.stay.monto_original = totalPen.toFixed(2);
       if (form.tipoPago === 'completo') {
-        form.adelanto = foreign.toFixed(2);
+        form.adelanto = totalPen.toFixed(2);
       } else {
-        const newAdelantoVal = Math.min(foreign, foreign * ratio);
+        const newAdelantoVal = Math.min(totalPen, totalPen * ratio);
         form.adelanto = newAdelantoVal.toFixed(2);
       }
       onAdelantoChange();
@@ -634,11 +602,7 @@ createApp({
 
       adelantoExcede.value = adelantoOrig > totalOrig + 0.0001;
 
-      const tc = parseFloat(form.stay.tc_aplicado) || 1;
       let cobradoPen = adelantoOrig;
-      if (form.stay.moneda_pago === 'USD') cobradoPen = adelantoOrig * tc;
-      else if (form.stay.moneda_pago === 'CLP') cobradoPen = tc > 0 ? adelantoOrig / tc : 0;
-
       if (form.tipoPago === 'adelanto' && adelantoOrig <= 0) {
         cobradoPen = 0;
       }
@@ -905,6 +869,22 @@ createApp({
       }
     };
 
+    const onMetodoPagoConsumoChange = () => {
+      if (consumoForm.metodo_pago === 'SOLES EFECTIVO') {
+        consumoForm.pago_inmediato = true;
+        consumoForm.recargo_pos = false;
+      } else if (consumoForm.metodo_pago === 'POS SOLES') {
+        consumoForm.pago_inmediato = true;
+        consumoForm.recargo_pos = true;
+      } else {
+        // CARGAR A HABITACION
+        consumoForm.pago_inmediato = false;
+        consumoForm.recargo_pos = false;
+        consumoForm.metodo_pago = null;
+      }
+      calcularTotalConsumo();
+    };
+
     const calcularTotalConsumo = () => {
       const p = inventario.value.find(x => x.id === consumoForm.producto_id);
       if (p) {
@@ -984,12 +964,12 @@ createApp({
       loading.value = false;
       stayParaPago.value = stay;
       pagoForm.stay_id = stay.id;
-      // Saldo pendiente en moneda original
-      const totalOriginal = stay.moneda_pago !== 'PEN' ? (parseFloat(stay.monto_original) || 0) : (parseFloat(stay.total_pago) || 0);
-      const cobradoOriginal = stay.moneda_pago !== 'PEN' ? (parseFloat(stay.total_cobrado_orig) || 0) : (parseFloat(stay.total_cobrado) || 0);
+      // Saldo pendiente
+      const totalOriginal = parseFloat(stay.total_pago) || 0;
+      const cobradoOriginal = parseFloat(stay.total_cobrado) || 0;
       const saldoOrig = Math.max(0, totalOriginal - cobradoOriginal);
       pagoForm.monto = saldoOrig.toFixed(2);
-      pagoForm.moneda = stay.moneda_pago;
+      pagoForm.moneda = 'PEN';
       pagoForm.recargo_pos = false;
       pagoForm.tipo = '';
       pagoForm.recibo = 'ABONO-' + new Date().getTime().toString().substr(-6);
@@ -1001,8 +981,8 @@ createApp({
     const recalcularPago = (fromToggle = false) => {
       if (!stayParaPago.value) return;
 
-      const tcPago = pagoForm.moneda === 'PEN' ? 1 : parseFloat(tcs.value[pagoForm.moneda]) || 1;
-      pagoForm.tc = tcPago;
+      pagoForm.moneda = 'PEN';
+      pagoForm.tc = 1;
 
       let amount = parseFloat(pagoForm.monto) || 0;
 
@@ -1016,21 +996,8 @@ createApp({
         pagoForm.monto = amount.toFixed(2);
       }
 
-      // 1. Convertir pago a PEN (Base de caja)
-      let pen = amount;
-      if (pagoForm.moneda === 'USD') pen = amount * tcPago;
-      else if (pagoForm.moneda === 'CLP') pen = tcPago > 0 ? (amount / tcPago) : 0;
-      pagoForm.monto_pen = pen.toFixed(2);
-
-      // 2. Determinar cuánto deduce de la MONEDA ORIGINAL de la estadía
-      const monedaStay = stayParaPago.value.moneda_pago;
-      const tcStay = monedaStay === 'PEN' ? 1 : parseFloat(tcs.value[monedaStay]) || 1;
-
-      let deduction = pen;
-      if (monedaStay === 'USD') deduction = pen / tcStay;
-      else if (monedaStay === 'CLP') deduction = pen * tcStay;
-
-      pagoForm.monto_orig_deducir = deduction.toFixed(2);
+      pagoForm.monto_pen = amount.toFixed(2);
+      pagoForm.monto_orig_deducir = amount.toFixed(2);
 
       if (pagoForm.recargo_pos) {
         if (!pagoForm.tipo || !pagoForm.tipo.toLowerCase().includes('pos')) {
@@ -1041,29 +1008,7 @@ createApp({
     };
 
     const cambiarMonedaPago = (nuevaMoneda) => {
-      if (!stayParaPago.value) return;
-
-      pagoForm.moneda = nuevaMoneda;
-      const stay = stayParaPago.value;
-
-      // Saldo pendiente en SU MONEDA ORIGINAL
-      const totalOriginal = stay.moneda_pago !== 'PEN' ? (parseFloat(stay.monto_original) || 0) : (parseFloat(stay.total_pago) || 0);
-      const cobradoOriginal = stay.moneda_pago !== 'PEN' ? (parseFloat(stay.total_cobrado_orig) || 0) : (parseFloat(stay.total_cobrado) || 0);
-      const saldoPendOrig = Math.max(0, totalOriginal - cobradoOriginal);
-
-      // Convertir ese saldo pendiente original a PEN primeramente
-      const tcStay = stay.moneda_pago === 'PEN' ? 1 : parseFloat(tcs.value[stay.moneda_pago]) || 1;
-      let saldoEnPen = saldoPendOrig;
-      if (stay.moneda_pago === 'USD') saldoEnPen = saldoPendOrig * tcStay;
-      else if (stay.moneda_pago === 'CLP') saldoEnPen = tcStay > 0 ? (saldoPendOrig / tcStay) : 0;
-
-      // Ahora convertir esos Soles a la NUEVA MONEDA de pago seleccionada
-      const tcNueva = nuevaMoneda === 'PEN' ? 1 : parseFloat(tcs.value[nuevaMoneda]) || 1;
-      let nuevoMonto = saldoEnPen;
-      if (nuevaMoneda === 'USD') nuevoMonto = tcNueva > 0 ? (saldoEnPen / tcNueva) : 0;
-      else if (nuevaMoneda === 'CLP') nuevoMonto = saldoEnPen * tcNueva;
-
-      pagoForm.monto = nuevoMonto.toFixed(2);
+      pagoForm.moneda = 'PEN';
       recalcularPago();
     };
 
@@ -1144,7 +1089,33 @@ createApp({
       try {
         const res = await axios.get(
           `../../../api/rooming.php?action=reporte_pax&mes=${reportePax.mes}&anio=${reportePax.anio}`
-        ); reportePax.filas = (res.data.data || []).map(f => ({ ...f, excluir: false }));
+        );
+        const rawFilas = res.data.data || [];
+        reportePax.filas = rawFilas.map(f => ({ ...f, excluir: false }));
+
+        // Calcular rowspan e isFirstInStay
+        let lastStayId = null;
+        let count = 0;
+        let firstIndex = 0;
+        for (let i = 0; i < reportePax.filas.length; i++) {
+          const f = reportePax.filas[i];
+          f.rowspan = 1;
+          f.isFirstInStay = false;
+          if (f.stay_id !== lastStayId) {
+            if (lastStayId !== null) {
+              reportePax.filas[firstIndex].rowspan = count;
+            }
+            lastStayId = f.stay_id;
+            f.isFirstInStay = true;
+            firstIndex = i;
+            count = 1;
+          } else {
+            count++;
+          }
+        }
+        if (lastStayId !== null) {
+          reportePax.filas[firstIndex].rowspan = count;
+        }
 
         // Inicializar arrastre (Drag to Scroll)
         setTimeout(() => {
@@ -1182,6 +1153,26 @@ createApp({
         }, 300);
       } catch (e) {
         showToast('Error al cargar reporte PAX', 'error');
+      } finally {
+        reportePax.cargando = false;
+      }
+    };
+
+    const guardarReportePax = async () => {
+      reportePax.cargando = true;
+      try {
+        const res = await axios.post(
+          '../../../api/rooming.php?action=guardar_reporte_pax',
+          { rows: reportePax.filas }
+        );
+        if (res.data.status === 'success' || res.data.ok || res.data.data?.ok) {
+          showToast('Cambios guardados correctamente en la base de datos', 'success');
+          await cargarReportePax();
+        } else {
+          showToast(res.data.msg || 'Error al guardar reporte', 'error');
+        }
+      } catch (e) {
+        showToast('Error al conectar con la API', 'error');
       } finally {
         reportePax.cargando = false;
       }
@@ -1227,22 +1218,51 @@ createApp({
       // 3. DATOS
       const simbolo = (m) => m === "USD" ? "$" : (m === "CLP" ? "P$" : "S/");
 
+      const isStayLevelColumn = (label) => {
+        return [
+          "OPERADOR", "FECHA REGISTRO", "HAB", "TIPO DE HAB", "PAX",
+          "MEDIO DE RESERVA", "HORA DE CHECK IN", "ENTRADA", "SALIDA",
+          "PAGO TOTAL", "LATE", "METODO", "COMPROBANTE", "Nº COMPROBANTE",
+          "QUIEN COBRO", "CARRO", "OBS"
+        ].includes(label);
+      };
+
       // Identificar los IDs de estadías a excluir (donde el titular marcó el checkbox)
       const staysExcluded = reportePax.filas.filter(f => f.es_titular && f.excluir).map(f => f.stay_id || f.id);
+
+      let excelRowIndex = 4; // Title is row 1, blank is 2, header is 3.
+      const stayExcelRows = {};
 
       reportePax.filas.forEach(f => {
         // Si la fila actual pertenece a un stay excluido, no la procesamos
         const currentStayId = f.stay_id || f.id;
         if (staysExcluded.includes(currentStayId)) return;
 
+        const totalPagoMostrado = f.moneda_pago === 'PEN' ? (f.total_pago || 0) : (f.monto_original || 0);
+
         const fullData = [
-          f.es_titular ? (f.operador || "") : "", f.es_titular ? (f.fecha_registro || "") : "", f.es_titular ? ("#" + (f.hab_numero || "")) : "",
-          f.es_titular ? (f.tipo_hab_declarado || "") : "", f.es_titular ? (f.pax_total || "") : "", f.es_titular ? (f.medio_reserva || "") : "",
-          f.es_titular ? (f.hora_checkin || "") : "", f.nombre_completo || "", f.documento_tipo || "", f.documento_num || "",
-          f.nacionalidad || "", f.ciudad || "", f.es_titular ? (f.fecha_registro || "") : "", f.es_titular ? (f.fecha_checkout || "") : "",
-          f.es_titular ? `${simbolo(f.moneda_pago)} ${parseFloat(f.total_pago || 0).toFixed(2)}` : "", f.es_titular ? (f.estado === "late_checkout" ? "SI" : "NO") : "",
-          f.es_titular ? (f.metodo_pago || "") : "", f.es_titular ? (f.tipo_comprobante || "") : "", f.es_titular ? (f.num_comprobante || "") : "",
-          f.es_titular ? (f.cobrador || "") : "", f.es_titular ? (f.carro || "") : "", f.es_titular ? (f.observaciones || "") : ""
+          f.operador || "",
+          f.fecha_registro || "",
+          f.hab_numero ? "#" + f.hab_numero : "",
+          f.tipo_hab_declarado || "",
+          f.pax_total || "",
+          f.medio_reserva || "",
+          f.hora_checkin || "",
+          f.nombre_completo || "",
+          f.documento_tipo || "",
+          f.documento_num || "",
+          f.nacionalidad || "",
+          f.ciudad || "",
+          f.fecha_registro || "",
+          f.fecha_checkout || "",
+          `${simbolo(f.moneda_pago)} ${parseFloat(totalPagoMostrado).toFixed(2)}`,
+          f.estado === "late_checkout" ? "SI" : "NO",
+          f.metodo_pago || "",
+          f.tipo_comprobante || "",
+          f.num_comprobante || "",
+          f.cobrador || "",
+          f.carro || "",
+          f.observaciones || ""
         ];
 
         // Mapear solo los indices de las columnas seleccionadas
@@ -1255,11 +1275,41 @@ createApp({
         dataRow.eachCell((cell, colIndex) => {
           cell.border = { top: { style: "thin" }, left: { style: "thin" }, bottom: { style: "thin" }, right: { style: "thin" } };
 
-          // Hallar el label original para aplicar WrapText
+          // Hallar el label original para aplicar WrapText y alineación
           const currentLabel = labels[colIndex - 1];
           const needsWrap = ["TIPO DE HAB", "NOMBRE Y APELLIDO", "OBS"].includes(currentLabel);
-          cell.alignment = { vertical: "middle", wrapText: needsWrap };
+          
+          let horiz = "left";
+          if (["OPERADOR", "FECHA REGISTRO", "HAB", "PAX", "HORA DE CHECK IN", "TIPO DOC", "NÚMERO", "ENTRADA", "SALIDA", "LATE", "METODO", "COMPROBANTE", "Nº COMPROBANTE", "QUIEN COBRO", "CARRO"].includes(currentLabel)) {
+            horiz = "center";
+          }
+          cell.alignment = {
+            vertical: "middle",
+            horizontal: horiz,
+            wrapText: needsWrap
+          };
         });
+
+        if (!stayExcelRows[currentStayId]) {
+          stayExcelRows[currentStayId] = [];
+        }
+        stayExcelRows[currentStayId].push(excelRowIndex);
+        excelRowIndex++;
+      });
+
+      // Combinar (merge) las celdas de nivel estadía para estadías con múltiples pasajeros
+      Object.keys(stayExcelRows).forEach(stayId => {
+        const rows = stayExcelRows[stayId];
+        if (rows.length > 1) {
+          const startRow = rows[0];
+          const endRow = rows[rows.length - 1];
+          colSpecs.forEach((col, colIdx) => {
+            if (isStayLevelColumn(col.label)) {
+              const colNum = colIdx + 1;
+              worksheet.mergeCells(startRow, colNum, endRow, colNum);
+            }
+          });
+        }
       });
 
       // Anchos
@@ -1453,7 +1503,7 @@ createApp({
       saldoPendienteOriginal, adelantoInvalido,
       // CONSUMOS
       inventario, inventarioAgrupado, stayParaConsumo, consumosStay, consumoForm,
-      abrirConsumo, onProductoChange, calcularTotalConsumo, guardarConsumo,
+      abrirConsumo, onProductoChange, onMetodoPagoConsumoChange, calcularTotalConsumo, guardarConsumo,
       consumoFormTotalEnMonedaEstadia, monedaEstadiaSimbolo, monedaConsumoSimbolo,
       // AUTOCOMPLETE PAX
       sugerencias, buscarPax, aplicarSugerencia, ocultarSugerencias,
@@ -1461,7 +1511,7 @@ createApp({
       lookupDocumento, lookupRuc, onDocTipoChange,
       lookupLoading, lookupOk, rucLoading, rucOk,
       // REPORTE PAX
-      reportePax, abrirReportePax, cargarReportePax, exportarReportePax,
+      reportePax, abrirReportePax, cargarReportePax, exportarReportePax, guardarReportePax,
       totalConsumoStay, saldoPendienteStay, saldoPendienteStayParaPago
     };
   }

@@ -252,8 +252,15 @@ class RoomingController {
             return ['ok' => false, 'msg' => "Estadía no encontrada"];
         }
 
-        if ($stay['estado_pago'] !== 'pagado' && empty($pago)) {
-            return ['ok' => false, 'msg' => "No se puede realizar el checkout. La habitación tiene un saldo pendiente de: " . ($stay['total_pago'] - $stay['total_cobrado'])];
+        // Recalcular saldo pendiente real incluyendo consumos de bebidas
+        $stmtCons = $this->pdo->prepare("SELECT SUM(total) FROM rooming_consumos WHERE stay_id = ?");
+        $stmtCons->execute([$id]);
+        $totalConsumos = (float)$stmtCons->fetchColumn();
+        $grandTotal = (float)$stay['total_pago'] + $totalConsumos;
+        $saldoPendiente = $grandTotal - (float)$stay['total_cobrado'];
+
+        if ($stay['estado_pago'] !== 'pagado' && empty($pago) && $saldoPendiente > 0.05) {
+            return ['ok' => false, 'msg' => "No se puede realizar el checkout. La habitación tiene un saldo pendiente de: S/ " . number_format($saldoPendiente, 2)];
         }
 
         if ($this->model->finalizarStay($id, date('Y-m-d'), $pago)) {
@@ -287,7 +294,13 @@ class RoomingController {
             $stay = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if ($stay) {
-                $saldoPendiente = (float)$stay['total_pago'] - (float)$stay['total_cobrado'];
+                // Incluir consumos en el saldo pendiente
+                $stmtCons = $this->pdo->prepare("SELECT SUM(total) FROM rooming_consumos WHERE stay_id = ?");
+                $stmtCons->execute([$stayId]);
+                $totalConsumos = (float)$stmtCons->fetchColumn();
+
+                $grandTotal = (float)$stay['total_pago'] + $totalConsumos;
+                $saldoPendiente = $grandTotal - (float)$stay['total_cobrado'];
                 $montoIngresado = (float)($input['monto_pen'] ?? $input['monto'] ?? 0);
                 
                 if ($montoIngresado > $saldoPendiente + 0.05) {
@@ -300,7 +313,14 @@ class RoomingController {
 
             $subtipo = 'adelanto';
             if ($stay) {
-                $saldoPendiente = (float)$stay['total_pago'] - (float)$stay['total_cobrado'];
+                // Incluir consumos en el saldo pendiente para clasificar el tipo de abono
+                $stmtCons = $this->pdo->prepare("SELECT SUM(total) FROM rooming_consumos WHERE stay_id = ?");
+                $stmtCons->execute([$stayId]);
+                $totalConsumos = (float)$stmtCons->fetchColumn();
+
+                $grandTotal = (float)$stay['total_pago'] + $totalConsumos;
+                $saldoPendiente = $grandTotal - (float)$stay['total_cobrado'];
+
                 if (!empty($input['recargo_pos'])) {
                     $saldoPendiente *= 1.05;
                 }
@@ -331,5 +351,12 @@ class RoomingController {
      */
     public function reportePax(int $mes, int $anio): array {
         return $this->model->getReportePax($mes, $anio);
+    }
+
+    /**
+     * Guarda masivamente los cambios en el reporte de PAX.
+     */
+    public function guardarReportePax(array $rows): array {
+        return $this->model->updateReportePax($rows);
     }
 }

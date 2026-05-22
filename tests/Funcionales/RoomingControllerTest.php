@@ -171,11 +171,16 @@ class RoomingControllerTest extends TestCase {
         ]);
         $this->assertTrue($resCons['ok'], "Registrar consumo falló: " . ($resCons['msg'] ?? ''));
 
-        // Verificar incrementos en bd: total_pago +30 -> 330. monto_original +10 -> 110
+        // Verificar en BD: total_pago permanece en 300.00 (decouplado). monto_original no se altera -> 100.
+        // El consumo se registra por separado en la tabla rooming_consumos.
         $stayDb3 = $this->pdo->query("SELECT * FROM rooming_stays WHERE id = $stayId")->fetch(PDO::FETCH_ASSOC);
-        $this->assertEquals(330.00, (float)$stayDb3['total_pago']);
-        $this->assertEquals(110.00, (float)$stayDb3['monto_original']);
+        $this->assertEquals(300.00, (float)$stayDb3['total_pago']);
+        $this->assertEquals(100.00, (float)$stayDb3['monto_original']);
         $this->assertEquals(150.00, (float)$stayDb3['total_cobrado']);
         $this->assertEquals(50.00, (float)$stayDb3['total_cobrado_orig']);
+
+        // Verificar que el consumo se haya registrado correctamente en rooming_consumos por 30 PEN
+        $totalConsumos = (float)$this->pdo->query("SELECT SUM(total) FROM rooming_consumos WHERE stay_id = $stayId")->fetchColumn();
+        $this->assertEquals(30.00, $totalConsumos);
     }
 }

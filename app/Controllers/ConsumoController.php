@@ -56,8 +56,8 @@ class ConsumoController {
             $this->invModel->descontarStock($productoId, $cantidad);
 
             // 3. Sincronización Financiera y Aumento de Deuda
-            // Aumentar la deuda del stay en PEN. El modelo se encarga de la conversión interna a la divisa original del stay.
-            $this->roomModel->incrementarTotal($stayId, $total);
+            // Recalcular resumen financiero de pagos para incluir los nuevos consumos sin alterar el total_pago de la habitación
+            $this->roomModel->actualizarResumenPagos($stayId);
 
             if ($metodo !== null) {
                 // Pago Inmediato: Registrar anticipo + Flujo

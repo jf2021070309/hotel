@@ -42,6 +42,9 @@ switch ($action) {
         $anio = (int)($_GET['anio'] ?? date('Y'));
         json_response(true, $controller->reportePax($mes, $anio));
         break;
+    case 'guardar_reporte_pax':
+        json_response(true, $controller->guardarReportePax($input['rows'] ?? []));
+        break;
     default:
         json_response(false, null, 400, "Acción no válida");
         break;

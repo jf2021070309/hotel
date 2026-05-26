@@ -29,7 +29,7 @@ class InventarioController {
             ]
         ], JSON_UNESCAPED_UNICODE);
         
-        $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'CREAR_PRODUCTO', 'INVENTARIO', $detalle);
+        $this->audit->registrar($_SESSION['auth_id'], 'CREAR_PRODUCTO', 'INVENTARIO', $detalle);
         return ['ok' => true, 'msg' => 'Producto creado', 'id' => $id];
     }
 
@@ -57,7 +57,7 @@ class InventarioController {
             'cambios' => !empty($cambios) ? $cambios : null
         ], JSON_UNESCAPED_UNICODE);
 
-        $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'ACTUALIZAR_PRODUCTO', 'INVENTARIO', $detalle);
+        $this->audit->registrar($_SESSION['auth_id'], 'ACTUALIZAR_PRODUCTO', 'INVENTARIO', $detalle);
 
         return ['ok' => true, 'msg' => 'Producto actualizado'];
     }
@@ -75,27 +75,26 @@ class InventarioController {
             ]
         ], JSON_UNESCAPED_UNICODE);
 
-        $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'RECARGA_STOCK', 'INVENTARIO', $detalle);
+        $this->audit->registrar($_SESSION['auth_id'], 'RECARGA_STOCK', 'INVENTARIO', $detalle);
         return ['ok' => true, 'msg' => 'Stock actualizado'];
     }
 
     public function eliminar(int $id): array {
         $prod = $this->model->getPorId($id);
         $this->model->eliminar($id);
-        $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'ELIMINAR_PRODUCTO', 'INVENTARIO', "Eliminó definitivamente el producto: {$prod['nombre']}");
+        $this->audit->registrar($_SESSION['auth_id'], 'ELIMINAR_PRODUCTO', 'INVENTARIO', "Eliminó definitivamente el producto: {$prod['nombre']}");
         return ['ok' => true, 'msg' => 'Producto eliminado'];
     }
 
     public function consumoInterno(array $data): array {
         $id   = (int)($data['producto_id'] ?? 0);
         $cant = (int)($data['cantidad'] ?? 0);
-        $ref  = trim($data['referencia'] ?? 'Consumo interno');
         $uid  = (int)($data['usuario_id'] ?? 1);
         if ($id <= 0 || $cant <= 0) return ['ok' => false, 'msg' => 'Datos inválidos'];
-        $ok = $this->model->consumoInterno($id, $cant, $ref, $uid);
+        $ok = $this->model->consumoInterno($id, $cant, $uid);
         if ($ok) {
             $prod = $this->model->getPorId($id);
-            $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'BAJA_PRODUCTO', 'INVENTARIO', "Baja por consumo/merma de $cant unidades a: {$prod['nombre']} ($ref)");
+            $this->audit->registrar($_SESSION['auth_id'], 'BAJA_PRODUCTO', 'INVENTARIO', "Baja por consumo/merma de $cant unidades a: {$prod['nombre']}");
             return ['ok' => true, 'msg' => 'Consumo interno registrado'];
         }
         return ['ok' => false, 'msg' => 'Stock insuficiente o producto no encontrado'];

@@ -2,8 +2,8 @@
 /**
  * app/Views/auth/login.php - PLATINIUM HOTEL BRANDING
  */
-require_once __DIR__ . '/../../../rutas.php';
-require_once __DIR__ . '/../../../auth/session.php';
+require_once __DIR__ . '/../../../app/Helpers/url.php';
+require_once __DIR__ . '/../../../app/Middleware/session.php';
 
 if (estaAutenticado()) {
     header('Location: ' . route('index.php'));
@@ -50,7 +50,7 @@ if (estaAutenticado()) {
         .login-hero {
             flex: 1.2;
             background: linear-gradient(rgba(26, 26, 26, 0.2), rgba(26, 26, 26, 0.2)),
-                url('../../../assets/img/edificio.png') center/cover no-repeat;
+                url('<?= project_base_url() ?>public/assets/img/edificio.png') center/cover no-repeat;
             display: none;
         }
 

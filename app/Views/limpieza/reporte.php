@@ -4,13 +4,13 @@
  * Checklist de Housekeeping — Imprimible y digital para camareras
  */
 $base = '../../../';
-require_once $base . 'auth/session.php';
-require_once $base . 'auth/middleware.php';
+require_once $base . 'app/Middleware/session.php';
+require_once $base . 'app/Middleware/auth.php';
 protegerPorRol('limpieza', 'limpieza');
 $fecha = $_GET['fecha'] ?? date('Y-m-d');
 $page_title = 'Reporte Housekeeping ' . date('d/m/Y', strtotime($fecha));
-include $base . 'includes/head.php';
-include $base . 'includes/sidebar.php';
+include $base . 'app/Views/layouts/head.php';
+include $base . 'app/Views/layouts/sidebar.php';
 ?>
 
 <style>

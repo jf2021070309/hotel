@@ -64,6 +64,7 @@ class RoomingController {
             'hora_in'      => $stayData['hora_checkin'],
             'medio'        => $stayData['medio_reserva'],
             'hab_id'       => $stayData['habitacion_id'],
+            'cliente_titular_id' => $stayData['cliente_titular_id'] ?? null,
             'tipo_hab'     => $stayData['tipo_hab_declarado'] ?? 'ESTANDAR',
             'noches'       => $stayData['noches'],
             'pax_total'    => count($paxList),
@@ -75,8 +76,6 @@ class RoomingController {
             'metodo'       => $stayData['metodo_pago'],
             'comprobante'  => $stayData['tipo_comprobante'],
             'num_comp'     => $stayData['num_comprobante'] ?? '',
-            'ruc'          => $stayData['ruc_factura'] ?? '',
-            'razon_social' => $stayData['razon_social'] ?? '',
             'cobrador'     => $_SESSION['auth_nombre'] ?? '',
             'procedencia'  => $stayData['procedencia'] ?? '',
             'carro'        => $stayData['carro'] ?? 'NO',
@@ -198,14 +197,14 @@ class RoomingController {
                     'cambios' => $numCambios > 0 ? $cambios : null
                 ], JSON_UNESCAPED_UNICODE);
 
-                $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'] ?? 'Sistema', 'ACTUALIZAR_STAY', 'ROOMING', $detalle);
+                $this->audit->registrar($_SESSION['auth_id'], 'ACTUALIZAR_STAY', 'ROOMING', $detalle);
 
             } else {
                 $stay_id = $this->model->registrarStay($mapped, $paxList);
                 $msg = "Registro creado correctamente";
                 $paxTitular = $paxList[0]['nombre_completo'] ?? 'Huésped';
                 $detalle = "Realizó el ingreso (Check-in) del Huésped: $paxTitular en la Habitación #{$mapped['hab_id']}";
-                $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'] ?? 'Sistema', 'CHECKIN_REGISTRADO', 'ROOMING', $detalle);
+                $this->audit->registrar($_SESSION['auth_id'], 'CHECKIN_REGISTRADO', 'ROOMING', $detalle);
             }
             
             // Si es un REGISTRO NUEVO y hay pago inicial, registrarlo como anticipo
@@ -265,7 +264,7 @@ class RoomingController {
 
         if ($this->model->finalizarStay($id, date('Y-m-d'), $pago)) {
             $numHab = $stay['nro_habitacion'] ?? $stay['habitacion_id'];
-            $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'CHECKOUT_REALIZADO', 'ROOMING', "Check-out realizado (Habitación #$numHab)");
+            $this->audit->registrar($_SESSION['auth_id'], 'CHECKOUT_REALIZADO', 'ROOMING', "Check-out realizado (Habitación #$numHab)");
             return ['ok' => true, 'msg' => "Check-out realizado"];
         }
         return ['ok' => false, 'msg' => "No se pudo realizar el checkout"];
@@ -330,7 +329,7 @@ class RoomingController {
             }
             
             $msgAuditoria = "Ampliación de estadía (Late Checkout) en Habitación #$habNum. Nuevas noches: $noches, Nuevo total: S/ " . number_format($totalPago, 2) . ", Nuevo checkout: $fechaCheckout";
-            $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'LATE_CHECKOUT', 'ROOMING', $msgAuditoria);
+            $this->audit->registrar($_SESSION['auth_id'], 'LATE_CHECKOUT', 'ROOMING', $msgAuditoria);
 
             return ['ok' => true, 'msg' => 'Estadía ampliada (Late Checkout) guardada con éxito'];
         }
@@ -391,7 +390,7 @@ class RoomingController {
             if ($this->model->registrarPago($input, $subtipo)) {
                 $montoAudit = (float)($input['monto_pen'] ?? 0);
                 $msgAudit = "Registró pago de S/ " . number_format($montoAudit, 2) . " [{$input['tipo']}] para Estancia #$stayId";
-                $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'REGISTRAR_PAGO', 'ROOMING', $msgAudit);
+                $this->audit->registrar($_SESSION['auth_id'], 'REGISTRAR_PAGO', 'ROOMING', $msgAudit);
                 return ['ok' => true, 'msg' => "Pago registrado"];
             }
             return ['ok' => false, 'msg' => "Error al registrar pago"];

@@ -36,10 +36,10 @@ class LimpiezaModel {
                 $prioridad = ($room['estado'] === 'mantenimiento') ? 'alta' : 'normal';
 
                 $stmtInsert = $this->pdo->prepare("
-                    INSERT INTO limpieza_registros (fecha, habitacion_id, habitacion, tipo_limpieza, prioridad, estado, usuario_id)
-                    VALUES (?, ?, ?, ?, ?, 'pendiente', ?)
+                    INSERT INTO limpieza_registros (fecha, habitacion_id, tipo_limpieza, prioridad, estado, usuario_id)
+                    VALUES (?, ?, ?, ?, 'pendiente', ?)
                 ");
-                $stmtInsert->execute([$fecha, $room['id'], $room['numero'], $tipo, $prioridad, $validUid]);
+                $stmtInsert->execute([$fecha, $room['id'], $tipo, $prioridad, $validUid]);
             } else {
                 if ($room['estado'] === 'limpieza' && $existing['estado'] === 'lista') {
                     $stmtReset = $this->pdo->prepare("UPDATE limpieza_registros SET estado = 'pendiente', hora_fin = NULL WHERE id = ?");
@@ -49,13 +49,13 @@ class LimpiezaModel {
         }
         // --------------------------------
 
-        $sql = "SELECT r.*, u.nombre as responsable_nombre, h.estado as room_estado,
+        $sql = "SELECT r.*, h.numero as habitacion, u.nombre as responsable_nombre, h.estado as room_estado,
                    (SELECT COALESCE(s.pax_total, NULL) FROM rooming_stays s WHERE s.habitacion_id = h.id AND s.fecha_registro <= ? AND s.fecha_checkout > ? LIMIT 1) as pax
             FROM limpieza_registros r
             LEFT JOIN usuarios u ON r.usuario_id = u.id
             JOIN habitaciones h ON r.habitacion_id = h.id
             WHERE r.fecha = ? 
-            ORDER BY r.prioridad ASC, r.habitacion ASC";
+            ORDER BY r.prioridad ASC, h.numero ASC";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([$fecha, $fecha, $fecha]);
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -91,8 +91,8 @@ class LimpiezaModel {
     public function guardarMasivo(array $registros): bool {
         $this->pdo->beginTransaction();
         try {
-            $sql = "INSERT IGNORE INTO limpieza_registros (fecha, habitacion_id, habitacion, tipo_limpieza, prioridad, usuario_id) 
-                    VALUES (:fecha, :hab_id, :hab, :tipo, :prioridad, :uid)";
+            $sql = "INSERT IGNORE INTO limpieza_registros (fecha, habitacion_id, tipo_limpieza, prioridad, usuario_id) 
+                    VALUES (:fecha, :hab_id, :tipo, :prioridad, :uid)";
             $stmt = $this->pdo->prepare($sql);
             // preparar verificación de usuario y fallback
             $stmtUser = $this->pdo->prepare("SELECT id FROM usuarios WHERE id = ? LIMIT 1");
@@ -109,7 +109,6 @@ class LimpiezaModel {
                 $stmt->execute([
                     ':fecha'     => $r['fecha'],
                     ':hab_id'    => $r['habitacion_id'],
-                    ':hab'       => $r['habitacion'],
                     ':tipo'      => $r['tipo_limpieza'],
                     ':prioridad' => $r['prioridad'],
                     ':uid'       => $uid
@@ -137,7 +136,7 @@ class LimpiezaModel {
     public function getCalculoPropuesta(string $fecha): array {
         // 1. Salidas (Check-out hoy)
         $sqlSalidas = "SELECT s.habitacion_id, h.numero as habitacion, 'salida' as tipo, 'alta' as prioridad, 
-                              (SELECT nombre_completo FROM rooming_pax WHERE stay_id = s.id AND es_titular=1 LIMIT 1) as titular,
+                              (SELECT c.nombre_razon_social FROM rooming_pax rp JOIN clientes c ON rp.cliente_id = c.id WHERE rp.stay_id = s.id AND rp.es_titular_acompanante=1 LIMIT 1) as titular,
                               s.fecha_checkout
                        FROM rooming_stays s
                        JOIN habitaciones h ON s.habitacion_id = h.id
@@ -145,7 +144,7 @@ class LimpiezaModel {
         
         // 2. Reposos (Ocupadas pero no salen hoy)
         $sqlEstadias = "SELECT s.habitacion_id, h.numero as habitacion, 'reposo' as tipo, 'normal' as prioridad,
-                               (SELECT nombre_completo FROM rooming_pax WHERE stay_id = s.id AND es_titular=1 LIMIT 1) as titular,
+                               (SELECT c.nombre_razon_social FROM rooming_pax rp JOIN clientes c ON rp.cliente_id = c.id WHERE rp.stay_id = s.id AND rp.es_titular_acompanante=1 LIMIT 1) as titular,
                                s.fecha_checkout
                         FROM rooming_stays s
                         JOIN habitaciones h ON s.habitacion_id = h.id
@@ -153,7 +152,7 @@ class LimpiezaModel {
 
         // 3. Programadas (Libres con checkin hoy o mañana)
         $sqlProgramadas = "SELECT s.habitacion_id, h.numero as habitacion, 'programada' as tipo, 'normal' as prioridad,
-                                  (SELECT nombre_completo FROM rooming_pax WHERE stay_id = s.id AND es_titular=1 LIMIT 1) as titular,
+                                  (SELECT c.nombre_razon_social FROM rooming_pax rp JOIN clientes c ON rp.cliente_id = c.id WHERE rp.stay_id = s.id AND rp.es_titular_acompanante=1 LIMIT 1) as titular,
                                   s.fecha_registro
                            FROM rooming_stays s
                            JOIN habitaciones h ON s.habitacion_id = h.id

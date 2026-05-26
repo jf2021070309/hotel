@@ -47,9 +47,10 @@ class ReservasModel {
                  s.estado,
                  s.metodo_pago,
                  s.observaciones,
-                 p.nombre_completo AS titular
+                 c.nombre_razon_social AS titular
              FROM rooming_stays s
-             LEFT JOIN rooming_pax p ON p.stay_id = s.id AND p.es_titular = 1
+             LEFT JOIN rooming_pax p ON p.stay_id = s.id AND p.es_titular_acompanante = 1
+             LEFT JOIN clientes c ON c.id = p.cliente_id
              WHERE s.estado IN ('activo','late_checkout','reservado')
                AND s.fecha_registro <= :ultimo
                AND s.fecha_checkout  > :primero"
@@ -214,16 +215,21 @@ class ReservasModel {
             $this->pdo->beginTransaction();
         }
         try {
+            // First insert a placeholder client
+            $stmtCli = $this->pdo->prepare("INSERT INTO clientes (nombre_razon_social, documento_tipo, documento_num, tipo_cliente) VALUES (?, 'DNI', '', 'NATURAL')");
+            $stmtCli->execute([$data['titular']]);
+            $clienteId = (int)$this->pdo->lastInsertId();
+
             $sql = "INSERT INTO rooming_stays (
                 operador, fecha_registro, fecha_checkout, medio_reserva, 
                 habitacion_id, tipo_hab_declarado, noches, pax_total, total_pago, 
                 moneda_pago, metodo_pago, tipo_comprobante, cobrador, 
-                observaciones, usuario_id, estado, estado_pago
+                observaciones, usuario_id, estado, estado_pago, cliente_titular_id
             ) VALUES (
                 :operador, :fecha_reg, :fecha_out, :medio, 
                 :hab_id, 'RESERVA', :noches, 1, 0, 
                 'PEN', 'EFECTIVO', 'RECIBO', :cobrador, 
-                :obs, :uid, 'reservado', 'pendiente'
+                :obs, :uid, 'reservado', 'pendiente', :cliente_titular_id
             )";
             
             $stmt = $this->pdo->prepare($sql);
@@ -236,14 +242,14 @@ class ReservasModel {
                 'cobrador'  => $_SESSION['auth_nombre'] ?? 'Admin',
                 'obs'       => $data['observaciones'] ?? '',
                 'uid'       => $data['usuario_id'],
-                'medio'     => $data['canal'] ?? 'DIRECTO'
+                'medio'     => $data['canal'] ?? 'DIRECTO',
+                'cliente_titular_id' => $clienteId
             ]);
             
             $stay_id = (int)$this->pdo->lastInsertId();
             
-            // Insert Pax placeholder
-            $stmtPax = $this->pdo->prepare("INSERT INTO rooming_pax (stay_id, nombre_completo, documento_num, es_titular) VALUES (?, ?, '', 1)");
-            $stmtPax->execute([$stay_id, $data['titular']]);
+            $stmtPax = $this->pdo->prepare("INSERT INTO rooming_pax (stay_id, cliente_id, es_titular_acompanante) VALUES (?, ?, 1)");
+            $stmtPax->execute([$stay_id, $clienteId]);
             
             if ($mustCommit) {
                 $this->pdo->commit();
@@ -331,19 +337,29 @@ class ReservasModel {
                 $id
             ]);
 
-            $stmtPax = $this->pdo->prepare("
-                UPDATE rooming_pax
-                SET nombre_completo = ?
-                WHERE stay_id = ? AND es_titular = 1
+            // Update titular name in clientes table via junction
+            $stmtGetCliente = $this->pdo->prepare("
+                SELECT rp.cliente_id FROM rooming_pax rp
+                WHERE rp.stay_id = ? AND rp.es_titular_acompanante = 1 LIMIT 1
             ");
-            $stmtPax->execute([$data['titular'], $id]);
+            $stmtGetCliente->execute([$id]);
+            $clienteId = $stmtGetCliente->fetchColumn();
 
-            if ($stmtPax->rowCount() === 0) {
-                $stmtInsertPax = $this->pdo->prepare("
-                    INSERT INTO rooming_pax (stay_id, nombre_completo, documento_num, es_titular)
-                    VALUES (?, ?, '', 1)
-                ");
-                $stmtInsertPax->execute([$id, $data['titular']]);
+            if ($clienteId) {
+                $stmtUpCli = $this->pdo->prepare("UPDATE clientes SET nombre_razon_social = ? WHERE id = ?");
+                $stmtUpCli->execute([$data['titular'], $clienteId]);
+            } else {
+                // Create new client + pax link
+                $stmtCli = $this->pdo->prepare("INSERT INTO clientes (nombre_razon_social, documento_tipo, documento_num, tipo_cliente) VALUES (?, 'DNI', '', 'NATURAL')");
+                $stmtCli->execute([$data['titular']]);
+                $newCliId = (int)$this->pdo->lastInsertId();
+                
+                $stmtInsPax = $this->pdo->prepare("INSERT INTO rooming_pax (stay_id, cliente_id, es_titular_acompanante) VALUES (?, ?, 1)");
+                $stmtInsPax->execute([$id, $newCliId]);
+
+                // Also update stays titular
+                $stmtUpStayTit = $this->pdo->prepare("UPDATE rooming_stays SET cliente_titular_id = ? WHERE id = ?");
+                $stmtUpStayTit->execute([$newCliId, $id]);
             }
 
             if ($mustCommit) {

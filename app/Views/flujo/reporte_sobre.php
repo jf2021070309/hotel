@@ -3,7 +3,7 @@
  * app/Views/flujo/reporte_sobre.php
  */
 $base = '../../../';
-require_once $base . 'auth/middleware.php';
+require_once $base . 'app/Middleware/auth.php';
 require_once $base . 'config/db.php';
 require_once $base . 'app/Models/FlujoModel.php';
 

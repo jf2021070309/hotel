@@ -5,13 +5,13 @@
  */
 $base = '../../../';
 $_projectRoot = dirname(__DIR__, 3);
-require_once $_projectRoot . '/auth/session.php';
-require_once $_projectRoot . '/auth/middleware.php';
+require_once $_projectRoot . '/app/Middleware/session.php';
+require_once $_projectRoot . '/app/Middleware/auth.php';
 protegerPorRol('cajera', 'limpieza'); 
 
 $fecha = $_GET['fecha'] ?? date('Y-m-d');
 $page_title = 'Ficha de Desayunos — ' . date('d/m/Y', strtotime($fecha));
-include $_projectRoot . '/includes/head.php';
+include $_projectRoot . '/app/Views/layouts/head.php';
 ?>
 
 <style>
@@ -38,7 +38,7 @@ include $_projectRoot . '/includes/head.php';
 </style>
 
 <div class="main-content" id="app-ficha-desayunos" v-cloak>
-    <?php include $_projectRoot . '/includes/sidebar.php'; ?>
+    <?php include $_projectRoot . '/app/Views/layouts/sidebar.php'; ?>
 
     <div class="topbar btn-noPrint">
         <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list fs-4"></i></button>
@@ -217,4 +217,4 @@ createApp({
 }).mount('#app-ficha-desayunos');
 </script>
 
-<?php include $_projectRoot . '/includes/footer.php'; ?>
+<?php include $_projectRoot . '/app/Views/layouts/footer.php'; ?>

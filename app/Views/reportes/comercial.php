@@ -4,11 +4,11 @@
  */
 $base = '../../../';
 $_projectRoot = dirname(__DIR__, 3);
-require_once $_projectRoot . '/auth/middleware.php';
+require_once $_projectRoot . '/app/Middleware/auth.php';
 protegerPorRol('cajera', 'reportes');
 
 $page_title = 'Reportes Comerciales — Hotel Manager';
-include $_projectRoot . '/includes/head.php';
+include $_projectRoot . '/app/Views/layouts/head.php';
 ?>
 
 <!-- Librerías Necesarias -->
@@ -17,7 +17,7 @@ include $_projectRoot . '/includes/head.php';
 <script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
 
 <div id="app-comercial" style="display:contents">
-  <?php include $_projectRoot . '/includes/sidebar.php'; ?>
+  <?php include $_projectRoot . '/app/Views/layouts/sidebar.php'; ?>
 
   <div class="main-content">
     <div class="container-fluid py-4 animate__animated animate__fadeIn">
@@ -210,4 +210,4 @@ include $_projectRoot . '/includes/head.php';
 </div>
 
 <script src="comercial.js"></script>
-<?php include $_projectRoot . '/includes/footer.php'; ?>
+<?php include $_projectRoot . '/app/Views/layouts/footer.php'; ?>

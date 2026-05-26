@@ -11,15 +11,18 @@ class ConsumoModel {
 
     public function registrar(array $data): int {
         $sql = "INSERT INTO rooming_consumos 
-                (stay_id, producto_id, nombre_producto, cantidad, precio_unitario, total, metodo_pago, pagado, usuario_id) 
-                VALUES (:stay_id, :producto_id, :nombre_producto, :cantidad, :precio_unitario, :total, :metodo_pago, :pagado, :usuario_id)";
+                (stay_id, producto_id, cantidad, precio_unitario, total, metodo_pago, pagado, usuario_id) 
+                VALUES (:stay_id, :producto_id, :cantidad, :precio_unitario, :total, :metodo_pago, :pagado, :usuario_id)";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute($data);
         return (int)$this->pdo->lastInsertId();
     }
 
     public function listarPorStay(int $stayId): array {
-        $sql = "SELECT * FROM rooming_consumos WHERE stay_id = ? ORDER BY created_at DESC";
+        $sql = "SELECT c.*, p.nombre AS nombre_producto 
+                FROM rooming_consumos c
+                LEFT JOIN inventario_productos p ON c.producto_id = p.id
+                WHERE c.stay_id = ? ORDER BY c.created_at DESC";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([$stayId]);
         return $stmt->fetchAll();

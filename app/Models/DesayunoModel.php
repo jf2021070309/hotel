@@ -33,9 +33,11 @@ class DesayunoModel {
 
     public function getDetalle(int $id): array {
         $stmt = $this->pdo->prepare(
-            "SELECT dd.*, h.numero AS habitacion
+            "SELECT dd.*, h.numero AS habitacion,
+                    (SELECT c.nombre_razon_social FROM rooming_pax rp JOIN clientes c ON rp.cliente_id = c.id WHERE rp.stay_id = dd.stay_id AND rp.es_titular_acompanante = 1 LIMIT 1) AS titular
              FROM desayunos_detalle dd
-             JOIN habitaciones h ON h.id = dd.habitacion_id
+             JOIN rooming_stays rs ON rs.id = dd.stay_id
+             JOIN habitaciones h ON h.id = rs.habitacion_id
              WHERE dd.desayuno_id = ?
              ORDER BY h.numero ASC"
         );
@@ -45,8 +47,8 @@ class DesayunoModel {
 
     public function getOcupacionActual(string $fecha): array {
         // Consultar rooming_stays activos para la fecha calculada (pernoctaron la noche anterior)
-        $sql = "SELECT s.id as checkin_id, h.numero as habitacion, h.id as habitacion_id,
-                       (SELECT nombre_completo FROM rooming_pax WHERE stay_id = s.id AND es_titular = 1 LIMIT 1) as titular,
+        $sql = "SELECT s.id as checkin_id, h.numero as habitacion, h.id as habitacion_id, s.id as stay_id,
+                       (SELECT c.nombre_razon_social FROM rooming_pax rp JOIN clientes c ON rp.cliente_id = c.id WHERE rp.stay_id = s.id AND rp.es_titular_acompanante = 1 LIMIT 1) as titular,
                        s.pax_total as pax
                 FROM rooming_stays s
                 JOIN habitaciones h ON s.habitacion_id = h.id
@@ -76,13 +78,11 @@ class DesayunoModel {
             }
 
             // Insertar detalles
-            $stmtDet = $this->pdo->prepare("INSERT INTO desayunos_detalle (desayuno_id, habitacion_id, habitacion, titular, pax, incluye_desayuno) VALUES (?, ?, ?, ?, ?, ?)");
+            $stmtDet = $this->pdo->prepare("INSERT INTO desayunos_detalle (desayuno_id, stay_id, pax, incluye_desayuno) VALUES (?, ?, ?, ?)");
             foreach ($detalles as $det) {
                 $stmtDet->execute([
                     $id,
-                    $det['habitacion_id'],
-                    $det['habitacion'],
-                    $det['titular'] ?? '---',
+                    $det['stay_id'] ?? $det['checkin_id'] ?? null,
                     $det['pax'],
                     ($det['incluye_desayuno'] ? 1 : 0)
                 ]);

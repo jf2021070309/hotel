@@ -5,7 +5,7 @@
  */
 $base = '../../../';
 require_once $base . 'config/db.php';
-require_once $base . 'auth/middleware.php';
+require_once $base . 'app/Middleware/auth.php';
 protegerPorRol('cajera', 'calculadora');
 
 require_once $base . 'app/Controllers/CalculadoraController.php';
@@ -17,11 +17,11 @@ $config    = $data['config'];
 $historial = $data['historial'];
 
 $page_title = 'Calculadora — Hotel Platinium';
-include $base . 'includes/head.php';
+include $base . 'app/Views/layouts/head.php';
 ?>
 
 <div id="app-calculadora">
-<?php include $base . 'includes/sidebar.php'; ?>
+<?php include $base . 'app/Views/layouts/sidebar.php'; ?>
 <div class="main-content">
 
   <!-- TOPBAR -->

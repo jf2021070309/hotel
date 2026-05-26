@@ -1,38 +1,16 @@
 RewriteEngine On
 # RewriteBase /hotel/
 
-# Mantener acceso normal a archivos y carpetas reales
+# ─── ARCHIVOS ESTÁTICOS: servir directamente ───────────────
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]
 
-# Dashboard
-RewriteRule ^$ index.php [L,QSA]
+# ─── ASSETS: redirigir a public/assets/ ─────────────────────
+RewriteRule ^assets/(.*)$ public/assets/$1 [L]
 
-# Módulos del sidebar
-RewriteRule ^habitaciones/?$ app/Views/habitaciones/index.php [L,QSA]
-RewriteRule ^rooming/?$ app/Views/rooming/index.php [L,QSA]
-RewriteRule ^reservas/?$ app/Views/reservas/index.php [L,QSA]
-RewriteRule ^flujo/?$ app/Views/flujo/index.php [L,QSA]
-RewriteRule ^flujo/form/?$ app/Views/flujo/form.php [L,QSA]
-RewriteRule ^flujo/dia/?$ app/Views/flujo/dia.php [L,QSA]
-RewriteRule ^flujo/reporte-sobre/?$ app/Views/flujo/reporte_sobre.php [L,QSA]
-RewriteRule ^flujo/reporte-alex-diario/?$ app/Views/flujo/reporte_alex_diario.php [L,QSA]
-RewriteRule ^caja-chica/?$ app/Views/caja_chica/index.php [L,QSA]
-RewriteRule ^sobres/?$ app/Views/sobres/index.php [L,QSA]
-RewriteRule ^calculadora/?$ app/Views/calculadora/index.php [L,QSA]
-RewriteRule ^yape/?$ app/Views/yape/index.php [L,QSA]
-RewriteRule ^inventario/?$ app/Views/inventario/index.php [L,QSA]
-RewriteRule ^desayunos/?$ app/Views/desayunos/index.php [L,QSA]
-RewriteRule ^limpieza/?$ app/Views/limpieza/index.php [L,QSA]
-RewriteRule ^clientes/?$ app/Views/clientes/index.php [L,QSA]
-RewriteRule ^clientes-frecuentes/?$ app/Views/clientes/frecuentes.php [L,QSA]
+# ─── AJAX: alias api/ → ajax/ (compatibilidad con JS existente)
+RewriteRule ^api/(.*)$ ajax/$1 [L,QSA]
 
-# Configuración
-RewriteRule ^admin/usuarios/?$ app/Views/admin/usuarios.php [L,QSA]
-RewriteRule ^admin/medios-pago/?$ app/Views/admin/medios_pago.php [L,QSA]
-RewriteRule ^admin/auditoria/?$ app/Views/admin/auditoria.php [L,QSA]
-
-# Reportes
-RewriteRule ^reportes/mendoza/?$ app/Views/reportes/mendoza.php [L,QSA]
-RewriteRule ^reportes/alex/?$ app/Views/reportes/alex.php [L,QSA]
+# ─── TODAS LAS DEMÁS PETICIONES → Front Controller ─────────
+RewriteRule ^(.*)$ public/index.php [L,QSA]

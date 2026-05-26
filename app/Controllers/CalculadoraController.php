@@ -76,7 +76,6 @@ class CalculadoraController {
             ]);
             $this->audit->registrar(
                 $_SESSION['auth_id'],
-                $_SESSION['auth_nombre'],
                 'GUARDAR_TC',
                 'calculadora',
                 $detalle

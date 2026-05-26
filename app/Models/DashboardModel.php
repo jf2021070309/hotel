@@ -105,7 +105,7 @@ class DashboardModel {
         $sqlCobros = "
             SELECT 
                 h.numero AS hab, 
-                COALESCE((SELECT nombre_completo FROM rooming_pax p WHERE p.stay_id = s.id AND es_titular=1 LIMIT 1), 'Huésped no asignado') AS huesped, 
+                COALESCE((SELECT c.nombre_razon_social FROM rooming_pax rp JOIN clientes c ON rp.cliente_id = c.id WHERE rp.stay_id = s.id AND rp.es_titular_acompanante=1 LIMIT 1), 'Huésped no asignado') AS huesped, 
                 (s.total_pago - COALESCE(s.total_cobrado, 0)) AS debe, 
                 s.estado_pago AS estado,
                 s.moneda_pago
@@ -205,7 +205,7 @@ class DashboardModel {
         $sqlUrgentes = "
             SELECT 
                 h.numero AS hab, 
-                COALESCE((SELECT nombre_completo FROM rooming_pax p WHERE p.stay_id = s.id AND es_titular=1 LIMIT 1), 'Desconocido') AS huesped, 
+                COALESCE((SELECT c.nombre_razon_social FROM rooming_pax rp JOIN clientes c ON rp.cliente_id = c.id WHERE rp.stay_id = s.id AND rp.es_titular_acompanante=1 LIMIT 1), 'Desconocido') AS huesped, 
                 (s.total_pago - COALESCE(s.total_cobrado, 0)) AS debe
             FROM rooming_stays s
             JOIN habitaciones h ON s.habitacion_id = h.id
@@ -218,7 +218,7 @@ class DashboardModel {
         $stmtCheckouts = $this->pdo->prepare("
             SELECT 
                 h.numero AS hab, 
-                COALESCE((SELECT nombre_completo FROM rooming_pax p WHERE p.stay_id = s.id AND es_titular=1 LIMIT 1), 'Desconocido') AS huesped, 
+                COALESCE((SELECT c.nombre_razon_social FROM rooming_pax rp JOIN clientes c ON rp.cliente_id = c.id WHERE rp.stay_id = s.id AND rp.es_titular_acompanante=1 LIMIT 1), 'Desconocido') AS huesped, 
                 (s.total_pago - COALESCE(s.total_cobrado, 0)) AS saldo,
                 s.estado_pago
             FROM rooming_stays s

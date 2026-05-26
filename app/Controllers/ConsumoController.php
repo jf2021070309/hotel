@@ -43,7 +43,6 @@ class ConsumoController {
             $this->model->registrar([
                 'stay_id'         => $stayId,
                 'producto_id'     => $productoId,
-                'nombre_producto' => $producto['nombre'],
                 'cantidad'        => $cantidad,
                 'precio_unitario' => $producto['precio_venta'],
                 'total'           => $total,
@@ -89,7 +88,6 @@ class ConsumoController {
 
             $this->audit->registrar(
                 $_SESSION['auth_id'], 
-                $_SESSION['auth_nombre'], 
                 'REGISTRAR_CONSUMO', 
                 'ROOMING', 
                 $detalleJson

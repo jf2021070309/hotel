@@ -4,12 +4,12 @@
  */
 $base = '../../../';
 $_projectRoot = dirname(__DIR__, 3);
-require_once $_projectRoot . '/auth/middleware.php';
+require_once $_projectRoot . '/app/Middleware/auth.php';
 protegerPorRol('cajera', 'reservas');
 
 $page_title = 'Cuadro de Reservas — Hotel Manager';
-include $_projectRoot . '/includes/head.php';
-include $_projectRoot . '/includes/sidebar.php';
+include $_projectRoot . '/app/Views/layouts/head.php';
+include $_projectRoot . '/app/Views/layouts/sidebar.php';
 ?>
 
 <style>

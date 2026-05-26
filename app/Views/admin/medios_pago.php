@@ -3,12 +3,12 @@
  * app/Views/admin/medios_pago.php
  */
 $base = '../../../';
-require_once $base . 'auth/middleware.php';
+require_once $base . 'app/Middleware/auth.php';
 protegerPorRol('admin', 'medios_pago');
 
 $page_title = 'Medios de Pago — Hotel Manager';
-include $base . 'includes/head.php';
-include $base . 'includes/sidebar.php';
+include $base . 'app/Views/layouts/head.php';
+include $base . 'app/Views/layouts/sidebar.php';
 ?>
 
 <div class="main-content">

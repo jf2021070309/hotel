@@ -3,12 +3,12 @@
  * app/Views/inventario/index.php
  */
 $base = '../../../';
-require_once $base . 'auth/middleware.php';
+require_once $base . 'app/Middleware/auth.php';
 protegerPorRol('cajera', 'inventario');
 
 $page_title = 'Gestión de Inventario — Hotel Manager';
-include $base . 'includes/head.php';
-include $base . 'includes/sidebar.php';
+include $base . 'app/Views/layouts/head.php';
+include $base . 'app/Views/layouts/sidebar.php';
 ?>
 
 <div class="main-content" id="app-inventario" v-cloak>

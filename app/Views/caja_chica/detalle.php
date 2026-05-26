@@ -3,12 +3,12 @@
  * app/Views/caja_chica/detalle.php
  */
 $base = '../../../';
-require_once $base . 'auth/middleware.php';
+require_once $base . 'app/Middleware/auth.php';
 protegerPorRol('cajera', 'caja_chica');
 
 $page_title = 'Ciclo Activo Caja Chica — Hotel Manager';
-include $base . 'includes/head.php';
-include $base . 'includes/sidebar.php';
+include $base . 'app/Views/layouts/head.php';
+include $base . 'app/Views/layouts/sidebar.php';
 ?>
 
 <div class="main-content" id="app-cchica-detalle">

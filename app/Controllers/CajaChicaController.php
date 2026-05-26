@@ -47,7 +47,7 @@ class CajaChicaController {
                     'sobre_fecha' => $input['sobre_fecha'] ?? null,
                     'sobre_turno' => $input['sobre_turno'] ?? null
                 ]);
-                $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'CAJA_CHICA_ABIERTA', 'FINANZAS', "Ciclo de C.Chica abierto: $nombre con S/$saldo.");
+                $this->audit->registrar($_SESSION['auth_id'], 'CAJA_CHICA_ABIERTA', 'FINANZAS', "Ciclo de C.Chica abierto: $nombre con S/$saldo.");
                 return ['ok' => true, 'msg' => 'Ciclo abierto correctamente', 'data' => ['id' => $id]];
             });
         } catch (Exception $e) {
@@ -94,7 +94,7 @@ class CajaChicaController {
                 ]
             ], JSON_UNESCAPED_UNICODE);
 
-            $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'GASTO_CAJA_CHICA', 'FINANZAS', $detalle);
+            $this->audit->registrar($_SESSION['auth_id'], 'GASTO_CAJA_CHICA', 'FINANZAS', $detalle);
 
             return ['ok' => true, 'msg' => 'Gasto registrado correctamente'];
         } catch (Exception $e) {
@@ -117,7 +117,7 @@ class CajaChicaController {
 
         try {
             if ($this->model->anularGasto($mov_id, $motivo, $_SESSION['auth_id'])) {
-                $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'CAJA_CHICA_ANULADA', 'FINANZAS', "Movimiento $mov_id anulado: $motivo");
+                $this->audit->registrar($_SESSION['auth_id'], 'CAJA_CHICA_ANULADA', 'FINANZAS', "Movimiento $mov_id anulado: $motivo");
                 return ['ok' => true, 'msg' => 'Gasto anulado. El monto regreso al saldo.'];
             }
             return ['ok' => false, 'msg' => 'No se pudo anular el gasto.'];
@@ -138,7 +138,7 @@ class CajaChicaController {
         try {
             return $this->model->ejecutarTransaccionCierreRepocision(function($pdo) use ($caja_id, $ciclo, $reponer, $input) {
                 $this->model->cerrarCiclo($caja_id, $ciclo['saldo_actual'], $_SESSION['auth_id']);
-                $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'CAJA_CHICA_CERRADA', 'FINANZAS', "Caja Chica $caja_id cerrada. Saldo Final: {$ciclo['saldo_actual']}");
+                $this->audit->registrar($_SESSION['auth_id'], 'CAJA_CHICA_CERRADA', 'FINANZAS', "Caja Chica $caja_id cerrada. Saldo Final: {$ciclo['saldo_actual']}");
 
                 if ($reponer) {
                     $montoReposicion = 100.00;

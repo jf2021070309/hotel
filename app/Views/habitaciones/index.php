@@ -1,10 +1,10 @@
 <?php
 // habitaciones/index.php — Shell PHP, Vue monta tabla de habitaciones
 require_once '../../../config/db.php';
-require_once '../../../auth/middleware.php';
+require_once '../../../app/Middleware/auth.php';
 $base = '../../../'; $page_title = 'Habitaciones — Hotel Manager'; $export_enabled = true;
-include '../../../includes/head.php';
-include '../../../includes/sidebar.php';
+include '../../../app/Views/layouts/head.php';
+include '../../../app/Views/layouts/sidebar.php';
 ?>
 <div id="app-habitaciones" style="display:contents">
 <div class="main-content">

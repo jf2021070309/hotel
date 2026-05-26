@@ -55,7 +55,7 @@ class HabitacionController {
                 ]
             ], JSON_UNESCAPED_UNICODE);
 
-            $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'CREAR_HABITACION', 'HABITACIONES', $detalle);
+            $this->audit->registrar($_SESSION['auth_id'], 'CREAR_HABITACION', 'HABITACIONES', $detalle);
             json_response(true, ['id' => $id], 201, 'Habitación creada');
         } else {
             json_response(false, null, 500, 'Error al crear habitación');
@@ -88,7 +88,7 @@ class HabitacionController {
                 'cambios' => !empty($cambios) ? $cambios : null
             ], JSON_UNESCAPED_UNICODE);
 
-            $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'ACTUALIZAR_HABITACION', 'HABITACIONES', $detalle);
+            $this->audit->registrar($_SESSION['auth_id'], 'ACTUALIZAR_HABITACION', 'HABITACIONES', $detalle);
             json_response(true, null, 200, 'Habitación actualizada');
         } else {
             json_response(false, null, 500, 'Error al actualizar');

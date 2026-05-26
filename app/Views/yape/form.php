@@ -4,8 +4,8 @@
  */
 $base = '../../../';
 require_once $base . 'config/db.php';
-require_once $base . 'auth/session.php';
-require_once $base . 'auth/middleware.php';
+require_once $base . 'app/Middleware/session.php';
+require_once $base . 'app/Middleware/auth.php';
 
 protegerPorRol('cajera', 'yape');
 
@@ -15,8 +15,8 @@ $turnoGet = $_GET['turno'] ?? '';
 $fechaGet = $_GET['fecha'] ?? date('Y-m-d');
 
 $page_title = 'Registro Yape — Hotel Manager';
-include $base . 'includes/head.php';
-include $base . 'includes/sidebar.php';
+include $base . 'app/Views/layouts/head.php';
+include $base . 'app/Views/layouts/sidebar.php';
 ?>
 
 <div class="main-content" id="app-yape-form" v-cloak>

@@ -20,7 +20,6 @@ class YapeController {
         try {
             $this->audit->registrar(
                 $_SESSION['auth_id'] ?? null,
-                $_SESSION['auth_nombre'] ?? null,
                 $accion,
                 $modulo,
                 $detalle

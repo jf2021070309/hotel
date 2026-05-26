@@ -51,7 +51,7 @@ class RoomingModel {
         $this->pdo->query("UPDATE rooming_stays SET estado = 'cancelado' WHERE estado = 'reservado' AND fecha_checkout < CURRENT_DATE");
 
         $sql = "SELECT s.*, h.numero as hab_numero, h.tipo as hab_tipo,
-                (SELECT nombre_completo FROM rooming_pax WHERE stay_id = s.id AND es_titular = 1 LIMIT 1) as titular_nombre,
+                (SELECT c.nombre_razon_social FROM rooming_pax rp JOIN clientes c ON rp.cliente_id = c.id WHERE rp.stay_id = s.id AND rp.es_titular_acompanante = 1 LIMIT 1) as titular_nombre,
                 (SELECT COUNT(DISTINCT moneda) FROM anticipos WHERE stay_id = s.id) as divisas_count,
                 (SELECT COALESCE(SUM(total), 0) FROM rooming_consumos WHERE stay_id = s.id) as total_consumos
                 FROM rooming_stays s 
@@ -67,7 +67,18 @@ class RoomingModel {
         $stay = $stmt->fetch();
         if (!$stay) return null;
 
-        $stmt = $this->pdo->prepare("SELECT * FROM rooming_pax WHERE stay_id = ?");
+        $stmt = $this->pdo->prepare("
+            SELECT rp.*, c.nombre_razon_social, 
+                   c.documento_tipo AS tipo_documento, 
+                   c.documento_num AS numero_documento, 
+                   c.documento_tipo AS documento_tipo, 
+                   c.documento_num AS documento_num, 
+                   c.nacionalidad, c.ciudad, c.celular, c.email,
+                   IF(c.documento_tipo = 'RUC', c.nombre_razon_social, '') AS empresa
+            FROM rooming_pax rp
+            JOIN clientes c ON rp.cliente_id = c.id
+            WHERE rp.stay_id = ?
+        ");
         $stmt->execute([$id]);
         $stay['pax'] = $stmt->fetchAll();
 
@@ -115,16 +126,16 @@ class RoomingModel {
         if ($mustCommit) $this->pdo->beginTransaction();
         try {
             $sql = "INSERT INTO rooming_stays (
-                operador, fecha_registro, fecha_checkout, fecha_checkout_original, hora_checkin, medio_reserva, 
-                habitacion_id, tipo_hab_declarado, noches, pax_total, total_pago, 
+                operador, fecha_registro, fecha_checkout, hora_checkin, medio_reserva, 
+                habitacion_id, cliente_titular_id, tipo_hab_declarado, noches, pax_total, total_pago, 
                 moneda_pago, monto_original, tc_aplicado, recargo_tarjeta, metodo_pago, 
-                tipo_comprobante, num_comprobante, ruc_factura, razon_social, cobrador, procedencia, 
+                tipo_comprobante, num_comprobante, cobrador, procedencia, 
                 carro, observaciones, usuario_id, checkin_realizado, total_cobrado, total_cobrado_orig, estado_pago
             ) VALUES (
-                :operador, :fecha_reg, :fecha_out, :fecha_out_original, :hora_in, :medio, 
-                :hab_id, :tipo_hab, :noches, :pax_total, :total, 
+                :operador, :fecha_reg, :fecha_out, :hora_in, :medio, 
+                :hab_id, :cliente_titular_id, :tipo_hab, :noches, :pax_total, :total, 
                 :moneda, :monto_orig, :tc, :recargo, :metodo, 
-                :comprobante, :num_comp, :ruc, :razon_social, :cobrador, :procedencia, 
+                :comprobante, :num_comp, :cobrador, :procedencia, 
                 :carro, :obs, :uid, 1, :cobrado, :cobrado_orig, :est_pago
             )";
             $stmt = $this->pdo->prepare($sql);
@@ -132,10 +143,10 @@ class RoomingModel {
                 'operador'      => $data['operador'],
                 'fecha_reg'     => $data['fecha_reg'],
                 'fecha_out'     => $data['fecha_out'],
-                'fecha_out_original' => $data['fecha_out'],
                 'hora_in'       => $data['hora_in'],
                 'medio'         => $data['medio'],
                 'hab_id'        => $data['hab_id'],
+                'cliente_titular_id' => $data['cliente_titular_id'] ?? null,
                 'tipo_hab'      => $data['tipo_hab'],
                 'noches'        => $data['noches'],
                 'pax_total'     => $data['pax_total'],
@@ -147,8 +158,6 @@ class RoomingModel {
                 'metodo'        => $data['metodo'],
                 'comprobante'   => $data['comprobante'],
                 'num_comp'      => $data['num_comp'],
-                'ruc'           => $data['ruc'],
-                'razon_social'  => $data['razon_social'] ?? '',
                 'cobrador'      => $data['cobrador'],
                 'procedencia'   => $data['procedencia'],
                 'carro'         => $data['carro'],
@@ -160,26 +169,17 @@ class RoomingModel {
             ]);
             $stay_id = (int)$this->pdo->lastInsertId();
 
-            // Insertar PAX
-            $sqlPax = "INSERT INTO rooming_pax (stay_id, nombre_completo, documento_tipo, documento_num, nacionalidad, ciudad, celular, email, empresa, es_titular, es_corporativo) 
-                       VALUES (:stay_id, :nombre_completo, :documento_tipo, :documento_num, :nacionalidad, :ciudad, :celular, :email, :empresa, :es_titular, :es_corporativo)";
+            // Insertar PAX (junction table: stay_id + cliente_id)
+            $sqlPax = "INSERT INTO rooming_pax (stay_id, cliente_id, es_titular_acompanante) 
+                       VALUES (:stay_id, :cliente_id, :es_titular)";
             $stmtPax = $this->pdo->prepare($sqlPax);
             foreach ($paxList as $pax) {
-                // Asegurar que stay_id esté presente
-                $pax['stay_id'] = $stay_id;
-                // Filtrar solo las llaves necesarias para evitar errores de PDO
+                // Upsert cliente first
+                $clienteId = $this->upsertCliente($pax);
                 $stmtPax->execute([
-                    'stay_id'         => $stay_id,
-                    'nombre_completo' => $pax['nombre_completo'] ?? '',
-                    'documento_tipo'  => $pax['documento_tipo'] ?? 'DNI',
-                    'documento_num'   => $pax['documento_num'] ?? '',
-                    'nacionalidad'    => $pax['nacionalidad'] ?? '',
-                    'ciudad'          => $pax['ciudad'] ?? '',
-                    'celular'         => $pax['celular'] ?? '',
-                    'email'           => $pax['email'] ?? '',
-                    'empresa'         => $pax['empresa'] ?? '',
-                    'es_titular'      => $pax['es_titular'] ? 1 : 0,
-                    'es_corporativo'  => !empty($pax['es_corporativo']) ? 1 : 0
+                    'stay_id'     => $stay_id,
+                    'cliente_id'  => $clienteId,
+                    'es_titular'  => !empty($pax['es_titular']) ? 1 : 0
                 ]);
             }
 
@@ -222,14 +222,13 @@ class RoomingModel {
             $sql = "UPDATE rooming_stays SET 
                 fecha_registro = :fecha_reg, 
                 fecha_checkout = :fecha_out, 
-                fecha_checkout_original = IF(estado != 'late_checkout', :fecha_out_original, fecha_checkout_original),
                 hora_checkin = :hora_in, medio_reserva = :medio, 
                 habitacion_id = :hab_id, tipo_hab_declarado = :tipo_hab, 
                 noches = :noches, pax_total = :pax_total, total_pago = :total, 
                 moneda_pago = :moneda, monto_original = :monto_orig, 
                 tc_aplicado = :tc, metodo_pago = :metodo, 
                 tipo_comprobante = :comprobante, num_comprobante = :num_comp, 
-                ruc_factura = :ruc, razon_social = :razon_social, observaciones = :obs, 
+                observaciones = :obs, 
                 procedencia = :procedencia, carro = :carro,
                 estado = :estado
                 WHERE id = :id";
@@ -241,7 +240,6 @@ class RoomingModel {
             $stmt->execute([
                 'fecha_reg'   => $data['fecha_reg'],
                 'fecha_out'   => $data['fecha_out'],
-                'fecha_out_original' => $data['fecha_out'],
                 'hora_in'     => $data['hora_in'],
                 'medio'       => $data['medio'],
                 'hab_id'      => $data['hab_id'],
@@ -255,8 +253,6 @@ class RoomingModel {
                 'metodo'      => $data['metodo'],
                 'comprobante' => $data['comprobante'],
                 'num_comp'    => $data['num_comp'],
-                'ruc'         => $data['ruc'],
-                'razon_social'=> $data['razon_social'] ?? '',
                 'obs'         => $data['obs'],
                 'procedencia' => $data['procedencia'] ?? '',
                 'carro'       => $data['carro'] ?? 'NO',
@@ -268,22 +264,15 @@ class RoomingModel {
             $stmtHab = $this->pdo->prepare("UPDATE habitaciones SET estado = 'ocupado' WHERE id = ?");
             $stmtHab->execute([$data['hab_id']]);
 
-            // Replace PAX
+            // Replace PAX (junction table)
             $this->pdo->prepare("DELETE FROM rooming_pax WHERE stay_id = ?")->execute([$id]);
-            $stmtPax = $this->pdo->prepare("INSERT INTO rooming_pax (stay_id, nombre_completo, documento_tipo, documento_num, nacionalidad, ciudad, celular, email, empresa, es_titular, es_corporativo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmtPax = $this->pdo->prepare("INSERT INTO rooming_pax (stay_id, cliente_id, es_titular_acompanante) VALUES (?, ?, ?)");
             foreach ($paxList as $p) {
+                $clienteId = $this->upsertCliente($p);
                 $stmtPax->execute([
                     $id, 
-                    $p['nombre_completo'], 
-                    $p['documento_tipo'], 
-                    $p['documento_num'],
-                    $p['nacionalidad'] ?? '',
-                    $p['ciudad'] ?? '',
-                    $p['celular'] ?? null,
-                    $p['email'] ?? null,
-                    $p['empresa'] ?? null,
-                    $p['es_titular'] ? 1 : 0,
-                    !empty($p['es_corporativo']) ? 1 : 0
+                    $clienteId,
+                    !empty($p['es_titular']) ? 1 : 0
                 ]);
             }
 
@@ -329,7 +318,7 @@ class RoomingModel {
             // Obtener info básica para mejor observación
             $stmtInfo = $this->pdo->prepare("
                 SELECT s.id, h.numero as hab_num, 
-                       (SELECT nombre_completo FROM rooming_pax WHERE stay_id = s.id AND es_titular = 1 LIMIT 1) as titular
+                       (SELECT c.nombre_razon_social FROM rooming_pax rp JOIN clientes c ON rp.cliente_id = c.id WHERE rp.stay_id = s.id AND rp.es_titular_acompanante = 1 LIMIT 1) as titular
                 FROM rooming_stays s
                 JOIN habitaciones h ON s.habitacion_id = h.id
                 WHERE s.id = ?
@@ -399,11 +388,11 @@ class RoomingModel {
 
             $stmtLimpieza = $this->pdo->prepare("
                 INSERT INTO limpieza_registros 
-                (fecha, habitacion_id, habitacion, tipo_limpieza, prioridad, estado, usuario_id) 
-                VALUES (?, ?, ?, 'salida', 'alta', 'pendiente', ?)
+                (fecha, habitacion_id, tipo_limpieza, prioridad, estado, usuario_id) 
+                VALUES (?, ?, 'salida', 'alta', 'pendiente', ?)
                 ON DUPLICATE KEY UPDATE tipo_limpieza = 'salida', prioridad = 'alta', estado = 'pendiente'
             ");
-            $stmtLimpieza->execute([date('Y-m-d'), $hab_id, $numHab, $_SESSION['auth_id'] ?? 1]);
+            $stmtLimpieza->execute([date('Y-m-d'), $hab_id, $_SESSION['auth_id'] ?? 1]);
 
             if ($mustCommit) $this->pdo->commit();
             return true;
@@ -487,8 +476,8 @@ class RoomingModel {
         $numHab = $stmtHab->fetchColumn();
 
         $sql = "INSERT INTO limpieza_registros 
-                (fecha, habitacion_id, habitacion, tipo_limpieza, prioridad, estado, usuario_id) 
-                VALUES (?, ?, ?, 'salida', 'alta', 'pendiente', ?)
+                (fecha, habitacion_id, tipo_limpieza, prioridad, estado, usuario_id) 
+                VALUES (?, ?, 'salida', 'alta', 'pendiente', ?)
                 ON DUPLICATE KEY UPDATE tipo_limpieza = 'salida', prioridad = 'alta'";
         $stmt = $this->pdo->prepare($sql);
         $uid = $_SESSION['auth_id'] ?? null;
@@ -500,7 +489,7 @@ class RoomingModel {
         if (!$uid) {
             $uid = (int)$this->pdo->query("SELECT id FROM usuarios LIMIT 1")->fetchColumn() ?: 1;
         }
-        $stmt->execute([date('Y-m-d'), $hab_id, $numHab, $uid]);
+        $stmt->execute([date('Y-m-d'), $hab_id, $uid]);
     }
 
     /**
@@ -520,7 +509,6 @@ class RoomingModel {
                 s.operador,
                 s.fecha_registro,
                 s.fecha_checkout,
-                s.fecha_checkout_original,
                 s.hora_checkin,
                 h.numero        AS hab_numero,
                 s.tipo_hab_declarado,
@@ -536,22 +524,23 @@ class RoomingModel {
                 s.cobrador,
                 s.carro,
                 s.observaciones,
-                p.nombre_completo,
-                p.documento_tipo,
-                p.documento_num,
-                p.nacionalidad,
-                p.ciudad,
-                p.celular,
-                p.email,
-                p.es_titular,
-                p.id            AS pax_id
+                c.nombre_razon_social AS nombre_completo,
+                c.documento_tipo AS documento_tipo,
+                c.documento_num AS documento_num,
+                c.nacionalidad,
+                c.ciudad,
+                c.celular,
+                c.email,
+                p.es_titular_acompanante AS es_titular,
+                c.id            AS pax_id
             FROM rooming_stays s
             JOIN habitaciones h  ON h.id = s.habitacion_id
             JOIN rooming_pax p   ON p.stay_id = s.id
+            JOIN clientes c      ON c.id = p.cliente_id
             WHERE MONTH(s.fecha_registro) = :mes
               AND YEAR(s.fecha_registro)  = :anio
               AND s.checkin_realizado = 1
-            ORDER BY s.fecha_registro ASC, s.id ASC, p.es_titular DESC, p.id ASC
+            ORDER BY s.fecha_registro ASC, s.id ASC, p.es_titular_acompanante DESC, c.id ASC
         ";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute(['mes' => $mes, 'anio' => $anio]);
@@ -573,7 +562,6 @@ class RoomingModel {
                     operador = :operador,
                     fecha_registro = :fecha_registro,
                     fecha_checkout = :fecha_checkout,
-                    fecha_checkout_original = IF(estado != 'late_checkout', :fecha_checkout_original, fecha_checkout_original),
                     hora_checkin = :hora_checkin,
                     habitacion_id = COALESCE(:habitacion_id, habitacion_id),
                     tipo_hab_declarado = :tipo_hab_declarado,
@@ -592,24 +580,25 @@ class RoomingModel {
                 WHERE id = :stay_id
             ");
 
-            $stmtPax = $this->pdo->prepare("
-                UPDATE rooming_pax SET
-                    nombre_completo = :nombre_completo,
-                    documento_tipo = :documento_tipo,
-                    documento_num = :documento_num,
+            // Update clientes table directly
+            $stmtCliente = $this->pdo->prepare("
+                UPDATE clientes SET
+                    nombre_razon_social = :nombre,
+                    documento_tipo = :doc_tipo,
+                    documento_num = :doc_num,
                     nacionalidad = :nacionalidad,
                     ciudad = :ciudad,
                     celular = :celular,
                     email = :email
-                WHERE id = :pax_id
+                WHERE id = :cliente_id
             ");
 
             $updatedStays = [];
             foreach ($rows as $row) {
-                $stayId = isset($row['stay_id']) ? (int)$row['stay_id'] : null;
-                $paxId  = isset($row['pax_id'])  ? (int)$row['pax_id']  : null;
+                $stayId    = isset($row['stay_id']) ? (int)$row['stay_id'] : null;
+                $clienteId = isset($row['pax_id'])  ? (int)$row['pax_id']  : null;
 
-                if (!$stayId || !$paxId) {
+                if (!$stayId || !$clienteId) {
                     continue;
                 }
 
@@ -639,7 +628,6 @@ class RoomingModel {
                         'operador'           => $row['operador'] ?? '',
                         'fecha_registro'     => $fechaReg,
                         'fecha_checkout'     => $fechaOut,
-                        'fecha_checkout_original' => $fechaOut,
                         'hora_checkin'       => $row['hora_checkin'] ?? '',
                         'habitacion_id'      => $habId,
                         'tipo_hab_declarado' => $row['tipo_hab_declarado'] ?? '',
@@ -661,15 +649,15 @@ class RoomingModel {
                     $updatedStays[] = $stayId;
                 }
 
-                $stmtPax->execute([
-                    'nombre_completo' => $row['nombre_completo'] ?? '',
-                    'documento_tipo'  => $row['documento_tipo'] ?? '',
-                    'documento_num'   => $row['documento_num'] ?? '',
-                    'nacionalidad'    => $row['nacionalidad'] ?? '',
-                    'ciudad'          => $row['ciudad'] ?? '',
-                    'celular'         => $row['celular'] ?? '',
-                    'email'           => $row['email'] ?? '',
-                    'pax_id'          => $paxId
+                $stmtCliente->execute([
+                    'nombre'       => $row['nombre_completo'] ?? '',
+                    'doc_tipo'     => $row['documento_tipo'] ?? '',
+                    'doc_num'      => $row['documento_num'] ?? '',
+                    'nacionalidad' => $row['nacionalidad'] ?? '',
+                    'ciudad'       => $row['ciudad'] ?? '',
+                    'celular'      => $row['celular'] ?? '',
+                    'email'        => $row['email'] ?? '',
+                    'cliente_id'   => $clienteId
                 ]);
             }
 
@@ -699,5 +687,51 @@ class RoomingModel {
             return "$year-$month-$day";
         }
         return $fecha;
+    }
+
+    /**
+     * Busca un cliente existente por documento o crea uno nuevo.
+     * Retorna el ID del cliente.
+     */
+    private function upsertCliente(array $pax): int {
+        $docTipo = $pax['documento_tipo'] ?? $pax['tipo_documento'] ?? 'DNI';
+        $docNum  = trim($pax['documento_num'] ?? $pax['numero_documento'] ?? '');
+        $nombre  = trim($pax['nombre_completo'] ?? $pax['nombre_razon_social'] ?? 'HUÉSPED');
+        $tipoCliente = ($docTipo === 'RUC') ? 'JURIDICO' : 'NATURAL';
+
+        // Buscar por documento
+        if (!empty($docNum)) {
+            $stmt = $this->pdo->prepare("SELECT id FROM clientes WHERE documento_tipo = ? AND documento_num = ? LIMIT 1");
+            $stmt->execute([$docTipo, $docNum]);
+            $existingId = $stmt->fetchColumn();
+            if ($existingId) {
+                // Actualizar datos del cliente
+                $stmtUp = $this->pdo->prepare("UPDATE clientes SET nombre_razon_social = ?, nacionalidad = ?, ciudad = ?, celular = ?, email = ?, tipo_cliente = ? WHERE id = ?");
+                $stmtUp->execute([
+                    $nombre,
+                    $pax['nacionalidad'] ?? 'Peruana',
+                    $pax['ciudad'] ?? '',
+                    $pax['celular'] ?? null,
+                    $pax['email'] ?? null,
+                    $tipoCliente,
+                    $existingId
+                ]);
+                return (int)$existingId;
+            }
+        }
+
+        // Crear nuevo cliente
+        $stmt = $this->pdo->prepare("INSERT INTO clientes (nombre_razon_social, documento_tipo, documento_num, nacionalidad, ciudad, celular, email, tipo_cliente) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([
+            $nombre,
+            $docTipo,
+            $docNum,
+            $pax['nacionalidad'] ?? 'Peruana',
+            $pax['ciudad'] ?? '',
+            $pax['celular'] ?? null,
+            $pax['email'] ?? null,
+            $tipoCliente
+        ]);
+        return (int)$this->pdo->lastInsertId();
     }
 }

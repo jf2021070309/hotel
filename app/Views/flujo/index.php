@@ -4,8 +4,8 @@
  */
 $base = '../../../';
 $_projectRoot = dirname(__DIR__, 3);
-require_once $_projectRoot . '/auth/middleware.php';
-require_once $_projectRoot . '/rutas.php';
+require_once $_projectRoot . '/app/Middleware/auth.php';
+require_once $_projectRoot . '/app/Helpers/url.php';
 protegerPorRol('cajera', 'flujo');
 require_once $_projectRoot . '/config/db.php'; // Asegurar PDO
 
@@ -22,8 +22,8 @@ if (!isset($_GET['noredirect'])) {
 }
 
 $page_title = 'Flujo de Caja — Hotel Manager';
-include $_projectRoot . '/includes/head.php';
-include $_projectRoot . '/includes/sidebar.php';
+include $_projectRoot . '/app/Views/layouts/head.php';
+include $_projectRoot . '/app/Views/layouts/sidebar.php';
 ?>
 
 <div class="main-content" id="app-flujo-index">

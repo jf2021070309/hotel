@@ -82,7 +82,7 @@ class LimpiezaController {
             if ($estado === 'en proceso') $msgAudit = "Inició limpieza de Habitación #$nroHab";
             if ($estado === 'lista') $msgAudit = "Marcó como LIMPIA la Habitación #$nroHab";
 
-            $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'LIMPIEZA_ESTADO', 'LIMPIEZA', $msgAudit);
+            $this->audit->registrar($_SESSION['auth_id'], 'LIMPIEZA_ESTADO', 'LIMPIEZA', $msgAudit);
             
             // Si la limpieza terminó, liberar la habitación
             if ($estado === 'lista') {

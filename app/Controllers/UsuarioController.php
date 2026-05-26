@@ -83,7 +83,7 @@ class UsuarioController
                 ]
             ], JSON_UNESCAPED_UNICODE);
 
-            $this->audit->registrar($currentUser['id'], $currentUser['nombre'], 'USUARIO_CREADO', 'USUARIOS', $detalle);
+            $this->audit->registrar($currentUser['id'], 'USUARIO_CREADO', 'USUARIOS', $detalle);
             return ['ok' => true, 'msg' => "Usuario creado correctamente", 'id' => $id];
         }
 
@@ -170,7 +170,7 @@ class UsuarioController
                 'cambios' => !empty($cambios) ? $cambios : null
             ], JSON_UNESCAPED_UNICODE);
 
-            $this->audit->registrar($currentUser['id'], $currentUser['nombre'], 'ACTUALIZAR_USUARIO', 'USUARIOS', $detalle);
+            $this->audit->registrar($currentUser['id'], 'ACTUALIZAR_USUARIO', 'USUARIOS', $detalle);
             return ['ok' => true, 'msg' => "Usuario actualizado correctamente"];
         }
 
@@ -194,7 +194,7 @@ class UsuarioController
         if ($this->model->updatePassword($id, $password)) {
             $target = $this->model->getById($id);
             $currentUser = obtenerUsuarioActual();
-            $this->audit->registrar($currentUser['id'], $currentUser['nombre'], 'PASS_CAMBIADA', 'USUARIOS', "Actualizó la contraseña de: " . ($target['nombre'] ?? 'Usuario'));
+            $this->audit->registrar($currentUser['id'], 'PASS_CAMBIADA', 'USUARIOS', "Actualizó la contraseña de: " . ($target['nombre'] ?? 'Usuario'));
             return ['ok' => true, 'msg' => "Contraseña actualizada"];
         }
 

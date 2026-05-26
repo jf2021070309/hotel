@@ -1,14 +1,14 @@
 <?php
 $base = '../../../';
 $_projectRoot = dirname(__DIR__, 3);
-require_once $_projectRoot . '/auth/middleware.php';
-require_once $_projectRoot . '/rutas.php';
+require_once $_projectRoot . '/app/Middleware/auth.php';
+require_once $_projectRoot . '/app/Helpers/url.php';
 protegerPorRol('cajera', 'sobres');
 require_once $_projectRoot . '/config/db.php';
 
 $page_title = 'Sobre de Alex — Control de Efectivo Físico';
-include $_projectRoot . '/includes/head.php';
-include $_projectRoot . '/includes/sidebar.php';
+include $_projectRoot . '/app/Views/layouts/head.php';
+include $_projectRoot . '/app/Views/layouts/sidebar.php';
 
 $fecha = date('Y-m-d');
 ?>
@@ -280,4 +280,4 @@ $fecha = date('Y-m-d');
   ::-webkit-scrollbar-track { background: transparent; }
 </style>
 
-<?php include $_projectRoot . '/includes/footer.php'; ?>
+<?php include $_projectRoot . '/app/Views/layouts/footer.php'; ?>

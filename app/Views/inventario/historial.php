@@ -4,10 +4,10 @@
  * Kardex / Bitácora de movimientos de inventario
  */
 $base = '../../../';
-require_once $base . 'auth/middleware.php';
+require_once $base . 'app/Middleware/auth.php';
 $page_title = 'Kardex de Inventario — Hotel Manager';
-include $base . 'includes/head.php';
-include $base . 'includes/sidebar.php';
+include $base . 'app/Views/layouts/head.php';
+include $base . 'app/Views/layouts/sidebar.php';
 ?>
 
 <div class="main-content" id="app-kardex" v-cloak>

@@ -4,15 +4,15 @@
  */
 $base = '../../../';
 $_projectRoot = dirname(__DIR__, 3);
-require_once $_projectRoot . '/auth/middleware.php';
+require_once $_projectRoot . '/app/Middleware/auth.php';
 protegerPorRol('cajera', 'rooming');
 
 $page_title = 'Rooming & Check-in — Hotel Manager';
-include $_projectRoot . '/includes/head.php';
+include $_projectRoot . '/app/Views/layouts/head.php';
 ?>
 
 <div id="app-rooming" style="display:contents">
-  <?php include $_projectRoot . '/includes/sidebar.php'; ?>
+  <?php include $_projectRoot . '/app/Views/layouts/sidebar.php'; ?>
   <div class="main-content">
     <div class="topbar border-bottom-0 shadow-sm" style="background: linear-gradient(to right, #ffffff, #f8f9fa);">
       <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list fs-4"></i></button>

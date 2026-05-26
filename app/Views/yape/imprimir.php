@@ -4,7 +4,7 @@
  * Reporte de Rendición de Gastos Yape — para enviar al Sr. Mendoza.
  */
 $base = '../../../';
-require_once $base . 'auth/middleware.php';
+require_once $base . 'app/Middleware/auth.php';
 protegerPorRol('cajera', 'yape');
 
 require_once $base . 'config/db.php';

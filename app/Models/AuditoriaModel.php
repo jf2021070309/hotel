@@ -15,14 +15,12 @@ class AuditoriaModel {
      */
     public function registrar(
         ?int $usuario_id,
-        ?string $usuario_nombre,
         string $accion,
         string $modulo,
         ?string $detalle = null
     ): void {
         $datos = [
             'usuario_id' => $usuario_id,
-            'usuario_nombre' => $usuario_nombre,
             'accion' => $accion,
             'modulo' => $modulo,
             'detalle' => $detalle,
@@ -79,7 +77,7 @@ class AuditoriaModel {
      * Obtiene los logs de auditoria ordenados por fecha descendente con filtros.
      */
     public function getAll(array $filters = [], int $limit = 250): array {
-        $sql = "SELECT a.*, u.rol as rol_usuario
+        $sql = "SELECT a.*, u.nombre as usuario_nombre, u.rol as rol_usuario
                 FROM auditoria a
                 LEFT JOIN usuarios u ON a.usuario_id = u.id
                 WHERE 1=1";
@@ -87,7 +85,7 @@ class AuditoriaModel {
         $params = [];
 
         if (!empty($filters['nombre'])) {
-            $sql .= " AND (a.usuario_nombre LIKE :nombre OR u.usuario LIKE :nombre)";
+            $sql .= " AND (u.nombre LIKE :nombre OR u.usuario LIKE :nombre)";
             $params['nombre'] = '%' . $filters['nombre'] . '%';
         }
 

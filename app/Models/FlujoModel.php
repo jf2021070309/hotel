@@ -170,43 +170,39 @@ class FlujoModel {
                 $id = (int)$this->pdo->lastInsertId();
             }
 
-            // Clear old movements and insert fresh. Primero limpiamos los reflejos
-            // en Caja Chica que dependian de movimientos anteriores de este flujo.
-            $this->pdo->prepare("
-                DELETE ccm FROM caja_chica_movimientos ccm
-                JOIN flujo_caja_movimientos fcm ON ccm.flujo_movimiento_id = fcm.id
-                WHERE fcm.flujo_id = ?
-            ")->execute([$id]);
+            // Clear old movements and insert fresh.
             $this->pdo->prepare("DELETE FROM flujo_caja_movimientos WHERE flujo_id = ?")->execute([$id]);
 
-            $stmtMov = $this->pdo->prepare("INSERT INTO flujo_caja_movimientos (flujo_id, categoria_id, categoria, tipo, moneda, monto, medio_pago, observacion, sobre_fecha, sobre_turno) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmtMov = $this->pdo->prepare("INSERT INTO flujo_caja_movimientos (flujo_id, categoria_id, tipo, moneda, monto, medio_pago, documento, observacion) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
             
             $movs = array_merge($ingresos, $egresos);
             foreach ($movs as $mov) {
                 // Ignore empty rows
-                if (empty($mov['categoria']) || empty($mov['monto']) || $mov['monto'] <= 0) continue;
+                if (empty($mov['monto']) || $mov['monto'] <= 0) continue;
                 
                 $catId = !empty($mov['categoria_id']) ? $mov['categoria_id'] : null;
-                $sFecha = !empty($mov['sobre_fecha']) ? $mov['sobre_fecha'] : null;
-                $sTurno = !empty($mov['sobre_turno']) ? $mov['sobre_turno'] : null;
 
                 $stmtMov->execute([
                     $id, 
                     $catId, 
-                    $mov['categoria'], 
                     $mov['tipo'], 
-                    $mov['moneda'], 
+                    $mov['moneda'] ?? 'PEN', 
                     $mov['monto'], 
-                    $mov['medio_pago'], 
-                    $mov['observacion'] ?? '',
-                    $sFecha,
-                    $sTurno
+                    $mov['medio_pago'] ?? 'EFECTIVO', 
+                    $mov['documento'] ?? null,
+                    $mov['observacion'] ?? ''
                 ]);
 
                 $movId = (int)$this->pdo->lastInsertId();
 
                 // SINCRONIZACIÓN CAJA CHICA: RECEPCIÓN C.CH. (EGRESO DEL Turno -> INGRESO DE CAJA CHICA)
-                if ($mov['tipo'] === 'Egreso' && $mov['categoria'] === 'RECEPCIÓN C.CH.') {
+                $catNombre = '';
+                if ($catId) {
+                    $stmtCN = $this->pdo->prepare("SELECT nombre FROM finanzas_categorias WHERE id = ?");
+                    $stmtCN->execute([$catId]);
+                    $catNombre = $stmtCN->fetchColumn() ?: '';
+                }
+                if ($mov['tipo'] === 'Egreso' && $catNombre === 'RECEPCIÓN C.CH.') {
                     // Buscar ciclo activo de Caja Chica
                     $stmtCC = $this->pdo->prepare("SELECT id FROM caja_chica WHERE estado = 'abierta' ORDER BY id DESC LIMIT 1");
                     $stmtCC->execute();
@@ -217,21 +213,17 @@ class FlujoModel {
                     }
 
                     if ($cajaId) {
-                        // Primero borrar duplicados previos de este mismo movimiento del flujo
-                        $this->pdo->prepare("DELETE FROM caja_chica_movimientos WHERE flujo_movimiento_id = ?")->execute([$movId]);
-                        
                         // Insertar ingreso en Caja Chica
                         $stmtCCMov = $this->pdo->prepare("
                             INSERT INTO caja_chica_movimientos 
-                            (caja_id, tipo, monto, rubro, documento, fecha, observacion, usuario_id, flujo_movimiento_id) 
-                            VALUES (?, 'ingreso', ?, 'REPOSICIÓN DESDE FLUJO', 'FLUJO-#$id', CURDATE(), ?, ?, ?)
+                            (caja_id, tipo, monto, rubro, documento, fecha, observacion, usuario_id) 
+                            VALUES (?, 'ingreso', ?, 'REPOSICIÓN DESDE FLUJO', 'FLUJO-#$id', CURDATE(), ?, ?)
                         ");
                         $stmtCCMov->execute([
                             $cajaId, 
                             $mov['monto'], 
                             $mov['observacion'] ?? '', 
-                            $data['usuario_id'],
-                            $movId
+                            $data['usuario_id']
                         ]);
                     }
                 }
@@ -357,16 +349,18 @@ class FlujoModel {
         $stmtIng->execute([$fecha]);
         $ingresos = $stmtIng->fetchAll(PDO::FETCH_ASSOC);
 
-        // 2. Egresos asociados a estos sobres (sin importar en qué turno se registraron)
+        // 2. Egresos por turno (Efectivo) - ahora via JOIN con flujo_caja
         $sqlEgr = "
             SELECT 
-                sobre_turno as turno, 
-                moneda, 
-                SUM(monto) as total_egreso,
-                GROUP_CONCAT(CONCAT(categoria, ' (', monto, ')') SEPARATOR ', ') as detalle_egresos
-            FROM flujo_caja_movimientos
-            WHERE sobre_fecha = ? AND tipo = 'Egreso' AND medio_pago = 'EFECTIVO'
-            GROUP BY sobre_turno, moneda
+                f.turno, 
+                m.moneda, 
+                SUM(m.monto) as total_egreso,
+                GROUP_CONCAT(CONCAT(COALESCE(fc.nombre, 'OTRO'), ' (', m.monto, ')') SEPARATOR ', ') as detalle_egresos
+            FROM flujo_caja f
+            JOIN flujo_caja_movimientos m ON f.id = m.flujo_id
+            LEFT JOIN finanzas_categorias fc ON m.categoria_id = fc.id
+            WHERE f.fecha = ? AND m.tipo = 'Egreso' AND m.medio_pago = 'EFECTIVO'
+            GROUP BY f.turno, m.moneda
         ";
         $stmtEgr = $this->pdo->prepare($sqlEgr);
         $stmtEgr->execute([$fecha]);
@@ -385,7 +379,6 @@ class FlujoModel {
 
         foreach ($egresos as $e) {
             if (isset($reporte[$e['turno']])) {
-                // No restamos del turno diario porque los egresos descuentan del pozo mensual
                 $reporte[$e['turno']]['egresos_detalle'] = $e['detalle_egresos'];
             }
         }
@@ -428,18 +421,20 @@ class FlujoModel {
             }
         }
 
-        // 2. Egresos (Extracciones de sobre)
+        // 2. Egresos por turno (Efectivo) - via JOIN
         $sqlEgr = "
             SELECT 
-                sobre_fecha as fecha, 
-                sobre_turno as turno, 
-                moneda, 
-                SUM(monto) as total,
-                GROUP_CONCAT(CONCAT(categoria, ' (', monto, ')') SEPARATOR ', ') as detalle
-            FROM flujo_caja_movimientos
-            WHERE MONTH(sobre_fecha) = ? AND YEAR(sobre_fecha) = ? 
-              AND tipo = 'Egreso' AND medio_pago = 'EFECTIVO'
-            GROUP BY sobre_fecha, sobre_turno, moneda
+                f.fecha, 
+                f.turno, 
+                m.moneda, 
+                SUM(m.monto) as total,
+                GROUP_CONCAT(CONCAT(COALESCE(fc.nombre, 'OTRO'), ' (', m.monto, ')') SEPARATOR ', ') as detalle
+            FROM flujo_caja f
+            JOIN flujo_caja_movimientos m ON f.id = m.flujo_id
+            LEFT JOIN finanzas_categorias fc ON m.categoria_id = fc.id
+            WHERE MONTH(f.fecha) = ? AND YEAR(f.fecha) = ? 
+              AND m.tipo = 'Egreso' AND m.medio_pago = 'EFECTIVO'
+            GROUP BY f.fecha, f.turno, m.moneda
         ";
         $stmtEgr = $this->pdo->prepare($sqlEgr);
         $stmtEgr->execute([$mes, $anio]);

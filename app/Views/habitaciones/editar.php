@@ -3,12 +3,12 @@
 // habitaciones/editar.php — Formulario para editar habitación
 // ============================================================
 require_once '../../../config/db.php';
-require_once '../../../auth/middleware.php';
+require_once '../../../app/Middleware/auth.php';
 $base = '../../../'; $page_title = 'Editar Habitación — Hotel Manager';
 $id_php = (int)($_GET['id'] ?? 0);
 if ($id_php <= 0) redirigir('index.php');
-include '../../../includes/head.php';
-include '../../../includes/sidebar.php';
+include '../../../app/Views/layouts/head.php';
+include '../../../app/Views/layouts/sidebar.php';
 ?>
 <div class="main-content">
   <div class="topbar">

@@ -4,13 +4,13 @@
  */
 $base = '../../../';
 $_projectRoot = dirname(__DIR__, 3);
-require_once $_projectRoot . '/auth/middleware.php';
-require_once $_projectRoot . '/rutas.php';
+require_once $_projectRoot . '/app/Middleware/auth.php';
+require_once $_projectRoot . '/app/Helpers/url.php';
 protegerPorRol('cajera', 'flujo');
 
 $page_title = 'Resumen del Día — Flujo de Caja';
-include $_projectRoot . '/includes/head.php';
-include $_projectRoot . '/includes/sidebar.php';
+include $_projectRoot . '/app/Views/layouts/head.php';
+include $_projectRoot . '/app/Views/layouts/sidebar.php';
 
 $fecha = $_GET['fecha'] ?? date('Y-m-d');
 ?>

@@ -109,7 +109,7 @@ class DesayunoController {
 
         try {
             $id = $this->model->guardar($input, $input['detalles'] ?? []);
-            $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'REGISTRAR_DESAYUNO', 'COMIDA', "Consolidó el padrón de desayunos para la fecha: $fecha");
+            $this->audit->registrar($_SESSION['auth_id'], 'REGISTRAR_DESAYUNO', 'COMIDA', "Consolidó el padrón de desayunos para la fecha: $fecha");
             return ['ok' => true, 'id' => $id, 'msg' => 'Registro guardado correctamente.'];
         } catch (Exception $e) {
             return ['ok' => false, 'msg' => $e->getMessage()];

@@ -5,11 +5,11 @@
  */
 $base = '../../../';
 $_projectRoot = dirname(__DIR__, 3);
-require_once $_projectRoot . '/auth/middleware.php';
+require_once $_projectRoot . '/app/Middleware/auth.php';
 protegerPorRol('cajera', 'clientes');
 
 $page_title = 'Base de Datos de Clientes — Hotel Manager';
-include $_projectRoot . '/includes/head.php';
+include $_projectRoot . '/app/Views/layouts/head.php';
 ?>
 
 <style>
@@ -76,7 +76,7 @@ include $_projectRoot . '/includes/head.php';
 </style>
 
 <div id="app-clientes" style="display:contents" v-cloak>
-  <?php include $_projectRoot . '/includes/sidebar.php'; ?>
+  <?php include $_projectRoot . '/app/Views/layouts/sidebar.php'; ?>
   <div class="main-content">
     <div class="topbar border-bottom-0 shadow-sm" style="background: linear-gradient(to right, #ffffff, #f8f9fa);">
       <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list fs-4"></i></button>
@@ -497,5 +497,5 @@ include $_projectRoot . '/includes/head.php';
   }
 </style>
 
-<?php include $_projectRoot . '/includes/footer.php'; ?>
+<?php include $_projectRoot . '/app/Views/layouts/footer.php'; ?>
 <script src="index.js?v=<?= time() ?>"></script>

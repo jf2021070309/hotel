@@ -52,7 +52,7 @@ class ReservasController {
         try {
             $result = $this->model->pagoRapido($stay_id, $monto, $moneda, $metodo, $tc, $uid);
             $msg = "Registró PAGO de S/ " . number_format($monto * $tc, 2) . " [$metodo] desde Cuadro de Reservas";
-            $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'REGISTRAR_PAGO', 'RESERVAS', $msg);
+            $this->audit->registrar($_SESSION['auth_id'], 'REGISTRAR_PAGO', 'RESERVAS', $msg);
             return ['ok' => true, 'msg' => 'Pago registrado correctamente', 'data' => $result];
         } catch (Exception $e) {
             return ['ok' => false, 'msg' => 'Error al registrar pago: ' . $e->getMessage()];
@@ -93,7 +93,7 @@ class ReservasController {
         try {
             $id = $this->model->registrarReservaRapida($data);
             $msg = "Creó RESERVA RÁPIDA para: {$data['titular']} (Hab #{$data['hab_id']})";
-            $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'NUEVA_RESERVA', 'RESERVAS', $msg);
+            $this->audit->registrar($_SESSION['auth_id'], 'NUEVA_RESERVA', 'RESERVAS', $msg);
             return ['ok' => true, 'msg' => 'Reserva registrada', 'id' => $id];
         } catch (Exception $e) {
             return ['ok' => false, 'msg' => 'Error: ' . $e->getMessage()];
@@ -117,7 +117,7 @@ class ReservasController {
         try {
             $this->model->actualizarReservaRapida($id, $data);
             $msg = "Editó RESERVA RÁPIDA #{$id} para: {$data['titular']}";
-            $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'EDITAR_RESERVA', 'RESERVAS', $msg);
+            $this->audit->registrar($_SESSION['auth_id'], 'EDITAR_RESERVA', 'RESERVAS', $msg);
             return ['ok' => true, 'msg' => 'Reserva actualizada'];
         } catch (Exception $e) {
             return ['ok' => false, 'msg' => 'Error: ' . $e->getMessage()];
@@ -130,7 +130,7 @@ class ReservasController {
         
         try {
             if ($this->model->activarStay($id)) {
-                $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'CHECKIN_RESERVA', 'RESERVAS', "Activó llegada de Huésped (Check-in desde Reservas)");
+                $this->audit->registrar($_SESSION['auth_id'], 'CHECKIN_RESERVA', 'RESERVAS', "Activó llegada de Huésped (Check-in desde Reservas)");
                 return ['ok' => true, 'msg' => 'Ingreso (Check-in) registrado'];
             }
             return ['ok' => false, 'msg' => 'No se pudo activar la reserva'];
@@ -147,10 +147,9 @@ class ReservasController {
             if ($this->model->rechazarStay($id)) {
                 $this->audit->registrar(
                     $_SESSION['auth_id'],
-                    $_SESSION['auth_nombre'],
                     'RECHAZAR_RESERVA',
                     'RESERVAS',
-                    "RechazÃ³ una reserva desde el cuadro de reservas (Stay #$id)"
+                    "Rechazó una reserva desde el cuadro de reservas (Stay #$id)"
                 );
                 return ['ok' => true, 'msg' => 'Reserva rechazada'];
             }
@@ -170,7 +169,7 @@ class ReservasController {
         try {
             if ($this->model->cambiarEstadoHabitacion($hab_id, $estado)) {
                 $msg = "Cambió estado de la Habitación #{$hab_id} a: " . strtoupper($estado);
-                $this->audit->registrar($_SESSION['auth_id'], $_SESSION['auth_nombre'], 'CAMBIO_ESTADO_HAB', 'RESERVAS', $msg);
+                $this->audit->registrar($_SESSION['auth_id'], 'CAMBIO_ESTADO_HAB', 'RESERVAS', $msg);
                 return ['ok' => true, 'msg' => 'Estado actualizado'];
             }
             return ['ok' => false, 'msg' => 'No se pudo actualizar el estado de la habitación'];

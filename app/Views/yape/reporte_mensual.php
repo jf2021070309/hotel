@@ -4,7 +4,7 @@
  * Reporte de Gastos Yape Mensual — formato impresión.
  */
 $base = '../../../';
-require_once $base . 'auth/middleware.php';
+require_once $base . 'app/Middleware/auth.php';
 protegerPorRol('cajera', 'yape');
 
 require_once $base . 'config/db.php';

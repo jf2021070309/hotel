@@ -25,47 +25,47 @@ class InventarioModel {
     /**
      * Registra un movimiento en la bitácora de inventario.
      */
-    private function registrarMovimiento(int $productoId, string $tipo, int $cantidad, int $stockAntes, int $stockDespues, string $referencia = '', int $usuarioId = 1): void {
+    private function registrarMovimiento(int $productoId, string $tipo, int $cantidad, int $stockAntes, int $stockDespues, int $usuarioId = 1): void {
         // Silenciar si la tabla no existe aún
         try {
             $stmt = $this->pdo->prepare(
-                "INSERT INTO inventario_movimientos (producto_id, tipo, cantidad, stock_antes, stock_despues, referencia, usuario_id)
-                 VALUES (?, ?, ?, ?, ?, ?, ?)"
+                "INSERT INTO inventario_movimientos (producto_id, tipo, cantidad, stock_antes, stock_despues, usuario_id)
+                 VALUES (?, ?, ?, ?, ?, ?)"
             );
-            $stmt->execute([$productoId, $tipo, $cantidad, $stockAntes, $stockDespues, $referencia, $usuarioId]);
+            $stmt->execute([$productoId, $tipo, $cantidad, $stockAntes, $stockDespues, $usuarioId]);
         } catch (Exception $e) { /* Tabla no existe aún */ }
     }
 
-    public function descontarStock(int $id, int $cantidad, string $referencia = 'Venta', int $uid = 1): bool {
+    public function descontarStock(int $id, int $cantidad, int $uid = 1): bool {
         $prod = $this->getPorId($id);
         $stockAntes = $prod ? (int)$prod['stock_actual'] : 0;
         $stmt = $this->pdo->prepare("UPDATE inventario_productos SET stock_actual = stock_actual - ? WHERE id = ? AND stock_actual >= ?");
         $res = $stmt->execute([$cantidad, $id, $cantidad]);
         if ($res) {
-            $this->registrarMovimiento($id, 'VENTA', $cantidad, $stockAntes, $stockAntes - $cantidad, $referencia, $uid);
+            $this->registrarMovimiento($id, 'VENTA', $cantidad, $stockAntes, $stockAntes - $cantidad, $uid);
         }
         return $res;
     }
 
-    public function recargarStock(int $id, int $cantidad, string $referencia = 'Recarga', int $uid = 1): bool {
+    public function recargarStock(int $id, int $cantidad, int $uid = 1): bool {
         $prod = $this->getPorId($id);
         $stockAntes = $prod ? (int)$prod['stock_actual'] : 0;
         $stmt = $this->pdo->prepare("UPDATE inventario_productos SET stock_actual = stock_actual + ? WHERE id = ?");
         $res = $stmt->execute([$cantidad, $id]);
         if ($res) {
-            $this->registrarMovimiento($id, 'RECARGA', $cantidad, $stockAntes, $stockAntes + $cantidad, $referencia, $uid);
+            $this->registrarMovimiento($id, 'RECARGA', $cantidad, $stockAntes, $stockAntes + $cantidad, $uid);
         }
         return $res;
     }
 
-    public function consumoInterno(int $id, int $cantidad, string $referencia = 'Consumo interno', int $uid = 1): bool {
+    public function consumoInterno(int $id, int $cantidad, int $uid = 1): bool {
         $prod = $this->getPorId($id);
         if (!$prod || $prod['stock_actual'] < $cantidad) return false;
         $stockAntes = (int)$prod['stock_actual'];
         $stmt = $this->pdo->prepare("UPDATE inventario_productos SET stock_actual = stock_actual - ? WHERE id = ? AND stock_actual >= ?");
         $res = $stmt->execute([$cantidad, $id, $cantidad]);
         if ($res) {
-            $this->registrarMovimiento($id, 'CONSUMO_INTERNO', $cantidad, $stockAntes, $stockAntes - $cantidad, $referencia, $uid);
+            $this->registrarMovimiento($id, 'CONSUMO_INTERNO', $cantidad, $stockAntes, $stockAntes - $cantidad, $uid);
         }
         return $res;
     }
@@ -76,7 +76,7 @@ class InventarioModel {
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute($data);
         $newId = (int)$this->pdo->lastInsertId();
-        $this->registrarMovimiento($newId, 'RECARGA', (int)$data['stock_actual'], 0, (int)$data['stock_actual'], 'Stock inicial', $data['usuario_id'] ?? 1);
+        $this->registrarMovimiento($newId, 'RECARGA', (int)$data['stock_actual'], 0, (int)$data['stock_actual'], $data['usuario_id'] ?? 1);
         return $newId;
     }
 

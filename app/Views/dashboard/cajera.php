@@ -5,8 +5,8 @@
  */
 $base = '';
 $page_title = 'Panel Operativo — Hotel Manager';
-include 'includes/head.php';
-include 'includes/sidebar.php';
+include 'app/Views/layouts/head.php';
+include 'app/Views/layouts/sidebar.php';
 ?>
 
 <div class="main-content">
@@ -367,6 +367,6 @@ include 'includes/sidebar.php';
 <script src="<?= $_root ?>app/Views/dashboard/cajera.js"></script>
 
 
-<?php include 'includes/footer.php'; ?>
+<?php include 'app/Views/layouts/footer.php'; ?>
 
-<?php include 'includes/footer.php'; ?>
+<?php include 'app/Views/layouts/footer.php'; ?>

@@ -14,11 +14,15 @@ class ReportesController {
      */
     public function facturas($desde, $hasta, $estado = null) {
         $sql = "SELECT 
-                    rp.nombre_completo, rp.documento_tipo, rp.documento_num, rp.celular,
-                    rs.ruc_factura, rs.razon_social, rs.num_comprobante, rs.tipo_comprobante,
+                    c.nombre_razon_social, 
+                    c.documento_tipo AS tipo_documento, 
+                    c.documento_num AS numero_documento, 
+                    c.celular,
+                    rs.num_comprobante, rs.tipo_comprobante,
                     rs.total_pago, rs.moneda_pago, rs.fecha_registro, rs.estado
                 FROM rooming_stays rs
-                INNER JOIN rooming_pax rp ON rp.stay_id = rs.id AND rp.es_titular = 1
+                INNER JOIN rooming_pax rp ON rp.stay_id = rs.id AND rp.es_titular_acompanante = 1
+                INNER JOIN clientes c ON c.id = rp.cliente_id
                 WHERE rs.tipo_comprobante = 'FACTURA'
                   AND (rs.fecha_registro BETWEEN ? AND ?)";
         
@@ -39,16 +43,16 @@ class ReportesController {
      */
     public function corporativasExtranjeras() {
         $sql = "SELECT 
-                    rp.empresa, rp.nacionalidad, rp.nombre_completo AS contacto_referencia,
-                    rp.celular, rp.email,
+                    c.nombre_razon_social AS empresa, c.nacionalidad, c.nombre_razon_social AS contacto_referencia,
+                    c.celular, c.email,
                     COUNT(DISTINCT rs.id) AS total_estadias,
                     MAX(rs.fecha_registro) AS ultima_visita,
                     MIN(rs.fecha_registro) AS primera_visita
-                FROM rooming_pax rp
+                FROM clientes c
+                INNER JOIN rooming_pax rp ON rp.cliente_id = c.id
                 INNER JOIN rooming_stays rs ON rp.stay_id = rs.id
-                WHERE rp.es_corporativo = 1
-                  AND rp.empresa IS NOT NULL
-                GROUP BY rp.empresa, rp.nacionalidad, rp.nombre_completo, rp.celular, rp.email
+                WHERE c.tipo_cliente = 'JURIDICO' OR c.documento_tipo = 'RUC'
+                GROUP BY c.id, c.nombre_razon_social, c.nacionalidad, c.celular, c.email
                 ORDER BY total_estadias DESC";
         
         return $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
@@ -59,15 +63,15 @@ class ReportesController {
      */
     public function extranjerosRecurrentes($minVisitas = 2) {
         $sql = "SELECT 
-                    rp.nombre_completo, rp.documento_num AS pasaporte,
-                    rp.nacionalidad, rp.celular, rp.email,
+                    c.nombre_razon_social AS nombre_completo, c.documento_num AS pasaporte,
+                    c.nacionalidad, c.celular, c.email,
                     COUNT(DISTINCT rs.id) AS total_visitas,
                     MIN(rs.fecha_registro) AS primera_visita,
                     MAX(rs.fecha_registro) AS ultima_visita
-                FROM rooming_pax rp
+                FROM clientes c
+                INNER JOIN rooming_pax rp ON rp.cliente_id = c.id AND rp.es_titular_acompanante = 1
                 INNER JOIN rooming_stays rs ON rp.stay_id = rs.id
-                WHERE rp.es_titular = 1
-                GROUP BY rp.documento_num, rp.nacionalidad, rp.nombre_completo, rp.celular, rp.email
+                GROUP BY c.id, c.documento_num, c.nacionalidad, c.nombre_razon_social, c.celular, c.email
                 HAVING total_visitas >= ?
                 ORDER BY total_visitas DESC";
         

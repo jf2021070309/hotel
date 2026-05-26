@@ -3,13 +3,13 @@
  * app/Views/desayunos/index.php
  */
 $base = '../../../';
-require_once $base . 'auth/session.php';
-require_once $base . 'auth/middleware.php';
+require_once $base . 'app/Middleware/session.php';
+require_once $base . 'app/Middleware/auth.php';
 protegerPorRol('limpieza', 'desayunos');
 $page_title = 'Control de Desayunos — Hotel Manager';
 $export_enabled = true;
-include $base . 'includes/head.php';
-include $base . 'includes/sidebar.php';
+include $base . 'app/Views/layouts/head.php';
+include $base . 'app/Views/layouts/sidebar.php';
 ?>
 
 <div class="main-content" id="app-desayunos" v-cloak>
@@ -225,4 +225,4 @@ include $base . 'includes/sidebar.php';
 </div>
 
 <script src="<?= $base ?>assets/js/desayunos.js"></script>
-<?php include $base . 'includes/footer.php'; ?>
+<?php include $base . 'app/Views/layouts/footer.php'; ?>

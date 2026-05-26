@@ -6,8 +6,8 @@
 $base = '';
 $page_title = 'Dashboard Admin — Hotel Manager';
 $chartjs_enabled = true; // Activa Chart.js en el head
-include 'includes/head.php';
-include 'includes/sidebar.php';
+include 'app/Views/layouts/head.php';
+include 'app/Views/layouts/sidebar.php';
 ?>
 
 <div class="main-content">
@@ -310,5 +310,5 @@ include 'includes/sidebar.php';
 
 <script src="<?= $_root ?>app/Views/dashboard/admin.js"></script>
 
-<?php include 'includes/footer.php'; ?>
+<?php include 'app/Views/layouts/footer.php'; ?>
 

@@ -1,0 +1,421 @@
+<?php
+/**
+ * app/Views/flujo/v2.php
+ * Módulo de Flujo de Caja Mensual V2 — Grilla completa tipo Excel
+ */
+$base = '../../../';
+$_projectRoot = dirname(__DIR__, 3);
+require_once $_projectRoot . '/app/Middleware/auth.php';
+require_once $_projectRoot . '/app/Helpers/url.php';
+protegerPorRol('cajera', 'flujo');
+require_once $_projectRoot . '/config/db.php'; // Asegurar PDO
+
+$page_title = 'Flujo de Caja V2 — Hotel Manager';
+include $_projectRoot . '/app/Views/layouts/head.php';
+include $_projectRoot . '/app/Views/layouts/sidebar.php';
+?>
+
+<div class="main-content" id="app-flujo-v2" v-cloak>
+  <!-- TOPBAR -->
+  <div class="topbar border-bottom-0 shadow-sm" style="background: linear-gradient(to right, #0f172a, #1e293b); color: #fff; padding: 12px 24px;">
+    <div class="d-flex align-items-center gap-3">
+      <button class="btn-burger text-white border-0 bg-transparent" onclick="handleMenuClick()"><i class="bi bi-list fs-4"></i></button>
+      <div class="d-flex align-items-center gap-2">
+        <div class="brand-icon d-flex align-items-center justify-content-center" style="background: linear-gradient(135deg, #f59e0b, #d97706); width: 34px; height: 34px; border-radius: 8px; color: #fff; box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);">
+          <i class="bi bi-table fs-5"></i>
+        </div>
+        <div>
+          <h5 class="fw-bold mb-0 text-white" style="letter-spacing: -0.5px; font-size: 1.1rem;">Flujo de Caja Mensual V2</h5>
+          <p class="mb-0 text-slate-300 d-none d-md-block" style="font-size: 10px; color: #94a3b8;">Mapeo completo del mes en vista cuadrícula estilo Excel</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="ms-auto d-flex align-items-center gap-2">
+      <!-- Selector de Mes/Año Premium -->
+      <div class="d-flex align-items-center bg-slate-800 border border-secondary rounded shadow-sm px-2 py-1" style="background-color: rgba(30, 41, 59, 0.8);">
+        <select class="form-select form-select-sm border-0 fw-bold text-white bg-transparent py-0 px-2" v-model="filtros.mes" @change="generarCalendario" style="width: auto; font-size: 12px; cursor: pointer; outline: none; box-shadow: none;">
+          <option v-for="(m, i) in meses" :key="i" :value="i+1" class="text-dark">{{ m }}</option>
+        </select>
+        <div class="vr bg-secondary mx-1" style="height: 16px;"></div>
+        <input type="number" class="form-control form-control-sm border-0 fw-bold text-white bg-transparent py-0 px-1 text-center" v-model="filtros.anio" @change="generarCalendario" style="width: 65px; font-size: 12px; outline: none; box-shadow: none;" min="2020">
+      </div>
+      
+      <button class="btn btn-sm btn-outline-light d-flex align-items-center gap-1 shadow-sm px-3 fw-bold" @click="cargarDatos" :disabled="loading" style="font-size: 11px; height: 32px;">
+        <span v-if="loading" class="spinner-border spinner-border-sm"></span>
+        <i v-else class="bi bi-arrow-clockwise"></i>
+        <span class="d-none d-sm-inline">Actualizar</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="page-body p-4" style="background-color: #f8fafc;">
+    <!-- TABLA DE GRILLA MENSUAL -->
+    <div class="card border-0 shadow-sm" style="border-radius: 12px; overflow: hidden; background: #fff;">
+      
+      <!-- Cargando Spinner -->
+      <div v-if="loading" class="text-center py-5">
+        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;"></div>
+        <div class="mt-3 fw-bold text-secondary">Generando y consultando grilla mensual v2...</div>
+        <p class="text-muted small">Por favor espere mientras procesamos las transacciones del mes.</p>
+      </div>
+
+      <!-- Contenedor con scroll vertical y horizontal -->
+      <div v-else class="mensual-grid-container table-responsive">
+        <table class="table table-bordered table-mensual mb-0">
+          <thead>
+            <!-- Fila de Cabecera Nivel 1 -->
+            <tr>
+              <th colspan="2" class="sticky-header" style="background-color: #0f172a; width: 220px; min-width: 220px;">INFORMACIÓN</th>
+              <th colspan="7" style="background-color: #1e3a8a; border-left: 2px solid #334155;">INGRESOS</th>
+              <th colspan="12" style="background-color: #581c87; border-left: 4px solid #ef4444;" class="separator-header">GASTOS / EGRESOS</th>
+              <th rowspan="2" class="align-middle" style="background-color: #0f172a; width: 120px; min-width: 120px;">ACCIONES</th>
+            </tr>
+            <!-- Fila de Cabecera Nivel 2 -->
+            <tr>
+              <th class="sticky-col text-center" style="left: 0; width: 100px; min-width: 100px;">TURNO</th>
+              <th class="sticky-col-2 text-center" style="left: 100px; width: 120px; min-width: 120px;">FECHA</th>
+              
+              <!-- Ingresos sub-columns -->
+              <th style="background-color: #1e3a8a; color: #93c5fd; min-width: 100px;">DEPOS / TRAN</th>
+              <th style="background-color: #1e3a8a; color: #93c5fd; min-width: 100px;">YAPE O PLIN</th>
+              <th style="background-color: #1e3a8a; color: #93c5fd; min-width: 100px;">POS DOLARES</th>
+              <th style="background-color: #1e3a8a; color: #93c5fd; min-width: 100px;">POS SOLES</th>
+              <th style="background-color: #1e3a8a; color: #93c5fd; min-width: 110px;">PESOS EFECT.</th>
+              <th style="background-color: #1e3a8a; color: #93c5fd; min-width: 90px;">DOLARES EF.</th>
+              <th style="background-color: #1e3a8a; color: #93c5fd; min-width: 110px;">SOLES EFECT.</th>
+              
+              <!-- Egresos sub-columns -->
+              <th style="background-color: #581c87; color: #e9d5ff; min-width: 100px; border-left: 4px solid #ef4444;" class="separator-col-head">MERCADO</th>
+              <th style="background-color: #581c87; color: #e9d5ff; min-width: 90px;">MOVILIDAD</th>
+              <th style="background-color: #581c87; color: #e9d5ff; min-width: 120px;">CAFETERÍA</th>
+              <th style="background-color: #581c87; color: #e9d5ff; min-width: 100px;">LAVANDERÍA</th>
+              <th style="background-color: #581c87; color: #e9d5ff; min-width: 110px;">ÚTILES ESCR.</th>
+              <th style="background-color: #581c87; color: #e9d5ff; min-width: 110px;">RECEPCIÓN CC</th>
+              <th style="background-color: #581c87; color: #e9d5ff; min-width: 110px;">REPUESTOS</th>
+              <th style="background-color: #581c87; color: #e9d5ff; min-width: 110px;">PERSONAL</th>
+              <th style="background-color: #581c87; color: #e9d5ff; min-width: 100px;">OTROS</th>
+              
+              <!-- Totales -->
+              <th style="background-color: #8b1e3f; color: #fbcfe8; min-width: 115px;">TOTAL EGRESO</th>
+              <th style="background-color: #78350f; color: #fde68a; min-width: 115px;">TOTAL A ENTRE</th>
+              <th style="background-color: #0f172a; color: #cbd5e1; min-width: 140px;">SE ENTREGA A</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Loop de días del mes -->
+            <template v-for="d in diasGrid" :key="d.fecha">
+              
+              <!-- Fila Turno MAÑANA -->
+              <tr :class="{'table-active-row': d.manana.flujo_id !== null}">
+                <td class="sticky-col fw-semibold text-center" style="left: 0;">
+                  <span class="badge bg-light text-dark border"><i class="bi bi-sun-fill text-warning me-1"></i>MAÑAN</span>
+                </td>
+                <td class="sticky-col-2 text-center" style="left: 100px;">{{ d.fecha_formateada }}</td>
+                
+                <!-- Ingresos MAÑANA -->
+                <td class="num-cell" :class="{'zero-val': d.manana.depo === 0}">{{ d.manana.depo ? 'S/ ' + formatearNumero(d.manana.depo) : '-' }}</td>
+                <td class="num-cell" :class="{'zero-val': d.manana.yape === 0}">{{ d.manana.yape ? 'S/ ' + formatearNumero(d.manana.yape) : '-' }}</td>
+                <td class="num-cell" :class="{'zero-val': d.manana.pos_usd === 0}">{{ d.manana.pos_usd ? '$ ' + formatearNumero(d.manana.pos_usd) : '-' }}</td>
+                <td class="num-cell" :class="{'zero-val': d.manana.pos_pen === 0}">{{ d.manana.pos_pen ? 'S/ ' + formatearNumero(d.manana.pos_pen) : '-' }}</td>
+                <td class="num-cell" :class="{'zero-val': d.manana.pesos === 0}">{{ d.manana.pesos ? '₱ ' + formatearNumero(d.manana.pesos) : '-' }}</td>
+                <td class="num-cell" :class="{'zero-val': d.manana.usd_ef === 0}">{{ d.manana.usd_ef ? '$ ' + formatearNumero(d.manana.usd_ef) : '-' }}</td>
+                <td class="num-cell fw-bold text-success" :class="{'zero-val': d.manana.pen_ef === 0}">{{ d.manana.pen_ef ? 'S/ ' + formatearNumero(d.manana.pen_ef) : '-' }}</td>
+                
+                <!-- Egresos MAÑANA -->
+                <td class="num-cell text-danger separator-col" :class="{'zero-val': d.manana.mercado === 0}">{{ d.manana.mercado ? 'S/ ' + formatearNumero(d.manana.mercado) : '-' }}</td>
+                <td class="num-cell text-danger" :class="{'zero-val': d.manana.movilidad === 0}">{{ d.manana.movilidad ? 'S/ ' + formatearNumero(d.manana.movilidad) : '-' }}</td>
+                <td class="num-cell text-danger" :class="{'zero-val': d.manana.cafeteria === 0}">{{ d.manana.cafeteria ? 'S/ ' + formatearNumero(d.manana.cafeteria) : '-' }}</td>
+                <td class="num-cell text-danger" :class="{'zero-val': d.manana.lavanderia === 0}">{{ d.manana.lavanderia ? 'S/ ' + formatearNumero(d.manana.lavanderia) : '-' }}</td>
+                <td class="num-cell text-danger" :class="{'zero-val': d.manana.utiles === 0}">{{ d.manana.utiles ? 'S/ ' + formatearNumero(d.manana.utiles) : '-' }}</td>
+                <td class="num-cell text-danger" :class="{'zero-val': d.manana.recepcion === 0}">{{ d.manana.recepcion ? 'S/ ' + formatearNumero(d.manana.recepcion) : '-' }}</td>
+                <td class="num-cell text-danger" :class="{'zero-val': d.manana.repuestos === 0}">{{ d.manana.repuestos ? 'S/ ' + formatearNumero(d.manana.repuestos) : '-' }}</td>
+                <td class="num-cell text-danger" :class="{'zero-val': d.manana.personal === 0}">{{ d.manana.personal ? 'S/ ' + formatearNumero(d.manana.personal) : '-' }}</td>
+                <td class="num-cell text-danger" :class="{'zero-val': d.manana.otros_eg === 0}">{{ d.manana.otros_eg ? 'S/ ' + formatearNumero(d.manana.otros_eg) : '-' }}</td>
+                
+                <!-- Totales MAÑANA -->
+                <td class="num-cell fw-bold text-danger">{{ d.manana.total_egreso ? 'S/ ' + formatearNumero(d.manana.total_egreso) : '-' }}</td>
+                <td class="num-cell fw-bold text-dark bg-light">{{ d.manana.total_entregar ? 'S/ ' + formatearNumero(d.manana.total_entregar) : '-' }}</td>
+                <td class="text-truncate text-muted text-center" style="max-width: 140px; font-size: 11px;">
+                  <span v-if="d.manana.flujo_id" class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">
+                    {{ d.manana.nota_entrega || d.manana.operador || 'Cerrado' }}
+                  </span>
+                  <span v-else>-</span>
+                </td>
+                
+                <!-- Acciones MAÑANA -->
+                <td class="text-center">
+                  <a v-if="d.manana.flujo_id" :href="SERVER_ROUTES.form + '?id=' + d.manana.flujo_id" class="btn btn-xs btn-outline-dark fw-bold px-2 py-0" style="font-size: 10px;">
+                    <i class="bi bi-pencil-square me-1"></i>Editar
+                  </a>
+                  <a v-else :href="SERVER_ROUTES.form + '?nuevo=1&turno=MAÑANA&fecha=' + d.fecha" class="btn btn-xs btn-outline-success fw-bold px-2 py-0" style="font-size: 10px;">
+                    <i class="bi bi-plus-lg me-1"></i>Crear
+                  </a>
+                </td>
+              </tr>
+              
+              <!-- Fila Turno TARDE -->
+              <tr :class="{'table-active-row': d.tarde.flujo_id !== null}">
+                <td class="sticky-col fw-semibold text-center" style="left: 0;">
+                  <span class="badge bg-light text-dark border"><i class="bi bi-moon-stars-fill text-primary me-1"></i>TARDE</span>
+                </td>
+                <td class="sticky-col-2 text-center" style="left: 100px;">{{ d.fecha_formateada }}</td>
+                
+                <!-- Ingresos TARDE -->
+                <td class="num-cell" :class="{'zero-val': d.tarde.depo === 0}">{{ d.tarde.depo ? 'S/ ' + formatearNumero(d.tarde.depo) : '-' }}</td>
+                <td class="num-cell" :class="{'zero-val': d.tarde.yape === 0}">{{ d.tarde.yape ? 'S/ ' + formatearNumero(d.tarde.yape) : '-' }}</td>
+                <td class="num-cell" :class="{'zero-val': d.tarde.pos_usd === 0}">{{ d.tarde.pos_usd ? '$ ' + formatearNumero(d.tarde.pos_usd) : '-' }}</td>
+                <td class="num-cell" :class="{'zero-val': d.tarde.pos_pen === 0}">{{ d.tarde.pos_pen ? 'S/ ' + formatearNumero(d.tarde.pos_pen) : '-' }}</td>
+                <td class="num-cell" :class="{'zero-val': d.tarde.pesos === 0}">{{ d.tarde.pesos ? '₱ ' + formatearNumero(d.tarde.pesos) : '-' }}</td>
+                <td class="num-cell" :class="{'zero-val': d.tarde.usd_ef === 0}">{{ d.tarde.usd_ef ? '$ ' + formatearNumero(d.tarde.usd_ef) : '-' }}</td>
+                <td class="num-cell fw-bold text-success" :class="{'zero-val': d.tarde.pen_ef === 0}">{{ d.tarde.pen_ef ? 'S/ ' + formatearNumero(d.tarde.pen_ef) : '-' }}</td>
+                
+                <!-- Egresos TARDE -->
+                <td class="num-cell text-danger separator-col" :class="{'zero-val': d.tarde.mercado === 0}">{{ d.tarde.mercado ? 'S/ ' + formatearNumero(d.tarde.mercado) : '-' }}</td>
+                <td class="num-cell text-danger" :class="{'zero-val': d.tarde.movilidad === 0}">{{ d.tarde.movilidad ? 'S/ ' + formatearNumero(d.tarde.movilidad) : '-' }}</td>
+                <td class="num-cell text-danger" :class="{'zero-val': d.tarde.cafeteria === 0}">{{ d.tarde.cafeteria ? 'S/ ' + formatearNumero(d.tarde.cafeteria) : '-' }}</td>
+                <td class="num-cell text-danger" :class="{'zero-val': d.tarde.lavanderia === 0}">{{ d.tarde.lavanderia ? 'S/ ' + formatearNumero(d.tarde.lavanderia) : '-' }}</td>
+                <td class="num-cell text-danger" :class="{'zero-val': d.tarde.utiles === 0}">{{ d.tarde.utiles ? 'S/ ' + formatearNumero(d.tarde.utiles) : '-' }}</td>
+                <td class="num-cell text-danger" :class="{'zero-val': d.tarde.recepcion === 0}">{{ d.tarde.recepcion ? 'S/ ' + formatearNumero(d.tarde.recepcion) : '-' }}</td>
+                <td class="num-cell text-danger" :class="{'zero-val': d.tarde.repuestos === 0}">{{ d.tarde.repuestos ? 'S/ ' + formatearNumero(d.tarde.repuestos) : '-' }}</td>
+                <td class="num-cell text-danger" :class="{'zero-val': d.tarde.personal === 0}">{{ d.tarde.personal ? 'S/ ' + formatearNumero(d.tarde.personal) : '-' }}</td>
+                <td class="num-cell text-danger" :class="{'zero-val': d.tarde.otros_eg === 0}">{{ d.tarde.otros_eg ? 'S/ ' + formatearNumero(d.tarde.otros_eg) : '-' }}</td>
+                
+                <!-- Totales TARDE -->
+                <td class="num-cell fw-bold text-danger">{{ d.tarde.total_egreso ? 'S/ ' + formatearNumero(d.tarde.total_egreso) : '-' }}</td>
+                <td class="num-cell fw-bold text-dark bg-light">{{ d.tarde.total_entregar ? 'S/ ' + formatearNumero(d.tarde.total_entregar) : '-' }}</td>
+                <td class="text-truncate text-muted text-center" style="max-width: 140px; font-size: 11px;">
+                  <span v-if="d.tarde.flujo_id" class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">
+                    {{ d.tarde.nota_entrega || d.tarde.operador || 'Cerrado' }}
+                  </span>
+                  <span v-else>-</span>
+                </td>
+                
+                <!-- Acciones TARDE -->
+                <td class="text-center">
+                  <a v-if="d.tarde.flujo_id" :href="SERVER_ROUTES.form + '?id=' + d.tarde.flujo_id" class="btn btn-xs btn-outline-dark fw-bold px-2 py-0" style="font-size: 10px;">
+                    <i class="bi bi-pencil-square me-1"></i>Editar
+                  </a>
+                  <a v-else :href="SERVER_ROUTES.form + '?nuevo=1&turno=TARDE&fecha=' + d.fecha" class="btn btn-xs btn-outline-success fw-bold px-2 py-0" style="font-size: 10px;">
+                    <i class="bi bi-plus-lg me-1"></i>Crear
+                  </a>
+                </td>
+              </tr>
+              
+              <!-- Fila de TOTAL DEL DÍA -->
+              <tr class="day-total">
+                <td class="sticky-col text-center" style="left: 0;">TOTAL</td>
+                <td class="sticky-col-2 text-center" style="left: 100px;">{{ d.fecha_formateada }}</td>
+                
+                <!-- Ingresos TOTAL DÍA -->
+                <td class="num-cell">{{ d.total.depo ? 'S/ ' + formatearNumero(d.total.depo) : '-' }}</td>
+                <td class="num-cell">{{ d.total.yape ? 'S/ ' + formatearNumero(d.total.yape) : '-' }}</td>
+                <td class="num-cell">{{ d.total.pos_usd ? '$ ' + formatearNumero(d.total.pos_usd) : '-' }}</td>
+                <td class="num-cell">{{ d.total.pos_pen ? 'S/ ' + formatearNumero(d.total.pos_pen) : '-' }}</td>
+                <td class="num-cell">{{ d.total.pesos ? '₱ ' + formatearNumero(d.total.pesos) : '-' }}</td>
+                <td class="num-cell">{{ d.total.usd_ef ? '$ ' + formatearNumero(d.total.usd_ef) : '-' }}</td>
+                <td class="num-cell fw-bold text-success">{{ d.total.pen_ef ? 'S/ ' + formatearNumero(d.total.pen_ef) : '-' }}</td>
+                
+                <!-- Egresos TOTAL DÍA -->
+                <td class="num-cell separator-col">{{ d.total.mercado ? 'S/ ' + formatearNumero(d.total.mercado) : '-' }}</td>
+                <td class="num-cell">{{ d.total.movilidad ? 'S/ ' + formatearNumero(d.total.movilidad) : '-' }}</td>
+                <td class="num-cell">{{ d.total.cafeteria ? 'S/ ' + formatearNumero(d.total.cafeteria) : '-' }}</td>
+                <td class="num-cell">{{ d.total.lavanderia ? 'S/ ' + formatearNumero(d.total.lavanderia) : '-' }}</td>
+                <td class="num-cell">{{ d.total.utiles ? 'S/ ' + formatearNumero(d.total.utiles) : '-' }}</td>
+                <td class="num-cell">{{ d.total.recepcion ? 'S/ ' + formatearNumero(d.total.recepcion) : '-' }}</td>
+                <td class="num-cell">{{ d.total.repuestos ? 'S/ ' + formatearNumero(d.total.repuestos) : '-' }}</td>
+                <td class="num-cell">{{ d.total.personal ? 'S/ ' + formatearNumero(d.total.personal) : '-' }}</td>
+                <td class="num-cell">{{ d.total.otros_eg ? 'S/ ' + formatearNumero(d.total.otros_eg) : '-' }}</td>
+                
+                <!-- Totales TOTAL DÍA -->
+                <td class="num-cell fw-bold text-danger">{{ d.total.total_egreso ? 'S/ ' + formatearNumero(d.total.total_egreso) : '-' }}</td>
+                <td class="num-cell fw-bold text-dark" style="background-color: #fde68a !important;">{{ d.total.total_entregar ? 'S/ ' + formatearNumero(d.total.total_entregar) : '-' }}</td>
+                <td class="text-center">-</td>
+                <td class="text-center">-</td>
+              </tr>
+            </template>
+            
+            <!-- Fila de TOTAL GENERAL DEL MES (FOOTER) -->
+            <tr class="total-general">
+              <td class="sticky-col text-center" style="left: 0;">TOTAL GENER</td>
+              <td class="sticky-col-2 text-center" style="left: 100px;">MES COMPLETO</td>
+              
+              <!-- Ingresos TOTAL GENERAL -->
+              <td class="num-cell">{{ totalesGenerales.depo ? 'S/ ' + formatearNumero(totalesGenerales.depo) : '-' }}</td>
+              <td class="num-cell">{{ totalesGenerales.yape ? 'S/ ' + formatearNumero(totalesGenerales.yape) : '-' }}</td>
+              <td class="num-cell">{{ totalesGenerales.pos_usd ? '$ ' + formatearNumero(totalesGenerales.pos_usd) : '-' }}</td>
+              <td class="num-cell">{{ totalesGenerales.pos_pen ? 'S/ ' + formatearNumero(totalesGenerales.pos_pen) : '-' }}</td>
+              <td class="num-cell">{{ totalesGenerales.pesos ? '₱ ' + formatearNumero(totalesGenerales.pesos) : '-' }}</td>
+              <td class="num-cell">{{ totalesGenerales.usd_ef ? '$ ' + formatearNumero(totalesGenerales.usd_ef) : '-' }}</td>
+              <td class="num-cell fw-bold text-white">{{ totalesGenerales.pen_ef ? 'S/ ' + formatearNumero(totalesGenerales.pen_ef) : '-' }}</td>
+              
+              <!-- Egresos TOTAL GENERAL -->
+              <td class="num-cell separator-col">{{ totalesGenerales.mercado ? 'S/ ' + formatearNumero(totalesGenerales.mercado) : '-' }}</td>
+              <td class="num-cell">{{ totalesGenerales.movilidad ? 'S/ ' + formatearNumero(totalesGenerales.movilidad) : '-' }}</td>
+              <td class="num-cell">{{ totalesGenerales.cafeteria ? 'S/ ' + formatearNumero(totalesGenerales.cafeteria) : '-' }}</td>
+              <td class="num-cell">{{ totalesGenerales.lavanderia ? 'S/ ' + formatearNumero(totalesGenerales.lavanderia) : '-' }}</td>
+              <td class="num-cell">{{ totalesGenerales.utiles ? 'S/ ' + formatearNumero(totalesGenerales.utiles) : '-' }}</td>
+              <td class="num-cell">{{ totalesGenerales.recepcion ? 'S/ ' + formatearNumero(totalesGenerales.recepcion) : '-' }}</td>
+              <td class="num-cell">{{ totalesGenerales.repuestos ? 'S/ ' + formatearNumero(totalesGenerales.repuestos) : '-' }}</td>
+              <td class="num-cell">{{ totalesGenerales.personal ? 'S/ ' + formatearNumero(totalesGenerales.personal) : '-' }}</td>
+              <td class="num-cell">{{ totalesGenerales.otros_eg ? 'S/ ' + formatearNumero(totalesGenerales.otros_eg) : '-' }}</td>
+              
+              <!-- Totales TOTAL GENERAL -->
+              <td class="num-cell fw-bold text-white" style="background-color: #991b1b !important;">{{ totalesGenerales.total_egreso ? 'S/ ' + formatearNumero(totalesGenerales.total_egreso) : '-' }}</td>
+              <td class="num-cell fw-bold text-white" style="background-color: #92400e !important;">{{ totalesGenerales.total_entregar ? 'S/ ' + formatearNumero(totalesGenerales.total_entregar) : '-' }}</td>
+              <td class="text-center">-</td>
+              <td class="text-center">-</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  [v-cloak] { display: none !important; }
+  
+  .mensual-grid-container {
+    max-height: calc(100vh - 145px);
+    overflow: auto;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+  }
+  
+  /* Scrollbar elegante */
+  .mensual-grid-container::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  .mensual-grid-container::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+  }
+  .mensual-grid-container::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+    border: 2px solid #f1f5f9;
+  }
+  .mensual-grid-container::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+
+  .table-mensual {
+    min-width: 2200px;
+    font-size: 11.5px;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+  
+  /* Sticky de headers */
+  .table-mensual thead th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    color: #ffffff;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    text-align: center;
+    border: 1px solid #334155;
+    vertical-align: middle;
+    padding: 8px 6px;
+  }
+  .table-mensual thead tr:nth-child(2) th {
+    top: 33px;
+  }
+
+  /* Sticky columnas de izquierda */
+  .table-mensual th.sticky-col,
+  .table-mensual td.sticky-col {
+    position: sticky;
+    left: 0;
+    z-index: 6;
+    background-color: #f8fafc;
+    border-right: 1px solid #cbd5e1;
+  }
+  .table-mensual th.sticky-col-2,
+  .table-mensual td.sticky-col-2 {
+    position: sticky;
+    left: 100px;
+    z-index: 6;
+    background-color: #f8fafc;
+    border-right: 2px solid #94a3b8;
+  }
+  
+  .table-mensual thead th.sticky-col {
+    z-index: 12 !important;
+  }
+  .table-mensual thead th.sticky-col-2 {
+    z-index: 12 !important;
+  }
+
+  .table-mensual td {
+    padding: 5px 8px;
+    vertical-align: middle;
+    border: 1px solid #e2e8f0;
+  }
+  
+  .table-active-row td {
+    background-color: #f1f5f9;
+  }
+  
+  /* Separación visual roja */
+  .separator-col, .separator-col-head {
+    border-left: 4px solid #ef4444 !important;
+  }
+  
+  /* Fila total de día */
+  .table-mensual tr.day-total td {
+    background-color: #fffbeb !important;
+    font-weight: 700;
+    color: #b45309;
+    border-top: 1px solid #fef3c7;
+    border-bottom: 2px solid #f59e0b;
+  }
+  .table-mensual tr.day-total td.sticky-col,
+  .table-mensual tr.day-total td.sticky-col-2 {
+    background-color: #fef3c7 !important;
+  }
+
+  /* Fila total general */
+  .table-mensual tr.total-general td {
+    background: linear-gradient(135deg, #1e293b, #0f172a) !important;
+    color: #ffffff !important;
+    font-weight: 800;
+    font-size: 12px;
+    border-top: 2px solid #d97706;
+    border-bottom: 3px double #d97706;
+    position: sticky;
+    bottom: 0;
+    z-index: 9;
+  }
+  .table-mensual tr.total-general td.sticky-col,
+  .table-mensual tr.total-general td.sticky-col-2 {
+    background: linear-gradient(135deg, #1e293b, #0f172a) !important;
+    color: #ffffff !important;
+  }
+
+  /* Celdas numéricas */
+  .table-mensual td.num-cell {
+    text-align: right;
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: 600;
+    color: #1e293b;
+  }
+  .table-mensual td.num-cell.zero-val {
+    color: #94a3b8;
+    font-weight: 400;
+  }
+</style>
+
+<script>
+  window.SERVER_ROUTES = {
+    apiMensual: <?= json_encode(project_base_url() . 'api/flujo.php') ?> + '?action=mensual_grid',
+    form: <?= json_encode(route('flujo/form.php')) ?>
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="<?= $_root ?>app/Views/flujo/v2.js?v=<?= time() ?>"></script>

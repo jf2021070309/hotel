@@ -125,18 +125,36 @@ class RoomingModel {
         $mustCommit = !$this->pdo->inTransaction();
         if ($mustCommit) $this->pdo->beginTransaction();
         try {
+            // Resolver o registrar primero al huésped titular para obtener su ID
+            $clienteTitularId = null;
+            foreach ($paxList as $pax) {
+                if (!empty($pax['es_titular'])) {
+                    $clienteTitularId = $this->upsertCliente($pax);
+                    break;
+                }
+            }
+            if (!$clienteTitularId && !empty($paxList)) {
+                $clienteTitularId = $this->upsertCliente($paxList[0]);
+            }
+            if (!$clienteTitularId) {
+                $clienteTitularId = $data['cliente_titular_id'] ?? null;
+            }
+            if (!$clienteTitularId) {
+                throw new Exception("Debe ingresar al menos un huésped titular para registrar la estadía.");
+            }
+
             $sql = "INSERT INTO rooming_stays (
                 operador, fecha_registro, fecha_checkout, hora_checkin, medio_reserva, 
                 habitacion_id, cliente_titular_id, tipo_hab_declarado, noches, pax_total, total_pago, 
                 moneda_pago, monto_original, tc_aplicado, recargo_tarjeta, metodo_pago, 
                 tipo_comprobante, num_comprobante, cobrador, procedencia, 
-                carro, observaciones, usuario_id, checkin_realizado, total_cobrado, total_cobrado_orig, estado_pago
+                carro, observaciones, usuario_id, checkin_realizado, total_cobrado, total_cobrado_orig, estado_pago, estado
             ) VALUES (
                 :operador, :fecha_reg, :fecha_out, :hora_in, :medio, 
                 :hab_id, :cliente_titular_id, :tipo_hab, :noches, :pax_total, :total, 
                 :moneda, :monto_orig, :tc, :recargo, :metodo, 
                 :comprobante, :num_comp, :cobrador, :procedencia, 
-                :carro, :obs, :uid, 1, :cobrado, :cobrado_orig, :est_pago
+                :carro, :obs, :uid, 1, :cobrado, :cobrado_orig, :est_pago, :estado
             )";
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute([
@@ -146,7 +164,7 @@ class RoomingModel {
                 'hora_in'       => $data['hora_in'],
                 'medio'         => $data['medio'],
                 'hab_id'        => $data['hab_id'],
-                'cliente_titular_id' => $data['cliente_titular_id'] ?? null,
+                'cliente_titular_id' => $clienteTitularId,
                 'tipo_hab'      => $data['tipo_hab'],
                 'noches'        => $data['noches'],
                 'pax_total'     => $data['pax_total'],
@@ -165,7 +183,8 @@ class RoomingModel {
                 'uid'           => $data['uid'],
                 'cobrado'       => $data['cobrado'],
                 'cobrado_orig'  => $data['cobrado_orig'],
-                'est_pago'      => $data['est_pago']
+                'est_pago'      => $data['est_pago'],
+                'estado'        => $data['estado'] ?? 'activo'
             ]);
             $stay_id = (int)$this->pdo->lastInsertId();
 
@@ -219,6 +238,21 @@ class RoomingModel {
         $mustCommit = !$this->pdo->inTransaction();
         if ($mustCommit) $this->pdo->beginTransaction();
         try {
+            // Resolver o registrar primero al huésped titular para obtener su ID
+            $clienteTitularId = null;
+            foreach ($paxList as $pax) {
+                if (!empty($pax['es_titular'])) {
+                    $clienteTitularId = $this->upsertCliente($pax);
+                    break;
+                }
+            }
+            if (!$clienteTitularId && !empty($paxList)) {
+                $clienteTitularId = $this->upsertCliente($paxList[0]);
+            }
+            if (!$clienteTitularId) {
+                $clienteTitularId = $data['cliente_titular_id'] ?? null;
+            }
+
             $sql = "UPDATE rooming_stays SET 
                 fecha_registro = :fecha_reg, 
                 fecha_checkout = :fecha_out, 
@@ -230,14 +264,13 @@ class RoomingModel {
                 tipo_comprobante = :comprobante, num_comprobante = :num_comp, 
                 observaciones = :obs, 
                 procedencia = :procedencia, carro = :carro,
-                estado = :estado
+                estado = :estado" . ($clienteTitularId ? ", cliente_titular_id = :cliente_titular_id" : "") . "
                 WHERE id = :id";
             
             $stmt = $this->pdo->prepare($sql);
             $data['id'] = $id;
-            // Remove operator/uid from update or keep them? Keep them as provided in $data.
-            // For simplicity, I'll pass the whole mapped array.
-            $stmt->execute([
+            
+            $execParams = [
                 'fecha_reg'   => $data['fecha_reg'],
                 'fecha_out'   => $data['fecha_out'],
                 'hora_in'     => $data['hora_in'],
@@ -258,7 +291,13 @@ class RoomingModel {
                 'carro'       => $data['carro'] ?? 'NO',
                 'estado'      => $data['estado'] ?? 'activo',
                 'id'          => $id
-            ]);
+            ];
+
+            if ($clienteTitularId) {
+                $execParams['cliente_titular_id'] = $clienteTitularId;
+            }
+
+            $stmt->execute($execParams);
 
             // Update room to 'ocupado'
             $stmtHab = $this->pdo->prepare("UPDATE habitaciones SET estado = 'ocupado' WHERE id = ?");
@@ -341,6 +380,7 @@ class RoomingModel {
             // SINCRONIZACIÓN: Registrar el ingreso en el Flujo de Caja
             $syncRes = $this->finanzas->registrarMovimientoAutomatico([
                 'usuario_id'  => $pago['uid'],
+                'stay_id'     => $pago['stay_id'],
                 'categoria'   => $pago['tipo'] ?? 'Alojamiento', 
                 'monto'       => $pago['monto'], 
                 'moneda'      => $pago['moneda'] ?? 'PEN',

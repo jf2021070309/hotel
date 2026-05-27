@@ -137,7 +137,7 @@ class ReporteModel {
                 c.id,
                 c.stay_id,
                 h.numero AS habitacion,
-                c.nombre_producto AS producto,
+                ip.nombre AS producto,
                 c.cantidad,
                 c.total,
                 c.metodo_pago,
@@ -147,6 +147,7 @@ class ReporteModel {
                     ELSE 'TARDE' 
                 END AS turno
             FROM rooming_consumos c
+            LEFT JOIN inventario_productos ip ON c.producto_id = ip.id
             LEFT JOIN rooming_stays s ON c.stay_id = s.id
             LEFT JOIN habitaciones h ON s.habitacion_id = h.id
             WHERE MONTH(c.created_at) = :mes AND YEAR(c.created_at) = :anio
@@ -168,16 +169,31 @@ class ReporteModel {
         $ingHosting = (float)$stmt->fetchColumn();
 
         // 2. Otros Ingresos (Venta productos, early checkin, etc en Flujo)
-        $sqlOtros = "SELECT SUM(monto) FROM flujo_caja_movimientos WHERE tipo='Ingreso' AND categoria NOT IN ('HABITACIÓN', 'YAPE O PLIN') AND flujo_id IN (SELECT id FROM flujo_caja WHERE MONTH(fecha) = :mes AND YEAR(fecha) = :anio)";
+        $sqlOtros = "
+            SELECT SUM(m.monto) 
+            FROM flujo_caja_movimientos m
+            LEFT JOIN finanzas_categorias c ON m.categoria_id = c.id
+            WHERE m.tipo = 'Ingreso' 
+              AND (c.nombre IS NULL OR c.nombre NOT IN ('HABITACIÓN', 'YAPE O PLIN')) 
+              AND m.flujo_id IN (
+                  SELECT id FROM flujo_caja WHERE MONTH(fecha) = :mes AND YEAR(fecha) = :anio
+              )
+        ";
         $stmt = $this->pdo->prepare($sqlOtros);
         $stmt->execute([':mes' => $mes, ':anio' => $anio]);
         $otrosIng = (float)$stmt->fetchColumn();
 
         // 3. Egresos Operativos (Flujo) - EXCLUIMOS reposición de Caja Chica para no duplicar si sumamos sus gastos reales
-        $sqlEgr = "SELECT SUM(monto) FROM flujo_caja_movimientos 
-                   WHERE tipo='Egreso' 
-                   AND categoria NOT IN ('RECEPCIÓN C.CH.', 'REPOSICIÓN C.CH.')
-                   AND flujo_id IN (SELECT id FROM flujo_caja WHERE MONTH(fecha) = :mes AND YEAR(fecha) = :anio)";
+        $sqlEgr = "
+            SELECT SUM(m.monto) 
+            FROM flujo_caja_movimientos m
+            LEFT JOIN finanzas_categorias c ON m.categoria_id = c.id
+            WHERE m.tipo = 'Egreso' 
+              AND (c.nombre IS NULL OR c.nombre NOT IN ('RECEPCIÓN C.CH.', 'REPOSICIÓN C.CH.'))
+              AND m.flujo_id IN (
+                  SELECT id FROM flujo_caja WHERE MONTH(fecha) = :mes AND YEAR(fecha) = :anio
+              )
+        ";
         $stmt = $this->pdo->prepare($sqlEgr);
         $stmt->execute(['mes' => $mes, 'anio' => $anio]);
         $egresosOp = (float)$stmt->fetchColumn();

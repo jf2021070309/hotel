@@ -52,7 +52,7 @@ createApp({
      * @property {string} nota_entrega - Observaciones finales del turno.
      */
     const cabecera = reactive({
-      fecha: new Date().toISOString().split('T')[0],
+      fecha: SERVER_DATA.fechaDefault || new Date().toISOString().split('T')[0],
       turno: SERVER_DATA.turnoDefault,
       estado: 'borrador', 
       operador: '',
@@ -253,6 +253,16 @@ createApp({
      */
     const onCategoriaChange = (mov) => {
       const cat = mov.categoria.toUpperCase();
+      
+      // Sincronizar el id de la categoría elegida
+      const catList = mov.tipo === 'Ingreso' ? categorias.ingreso : categorias.egreso;
+      const found = catList.find(c => c.nombre.toUpperCase() === cat);
+      if (found) {
+        mov.categoria_id = found.id;
+      } else {
+        mov.categoria_id = null;
+      }
+
       // Categorías que implican dinero digital (NO EFECTIVO)
       const noEfectivoTerms = ['YAPE', 'PLIN', 'POS', 'DEPOS', 'TRANS'];
       

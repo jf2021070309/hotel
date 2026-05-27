@@ -138,25 +138,38 @@ class FinanzasHelper {
             }
         }
 
-        $medioFinal = (strpos($medioTxt, 'EFECTIVO') !== false) ? 'EFECTIVO' : 'NO EFECTIVO';
+        $medioFinal = 'EFECTIVO';
+        if (strpos($medioTxt, 'YAPE') !== false) {
+            $medioFinal = 'YAPE_CAJA';
+        } elseif (strpos($medioTxt, 'PLIN') !== false) {
+            $medioFinal = 'PLIN';
+        } elseif (strpos($medioTxt, 'POS_SOLES') !== false) {
+            $medioFinal = 'POS_SOLES';
+        } elseif (strpos($medioTxt, 'POS_DOLARES') !== false) {
+            $medioFinal = 'POS_DOLARES';
+        } elseif (strpos($medioTxt, 'POS') !== false) {
+            $medioFinal = ($moneda === 'USD') ? 'POS_DOLARES' : 'POS_SOLES';
+        } elseif (strpos($medioTxt, 'TRANSFERENCIA') !== false || strpos($medioTxt, 'DEPOSITO') !== false || strpos($medioTxt, 'NO EFECTIVO') !== false) {
+            $medioFinal = 'TRANSFERENCIA';
+        }
+
+        $stayId = $data['stay_id'] ?? null;
 
         $sql = "INSERT INTO flujo_caja_movimientos 
-                (flujo_id, categoria_id, categoria, tipo, moneda, monto, medio_pago, observacion, sobre_fecha, sobre_turno) 
-                VALUES (:flujo_id, :cat_id, :categoria, :tipo, :moneda, :monto, :medio, :obs, :s_fecha, :s_turno)";
+                (flujo_id, categoria_id, stay_id, tipo, moneda, monto, medio_pago, observacion) 
+                VALUES (:flujo_id, :cat_id, :stay_id, :tipo, :moneda, :monto, :medio, :obs)";
         
         $stmt = $this->pdo->prepare($sql);
         $montoFinal = (float)($data['monto'] ?? 0);
         return $stmt->execute([
             ':flujo_id'  => $flujoId,
             ':cat_id'    => $categoriaId,
-            ':categoria' => $categoria,
+            ':stay_id'   => $stayId,
             ':tipo'      => $tipo,
             ':moneda'    => $moneda,
             ':monto'     => $montoFinal,
             ':medio'     => $medioFinal,
-            ':obs'       => $data['observacion'] ?? '',
-            ':s_fecha'   => $sFecha,
-            ':s_turno'   => $sTurno
+            ':obs'       => $data['observacion'] ?? ''
         ]);
     }
 }

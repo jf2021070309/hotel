@@ -330,4 +330,17 @@ class FlujoController {
             'msg'          => "No hay flujo de caja abierto. Abre un nuevo turno para continuar."
         ];
     }
+
+    /**
+     * Obtiene el flujo del mes completo mapeado por días y turnos.
+     * 
+     * @param array $params
+     * @return array
+     */
+    public function flujoMesGrid(array $params): array {
+        $mes = (int)($params['mes'] ?? date('n'));
+        $anio = (int)($params['anio'] ?? date('Y'));
+        
+        return $this->model->getFlujoMesGrid($mes, $anio);
+    }
 }

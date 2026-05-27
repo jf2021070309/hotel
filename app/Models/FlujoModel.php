@@ -100,7 +100,13 @@ class FlujoModel {
         $flujo = $stmt->fetch(PDO::FETCH_ASSOC);
         if (!$flujo) return null;
 
-        $stmtMovs = $this->pdo->prepare("SELECT * FROM flujo_caja_movimientos WHERE flujo_id = ? ORDER BY id ASC");
+        $stmtMovs = $this->pdo->prepare("
+            SELECT m.*, c.nombre as categoria 
+            FROM flujo_caja_movimientos m 
+            LEFT JOIN finanzas_categorias c ON m.categoria_id = c.id 
+            WHERE m.flujo_id = ? 
+            ORDER BY m.id ASC
+        ");
         $stmtMovs->execute([$id]);
         $movs = $stmtMovs->fetchAll(PDO::FETCH_ASSOC);
 
@@ -181,6 +187,11 @@ class FlujoModel {
                 if (empty($mov['monto']) || $mov['monto'] <= 0) continue;
                 
                 $catId = !empty($mov['categoria_id']) ? $mov['categoria_id'] : null;
+                if (!$catId && !empty($mov['categoria'])) {
+                    $stmtFindCat = $this->pdo->prepare("SELECT id FROM finanzas_categorias WHERE modulo = 'Flujo' AND nombre = ? AND activo = 1 LIMIT 1");
+                    $stmtFindCat->execute([$mov['categoria']]);
+                    $catId = $stmtFindCat->fetchColumn() ?: null;
+                }
 
                 $stmtMov->execute([
                     $id, 
@@ -471,6 +482,47 @@ class FlujoModel {
             'MAÑANA' => ['PEN' => 0, 'USD' => 0, 'CLP' => 0, 'egresos_detalle' => ''],
             'TARDE'  => ['PEN' => 0, 'USD' => 0, 'CLP' => 0, 'egresos_detalle' => ''],
             'TOTAL'  => ['PEN' => 0, 'USD' => 0, 'CLP' => 0]
+        ];
+    }
+
+    public function getFlujoMesGrid(int $mes, int $anio): array {
+        // Query all flows for the month
+        $stmtFlows = $this->pdo->prepare("
+            SELECT f.id, f.fecha, f.turno, f.estado, f.nota_entrega, u.nombre as operador
+            FROM flujo_caja f
+            LEFT JOIN usuarios u ON f.usuario_id = u.id
+            WHERE MONTH(f.fecha) = ? AND YEAR(f.fecha) = ?
+        ");
+        $stmtFlows->execute([$mes, $anio]);
+        $flows = $stmtFlows->fetchAll(PDO::FETCH_ASSOC);
+
+        // Build an index of flows by date and shift
+        $flowsMap = [];
+        foreach ($flows as $f) {
+            $key = $f['fecha'] . '_' . $f['turno'];
+            $flowsMap[$key] = $f;
+        }
+
+        // Query all movements for the month
+        $stmtMovs = $this->pdo->prepare("
+            SELECT m.*, c.nombre as categoria_nombre
+            FROM flujo_caja_movimientos m
+            JOIN flujo_caja f ON m.flujo_id = f.id
+            LEFT JOIN finanzas_categorias c ON m.categoria_id = c.id
+            WHERE MONTH(f.fecha) = ? AND YEAR(f.fecha) = ?
+        ");
+        $stmtMovs->execute([$mes, $anio]);
+        $movs = $stmtMovs->fetchAll(PDO::FETCH_ASSOC);
+
+        // Group movements by flow_id
+        $movsMap = [];
+        foreach ($movs as $m) {
+            $movsMap[$m['flujo_id']][] = $m;
+        }
+
+        return [
+            'flows' => $flowsMap,
+            'movements' => $movsMap
         ];
     }
 }

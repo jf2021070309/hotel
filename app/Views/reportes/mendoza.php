@@ -4,13 +4,14 @@
  * Premium 'Digital Concierge' Edition
  */
 $base = '../../../';
-require_once $base . 'app/Middleware/auth.php';
+$_projectRoot = dirname(__DIR__, 3);
+require_once $_projectRoot . '/app/Middleware/auth.php';
 protegerPorRol('admin', 'reporte_mendoza');
 
 $page_title      = 'Mendoza Luxury Report — Hotel Manager';
 $export_enabled  = true;
-include $base . 'app/Views/layouts/head.php';
-include $base . 'app/Views/layouts/sidebar.php';
+include $_projectRoot . '/app/Views/layouts/head.php';
+include $_projectRoot . '/app/Views/layouts/sidebar.php';
 ?>
 
 <!-- Google Fonts: Manrope & Inter -->
@@ -242,6 +243,13 @@ include $base . 'app/Views/layouts/sidebar.php';
     [v-cloak] { display: none; }
 </style>
 
+<script>
+window.MENDOZA_CONFIG = {
+    apiEndpoint: <?= json_encode(project_base_url() . 'api/reportes.php') ?>,
+    roomingUrl: <?= json_encode(project_base_url() . 'rooming') ?>
+};
+</script>
+
 <div class="main-content" id="app-mendoza" v-cloak>
     <div class="premium-topbar">
         <div>
@@ -421,6 +429,6 @@ include $base . 'app/Views/layouts/sidebar.php';
     </div>
 </div>
 
-<script src="<?= $base ?>assets/js/reportes/mendoza.js?v=<?= time() ?>"></script>
+<script src="<?= $_root ?>public/assets/js/reportes/mendoza.js?v=<?= time() ?>"></script>
 </body></html>
 

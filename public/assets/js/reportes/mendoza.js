@@ -24,7 +24,7 @@ createApp({
         const fetchData = async (silent = false) => {
             if (!silent) loading.value = true;
             try {
-                const res = await axios.get(`../../../api/reportes.php?action=mendoza&mes=${filtro.value.mes}&anio=${filtro.value.anio}`);
+                const res = await axios.get(`${window.MENDOZA_CONFIG.apiEndpoint}?action=mendoza&mes=${filtro.value.mes}&anio=${filtro.value.anio}`);
                 if (res.data.ok) {
                     const payload = res.data.data;
                     data.value = Array.isArray(payload.data) ? payload.data : [];
@@ -180,7 +180,7 @@ createApp({
         const verDetalle = (stayId) => {
             if (!stayId) return;
             // Redireccionar al rooming con el stay_id para que el deep-linking lo abra
-            window.location.href = `../../../rooming?stay_id=${stayId}`;
+            window.location.href = `${window.MENDOZA_CONFIG.roomingUrl}?stay_id=${stayId}`;
         };
 
         const exportar = () => {

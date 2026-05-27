@@ -16,6 +16,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
 $id = $_GET['id'] ?? 'null';
 $nuevo = $_GET['nuevo'] ?? '0';
 $turnoQuery = $_GET['turno'] ?? 'MAÑANA';
+$fechaQuery = $_GET['fecha'] ?? date('Y-m-d');
 ?>
 
 <div class="main-content">
@@ -365,6 +366,7 @@ $turnoQuery = $_GET['turno'] ?? 'MAÑANA';
     id: <?= $id ?>,
     nuevo: <?= $nuevo ?>,
     turnoDefault: '<?= $turnoQuery ?>',
+    fechaDefault: '<?= $fechaQuery ?>',
     userRol: '<?= $_SESSION['auth_rol'] ?? 'cajera' ?>',
     canEditClosed: <?= in_array($_SESSION['auth_rol'] ?? '', ['admin', 'supervisor']) ? 'true' : 'false' ?>,
     flujoIndex: <?= json_encode(route('flujo/index.php')) ?>,

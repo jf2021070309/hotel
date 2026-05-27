@@ -3,12 +3,13 @@
  * app/Views/caja_chica/detalle.php
  */
 $base = '../../../';
-require_once $base . 'app/Middleware/auth.php';
+$_projectRoot = dirname(__DIR__, 3);
+require_once $_projectRoot . '/app/Middleware/auth.php';
 protegerPorRol('cajera', 'caja_chica');
 
 $page_title = 'Ciclo Activo Caja Chica — Hotel Manager';
-include $base . 'app/Views/layouts/head.php';
-include $base . 'app/Views/layouts/sidebar.php';
+include $_projectRoot . '/app/Views/layouts/head.php';
+include $_projectRoot . '/app/Views/layouts/sidebar.php';
 ?>
 
 <div class="main-content" id="app-cchica-detalle">
@@ -177,4 +178,4 @@ include $base . 'app/Views/layouts/sidebar.php';
 <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="<?= $base ?>app/Views/caja_chica/detalle.js?v=<?= filemtime(__DIR__ . '/detalle.js') ?>"></script>
+<script src="<?= $_root ?>app/Views/caja_chica/detalle.js?v=<?= filemtime(__DIR__ . '/detalle.js') ?>"></script>

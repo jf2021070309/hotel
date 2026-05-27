@@ -177,14 +177,19 @@ class YapeController {
                         throw new Exception("No hay ningún turno de Flujo de Caja ABIERTO para la fecha {$registro['fecha']} y turno {$registro['turno']} donde depositar el vuelto de Yape (S/ $vuelto). Por favor, abre el turno en Flujo de Caja primero, o el turno ya fue cerrado y no puede recibir más ingresos.");
                     }
 
+                    // Buscar el id de la categoría 'YAPE O PLIN'
+                    $stmtCat = $pdo->prepare("SELECT id FROM finanzas_categorias WHERE modulo = 'Flujo' AND nombre = 'YAPE O PLIN' AND activo = 1 LIMIT 1");
+                    $stmtCat->execute();
+                    $categoriaId = $stmtCat->fetchColumn() ?: null;
+
                     // Insertar ingreso en flujo_caja_movimientos
                      $stmtF = $pdo->prepare("
                         INSERT INTO flujo_caja_movimientos 
-                        (flujo_id, tipo, monto, categoria, moneda, medio_pago, observacion) 
-                        VALUES (?, 'Ingreso', ?, 'YAPE O PLIN', 'PEN', 'NO EFECTIVO', ?)
+                        (flujo_id, tipo, monto, categoria_id, moneda, medio_pago, observacion) 
+                        VALUES (?, 'Ingreso', ?, ?, 'PEN', 'YAPE_CAJA', ?)
                     ");
                     $obsF = "SALDO NETO YAPE (Turno {$registro['turno']}). Registro #$id. Detalle: Recibido S/ {$registro['yape_recibido']} - Gastos S/ {$registro['total_gastado']}";
-                    $stmtF->execute([$flujoTarget['id'], $vuelto, $obsF]);
+                    $stmtF->execute([$flujoTarget['id'], $vuelto, $categoriaId, $obsF]);
                 }
 
                 return ['ok' => true, 'msg' => $vuelto > 0 ? 'Registro cerrado. El vuelto ha sido transferido automáticamente a la caja de este turno.' : 'Registro cerrado con éxito. (Vuelto 0)'];

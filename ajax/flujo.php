@@ -89,6 +89,11 @@ switch ($action) {
         json_response(true, $controller->categorias());
         break;
 
+    case 'mensual_grid':
+        if ($method !== 'GET') json_response(false, null, 405, 'Método no permitido');
+        json_response(true, $controller->flujoMesGrid($_GET));
+        break;
+
     case 'verificar_apertura':
         if ($method !== 'GET') json_response(false, null, 405, 'Método no permitido');
         $res = $controller->verificarApertura();

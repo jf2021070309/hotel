@@ -342,3 +342,37 @@ CREATE TABLE IF NOT EXISTS `caja_chica_movimientos` (
   CONSTRAINT `caja_chica_movimientos_ibfk_2` FOREIGN KEY (`categoria_id`) REFERENCES `finanzas_categorias` (`id`),
   CONSTRAINT `caja_chica_movimientos_ibfk_3` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ========================================================
+-- BLOC 8: CONTROL DE GASTOS YAPE (REPORTE ALEX)
+-- ========================================================
+
+CREATE TABLE IF NOT EXISTS `gastos_yape` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `fecha` date NOT NULL,
+  `turno` enum('MAÑANA','TARDE') NOT NULL,
+  `yape_recibido` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `total_gastado` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `vuelto` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `observacion` text DEFAULT NULL,
+  `estado` enum('borrador','cerrado') NOT NULL DEFAULT 'borrador',
+  `usuario_id` int(10) unsigned NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  CONSTRAINT `fk_gastos_yape_usuario` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `gastos_yape_detalle` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `gasto_yape_id` int(10) unsigned NOT NULL,
+  `categoria_id` int(11) DEFAULT NULL,
+  `rubro` varchar(100) NOT NULL,
+  `monto` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `observacion` text DEFAULT NULL,
+  `documento` varchar(100) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  CONSTRAINT `fk_yape_detalle_cabecera` FOREIGN KEY (`gasto_yape_id`) REFERENCES `gastos_yape` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_yape_detalle_categoria` FOREIGN KEY (`categoria_id`) REFERENCES `finanzas_categorias` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+

@@ -184,6 +184,13 @@ function isActive(string $page, string $folder_): string {
         <i class="bi bi-people-fill"></i> <span>Clientes</span>
       </a>
     </div>
+
+    <div class="nav-item">
+      <a href="<?= route('clientes/v2.php', $base) ?>" class="<?= isActive('v2.php','clientes') ?>" onclick="closeSidebarOnMobile()">
+        <i class="bi bi-table text-info"></i> <span>Clientes V2</span>
+      </a>
+    </div>
+    
     <?php endif; ?>
 
       <?php if (tieneAccesoModulo('gestion_usuarios') || tieneAccesoModulo('medios_pago') || tieneAccesoModulo('auditoria')): ?>

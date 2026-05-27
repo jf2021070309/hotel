@@ -112,6 +112,14 @@ createApp({
     /**
      * Carga todos los flujos del mes desde el servidor
      */
+    const obtenerFechaHoy = () => {
+      const hoyObj = new Date();
+      return `${hoyObj.getFullYear()}-${String(hoyObj.getMonth() + 1).padStart(2, '0')}-${String(hoyObj.getDate()).padStart(2, '0')}`;
+    };
+
+    /**
+     * Carga todos los flujos del mes desde el servidor
+     */
     const cargarDatos = async () => {
       loading.value = true;
       try {
@@ -125,6 +133,15 @@ createApp({
         if (response.data && response.data.ok) {
           const apiData = response.data.data;
           procesarFlujosYMovimientos(apiData.flows, apiData.movements);
+          
+          // Auto-scroll a la fila de la fecha de hoy
+          setTimeout(() => {
+            const hoyStr = obtenerFechaHoy();
+            const targetRow = document.getElementById(`row-manana-${hoyStr}`);
+            if (targetRow) {
+              targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }, 350);
         } else {
           Swal.fire('Error', response.data?.msg || 'No se pudo cargar la información.', 'error');
         }
@@ -268,6 +285,7 @@ createApp({
       formatearNumero,
       cargarDatos,
       generarCalendario,
+      obtenerFechaHoy,
       SERVER_ROUTES: window.SERVER_ROUTES
     };
   }

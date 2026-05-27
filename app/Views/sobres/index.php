@@ -267,10 +267,14 @@ $fecha = date('Y-m-d');
 
 <script>
   const SERVER_FECHA = '<?= $fecha ?>';
+  window.SOBRES_CONFIG = {
+      apiEndpoint: <?= json_encode(project_base_url() . 'api/flujo.php') ?>,
+      imprimirUrl: <?= json_encode(project_base_url() . 'app/Views/sobres/imprimir_mensual.php') ?>
+  };
 </script>
 <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-<script src="<?= $base ?>app/Views/sobres/index.js"></script>
+<script src="<?= $_root ?>app/Views/sobres/index.js"></script>
 
 <style>
   [v-cloak] { display: none !important; }

@@ -54,10 +54,54 @@ class FinanzasHelper {
      * $data incluye: usuario_id, monto, moneda, medio_pago, categoria (opcional), observacion
      */
     public function registrarMovimientoAutomatico(array $data): bool {
-        $flujoId = $data['flujo_id'] ?? $this->getFlujoIdActivo($data['usuario_id']);
+        $flujoId = $data['flujo_id'] ?? null;
         
         if (!$flujoId) {
-            error_log("FINANZAS_DEBUG: No se encontro flujo para Usuario ID: " . ($data['usuario_id'] ?? 'NULL') . " | Fecha: " . date('Y-m-d') . " | Turno: " . self::getTurnoActual());
+            $fechaTrans = $data['fecha'] ?? null;
+            $turnoTrans = $data['turno'] ?? null;
+            
+            if ($fechaTrans && $turnoTrans) {
+                // Buscar si existe un turno de caja para esta fecha y turno
+                $stmt = $this->pdo->prepare("SELECT id FROM flujo_caja WHERE fecha = ? AND turno = ? LIMIT 1");
+                $stmt->execute([$fechaTrans, $turnoTrans]);
+                $flujoId = $stmt->fetchColumn() ?: null;
+                
+                if (!$flujoId) {
+                    // Si no existe, lo creamos automáticamente (en estado 'borrador')
+                    $stmtInsert = $this->pdo->prepare("
+                        INSERT INTO flujo_caja (fecha, turno, estado, usuario_id, nota_entrega)
+                        VALUES (?, ?, 'borrador', ?, 'Apertura automática desde Rooming V2')
+                    ");
+                    $stmtInsert->execute([$fechaTrans, $turnoTrans, $data['usuario_id'] ?? 1]);
+                    $flujoId = (int)$this->pdo->lastInsertId();
+                }
+            } else {
+                // Fallback clásico al flujo activo de la cajera
+                $flujoId = $this->getFlujoIdActivo($data['usuario_id'] ?? 1);
+                
+                if (!$flujoId) {
+                    // Si aun así no hay ninguna caja activa, creamos una para hoy automáticamente
+                    $fechaTrans = date('Y-m-d');
+                    $turnoTrans = self::getTurnoActual();
+                    
+                    $stmt = $this->pdo->prepare("SELECT id FROM flujo_caja WHERE fecha = ? AND turno = ? LIMIT 1");
+                    $stmt->execute([$fechaTrans, $turnoTrans]);
+                    $flujoId = $stmt->fetchColumn() ?: null;
+                    
+                    if (!$flujoId) {
+                        $stmtInsert = $this->pdo->prepare("
+                            INSERT INTO flujo_caja (fecha, turno, estado, usuario_id, nota_entrega)
+                            VALUES (?, ?, 'borrador', ?, 'Apertura automática de emergencia')
+                        ");
+                        $stmtInsert->execute([$fechaTrans, $turnoTrans, $data['usuario_id'] ?? 1]);
+                        $flujoId = (int)$this->pdo->lastInsertId();
+                    }
+                }
+            }
+        }
+        
+        if (!$flujoId) {
+            error_log("FINANZAS_DEBUG: No se pudo resolver flujo para registrar movimiento.");
             return false; 
         }
 

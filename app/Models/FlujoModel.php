@@ -390,6 +390,7 @@ class FlujoModel {
 
         foreach ($egresos as $e) {
             if (isset($reporte[$e['turno']])) {
+                $reporte[$e['turno']][$e['moneda']] -= (float)$e['total_egreso'];
                 $reporte[$e['turno']]['egresos_detalle'] = $e['detalle_egresos'];
             }
         }
@@ -456,6 +457,8 @@ class FlujoModel {
                 $totEgresos[$row['moneda']] += (float)$row['total'];
             }
             if (isset($reporte[$f][$t])) {
+                $reporte[$f][$t][$row['moneda']] -= (float)$row['total'];
+                $reporte[$f]['TOTAL'][$row['moneda']] -= (float)$row['total'];
                 if (!empty($row['detalle'])) {
                     $reporte[$f][$t]['egresos_detalle'] = (empty($reporte[$f][$t]['egresos_detalle']) ? '' : $reporte[$f][$t]['egresos_detalle'] . ', ') . $row['detalle'];
                 }

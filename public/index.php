@@ -51,6 +51,16 @@ $webRoutes['reportes/alex'] = 'app/Views/reportes/alex.php';
 
 // ─── RESOLVER RUTA ─────────────────────────────────────────
 
+// Redireccionar V1 a V2 automáticamente
+if ($uri === 'rooming' || $uri === 'rooming/index.php') {
+    header('Location: ' . project_base_url() . 'rooming/v2');
+    exit;
+}
+if ($uri === 'flujo' || $uri === 'flujo/index.php') {
+    header('Location: ' . project_base_url() . 'flujo/v2');
+    exit;
+}
+
 // 1. Buscar ruta exacta en el mapa
 if (isset($webRoutes[$uri])) {
     $target = BASE_PATH . $webRoutes[$uri];

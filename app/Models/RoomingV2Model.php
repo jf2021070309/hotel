@@ -21,7 +21,7 @@ class RoomingV2Model {
         $sql = "
             SELECT
                 s.id            AS stay_id,
-                c.id            AS pax_id,
+                GROUP_CONCAT(c.id ORDER BY p.es_titular_acompanante DESC, c.id ASC SEPARATOR ',') AS pax_ids,
                 s.operador,
                 s.fecha_registro AS fecha,
                 h.numero        AS hab,
@@ -29,11 +29,11 @@ class RoomingV2Model {
                 s.pax_total     AS pax,
                 s.medio_reserva,
                 s.hora_checkin,
-                c.nombre_razon_social AS nombre_apellido,
-                c.documento_tipo AS documento_tipo,
-                c.documento_num AS documento_num,
-                c.nacionalidad,
-                c.ciudad,
+                GROUP_CONCAT(c.nombre_razon_social ORDER BY p.es_titular_acompanante DESC, c.id ASC SEPARATOR '\n') AS nombre_apellido,
+                GROUP_CONCAT(c.documento_tipo ORDER BY p.es_titular_acompanante DESC, c.id ASC SEPARATOR '\n') AS documento_tipo,
+                GROUP_CONCAT(c.documento_num ORDER BY p.es_titular_acompanante DESC, c.id ASC SEPARATOR '\n') AS documento_num,
+                GROUP_CONCAT(COALESCE(c.nacionalidad, '') ORDER BY p.es_titular_acompanante DESC, c.id ASC SEPARATOR '\n') AS nacionalidad,
+                GROUP_CONCAT(COALESCE(c.ciudad, '') ORDER BY p.es_titular_acompanante DESC, c.id ASC SEPARATOR '\n') AS ciudad,
                 s.fecha_registro AS fecha_checkin,
                 s.fecha_checkout,
                 s.total_pago    AS pago_total,
@@ -51,7 +51,8 @@ class RoomingV2Model {
             WHERE MONTH(s.fecha_registro) = :mes
               AND YEAR(s.fecha_registro)  = :anio
               AND s.checkin_realizado = 1
-            ORDER BY s.fecha_registro ASC, s.id ASC, p.es_titular_acompanante DESC, c.id ASC
+            GROUP BY s.id
+            ORDER BY s.fecha_registro ASC, s.id ASC
         ";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute(['mes' => $mes, 'anio' => $anio]);
@@ -124,7 +125,7 @@ class RoomingV2Model {
             // Insert intermediates pax statement
             $stmtInsertPax = $this->pdo->prepare("
                 INSERT INTO rooming_pax (stay_id, cliente_id, es_titular_acompanante)
-                VALUES (?, ?, 1)
+                VALUES (?, ?, ?)
             ");
 
             // Sentencias para sincronización de anticipos
@@ -138,7 +139,6 @@ class RoomingV2Model {
 
             foreach ($rows as $row) {
                 $stayId = isset($row['stay_id']) ? (int)$row['stay_id'] : null;
-                $paxId  = isset($row['pax_id'])  ? (int)$row['pax_id']  : null;
 
                 // Formatear fechas
                 $fechaReg  = $this->parseFecha($row['fecha'] ?? null) ?: date('Y-m-d');
@@ -155,8 +155,89 @@ class RoomingV2Model {
                     }
                 }
 
-                if ($stayId && $paxId) {
+                if ($stayId) {
                     // --- ACTUALIZACIÓN DE EXISTENTE ---
+                    
+                    // 1. Separar los pasajeros por salto de línea
+                    $names = isset($row['nombre_apellido']) ? explode("\n", str_replace("\r", "", $row['nombre_apellido'])) : [];
+                    $docTypes = isset($row['documento_tipo']) ? explode("\n", str_replace("\r", "", $row['documento_tipo'])) : [];
+                    $docNums = isset($row['documento_num']) ? explode("\n", str_replace("\r", "", $row['documento_num'])) : [];
+                    $nacs = isset($row['nacionalidad']) ? explode("\n", str_replace("\r", "", $row['nacionalidad'])) : [];
+                    $cities = isset($row['ciudad']) ? explode("\n", str_replace("\r", "", $row['ciudad'])) : [];
+                    
+                    $paxIds = [];
+                    if (!empty($row['pax_ids'])) {
+                        $paxIds = explode(",", $row['pax_ids']);
+                    }
+
+                    $maxPax = max(count($names), count($docNums));
+                    
+                    // Asegurar al menos 1 pasajero titular
+                    if ($maxPax === 0) {
+                        $maxPax = 1;
+                        $names = ['HUESPED'];
+                    }
+
+                    $titularClienteId = null;
+                    $actualPaxIds = [];
+
+                    for ($i = 0; $i < $maxPax; $i++) {
+                        $name = trim($names[$i] ?? '');
+                        if (empty($name) && $i > 0) continue; // Ignorar líneas en blanco secundarias
+                        if (empty($name)) $name = 'HUESPED';
+
+                        $docType = trim($docTypes[$i] ?? ($docTypes[0] ?? 'DNI'));
+                        if (empty($docType)) $docType = 'DNI';
+
+                        $docNum = trim($docNums[$i] ?? '');
+                        $nac = trim($nacs[$i] ?? 'Peruana');
+                        $city = trim($cities[$i] ?? '');
+
+                        $paxId = $paxIds[$i] ?? null;
+
+                        if ($paxId) {
+                            // Actualizar cliente existente
+                            $stmtUpdateCliente->execute([
+                                'nombre'       => $name,
+                                'doc_tipo'     => $docType,
+                                'doc_num'      => $docNum,
+                                'nacionalidad' => $nac,
+                                'ciudad'       => $city,
+                                'cliente_id'   => $paxId
+                            ]);
+                            $actualPaxIds[] = (int)$paxId;
+                            if ($i === 0) {
+                                $titularClienteId = (int)$paxId;
+                            }
+                        } else {
+                            // Insertar nuevo cliente
+                            $newPaxId = $this->upsertCliente([
+                                'nombre_apellido' => $name,
+                                'documento_tipo'  => $docType,
+                                'documento_num'   => $docNum,
+                                'nacionalidad'    => $nac,
+                                'ciudad'          => $city
+                            ]);
+                            // Vincular relación
+                            $stmtInsertPax->execute([$stayId, $newPaxId, ($i === 0 ? 1 : 0)]);
+                            $actualPaxIds[] = $newPaxId;
+                            if ($i === 0) {
+                                $titularClienteId = $newPaxId;
+                            }
+                        }
+                    }
+
+                    // Eliminar pasajeros removidos
+                    if (count($paxIds) > count($actualPaxIds)) {
+                        $stmtDeletePax = $this->pdo->prepare("DELETE FROM rooming_pax WHERE stay_id = ? AND cliente_id = ?");
+                        foreach ($paxIds as $oldId) {
+                            if (!in_array((int)$oldId, $actualPaxIds)) {
+                                $stmtDeletePax->execute([$stayId, (int)$oldId]);
+                            }
+                        }
+                    }
+
+                    // Actualizar stay principal
                     $stmtUpdateStay->execute([
                         'operador'       => $row['operador'] ?? '',
                         'fecha_registro' => $fechaReg,
@@ -164,7 +245,7 @@ class RoomingV2Model {
                         'hora_checkin'   => $row['hora_checkin'] ?? '',
                         'habitacion_id'  => $habId,
                         'tipo_hab_declarado' => $row['tipo_hab'] ?? 'SIMPLE',
-                        'pax_total'      => isset($row['pax']) ? (int)$row['pax'] : 1,
+                        'pax_total'      => count($actualPaxIds),
                         'medio_reserva'  => $row['medio_reserva'] ?? 'DIRECTO',
                         'total_pago'     => isset($row['pago_total']) ? (float)$row['pago_total'] : 0.00,
                         'estado'         => $estado,
@@ -177,14 +258,9 @@ class RoomingV2Model {
                         'stay_id'        => $stayId
                     ]);
 
-                    $stmtUpdateCliente->execute([
-                        'nombre'       => $row['nombre_apellido'] ?? '',
-                        'doc_tipo'     => $row['documento_tipo'] ?? 'DNI',
-                        'doc_num'      => $row['documento_num'] ?? '',
-                        'nacionalidad' => $row['nacionalidad'] ?? 'Peruana',
-                        'ciudad'       => $row['ciudad'] ?? '',
-                        'cliente_id'   => $paxId
-                    ]);
+                    if ($titularClienteId) {
+                        $this->pdo->prepare("UPDATE rooming_stays SET cliente_titular_id = ? WHERE id = ?")->execute([$titularClienteId, $stayId]);
+                    }
 
                     // Marcar habitación como ocupada
                     if ($habId) {
@@ -214,6 +290,9 @@ class RoomingV2Model {
                             ]);
 
                             // Sincronizar directo a flujo_caja_movimientos
+                            $horaCheckinVal = !empty($row['hora_checkin']) ? (int)explode(':', $row['hora_checkin'])[0] : (int)date('H');
+                            $turnoRegVal = FinanzasHelper::getTurnoActual($horaCheckinVal);
+                            
                             $this->finanzas->registrarMovimientoAutomatico([
                                 'usuario_id'  => $_SESSION['auth_id'] ?? 1,
                                 'stay_id'     => $stayId,
@@ -221,7 +300,9 @@ class RoomingV2Model {
                                 'monto'       => $nuevoMonto, 
                                 'moneda'      => 'PEN',
                                 'medio_pago'  => $row['medio_pago'] ?? 'EFECTIVO',
-                                'observacion' => "HOSPEDAJE: " . ($row['nombre_apellido'] ?? 'Huésped') . " (Modificado en grilla V2) - Registro #$stayId (Hab #" . ($row['hab'] ?? 'N/A') . ")"
+                                'observacion' => "HOSPEDAJE: " . (explode("\n", $row['nombre_apellido'])[0] ?? 'Huésped') . " (Modificado en grilla V2) - Registro #$stayId (Hab #" . ($row['hab'] ?? 'N/A') . ")",
+                                'fecha'       => $fechaReg,
+                                'turno'       => $turnoRegVal
                             ]);
                         }
                     }
@@ -234,8 +315,52 @@ class RoomingV2Model {
                         continue;
                     }
 
-                    // 1. Crear o buscar el cliente
-                    $clienteId = $this->upsertCliente($row);
+                    // 1. Separar acompañantes por salto de línea
+                    $names = isset($row['nombre_apellido']) ? explode("\n", str_replace("\r", "", $row['nombre_apellido'])) : [];
+                    $docTypes = isset($row['documento_tipo']) ? explode("\n", str_replace("\r", "", $row['documento_tipo'])) : [];
+                    $docNums = isset($row['documento_num']) ? explode("\n", str_replace("\r", "", $row['documento_num'])) : [];
+                    $nacs = isset($row['nacionalidad']) ? explode("\n", str_replace("\r", "", $row['nacionalidad'])) : [];
+                    $cities = isset($row['ciudad']) ? explode("\n", str_replace("\r", "", $row['ciudad'])) : [];
+
+                    $maxPax = max(count($names), count($docNums));
+                    if ($maxPax === 0) {
+                        $maxPax = 1;
+                        $names = ['HUESPED'];
+                    }
+
+                    $titularId = null;
+                    $insertedPaxIds = [];
+
+                    for ($i = 0; $i < $maxPax; $i++) {
+                        $name = trim($names[$i] ?? '');
+                        if (empty($name) && $i > 0) continue;
+                        if (empty($name)) $name = 'HUESPED';
+
+                        $docType = trim($docTypes[$i] ?? ($docTypes[0] ?? 'DNI'));
+                        if (empty($docType)) $docType = 'DNI';
+
+                        $docNum = trim($docNums[$i] ?? '');
+                        $nac = trim($nacs[$i] ?? 'Peruana');
+                        $city = trim($cities[$i] ?? '');
+
+                        $paxId = $this->upsertCliente([
+                            'nombre_apellido' => $name,
+                            'documento_tipo'  => $docType,
+                            'documento_num'   => $docNum,
+                            'nacionalidad'    => $nac,
+                            'ciudad'          => $city
+                        ]);
+
+                        if ($i === 0) {
+                            $titularId = $paxId;
+                        }
+                        $insertedPaxIds[] = $paxId;
+                    }
+
+                    if (!$titularId) {
+                        $titularId = $this->upsertCliente(['nombre_apellido' => 'HUESPED']);
+                        $insertedPaxIds[] = $titularId;
+                    }
 
                     // 2. Insertar stay
                     $stmtInsertStay->execute([
@@ -245,7 +370,7 @@ class RoomingV2Model {
                         'hora_checkin'       => $row['hora_checkin'] ?? '',
                         'habitacion_id'      => $habId,
                         'tipo_hab_declarado' => $row['tipo_hab'] ?? 'SIMPLE',
-                        'pax_total'          => isset($row['pax']) ? (int)$row['pax'] : 1,
+                        'pax_total'          => count($insertedPaxIds),
                         'medio_reserva'      => $row['medio_reserva'] ?? 'DIRECTO',
                         'total_pago'         => isset($row['pago_total']) ? (float)$row['pago_total'] : 0.00,
                         'monto_original'     => isset($row['pago_total']) ? (float)$row['pago_total'] : 0.00,
@@ -257,13 +382,15 @@ class RoomingV2Model {
                         'carro'              => $row['carro'] ?? 'NO',
                         'observaciones'      => $row['observaciones'] ?? '',
                         'usuario_id'         => $_SESSION['auth_id'] ?? 1,
-                        'cliente_titular_id' => $clienteId
+                        'cliente_titular_id' => $titularId
                     ]);
 
                     $newStayId = (int)$this->pdo->lastInsertId();
 
                     // 3. Crear relación intermedia pax
-                    $stmtInsertPax->execute([$newStayId, $clienteId]);
+                    foreach ($insertedPaxIds as $pId) {
+                        $stmtInsertPax->execute([$newStayId, $pId, ($pId === $titularId ? 1 : 0)]);
+                    }
 
                     // Marcar habitación como ocupada
                     if ($habId) {
@@ -283,6 +410,9 @@ class RoomingV2Model {
                         ]);
 
                         // Registrar en flujo_caja_movimientos
+                        $horaCheckinVal = !empty($row['hora_checkin']) ? (int)explode(':', $row['hora_checkin'])[0] : (int)date('H');
+                        $turnoRegVal = FinanzasHelper::getTurnoActual($horaCheckinVal);
+                        
                         $this->finanzas->registrarMovimientoAutomatico([
                             'usuario_id'  => $_SESSION['auth_id'] ?? 1,
                             'stay_id'     => $newStayId,
@@ -290,7 +420,9 @@ class RoomingV2Model {
                             'monto'       => $nuevoMonto, 
                             'moneda'      => 'PEN',
                             'medio_pago'  => $row['medio_pago'] ?? 'EFECTIVO',
-                            'observacion' => "HOSPEDAJE: " . ($row['nombre_apellido'] ?? 'Huésped') . " - Registro #$newStayId (Hab #" . ($row['hab'] ?? 'N/A') . ")"
+                            'observacion' => "HOSPEDAJE: " . (explode("\n", $row['nombre_apellido'])[0] ?? 'Huésped') . " - Registro #$newStayId (Hab #" . ($row['hab'] ?? 'N/A') . ")",
+                            'fecha'       => $fechaReg,
+                            'turno'       => $turnoRegVal
                         ]);
                     }
 

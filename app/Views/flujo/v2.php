@@ -107,7 +107,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
             <template v-for="d in diasGrid" :key="d.fecha">
               
               <!-- Fila Turno MAÑANA -->
-              <tr :class="{'table-active-row': d.manana.flujo_id !== null}">
+              <tr :id="'row-manana-' + d.fecha" :class="{'table-active-row': d.manana.flujo_id !== null, 'today-row-highlight': d.fecha === obtenerFechaHoy()}">
                 <td class="sticky-col fw-semibold text-center" style="left: 0;">
                   <span class="badge bg-light text-dark border"><i class="bi bi-sun-fill text-warning me-1"></i>MAÑAN</span>
                 </td>
@@ -155,7 +155,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
               </tr>
               
               <!-- Fila Turno TARDE -->
-              <tr :class="{'table-active-row': d.tarde.flujo_id !== null}">
+              <tr :id="'row-tarde-' + d.fecha" :class="{'table-active-row': d.tarde.flujo_id !== null, 'today-row-highlight': d.fecha === obtenerFechaHoy()}">
                 <td class="sticky-col fw-semibold text-center" style="left: 0;">
                   <span class="badge bg-light text-dark border"><i class="bi bi-moon-stars-fill text-primary me-1"></i>TARDE</span>
                 </td>
@@ -347,9 +347,16 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
   
   .table-mensual thead th.sticky-col {
     z-index: 12 !important;
+    background-color: #0f172a !important;
+    color: #ffffff !important;
+    border: 1px solid #334155;
   }
   .table-mensual thead th.sticky-col-2 {
     z-index: 12 !important;
+    background-color: #0f172a !important;
+    color: #ffffff !important;
+    border: 1px solid #334155;
+    border-right: 2px solid #94a3b8;
   }
 
   .table-mensual td {
@@ -360,6 +367,15 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
   
   .table-active-row td {
     background-color: #f1f5f9;
+  }
+  
+  /* Highlight fila del día de hoy */
+  .table-mensual tr.today-row-highlight td {
+    background-color: #fef08a !important; /* Amarillo premium suave para destacar el día de hoy */
+  }
+  .table-mensual tr.today-row-highlight td.sticky-col,
+  .table-mensual tr.today-row-highlight td.sticky-col-2 {
+    background-color: #fef08a !important;
   }
   
   /* Separación visual roja */

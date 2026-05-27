@@ -92,26 +92,16 @@ function isActive(string $page, string $folder_): string {
 
     <?php if (tieneAccesoModulo('flujo')): ?>
     <div class="nav-item">
-      <a href="<?= route('flujo/index.php', $base) ?>" class="<?= isActive('index.php','flujo') ?>" onclick="closeSidebarOnMobile()">
-        <i class="bi bi-cash-stack text-success"></i> <span>Flujo de Caja</span>
-      </a>
-    </div>
-    <div class="nav-item">
       <a href="<?= route('flujo/v2.php', $base) ?>" class="<?= isActive('v2.php','flujo') ?>" onclick="closeSidebarOnMobile()">
-        <i class="bi bi-table text-success"></i> <span>Flujo de Caja V2</span>
+        <i class="bi bi-cash-stack text-success"></i> <span>Flujo de Caja</span>
       </a>
     </div>
     <?php endif; ?>
 
     <?php if (tieneAccesoModulo('rooming')): ?>
     <div class="nav-item">
-      <a href="<?= route('rooming/index.php', $base) ?>" class="<?= isActive('index.php','rooming') ?>" onclick="closeSidebarOnMobile()">
-        <i class="bi bi-calendar-check-fill text-primary"></i> <span>Rooming / Check-in</span>
-      </a>
-    </div>
-    <div class="nav-item">
       <a href="<?= route('rooming/v2.php', $base) ?>" class="<?= isActive('v2.php','rooming') ?>" onclick="closeSidebarOnMobile()">
-        <i class="bi bi-table text-primary"></i> <span>Rooming V2</span>
+        <i class="bi bi-calendar-check-fill text-primary"></i> <span>Rooming / Check-in</span>
       </a>
     </div>
     <?php endif; ?>

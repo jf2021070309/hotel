@@ -16,6 +16,7 @@ createApp({
         anio: String(hoy.getFullYear()),
         anios: [2024, 2025, 2026, 2027, 2028]
       },
+      habitaciones: window.SERVER_DATA.habitaciones || [],
       sugerencias: {},
       lookupLoading: {},
       lookupOk: {},
@@ -56,10 +57,31 @@ createApp({
         
         if (json.ok) {
           // Sanitizar y mapear modificado = false
-          this.filas = json.data.map(f => ({
-            ...f,
-            modificado: false
-          }));
+          this.filas = json.data.map(f => {
+            const names = (f.nombre_apellido || '').split('\n');
+            const docTypes = (f.documento_tipo || '').split('\n');
+            const docNums = (f.documento_num || '').split('\n');
+            const nacs = (f.nacionalidad || '').split('\n');
+            const cities = (f.ciudad || '').split('\n');
+
+            const count = Math.max(1, parseInt(f.pax) || 1, names.length);
+            const pax_list = [];
+            for (let i = 0; i < count; i++) {
+              pax_list.push({
+                nombre_apellido: names[i] || '',
+                documento_tipo: docTypes[i] || docTypes[0] || 'DNI',
+                documento_num: docNums[i] || '',
+                nacionalidad: nacs[i] || 'Peruana',
+                ciudad: cities[i] || ''
+              });
+            }
+
+            return {
+              ...f,
+              pax_list,
+              modificado: false
+            };
+          });
         } else {
           Swal.fire({
             icon: 'error',
@@ -85,29 +107,27 @@ createApp({
       
       this.filas.push({
         stay_id: null,
-        pax_id: null,
+        pax_ids: '',
         temp_id: tempId,
-        operador: window.SERVER_DATA.operadorDefault,
+        operador: window.SERVER_DATA.operadorDefault || '',
         fecha: hoyStr,
         hab: '',
-        tipo_hab: 'SIMPLE',
+        tipo_hab: '',
         pax: 1,
-        medio_reserva: 'DIRECTO',
-        hora_checkin: new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit', hour12: false }),
-        nombre_apellido: '',
-        documento_tipo: 'DNI',
-        documento_num: '',
-        nacionalidad: 'Peruana',
-        ciudad: '',
+        pax_list: [
+          { nombre_apellido: '', documento_tipo: 'DNI', documento_num: '', nacionalidad: 'Peruana', ciudad: '' }
+        ],
+        medio_reserva: '',
+        hora_checkin: '',
         fecha_checkin: hoyStr,
         fecha_checkout: hoyStr,
-        pago_total: 0.00,
-        late_checkout: 'NO',
-        medio_pago: 'SOLES EFECTIVO',
-        comprobante_pago: 'NINGUNO',
+        pago_total: '',
+        late_checkout: '',
+        medio_pago: '',
+        comprobante_pago: '',
         numero_comprobante: '',
-        quien_cobro: window.SERVER_DATA.operadorDefault,
-        carro: 'NO',
+        quien_cobro: window.SERVER_DATA.operadorDefault || '',
+        carro: '',
         observaciones: '',
         modificado: true
       });
@@ -122,6 +142,35 @@ createApp({
           });
         }
       }, 100);
+    },
+
+    onPaxChange(fila) {
+      fila.modificado = true;
+      const count = parseInt(fila.pax) || 1;
+      while (fila.pax_list.length < count) {
+        fila.pax_list.push({
+          nombre_apellido: '',
+          documento_tipo: 'DNI',
+          documento_num: '',
+          nacionalidad: 'Peruana',
+          ciudad: ''
+        });
+      }
+      while (fila.pax_list.length > count) {
+        fila.pax_list.pop();
+      }
+    },
+
+    onHabChange(fila) {
+      fila.modificado = true;
+      if (!fila.hab) {
+        fila.tipo_hab = '';
+        return;
+      }
+      const habObj = this.habitaciones.find(h => String(h.numero) === String(fila.hab));
+      if (habObj) {
+        fila.tipo_hab = habObj.tipo;
+      }
     },
 
     marcarModificado(fila) {
@@ -179,7 +228,7 @@ createApp({
 
     async guardarCambios() {
       // Filtrar filas modificadas o creadas con datos mínimos
-      const aGuardar = this.filas.filter(f => f.modificado && (f.nombre_apellido || f.hab));
+      const aGuardar = this.filas.filter(f => f.modificado && (f.pax_list.some(p => p.nombre_apellido) || f.hab));
       
       if (aGuardar.length === 0) {
         Swal.fire({
@@ -192,6 +241,18 @@ createApp({
         return;
       }
 
+      // Convertir el arreglo de pasajeros de vuelta a cadenas multilínea para el backend
+      const payload = aGuardar.map(f => {
+        return {
+          ...f,
+          nombre_apellido: f.pax_list.map(p => p.nombre_apellido || '').join('\n'),
+          documento_tipo: f.pax_list.map(p => p.documento_tipo || '').join('\n'),
+          documento_num: f.pax_list.map(p => p.documento_num || '').join('\n'),
+          nacionalidad: f.pax_list.map(p => p.nacionalidad || '').join('\n'),
+          ciudad: f.pax_list.map(p => p.ciudad || '').join('\n')
+        };
+      });
+
       this.loading = true;
       try {
         const resp = await fetch(`${window.SERVER_DATA.apiEndpoint}?action=guardar`, {
@@ -199,7 +260,7 @@ createApp({
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ rows: aGuardar })
+          body: JSON.stringify({ rows: payload })
         });
         const json = await resp.json();
         
@@ -231,13 +292,14 @@ createApp({
       }
     },
 
-    // Buscar clientes en la base de datos para autocompletar
-    buscarClientes(f, idx) {
+    // Buscar clientes en la base de datos para autocompletar de un pax específico
+    buscarClientes(f, idx, pIdx) {
       if (this.searchDebounce) clearTimeout(this.searchDebounce);
       
-      const q = f.nombre_apellido;
+      const p = f.pax_list[pIdx];
+      const q = p ? p.nombre_apellido : '';
       if (!q || q.length < 2) {
-        this.sugerencias[idx] = [];
+        this.sugerencias[idx + '_' + pIdx] = [];
         return;
       }
 
@@ -246,7 +308,7 @@ createApp({
           const resp = await fetch(`${window.SERVER_DATA.clientSearchEndpoint}?action=buscar_pax&q=${encodeURIComponent(q)}`);
           const json = await resp.json();
           if (json.ok && json.data) {
-            this.sugerencias[idx] = json.data;
+            this.sugerencias[idx + '_' + pIdx] = json.data;
           }
         } catch (err) {
           console.error("Error buscando clientes:", err);
@@ -254,18 +316,20 @@ createApp({
       }, 300);
     },
 
-    // Búsqueda automática por número de documento (DNI lookup)
-    lookupDni(f, idx) {
+    // Búsqueda automática por número de documento (DNI lookup) de un pax específico
+    lookupDni(f, idx, pIdx) {
       if (this.lookupDebounce) clearTimeout(this.lookupDebounce);
       
-      const doc = f.documento_num;
+      const p = f.pax_list[pIdx];
+      const doc = p ? p.documento_num : '';
+      const key = idx + '_' + pIdx;
       if (!doc || doc.length < 4) {
-        this.lookupLoading[idx] = false;
-        this.lookupOk[idx] = false;
+        this.lookupLoading[key] = false;
+        this.lookupOk[key] = false;
         return;
       }
 
-      this.lookupLoading[idx] = true;
+      this.lookupLoading[key] = true;
       this.lookupDebounce = setTimeout(async () => {
         try {
           const resp = await fetch(`${window.SERVER_DATA.clientSearchEndpoint}?action=buscar_pax&q=${encodeURIComponent(doc)}`);
@@ -274,37 +338,40 @@ createApp({
             // Match exacto o sugerencia directa
             const exact = json.data.find(c => c.documento_num === doc) || json.data[0];
             if (exact) {
-              f.nombre_apellido = exact.nombre_completo;
-              f.documento_tipo = exact.documento_tipo;
-              if (exact.nacionalidad) f.nacionalidad = exact.nacionalidad;
-              if (exact.ciudad) f.ciudad = exact.ciudad;
-              this.lookupOk[idx] = true;
+              p.nombre_apellido = exact.nombre_completo;
+              p.documento_tipo = exact.documento_tipo;
+              if (exact.nacionalidad) p.nacionalidad = exact.nacionalidad;
+              if (exact.ciudad) p.ciudad = exact.ciudad;
+              this.lookupOk[key] = true;
             }
           } else {
-            this.lookupOk[idx] = false;
+            this.lookupOk[key] = false;
           }
         } catch (err) {
           console.error("Error consultando documento:", err);
         } finally {
-          this.lookupLoading[idx] = false;
+          this.lookupLoading[key] = false;
         }
       }, 500);
     },
 
-    aplicarSugerencia(f, idx, s) {
-      f.nombre_apellido = s.nombre_completo;
-      f.documento_tipo = s.documento_tipo;
-      f.documento_num = s.documento_num;
-      if (s.nacionalidad) f.nacionalidad = s.nacionalidad;
-      if (s.ciudad) f.ciudad = s.ciudad;
+    aplicarSugerencia(f, idx, pIdx, s) {
+      const p = f.pax_list[pIdx];
+      if (p) {
+        p.nombre_apellido = s.nombre_completo;
+        p.documento_tipo = s.documento_tipo;
+        p.documento_num = s.documento_num;
+        if (s.nacionalidad) p.nacionalidad = s.nacionalidad;
+        if (s.ciudad) p.ciudad = s.ciudad;
+      }
       
       f.modificado = true;
-      this.sugerencias[idx] = [];
+      this.sugerencias[idx + '_' + pIdx] = [];
     },
 
-    ocultarSugerencias(idx) {
+    ocultarSugerencias(idx, pIdx) {
       setTimeout(() => {
-        this.sugerencias[idx] = [];
+        this.sugerencias[idx + '_' + pIdx] = [];
       }, 250);
     },
 

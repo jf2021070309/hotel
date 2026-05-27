@@ -67,7 +67,7 @@ createApp({
     const consultar = async () => {
       loading.value = true;
       try {
-        const url = `../../../api/flujo.php?action=resumen_alex_mensual&mes=${mesFiltro.value}&anio=${anioFiltro.value}`;
+        const url = `${window.SOBRES_CONFIG.apiEndpoint}?action=resumen_alex_mensual&mes=${mesFiltro.value}&anio=${anioFiltro.value}`;
         const res = await axios.get(url);
         if (res.data.ok && res.data.data) {
           lastUrl.value = url;
@@ -116,7 +116,7 @@ createApp({
     };
 
     const imprimirReporte = () => {
-        window.open(`imprimir_mensual.php?mes=${mesFiltro.value}&anio=${anioFiltro.value}`, '_blank');
+        window.open(`${window.SOBRES_CONFIG.imprimirUrl}?mes=${mesFiltro.value}&anio=${anioFiltro.value}`, '_blank');
     };
 
     const toggleDebug = () => {

@@ -186,9 +186,9 @@ class YapeController {
                      $stmtF = $pdo->prepare("
                         INSERT INTO flujo_caja_movimientos 
                         (flujo_id, tipo, monto, categoria_id, moneda, medio_pago, observacion) 
-                        VALUES (?, 'Ingreso', ?, ?, 'PEN', 'YAPE_CAJA', ?)
+                        VALUES (?, 'Ingreso', ?, ?, 'PEN', 'EFECTIVO', ?)
                     ");
-                    $obsF = "SALDO NETO YAPE (Turno {$registro['turno']}). Registro #$id. Detalle: Recibido S/ {$registro['yape_recibido']} - Gastos S/ {$registro['total_gastado']}";
+                    $obsF = "SALDO NETO YAPE (Turno {$registro['turno']}). Registro #$id. Detalle: Recibido S/ {$registro['yape_recibido']} - Gastos S/ {$registro['total_gastado']} (Agregado al sobre)";
                     $stmtF->execute([$flujoTarget['id'], $vuelto, $categoriaId, $obsF]);
                 }
 

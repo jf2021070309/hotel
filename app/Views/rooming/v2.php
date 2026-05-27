@@ -10,6 +10,10 @@ protegerPorRol('cajera', 'rooming');
 
 require_once $_projectRoot . '/config/db.php'; // Asegurar PDO
 
+// Obtener lista de habitaciones para el select y auto-completado de tipo
+$stmtH = $pdo->query("SELECT numero, tipo FROM habitaciones ORDER BY numero ASC");
+$habitacionesList = $stmtH->fetchAll(PDO::FETCH_ASSOC);
+
 $page_title = 'Rooming V2 — Hotel Manager';
 include $_projectRoot . '/app/Views/layouts/head.php';
 ?>
@@ -26,6 +30,14 @@ include $_projectRoot . '/app/Views/layouts/head.php';
           <i class="bi bi-table text-primary me-2"></i>Rooming V2 — Planilla Plana
         </h4>
         <p class="mb-0 small text-muted fw-semibold">Edición directa de todos los check-ins estilo Excel</p>
+      </div>
+      
+      <!-- Banner Informativo de Acompañantes -->
+      <div class="alert alert-info py-2 px-3 mb-0 ms-3 d-none d-lg-flex align-items-center gap-2 border-0 shadow-sm" style="border-radius: 8px; font-size: 11px; background: rgba(59, 130, 246, 0.08); color: #1e3a8a; max-width: 500px;">
+        <i class="bi bi-info-circle-fill text-primary fs-6"></i>
+        <span>
+          <strong>¿Cómo agregar acompañantes?</strong> Presiona <strong>ENTER</strong> (nueva línea) en las celdas del huésped (Nombre, Documento, etc.) para agregar acompañantes apilados en la misma fila.
+        </span>
       </div>
       
       <!-- Mes y Año Filtros -->
@@ -165,22 +177,26 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 
                 <!-- HAB -->
                 <td class="px-1">
-                  <input type="text" v-model="f.hab" class="table-editable-input text-center fw-bold text-dark" @input="marcarModificado(f)" style="width: 100%;">
+                  <select v-model="f.hab" class="form-select form-select-sm table-editable-select fw-bold text-center" @change="onHabChange(f)" style="width: 100%;">
+                    <option value="">-</option>
+                    <option v-for="h in habitaciones" :key="h.numero" :value="h.numero">{{ h.numero }}</option>
+                  </select>
                 </td>
                 
                 <!-- TIPO DE HAB -->
                 <td class="px-1">
-                  <input type="text" v-model="f.tipo_hab" class="table-editable-input text-uppercase text-center" @input="marcarModificado(f)" style="width: 100%;">
+                  <input type="text" v-model="f.tipo_hab" class="table-editable-input text-uppercase text-center" readonly style="width: 100%; background-color: #f1f5f9; color: #64748b;" placeholder="-">
                 </td>
                 
                 <!-- PAX -->
                 <td class="px-1">
-                  <input type="number" v-model.number="f.pax" class="table-editable-input text-center" @input="marcarModificado(f)" style="width: 100%;">
+                  <input type="number" v-model.number="f.pax" class="table-editable-input text-center fw-bold" @input="onPaxChange(f)" style="width: 100%;">
                 </td>
                 
                 <!-- MEDIO DE RESERVA -->
                 <td class="px-1">
                   <select v-model="f.medio_reserva" class="form-select form-select-sm table-editable-select text-success fw-bold text-center" @change="marcarModificado(f)">
+                    <option value="">-</option>
                     <option value="DIRECTO">DIRECTO</option>
                     <option value="WHATSAPP">WHATSAPP</option>
                     <option value="LLAMADA">LLAMADA</option>
@@ -195,45 +211,73 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 </td>
                 
                 <!-- NOMBRE Y APELLIDO -->
-                <td class="px-1 position-relative">
-                  <input type="text" v-model="f.nombre_apellido" class="table-editable-input fw-bold text-dark" @input="marcarModificado(f); buscarClientes(f, idx)" @blur="ocultarSugerencias(idx)" placeholder="Huésped..." style="width: 100%;">
-                  <!-- Dropdown sugerencias clientes -->
-                  <div v-if="sugerencias[idx] && sugerencias[idx].length" class="position-absolute bg-white border rounded shadow-lg w-100 z-3 mt-1" style="max-height: 180px; overflow-y: auto; border-radius: 8px; left:0; top: 100%;">
-                    <div v-for="s in sugerencias[idx]" :key="s.documento_num" class="px-3 py-1 cursor-pointer border-bottom d-flex align-items-center justify-content-between hover-bg-light" style="font-size: 11px;" @mousedown.prevent="aplicarSugerencia(f, idx, s)">
-                      <div class="fw-bold">{{ s.nombre_completo }}</div>
-                      <small class="text-muted">{{ s.documento_tipo }}: {{ s.documento_num }}</small>
+                <td class="p-0 position-relative" style="vertical-align: stretch;">
+                  <div class="d-flex flex-column h-100 justify-content-start align-items-stretch">
+                    <div v-for="(p, pIdx) in f.pax_list" :key="pIdx" class="pax-input-container position-relative w-100" :style="{ borderBottom: pIdx === f.pax_list.length - 1 ? 'none' : '1px dashed #cbd5e1' }">
+                      <input type="text" v-model="p.nombre_apellido" 
+                             class="table-editable-input fw-bold text-dark w-100 border-0 bg-transparent px-2" 
+                             @input="marcarModificado(f); buscarClientes(f, idx, pIdx)" 
+                             @blur="ocultarSugerencias(idx, pIdx)" 
+                             placeholder="Huésped..." style="height: 32px; font-size: 11px;">
+                      
+                      <!-- Dropdown sugerencias clientes -->
+                      <div v-if="sugerencias[idx + '_' + pIdx] && sugerencias[idx + '_' + pIdx].length" class="position-absolute bg-white border rounded shadow-lg w-100 z-3 mt-1" style="max-height: 180px; overflow-y: auto; border-radius: 8px; left:0; top: 100%;">
+                        <div v-for="s in sugerencias[idx + '_' + pIdx]" :key="s.documento_num" class="px-3 py-1 cursor-pointer border-bottom d-flex align-items-center justify-content-between hover-bg-light" style="font-size: 11px;" @mousedown.prevent="aplicarSugerencia(f, idx, pIdx, s)">
+                          <div class="fw-bold">{{ s.nombre_completo }}</div>
+                          <small class="text-muted">{{ s.documento_tipo }}: {{ s.documento_num }}</small>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </td>
                 
                 <!-- DOC TIPO -->
-                <td class="px-1">
-                  <select v-model="f.documento_tipo" class="form-select form-select-sm table-editable-select fw-bold text-center" @change="marcarModificado(f)">
-                    <option value="DNI">DNI</option>
-                    <option value="CE">CE</option>
-                    <option value="PASAPORTE">PASAPORTE</option>
-                    <option value="RUC">RUC</option>
-                  </select>
+                <td class="p-0" style="vertical-align: stretch;">
+                  <div class="d-flex flex-column h-100 justify-content-start align-items-stretch">
+                    <div v-for="(p, pIdx) in f.pax_list" :key="pIdx" class="pax-input-container w-100" :style="{ borderBottom: pIdx === f.pax_list.length - 1 ? 'none' : '1px dashed #cbd5e1' }">
+                      <input type="text" v-model="p.documento_tipo" 
+                             class="table-editable-input text-center fw-bold text-dark w-100 border-0 bg-transparent px-1" 
+                             @input="marcarModificado(f)" 
+                             placeholder="DNI" style="height: 32px; font-size: 11px;">
+                    </div>
+                  </div>
                 </td>
                 
                 <!-- DOCUMENTO NÚMERO -->
-                <td class="px-1 position-relative">
-                  <div class="d-flex align-items-center">
-                    <input type="text" v-model="f.documento_num" class="table-editable-input text-center fw-bold" 
-                           @input="marcarModificado(f); lookupDni(f, idx)" 
-                           placeholder="Número..." style="width: 100%;">
-                    <span v-if="lookupLoading[idx]" class="spinner-border spinner-border-sm text-primary ms-1" style="width: 12px; height: 12px;"></span>
+                <td class="p-0 position-relative" style="vertical-align: stretch;">
+                  <div class="d-flex flex-column h-100 justify-content-start align-items-stretch">
+                    <div v-for="(p, pIdx) in f.pax_list" :key="pIdx" class="pax-input-container w-100 d-flex align-items-center" :style="{ borderBottom: pIdx === f.pax_list.length - 1 ? 'none' : '1px dashed #cbd5e1' }">
+                      <input type="text" v-model="p.documento_num" 
+                             class="table-editable-input text-center fw-bold text-dark w-100 border-0 bg-transparent px-1" 
+                             @input="marcarModificado(f); lookupDni(f, idx, pIdx)" 
+                             placeholder="Número..." style="height: 32px; font-size: 11px;">
+                      <span v-if="lookupLoading[idx + '_' + pIdx]" class="spinner-border spinner-border-sm text-primary ms-1" style="width: 12px; height: 12px; flex-shrink: 0; margin-right: 4px;"></span>
+                    </div>
                   </div>
                 </td>
                 
                 <!-- NACIONALIDAD -->
-                <td class="px-1">
-                  <input type="text" v-model="f.nacionalidad" class="table-editable-input text-center" @input="marcarModificado(f)" style="width: 100%;">
+                <td class="p-0" style="vertical-align: stretch;">
+                  <div class="d-flex flex-column h-100 justify-content-start align-items-stretch">
+                    <div v-for="(p, pIdx) in f.pax_list" :key="pIdx" class="pax-input-container w-100" :style="{ borderBottom: pIdx === f.pax_list.length - 1 ? 'none' : '1px dashed #cbd5e1' }">
+                      <input type="text" v-model="p.nacionalidad" 
+                             class="table-editable-input text-center text-dark w-100 border-0 bg-transparent px-1" 
+                             @input="marcarModificado(f)" 
+                             placeholder="Peruana" style="height: 32px; font-size: 11px;">
+                    </div>
+                  </div>
                 </td>
                 
                 <!-- CIUDAD -->
-                <td class="px-1">
-                  <input type="text" v-model="f.ciudad" class="table-editable-input text-center" @input="marcarModificado(f)" style="width: 100%;">
+                <td class="p-0" style="vertical-align: stretch;">
+                  <div class="d-flex flex-column h-100 justify-content-start align-items-stretch">
+                    <div v-for="(p, pIdx) in f.pax_list" :key="pIdx" class="pax-input-container w-100" :style="{ borderBottom: pIdx === f.pax_list.length - 1 ? 'none' : '1px dashed #cbd5e1' }">
+                      <input type="text" v-model="p.ciudad" 
+                             class="table-editable-input text-center text-dark w-100 border-0 bg-transparent px-1" 
+                             @input="marcarModificado(f)" 
+                             placeholder="Ciudad" style="height: 32px; font-size: 11px;">
+                    </div>
+                  </div>
                 </td>
                 
                 <!-- CHECK IN FECHA -->
@@ -388,9 +432,36 @@ include $_projectRoot . '/app/Views/layouts/head.php';
   
   .table-mensual thead th.sticky-col {
     z-index: 12 !important;
+    background-color: #1e293b !important;
+    color: #ffffff !important;
+    border: 1px solid #334155;
   }
   .table-mensual thead th.sticky-col-2 {
     z-index: 12 !important;
+    background-color: #1e293b !important;
+    color: #ffffff !important;
+    border: 1px solid #334155;
+    border-right: 2px solid #94a3b8;
+  }
+
+  .pax-input-container {
+    padding: 3px 0;
+    border-bottom: 1px dashed #cbd5e1;
+    background-color: #ffffff;
+    transition: background-color 0.15s ease;
+  }
+  .pax-input-container:last-child {
+    border-bottom: none;
+  }
+  .pax-input-container:nth-child(even) {
+    background-color: #f8fafc;
+  }
+  .pax-input-container:hover {
+    background-color: rgba(59, 130, 246, 0.05) !important;
+  }
+  
+  .table-mensual td.p-0 {
+    padding: 0 !important;
   }
 
   .table-mensual td {
@@ -496,7 +567,8 @@ include $_projectRoot . '/app/Views/layouts/head.php';
   window.SERVER_DATA = {
     apiEndpoint: <?= json_encode(project_base_url() . 'api/rooming_v2.php') ?>,
     clientSearchEndpoint: <?= json_encode(project_base_url() . 'api/clientes.php') ?>,
-    operadorDefault: <?= json_encode($_SESSION['auth_nombre'] ?? 'Kari') ?>
+    operadorDefault: <?= json_encode($_SESSION['auth_nombre'] ?? 'Kari') ?>,
+    habitaciones: <?= json_encode($habitacionesList) ?>
   };
 </script>
 

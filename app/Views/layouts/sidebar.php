@@ -176,6 +176,11 @@ function isActive(string $page, string $folder_): string {
         <i class="bi bi-stars text-info"></i> <span>Limpieza</span>
       </a>
     </div>
+    <div class="nav-item">
+      <a href="<?= route('limpieza/v2.php', $base) ?>" class="<?= isActive('v2.php','limpieza') ?>" onclick="closeSidebarOnMobile()">
+        <i class="bi bi-table" style="color:#818cf8;"></i> <span>Limpieza V2</span>
+      </a>
+    </div>
     <?php endif; ?>
 
     <?php if (tieneAccesoModulo('clientes')): ?>

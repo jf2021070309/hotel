@@ -3,12 +3,13 @@
  * app/Views/limpieza/historial.php
  */
 $base = '../../../';
-require_once $base . 'app/Middleware/session.php';
-require_once $base . 'app/Middleware/auth.php';
+$_projectRoot = defined('BASE_PATH') ? BASE_PATH : (rtrim(realpath(dirname(__DIR__, 3)), '\\/') . DIRECTORY_SEPARATOR);
+require_once $_projectRoot . 'app/Middleware/session.php';
+require_once $_projectRoot . 'app/Middleware/auth.php';
 protegerPorRol('limpieza', 'limpieza');
 $page_title = 'Historial de Limpieza — Hotel Manager';
-include $base . 'app/Views/layouts/head.php';
-include $base . 'app/Views/layouts/sidebar.php';
+include $_projectRoot . 'app/Views/layouts/head.php';
+include $_projectRoot . 'app/Views/layouts/sidebar.php';
 ?>
 
 <div class="main-content" id="app-limpieza-historial" v-cloak>
@@ -117,4 +118,4 @@ include $base . 'app/Views/layouts/sidebar.php';
 </div>
 
 <script src="<?= $base ?>assets/js/limpieza.js"></script>
-<?php include $base . 'app/Views/layouts/footer.php'; ?>
+<?php include BASE_PATH . 'app/Views/layouts/footer.php'; ?>

@@ -157,7 +157,6 @@ include $_projectRoot . 'app/Views/layouts/head.php';
                   style="font-size:10px;letter-spacing:.5px;font-weight:800;">
                 <th colspan="2" style="background:#111827!important;position:sticky;left:0;z-index:15;">HABITACIÓN</th>
                 <th colspan="2" style="background:#1e3a5f!important;">LIMPIEZA</th>
-                <th colspan="2" style="background:#3b1f6e!important;">TIEMPO</th>
                 <th colspan="2" style="background:#14532d!important;">HUÉSPED</th>
                 <th colspan="1" style="background:#7c2d12!important;">ACCIÓN</th>
               </tr>
@@ -167,8 +166,6 @@ include $_projectRoot . 'app/Views/layouts/head.php';
                 <th style="width:90px;top:38px;background:#111827!important;">TIPO HAB</th>
                 <th style="width:110px;top:38px;background:#1e3a5f!important;">TIPO LIMP.</th>
                 <th style="width:110px;top:38px;background:#1e3a5f!important;">ESTADO</th>
-                <th style="width:90px;top:38px;background:#3b1f6e!important;">INICIO</th>
-                <th style="width:90px;top:38px;background:#3b1f6e!important;">FIN</th>
                 <th style="width:55px;top:38px;background:#14532d!important;">PAX</th>
                 <th style="width:110px;top:38px;background:#14532d!important;">ROOM ESTADO</th>
                 <th style="width:130px;top:38px;background:#7c2d12!important;">ACCIÓN RÁPIDA</th>
@@ -178,7 +175,7 @@ include $_projectRoot . 'app/Views/layouts/head.php';
             <tbody>
               <!-- Cargando -->
               <tr v-if="loading">
-                <td colspan="9" class="text-center py-5">
+                <td colspan="7" class="text-center py-5">
                   <div class="spinner-border text-primary me-2"></div>
                   <span class="text-muted fw-semibold">Cargando datos...</span>
                 </td>
@@ -186,7 +183,7 @@ include $_projectRoot . 'app/Views/layouts/head.php';
 
               <!-- Sin datos -->
               <tr v-else-if="listaFiltrada.length === 0">
-                <td colspan="9" class="text-center py-5 text-muted">
+                <td colspan="7" class="text-center py-5 text-muted">
                   <i class="bi bi-inbox fs-1 d-block opacity-25 mb-2"></i>
                   <span>No hay registros para esta fecha o filtro.</span>
                   <br>
@@ -210,7 +207,7 @@ include $_projectRoot . 'app/Views/layouts/head.php';
 
                 <!-- TIPO HAB -->
                 <td class="text-center text-muted" style="font-size:11px;">
-                  {{ h.room_estado ? h.room_estado : '—' }}
+                  {{ h.tipo_hab ? h.tipo_hab.toUpperCase() : '—' }}
                 </td>
 
                 <!-- TIPO LIMPIEZA (badge) -->
@@ -233,16 +230,6 @@ include $_projectRoot . 'app/Views/layouts/head.php';
                   </select>
                 </td>
 
-                <!-- HORA INICIO -->
-                <td class="text-center" style="font-size:11px;color:#475569;">
-                  {{ h.hora_inicio ? h.hora_inicio.substring(0,5) : '—' }}
-                </td>
-
-                <!-- HORA FIN -->
-                <td class="text-center fw-bold" style="font-size:11px;"
-                    :style="{ color: h.hora_fin && !h.hora_fin.startsWith('0000') ? '#059669' : '#94a3b8' }">
-                  {{ h.hora_fin && !h.hora_fin.startsWith('0000') ? h.hora_fin.substring(0,5) : '—' }}
-                </td>
 
                 <!-- PAX -->
                 <td class="text-center fw-bold" style="font-size:12px;color:#1e293b;">
@@ -283,24 +270,7 @@ include $_projectRoot . 'app/Views/layouts/head.php';
               </tr>
             </tbody>
 
-            <!-- FOOTER: totales -->
-            <tfoot v-if="!loading && lista.length > 0">
-              <tr style="background:#111827;color:#fff;">
-                <td colspan="2" class="lv2-sticky fw-bold"
-                    style="background:#111827!important;color:#d4af37;font-size:11px;padding:8px 12px;">
-                  <i class="bi bi-bar-chart-fill me-1" style="color:#d4af37;"></i>
-                  TOTALES — {{ lista.length }} hab.
-                </td>
-                <td class="text-center" style="font-size:11px;">—</td>
-                <td class="text-center" style="font-size:11px;">
-                  <span class="badge bg-success">{{ countEstado('lista') }} listas</span>
-                  <span class="badge bg-danger ms-1">{{ countEstado('pendiente') }} pend.</span>
-                </td>
-                <td colspan="5" class="text-center" style="font-size:11px;color:#94a3b8;">
-                  Progreso global: <strong style="color:#4ade80;">{{ porcentajeGlobal }}%</strong>
-                </td>
-              </tr>
-            </tfoot>
+
           </table>
         </div>
       </div><!-- /card tabla -->

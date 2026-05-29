@@ -49,8 +49,8 @@ class LimpiezaModel {
         }
         // --------------------------------
 
-        $sql = "SELECT r.*, h.numero as habitacion, u.nombre as responsable_nombre, h.estado as room_estado,
-                   (SELECT COALESCE(s.pax_total, NULL) FROM rooming_stays s WHERE s.habitacion_id = h.id AND s.fecha_registro <= ? AND s.fecha_checkout > ? LIMIT 1) as pax
+        $sql = "SELECT r.*, h.numero as habitacion, u.nombre as responsable_nombre, h.estado as room_estado, h.tipo as tipo_hab,
+                   (SELECT COALESCE(s.pax_total, NULL) FROM rooming_stays s WHERE s.habitacion_id = h.id AND s.fecha_registro <= ? AND s.fecha_checkout >= ? ORDER BY s.id DESC LIMIT 1) as pax
             FROM limpieza_registros r
             LEFT JOIN usuarios u ON r.usuario_id = u.id
             JOIN habitaciones h ON r.habitacion_id = h.id

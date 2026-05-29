@@ -215,8 +215,6 @@ createApp({
         'Tipo Limpieza': labelTipo(h.tipo_limpieza),
         'Estado':        (h.estado || '').toUpperCase(),
         'Prioridad':     (h.prioridad || '').toUpperCase(),
-        'Hora Inicio':   h.hora_inicio ? h.hora_inicio.substring(0, 5) : '—',
-        'Hora Fin':      h.hora_fin && !h.hora_fin.startsWith('0000') ? h.hora_fin.substring(0, 5) : '—',
         'PAX':           h.pax ?? h.ocupantes ?? '—',
         'Estado Hab.':   (h.room_estado || '—').toUpperCase(),
         'Fecha':         fecha.value,

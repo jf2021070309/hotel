@@ -145,13 +145,13 @@ class RoomingModel {
 
             $sql = "INSERT INTO rooming_stays (
                 operador, fecha_registro, fecha_checkout, hora_checkin, medio_reserva, 
-                habitacion_id, cliente_titular_id, tipo_hab_declarado, noches, pax_total, total_pago, 
+                habitacion_id, cliente_titular_id, tipo_hab_declarado, pax_total, total_pago, 
                 moneda_pago, monto_original, tc_aplicado, recargo_tarjeta, metodo_pago, 
                 tipo_comprobante, num_comprobante, cobrador, procedencia, 
                 carro, observaciones, usuario_id, checkin_realizado, total_cobrado, total_cobrado_orig, estado_pago, estado
             ) VALUES (
                 :operador, :fecha_reg, :fecha_out, :hora_in, :medio, 
-                :hab_id, :cliente_titular_id, :tipo_hab, :noches, :pax_total, :total, 
+                :hab_id, :cliente_titular_id, :tipo_hab, :pax_total, :total, 
                 :moneda, :monto_orig, :tc, :recargo, :metodo, 
                 :comprobante, :num_comp, :cobrador, :procedencia, 
                 :carro, :obs, :uid, 1, :cobrado, :cobrado_orig, :est_pago, :estado
@@ -166,7 +166,6 @@ class RoomingModel {
                 'hab_id'        => $data['hab_id'],
                 'cliente_titular_id' => $clienteTitularId,
                 'tipo_hab'      => $data['tipo_hab'],
-                'noches'        => $data['noches'],
                 'pax_total'     => $data['pax_total'],
                 'total'         => $data['total'],
                 'moneda'        => $data['moneda'],
@@ -258,7 +257,7 @@ class RoomingModel {
                 fecha_checkout = :fecha_out, 
                 hora_checkin = :hora_in, medio_reserva = :medio, 
                 habitacion_id = :hab_id, tipo_hab_declarado = :tipo_hab, 
-                noches = :noches, pax_total = :pax_total, total_pago = :total, 
+                pax_total = :pax_total, total_pago = :total, 
                 moneda_pago = :moneda, monto_original = :monto_orig, 
                 tc_aplicado = :tc, metodo_pago = :metodo, 
                 tipo_comprobante = :comprobante, num_comprobante = :num_comp, 
@@ -277,7 +276,6 @@ class RoomingModel {
                 'medio'       => $data['medio'],
                 'hab_id'      => $data['hab_id'],
                 'tipo_hab'    => $data['tipo_hab'],
-                'noches'      => $data['noches'],
                 'pax_total'   => $data['pax_total'],
                 'total'       => $data['total'],
                 'moneda'      => $data['moneda'],

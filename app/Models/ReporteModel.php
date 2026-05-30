@@ -24,7 +24,7 @@ class ReporteModel {
                 s.pax_total AS pax,
                 s.fecha_registro AS check_in,
                 s.fecha_checkout AS check_out,
-                s.noches,
+                DATEDIFF(s.fecha_checkout, s.fecha_registro) AS noches,
                 s.medio_reserva AS canal,
                 a.fecha AS pago_fecha,
                 CASE 

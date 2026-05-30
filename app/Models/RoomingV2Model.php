@@ -28,13 +28,16 @@ class RoomingV2Model {
                 s.tipo_hab_declarado AS tipo_hab,
                 s.pax_total     AS pax,
                 s.medio_reserva,
-                s.hora_checkin,
+                DATE_FORMAT(s.fecha_checkin_real, '%H:%i') AS hora_checkin,
                 GROUP_CONCAT(c.nombre_razon_social ORDER BY p.es_titular_acompanante DESC, c.id ASC SEPARATOR '\n') AS nombre_apellido,
                 GROUP_CONCAT(c.documento_tipo ORDER BY p.es_titular_acompanante DESC, c.id ASC SEPARATOR '\n') AS documento_tipo,
                 GROUP_CONCAT(c.documento_num ORDER BY p.es_titular_acompanante DESC, c.id ASC SEPARATOR '\n') AS documento_num,
                 GROUP_CONCAT(COALESCE(c.nacionalidad, '') ORDER BY p.es_titular_acompanante DESC, c.id ASC SEPARATOR '\n') AS nacionalidad,
                 GROUP_CONCAT(COALESCE(c.ciudad, '') ORDER BY p.es_titular_acompanante DESC, c.id ASC SEPARATOR '\n') AS ciudad,
                 s.fecha_registro AS fecha_checkin,
+                (SELECT GROUP_CONCAT(hf.fecha_checkout_pasada ORDER BY hf.id ASC SEPARATOR '\n')
+                 FROM rooming_stays_historial_fechas hf
+                 WHERE hf.stay_id = s.id) AS fechas_checkout_historial,
                 s.fecha_checkout,
                 s.total_pago    AS pago_total,
                 IF(s.estado = 'late_checkout', 'SI', 'NO') AS late_checkout,
@@ -78,7 +81,7 @@ class RoomingV2Model {
                     operador = :operador,
                     fecha_registro = :fecha_registro,
                     fecha_checkout = :fecha_checkout,
-                    hora_checkin = :hora_checkin,
+                    fecha_checkin_real = :fecha_checkin_real,
                     habitacion_id = COALESCE(:habitacion_id, habitacion_id),
                     tipo_hab_declarado = :tipo_hab_declarado,
                     pax_total = :pax_total,
@@ -108,13 +111,13 @@ class RoomingV2Model {
             // Insert new stay statement
             $stmtInsertStay = $this->pdo->prepare("
                 INSERT INTO rooming_stays (
-                    operador, fecha_registro, fecha_checkout, hora_checkin,
+                    operador, fecha_registro, fecha_checkout, fecha_checkin_real,
                     habitacion_id, tipo_hab_declarado, pax_total, medio_reserva,
                     total_pago, moneda_pago, monto_original, estado, metodo_pago,
                     tipo_comprobante, num_comprobante, cobrador, carro, observaciones,
                     checkin_realizado, estado_pago, usuario_id, cliente_titular_id
                 ) VALUES (
-                    :operador, :fecha_registro, :fecha_checkout, :hora_checkin,
+                    :operador, :fecha_registro, :fecha_checkout, :fecha_checkin_real,
                     :habitacion_id, :tipo_hab_declarado, :pax_total, :medio_reserva,
                     :total_pago, 'PEN', :monto_original, :estado, :metodo_pago,
                     :tipo_comprobante, :num_comprobante, :cobrador, :carro, :observaciones,
@@ -142,8 +145,15 @@ class RoomingV2Model {
 
                 // Formatear fechas
                 $fechaReg  = $this->parseFecha($row['fecha'] ?? null) ?: date('Y-m-d');
-                $fechaOut  = $this->parseFecha($row['fecha_checkout'] ?? null) ?: date('Y-m-d', strtotime('+1 day'));
+                $fechasCheckoutArr = isset($row['fechas_checkout_all']) ? explode("\n", str_replace("\r", "", $row['fechas_checkout_all'])) : [];
+                $fechaOutRaw = !empty($fechasCheckoutArr) ? end($fechasCheckoutArr) : ($row['fecha_checkout'] ?? null);
+                $fechaOut  = $this->parseFecha($fechaOutRaw) ?: date('Y-m-d', strtotime('+1 day'));
                 $estado    = ($row['late_checkout'] ?? 'NO') === 'SI' ? 'late_checkout' : 'activo';
+
+                // Crear fecha_checkin_real a partir de la fecha y hora
+                $horaInput = trim($row['hora_checkin'] ?? '');
+                $horaReal = !empty($horaInput) && preg_match('/^\d{1,2}:\d{2}/', $horaInput) ? $horaInput . ':00' : date('H:i:s');
+                $fechaCheckinReal = $fechaReg . ' ' . $horaReal;
 
                 // Buscar ID de la habitación por número
                 $habId = null;
@@ -237,12 +247,22 @@ class RoomingV2Model {
                         }
                     }
 
+                    // Verificar si la fecha de checkout cambió para registrar en el historial
+                    $stmtCheck = $this->pdo->prepare("SELECT fecha_checkout FROM rooming_stays WHERE id = ?");
+                    $stmtCheck->execute([$stayId]);
+                    $oldFechaOut = $stmtCheck->fetchColumn();
+
+                    if ($oldFechaOut && $oldFechaOut !== $fechaOut) {
+                        $stmtHist = $this->pdo->prepare("INSERT INTO rooming_stays_historial_fechas (stay_id, fecha_checkout_pasada, motivo, usuario_id) VALUES (?, ?, ?, ?)");
+                        $stmtHist->execute([$stayId, $oldFechaOut, 'Ampliación de estadía desde grilla V2', $_SESSION['auth_id'] ?? 1]);
+                    }
+
                     // Actualizar stay principal
                     $stmtUpdateStay->execute([
                         'operador'       => $row['operador'] ?? '',
                         'fecha_registro' => $fechaReg,
                         'fecha_checkout' => $fechaOut,
-                        'hora_checkin'   => $row['hora_checkin'] ?? '',
+                        'fecha_checkin_real' => $fechaCheckinReal,
                         'habitacion_id'  => $habId,
                         'tipo_hab_declarado' => $row['tipo_hab'] ?? 'SIMPLE',
                         'pax_total'      => count($actualPaxIds),
@@ -367,7 +387,7 @@ class RoomingV2Model {
                         'operador'           => $row['operador'] ?? '',
                         'fecha_registro'     => $fechaReg,
                         'fecha_checkout'     => $fechaOut,
-                        'hora_checkin'       => $row['hora_checkin'] ?? '',
+                        'fecha_checkin_real' => $fechaCheckinReal,
                         'habitacion_id'      => $habId,
                         'tipo_hab_declarado' => $row['tipo_hab'] ?? 'SIMPLE',
                         'pax_total'          => count($insertedPaxIds),

@@ -114,7 +114,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
             <thead>
               <tr class="table-dark text-white text-uppercase" style="font-size: 10px; letter-spacing: 0.5px;">
                 <th class="sticky-col text-center" style="width: 50px; z-index:12 !important;"><i class="bi bi-trash"></i></th>
-                <th class="sticky-col-2 text-center" style="width: 100px; z-index:12 !important;">OPERADOR</th>
+                <th class="text-center" style="width: 100px;">OPERADOR</th>
                 <th style="width: 110px;">FECHA</th>
                 <th style="width: 70px;">HAB</th>
                 <th style="width: 130px;">TIPO DE HAB</th>
@@ -165,8 +165,8 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                   </button>
                 </td>
                 
-                <!-- OPERADOR (Sticky 2) -->
-                <td class="sticky-col-2 px-1 text-center">
+                <!-- OPERADOR -->
+                <td class="px-1 text-center">
                   <input type="text" v-model="f.operador" class="table-editable-input text-center fw-bold text-primary" @input="marcarModificado(f)" style="width: 100%;">
                 </td>
                 
@@ -286,8 +286,12 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 </td>
                 
                 <!-- CHECK OUT FECHA -->
-                <td class="px-1">
-                  <input type="date" v-model="f.fecha_checkout" class="table-editable-input text-center text-danger fw-bold" @change="marcarModificado(f)" style="width: 100%;">
+                <td class="p-0 position-relative" style="vertical-align: stretch;">
+                  <div class="d-flex flex-column h-100 justify-content-start align-items-stretch">
+                    <div v-for="(c, cIdx) in f.checkout_list" :key="cIdx" class="pax-input-container w-100" :style="{ borderBottom: cIdx === f.checkout_list.length - 1 ? 'none' : '1px dashed #cbd5e1' }">
+                      <input type="date" v-model="c.fecha" class="table-editable-input text-center text-danger fw-bold w-100 border-0 bg-transparent px-1" @change="marcarModificado(f)" @keydown.enter.prevent="onCheckoutEnter(f)" style="height: 32px; font-size: 11px;">
+                    </div>
+                  </div>
                 </td>
                 
                 <!-- PAGO TOTAL -->
@@ -421,27 +425,11 @@ include $_projectRoot . '/app/Views/layouts/head.php';
     background-color: #f8fafc;
     border-right: 1px solid #cbd5e1;
   }
-  .table-mensual th.sticky-col-2,
-  .table-mensual td.sticky-col-2 {
-    position: sticky;
-    left: 50px;
-    z-index: 6;
-    background-color: #f8fafc;
-    border-right: 2px solid #94a3b8;
-  }
-  
   .table-mensual thead th.sticky-col {
     z-index: 12 !important;
     background-color: #1e293b !important;
     color: #ffffff !important;
     border: 1px solid #334155;
-  }
-  .table-mensual thead th.sticky-col-2 {
-    z-index: 12 !important;
-    background-color: #1e293b !important;
-    color: #ffffff !important;
-    border: 1px solid #334155;
-    border-right: 2px solid #94a3b8;
   }
 
   .pax-input-container {
@@ -474,8 +462,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
   .table-mensual tbody tr:hover td {
     background-color: #f1f5f9;
   }
-  .table-mensual tbody tr:hover td.sticky-col,
-  .table-mensual tbody tr:hover td.sticky-col-2 {
+  .table-mensual tbody tr:hover td.sticky-col {
     background-color: #e2e8f0;
   }
   
@@ -483,8 +470,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
   .unsaved-row td {
     background-color: #fefbeb !important;
   }
-  .unsaved-row td.sticky-col,
-  .unsaved-row td.sticky-col-2 {
+  .unsaved-row td.sticky-col {
     background-color: #fef3c7 !important;
   }
   .unsaved-row {

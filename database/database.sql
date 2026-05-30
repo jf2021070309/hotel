@@ -1,18 +1,22 @@
+-- ========================================================
+-- 0. DATABASE INITIALIZATION (Move this to the top!)
+-- ========================================================
 CREATE DATABASE IF NOT EXISTS `hotel_db` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE `hotel_db`;
 
 -- ========================================================
 -- BLOC 1: CONFIGURACIÓN, USUARIOS Y AUDITORÍA
 -- ========================================================
-
 CREATE TABLE IF NOT EXISTS `configuracion` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `parametro` varchar(50) NOT NULL,
   `valor` varchar(255) NOT NULL,
   `descripcion` text DEFAULT NULL,
+  `creado_en` timestamp NOT NULL DEFAULT current_timestamp(), -- Fixed the cut-off timestamp line from your image
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_parametro` (`parametro`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 
 CREATE TABLE IF NOT EXISTS `usuarios` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -77,17 +81,19 @@ CREATE TABLE IF NOT EXISTS `clientes` (
 -- BLOC 3: GESTIÓN DE CONTROL DE ESTADÍAS (ROOMING)
 -- ========================================================
 
+-- ========================================================
+-- BLOC 3: GESTIÓN DE CONTROL DE ESTADÍAS (ROOMING) - 100% NORMALIZADO
+-- ========================================================
 CREATE TABLE IF NOT EXISTS `rooming_stays` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `operador` varchar(50) NOT NULL,
   `fecha_registro` date NOT NULL COMMENT 'Fecha en que se crea la reserva o ingreso',
-  `fecha_checkin_real` datetime DEFAULT NULL COMMENT 'Se registra en el Check-In en vivo',
-  `fecha_checkout` date DEFAULT NULL,
-  `hora_checkin` time DEFAULT NULL,
+  `fecha_checkin_real` datetime DEFAULT NULL COMMENT 'Fecha y hora exacta del Check-In en vivo',
+  `fecha_checkout` date DEFAULT NULL COMMENT 'Almacena la fecha de salida real y actual',
   `medio_reserva` varchar(50) NOT NULL,
   `habitacion_id` int(10) unsigned NOT NULL,
   `tipo_hab_declarado` varchar(60) NOT NULL,
-  `noches` tinyint(3) unsigned DEFAULT 1,
+  -- NOTA: Se eliminó el campo físico 'noches'. Se calculará dinámicamente mediante código/SQL.
   `pax_total` tinyint(3) unsigned DEFAULT 1 COMMENT 'Cantidad de personas previstas',
   `total_pago` decimal(10,2) NOT NULL DEFAULT 0.00,
   `moneda_pago` enum('PEN','USD','CLP') NOT NULL DEFAULT 'PEN',
@@ -109,12 +115,24 @@ CREATE TABLE IF NOT EXISTS `rooming_stays` (
   `usuario_id` int(10) unsigned NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  -- El titular de la cuenta/reserva (Puede ser un RUC de empresa o un DNI)
   `cliente_titular_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`),
   CONSTRAINT `fk_stays_habitacion` FOREIGN KEY (`habitacion_id`) REFERENCES `habitaciones` (`id`),
   CONSTRAINT `fk_stays_usuario` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`),
   CONSTRAINT `fk_stays_cliente_titular` FOREIGN KEY (`cliente_titular_id`) REFERENCES `clientes` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- NUEVA TABLA HISTÓRICA: Perfectamente normalizada
+CREATE TABLE IF NOT EXISTS `rooming_stays_historial_fechas` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `stay_id` int(10) unsigned NOT NULL,
+  `fecha_checkout_pasada` date NOT NULL COMMENT 'La fecha que tenía la estadía antes de ser cambiada',
+  `motivo` varchar(255) DEFAULT NULL,
+  `usuario_id` int(10) unsigned NOT NULL COMMENT 'Usuario que procesó el cambio',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  CONSTRAINT `fk_historial_fechas_stay` FOREIGN KEY (`stay_id`) REFERENCES `rooming_stays` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_historial_fechas_user` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Tabla intermedia: Relaciona qué huéspedes ocupan físicamente el cuarto

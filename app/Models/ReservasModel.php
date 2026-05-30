@@ -37,7 +37,7 @@ class ReservasModel {
                  s.habitacion_id,
                  s.fecha_registro,
                  s.fecha_checkout,
-                 s.noches,
+                 DATEDIFF(s.fecha_checkout, s.fecha_registro) AS noches,
                  s.pax_total,
                  s.estado_pago,
                  s.total_pago,
@@ -222,12 +222,12 @@ class ReservasModel {
 
             $sql = "INSERT INTO rooming_stays (
                 operador, fecha_registro, fecha_checkout, medio_reserva, 
-                habitacion_id, tipo_hab_declarado, noches, pax_total, total_pago, 
+                habitacion_id, tipo_hab_declarado, pax_total, total_pago, 
                 moneda_pago, metodo_pago, tipo_comprobante, cobrador, 
                 observaciones, usuario_id, estado, estado_pago, cliente_titular_id
             ) VALUES (
                 :operador, :fecha_reg, :fecha_out, :medio, 
-                :hab_id, 'RESERVA', :noches, 1, 0, 
+                :hab_id, 'RESERVA', 1, 0, 
                 'PEN', 'EFECTIVO', 'RECIBO', :cobrador, 
                 :obs, :uid, 'reservado', 'pendiente', :cliente_titular_id
             )";
@@ -238,7 +238,6 @@ class ReservasModel {
                 'fecha_reg' => $data['fecha_inicio'],
                 'fecha_out' => $fecha_fin,
                 'hab_id'    => $data['hab_id'],
-                'noches'    => $data['noches'],
                 'cobrador'  => $_SESSION['auth_nombre'] ?? 'Admin',
                 'obs'       => $data['observaciones'] ?? '',
                 'uid'       => $data['usuario_id'],
@@ -323,7 +322,6 @@ class ReservasModel {
                 UPDATE rooming_stays
                 SET fecha_registro = ?,
                     fecha_checkout = ?,
-                    noches = ?,
                     medio_reserva = ?,
                     observaciones = ?
                 WHERE id = ?
@@ -331,7 +329,6 @@ class ReservasModel {
             $stmt->execute([
                 $data['fecha_inicio'],
                 $fecha_fin,
-                $data['noches'],
                 $data['canal'],
                 $data['observaciones'] ?? '',
                 $id

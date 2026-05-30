@@ -76,9 +76,17 @@ createApp({
               });
             }
 
+            const pastDates = (f.fechas_checkout_historial || '').split('\n').filter(d => d);
+            const checkout_list = [];
+            pastDates.forEach(d => {
+              checkout_list.push({ fecha: d });
+            });
+            checkout_list.push({ fecha: f.fecha_checkout || '' });
+
             return {
               ...f,
               pax_list,
+              checkout_list,
               modificado: false
             };
           });
@@ -120,7 +128,7 @@ createApp({
         medio_reserva: '',
         hora_checkin: '',
         fecha_checkin: hoyStr,
-        fecha_checkout: hoyStr,
+        checkout_list: [{ fecha: hoyStr }],
         pago_total: '',
         late_checkout: '',
         medio_pago: '',
@@ -175,6 +183,11 @@ createApp({
 
     marcarModificado(fila) {
       fila.modificado = true;
+    },
+
+    onCheckoutEnter(fila) {
+      fila.modificado = true;
+      fila.checkout_list.push({ fecha: '' });
     },
 
     async eliminarFila(fila, idx) {
@@ -249,7 +262,8 @@ createApp({
           documento_tipo: f.pax_list.map(p => p.documento_tipo || '').join('\n'),
           documento_num: f.pax_list.map(p => p.documento_num || '').join('\n'),
           nacionalidad: f.pax_list.map(p => p.nacionalidad || '').join('\n'),
-          ciudad: f.pax_list.map(p => p.ciudad || '').join('\n')
+          ciudad: f.pax_list.map(p => p.ciudad || '').join('\n'),
+          fechas_checkout_all: (f.checkout_list || []).map(c => c.fecha).filter(c => c).join('\n')
         };
       });
 

@@ -1,10 +1,10 @@
 <?php
 // clientes/crear.php — Formulario para registrar nuevo cliente
-require_once '../../../config/db.php';
-require_once '../../../app/Middleware/auth.php';
+require_once __DIR__ . '/../../../config/db.php';
+require_once __DIR__ . '/../../../app/Middleware/auth.php';
 $base = '../../../'; $page_title = 'Nuevo Cliente — Hotel Manager';
-include '../../../app/Views/layouts/head.php';
-include '../../../app/Views/layouts/sidebar.php';
+include __DIR__ . '/../layouts/head.php';
+include __DIR__ . '/../layouts/sidebar.php';
 ?>
 <div class="main-content">
   <div class="topbar">

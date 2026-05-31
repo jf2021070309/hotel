@@ -3,12 +3,11 @@
  * app/Views/calculadora/index.php
  * Módulo Calculadora — Hotel Platinium
  */
-$base = '../../../';
-require_once $base . 'config/db.php';
-require_once $base . 'app/Middleware/auth.php';
+require_once __DIR__ . '/../../../config/db.php';
+require_once __DIR__ . '/../../../app/Middleware/auth.php';
 protegerPorRol('cajera', 'calculadora');
 
-require_once $base . 'app/Controllers/CalculadoraController.php';
+require_once __DIR__ . '/../../../app/Controllers/CalculadoraController.php';
 $ctrl = new CalculadoraController($pdo);
 $data = $ctrl->index();
 
@@ -17,11 +16,11 @@ $config    = $data['config'];
 $historial = $data['historial'];
 
 $page_title = 'Calculadora — Hotel Platinium';
-include $base . 'app/Views/layouts/head.php';
+include __DIR__ . '/../layouts/head.php';
 ?>
 
 <div id="app-calculadora">
-<?php include $base . 'app/Views/layouts/sidebar.php'; ?>
+<?php include __DIR__ . '/../layouts/sidebar.php'; ?>
 <div class="main-content">
 
   <!-- TOPBAR -->

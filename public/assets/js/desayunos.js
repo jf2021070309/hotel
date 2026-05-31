@@ -56,8 +56,18 @@ createApp({
             loading.value = false;
         };
 
+        const matchesFilter = (it) => {
+            const q = busqueda.value.toLowerCase().trim();
+            if (!q) return true;
+            const habMatch = it.habitacion && it.habitacion.toString().toLowerCase().includes(q);
+            const titMatch = it.titular && it.titular.toLowerCase().includes(q);
+            return habMatch || titMatch;
+        };
+
         const verDetallePorFecha = () => {
             if (!actual.value.fecha) return;
+            if (autoGuardarTimer) clearTimeout(autoGuardarTimer); // Cancelar guardado pendiente
+            loading.value = true; // Bloquear interacción inmediatamente
             const url = new URL(window.location);
             url.searchParams.set('fecha', actual.value.fecha);
             window.history.pushState({}, '', url);
@@ -65,23 +75,42 @@ createApp({
         };
 
         const verificarSoloLectura = (fecha) => {
-            const hoy = new Date().toISOString().split('T')[0];
-            const hora = new Date().getHours();
-            soloLectura.value = (fecha < hoy) || (fecha === hoy && hora >= 12);
+            const hoy = new Date();
+            const hoyStr = hoy.getFullYear() + '-' + String(hoy.getMonth() + 1).padStart(2, '0') + '-' + String(hoy.getDate()).padStart(2, '0');
+            const hora = hoy.getHours();
+            
+            // Es solo lectura si la fecha es anterior a hoy, 
+            // o si es hoy y ya pasaron las 12:00 PM
+            soloLectura.value = (fecha < hoyStr) || (fecha === hoyStr && hora >= 12);
         };
 
         let autoGuardarTimer = null;
         const autoGuardar = async () => {
-            if (soloLectura.value) return;
+            if (soloLectura.value || loading.value) return; // No guardar si está cargando o es solo lectura
             guardando.value = true;
             try {
-                const payload = { ...actual.value, pax_ajustado: totalFinal.value };
+                // Solo enviar detalles que tengan stay_id válido (evitar FK violations)
+                const detallesParaGuardar = (actual.value.detalles || []).filter(d => d.stay_id && d.stay_id > 0);
+                const payload = { ...actual.value, pax_ajustado: totalFinal.value, detalles: detallesParaGuardar };
                 const res = await axios.post(`${API}?action=guardar`, payload);
                 if (res.data.ok && res.data.id) actual.value.id = res.data.id;
             } catch (e) {
                 console.error('Error en auto-guardado', e);
             }
             setTimeout(() => { guardando.value = false; }, 500);
+        };
+
+        const añadirFila = () => {
+            // Añade una fila temporal en la UI; para guardar debe asociarse a un stay_id
+            actual.value.detalles.push({ stay_id: null, habitacion: '', titular: '', pax: 1, incluye_desayuno: true, _temp: true });
+        };
+
+        const eliminarFila = (idx) => {
+            // Eliminar por índice en actual.detalles
+            if (idx < 0 || idx >= actual.value.detalles.length) return;
+            actual.value.detalles.splice(idx, 1);
+            // Guardar cambios (sólo filas con stay_id serán enviadas)
+            triggerAutoGuardarDebounced();
         };
 
         const triggerAutoGuardarDebounced = () => {
@@ -120,7 +149,8 @@ createApp({
             busqueda, detallesFiltrados,
             totalHuespedes, totalFinal,
             verDetallePorFecha, autoGuardar, triggerAutoGuardarDebounced,
-            exportarReporte, formatFecha
+            exportarReporte, formatFecha,
+            añadirFila, eliminarFila, matchesFilter
         };
     }
 }).mount('#app-desayunos');

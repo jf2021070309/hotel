@@ -14,266 +14,264 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
 ?>
 
 <style>
-  /* Botones premium con bordes finos y colores sólidos idénticos al resto del sistema */
-  .btn-custom-blue {
-    background-color: #1a56db !important; /* Azul vibrante corporativo */
-    color: #ffffff !important;
-    border: 1px solid #1e429f !important;
-    transition: all 0.2s ease-in-out;
-  }
-  .btn-custom-blue:hover:not(:disabled) {
-    background-color: #1e429f !important;
-    border-color: #1e429f !important;
-  }
-  .btn-custom-blue:disabled {
-    opacity: 0.65;
-  }
-
-  .btn-custom-green {
-    background-color: #059669 !important; /* Verde sólido oscuro */
-    color: #ffffff !important;
-    border: 1px solid #047857 !important;
-    transition: all 0.2s ease-in-out;
-  }
-  .btn-custom-green:hover:not(:disabled) {
-    background-color: #047857 !important;
-    border-color: #047857 !important;
-  }
-  .btn-custom-green:disabled {
-    opacity: 0.65;
+  /* CSS para replicar el diseño de la Planilla Plana (Rooming V2) */
+  :root {
+    --vp-informacion: #0f172a; /* Azul oscuro casi negro */
+    --vp-datos: #2a49ca;        /* Azul vibrante */
+    --vp-acciones: #7c2bd4;     /* Morado */
+    --vp-border: #e2e8f0;
   }
 
   /* Tabla Estilo Excel Premium */
   .desayuno-grid-container {
-    max-height: calc(100vh - 250px);
+    max-height: calc(100vh - 320px);
     overflow-y: auto;
     overflow-x: auto;
+    border: 1px solid var(--vp-border);
+    border-radius: 8px;
+    background: #fff;
   }
+
   .desayuno-table {
     border-collapse: separate;
     border-spacing: 0;
     width: 100%;
   }
-  .desayuno-table th {
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    background: #1e293b !important;
-    color: #ffffff !important;
+
+  .desayuno-table thead tr:first-child th {
+    font-size: 13px;
+    font-weight: 900;
+    text-align: center;
+    padding: 15px;
+    color: #fff !important;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+  }
+
+  .desayuno-table thead tr:last-child th {
+    background: #0f172a !important;
+    color: #fff !important;
     font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    border: 1px solid rgba(255,255,255,0.08) !important;
-    padding: 8px 12px;
+    padding: 12px 10px;
+    border: 1px solid rgba(255,255,255,0.1) !important;
     text-align: center;
-  }
-  .desayuno-table td {
-    padding: 6px 12px;
-    vertical-align: middle;
-    border: 1px solid #e2e8f0;
-    background: #ffffff;
-    font-size: 12px;
-    color: #334155;
     white-space: nowrap;
   }
-  .desayuno-table tbody tr:hover td {
-    background: #f8fafc;
+
+  .desayuno-table td {
+    padding: 18px 12px; /* Aumentamos altura significativamente */
+    vertical-align: middle;
+    border: 1px solid var(--vp-border);
+    background: #ffffff;
+    font-size: 13px;
+    color: #1e293b;
+    white-space: nowrap;
   }
-  .desayuno-table td.sticky-hab {
-    position: sticky;
-    left: 0;
-    z-index: 8;
-    background: #f1f5f9 !important;
+
+  .desayuno-table tbody tr:hover td {
+    background: #f1f5f9;
+  }
+
+  .sticky-hab {
     font-weight: 800;
     text-align: center;
-    border-right: 2px solid #cbd5e1 !important;
-    color: #1e293b;
+    color: #0f172a;
   }
-  .desayuno-table tbody tr:hover td.sticky-hab {
-    background: #e2e8f0 !important;
-  }
+
   /* Estilo select premium de desayuno */
   .desayuno-select {
-    font-size: 11px;
-    font-weight: 700;
+    font-size: 12px;
+    font-weight: 800;
     border-radius: 6px;
-    width: 90px;
-    height: 28px;
-    margin: 0 auto;
+    padding: 6px 12px;
     cursor: pointer;
     text-align: center;
-    transition: all 0.15s ease-in-out;
+    transition: all 0.2s;
+    height: 34px;
+    border: 1px solid #e2e8f0;
+    width: auto;
+    min-width: 100px;
+    display: inline-block;
+  }
+
+  /* Botón "+" estilo imagen */
+  .btn-add-dashed {
+    border: 1.5px dashed #3b82f6;
+    background: #eff6ff;
+    color: #3b82f6;
+    border-radius: 6px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    padding: 0;
+  }
+  .btn-add-dashed:hover {
+    background: #dbeafe;
+    transform: scale(1.05);
+  }
+
+  .row-add-info {
+    font-size: 12px;
+    color: #64748b;
+    margin-left: 12px;
   }
 </style>
 
-<div class="main-content" id="app-desayunos" v-cloak>
-    <!-- TOPBAR PREMIUM DARK -->
-    <div class="topbar border-bottom-0 shadow-sm d-flex align-items-center" style="background: linear-gradient(to right, #0f172a, #1e293b); color: #fff; padding: 12px 24px;">
-        <div class="d-flex align-items-center gap-3">
+<div id="app-desayunos" v-cloak style="display:contents">
+<div class="main-content">
+    <!-- TOPBAR -->
+    <div class="topbar border-bottom-0 shadow-sm d-flex align-items-center" style="background: #0f172a; color: #fff; padding: 6px 20px; height: 50px;">
+        <div class="d-flex align-items-center gap-2 w-100">
             <button class="btn-burger text-white border-0 bg-transparent d-lg-none" onclick="openSidebar()"><i class="bi bi-list fs-4"></i></button>
             <div class="d-flex align-items-center gap-2">
-                <!-- Icono de desayuno en amarillo/oro degradado -->
-                <div class="brand-icon d-flex align-items-center justify-content-center" style="background: linear-gradient(135deg, #eab308, #ca8a04); width: 34px; height: 34px; border-radius: 8px; color: #fff; box-shadow: 0 4px 10px rgba(234, 179, 8, 0.3);">
-                    <i class="bi bi-egg-fried fs-5"></i>
+                <!-- Icono Naranja con Sombra -->
+                <div class="brand-icon d-flex align-items-center justify-content-center" 
+                     style="background: linear-gradient(135deg, #f59e0b, #d97706); width: 34px; height: 34px; border-radius: 8px; color: #fff; box-shadow: 0 3px 8px rgba(245, 158, 11, 0.3);">
+                    <i class="bi bi-egg-fried fs-6"></i>
                 </div>
                 <div>
-                    <h5 class="fw-bold mb-0 text-white" style="letter-spacing: -0.5px; font-size: 1.1rem;">Gestión de Desayunos</h5>
-                    <p class="mb-0 d-none d-md-block" style="color: #94a3b8; font-size: 10px;">Planificación diaria de desayunos estilo Excel según ocupación real</p>
+                    <h6 class="fw-bold mb-0 text-white" style="letter-spacing: -0.2px; font-size: 1rem;">Gestión de Desayunos</h6>
+                    <p class="mb-0 text-secondary" style="font-size: 10px; opacity: 0.7; line-height: 1;">Planificación diaria estilo Excel según ocupación real</p>
                 </div>
+            </div>
+
+            <!-- Botón Actualizar a la derecha estilo imagen 2 -->
+            <div class="ms-auto">
+                <button class="btn btn-sm btn-outline-light d-flex align-items-center gap-1 px-2 fw-normal" 
+                        @click="verDetallePorFecha" 
+                        style="height: 30px; border-radius: 6px; border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); font-size: 11px;">
+                    <i class="bi bi-arrow-clockwise" style="font-size: 14px;"></i>
+                    <span>Actualizar</span>
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- BODY -->
-    <div class="page-body pt-3">
-        <!-- BARRA DE FILTROS / ACCIONES UNIFICADOS -->
-        <div class="card border-0 shadow-sm mb-3" style="border-radius:12px;">
-            <div class="card-body p-3">
-                <div class="d-flex flex-wrap gap-2 align-items-center w-100">
-                    
+    <div class="page-body p-4">
+        <!-- FILTROS -->
+        <div class="card border-0 shadow-sm mb-4" style="border-radius: 12px; border: 1px solid #f1f5f9 !important;">
+            <div class="card-body d-flex align-items-center justify-content-between py-2 px-3">
+                <div class="d-flex align-items-center gap-4">
                     <!-- Búsqueda -->
-                    <div class="input-group input-group-sm rounded shadow-sm" style="width: 320px;">
-                        <span class="input-group-text bg-white border-end-0 text-muted px-2">
-                            <i class="bi bi-search"></i>
+                    <div class="input-group" style="width: 500px;">
+                        <span class="input-group-text bg-white border-end-0 text-muted px-3">
+                            <i class="bi bi-search" style="font-size: 15px;"></i>
                         </span>
-                        <input type="text" class="form-control border-start-0 bg-white text-dark" 
-                               style="font-size: 13px;" v-model="busqueda" 
-                               placeholder="Buscar habitación, titular...">
+                        <input type="text" v-model="busqueda" class="form-control border-start-0 ps-0 text-dark" 
+                               placeholder="Buscar por Nombre, DNI, RUC, Empresa o Celular..." 
+                               style="font-size: 14px; height: 38px; border-color: #e2e8f0;">
+                    </div>
+                    <!-- Contador -->
+                    <div class="d-flex align-items-center gap-1 text-muted" style="font-size: 14px; white-space: nowrap;">
+                        <i class="bi bi-list-ul fs-5"></i>
+                        <span>{{ actual.detalles.length }} registros</span>
                     </div>
 
-                    <!-- Selector de fecha -->
-                    <div style="width: 140px;">
-                        <input type="date" v-model="actual.fecha" @change="verDetallePorFecha"
-                               class="form-control form-control-sm shadow-sm text-dark bg-white border-secondary-subtle"
-                               style="font-size: 13px; cursor: pointer; height: 31px; border-radius: 6px; font-weight: 500;" />
+                    <!-- Selector de Fecha integra -->
+                    <div class="d-flex align-items-center gap-2 ms-2 ps-3 border-start">
+                         <input type="date" v-model="actual.fecha" @change="verDetallePorFecha" 
+                                class="form-control form-control-sm shadow-sm" 
+                                style="width:145px; height: 38px; border-color: #e2e8f0; font-size: 14px;">
                     </div>
-
-                    <!-- Botones y badges alineados a la derecha -->
-                    <div class="d-flex align-items-center gap-2 ms-md-auto">
-                        <!-- Indicador de auto-guardado -->
-                        <div class="d-flex align-items-center me-1">
-                            <span v-if="guardando" class="badge bg-warning text-dark animate__animated animate__pulse animate__infinite shadow-sm border border-warning" style="font-size: 10px; font-weight: 800; padding: 6px 10px; border-radius: 6px;">
-                                <i class="bi bi-cloud-arrow-up-fill me-1"></i>GUARDANDO...
-                            </span>
-                            <span v-else class="badge bg-success-subtle text-success border border-success opacity-75 shadow-sm" style="font-size: 10px; font-weight: 800; padding: 6px 10px; border-radius: 6px;">
-                                <i class="bi bi-cloud-check-fill me-1"></i>SINCRONIZADO
-                            </span>
-                        </div>
-
-                        <!-- Ficha PDF -->
-                        <a :href="'<?= $base ?>app/Views/reportes/ficha_desayunos.php?fecha=' + actual.fecha" target="_blank"
-                           class="btn btn-sm btn-custom-blue fw-bold px-3 d-flex align-items-center gap-1 shadow-sm"
-                           style="font-size:12px;height:31px;border-radius:6px;text-decoration:none;">
-                            <i class="bi bi-printer-fill"></i>Imprimir Ficha
-                        </a>
-
-                        <!-- Exportar Excel -->
-                        <button class="btn btn-sm btn-custom-green fw-bold px-3 d-flex align-items-center gap-1 shadow-sm"
-                                @click="exportarReporte()" :disabled="actual.detalles.length === 0"
-                                style="font-size:12px;height:31px;border-radius:6px;">
-                            <i class="bi bi-file-earmark-excel"></i>Exportar Excel
-                        </button>
-                    </div>
-
+                </div>
+                
+                <div class="d-flex align-items-center gap-2">
+                    <!-- Botón Exportar -->
+                    <button class="btn btn-success fw-bold px-3 d-flex align-items-center gap-2 shadow-sm" 
+                            @click="exportarReporte" :disabled="actual.detalles.length === 0"
+                            style="background-color: #059669; border: none; height: 38px; border-radius: 6px; font-size: 13px;">
+                        <i class="bi bi-file-earmark-excel-fill"></i>
+                        <span>Exportar Excel</span>
+                    </button>
                 </div>
             </div>
         </div>
 
-        <!-- Loader Global -->
-        <div v-if="loading" class="text-center py-5">
-            <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status"></div>
-            <h5 class="mt-3 text-muted fw-bold">Cargando control de desayunos...</h5>
-        </div>
-
-        <!-- GRID INTERACTIVO ESTILO EXCEL -->
-        <div v-else class="card border-0 shadow-sm overflow-hidden" style="border-radius:12px;">
-            <!-- Cabecera de totales -->
-            <div class="card-header bg-dark text-white py-2 d-flex justify-content-between align-items-center" style="background:#1e293b!important;">
-                <span class="fw-bold text-uppercase" style="font-size:11px;letter-spacing:.5px;">
-                    <i class="bi bi-grid-3x3 me-1"></i>Detalle de Desayunos por Habitación
-                </span>
-                <div class="d-flex gap-2">
-                    <div class="bg-white/10 text-white px-2 py-1 rounded small border border-white/10 fw-bold shadow-sm" style="font-size: 11px;">
-                         TOTAL PAX EN HOTEL: {{ totalHuespedes }}
-                    </div>
-                    <div class="bg-warning text-dark px-2 py-1 rounded small border border-warning/10 fw-bold shadow-sm" style="font-size: 11px;">
-                         DESAYUNOS REQUERIDOS: {{ totalFinal }}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tabla de datos -->
-            <div class="desayuno-grid-container">
-                <table class="table mb-0 desayuno-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 80px;">N° HAB.</th>
-                            <th>HUESPED TITULAR</th>
-                            <th style="width: 100px;">CANT. PAX</th>
-                            <th style="width: 160px;">INCLUYE DESAYUNO</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="it in detallesFiltrados" :key="it.habitacion_id">
-                            <!-- N° Habitación (Sticky) -->
-                            <td class="sticky-hab">{{ it.habitacion }}</td>
-                            
-                            <!-- Titular -->
-                            <td class="fw-semibold text-uppercase text-dark">{{ it.titular || '---' }}</td>
-                            
-                            <!-- Pax -->
-                            <td class="text-center fw-bold">{{ it.pax }}</td>
-                            
-                            <!-- Switch editable como Select visual plano -->
-                            <td>
-                                <select v-model="it.incluye_desayuno" :disabled="soloLectura" @change="autoGuardar"
-                                        class="form-select form-select-sm desayuno-select"
-                                        :style="{
-                                            backgroundColor: it.incluye_desayuno ? '#d1fae5' : '#fee2e2',
-                                            color: it.incluye_desayuno ? '#065f46' : '#991b1b',
-                                            border: it.incluye_desayuno ? '1px solid #a7f3d0' : '1px solid #fca5a5'
-                                        }">
-                                    <option :value="true">SÍ</option>
-                                    <option :value="false">NO</option>
-                                </select>
-                            </td>
-                        </tr>
-                        
-                        <!-- Sin registros -->
-                        <tr v-if="detallesFiltrados.length === 0">
-                            <td colspan="4" class="text-center py-5 text-muted fst-italic">
-                                <i class="bi bi-info-circle me-2"></i>No se encontraron huéspedes registrados para esta fecha o búsqueda.
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+        <!-- TABLA -->
+        <div class="desayuno-grid-container shadow-sm mb-4">
+            <table class="desayuno-table">
+                <thead>
+                    <tr>
+                        <th style="width: 50px;"><i class="bi bi-trash"></i></th>
+                        <th style="width: 100px;">N° HAB.</th>
+                        <th>HUESPED TITULAR</th>
+                        <th style="width: 150px;">CANT. PAX</th>
+                        <th style="width: 200px;">INCLUYE DESAYUNO</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(it, idx) in actual.detalles" :key="idx" v-if="matchesFilter(it)">
+                        <td class="text-center">
+                            <button class="btn btn-link text-danger p-0" @click="eliminarFila(idx)"><i class="bi bi-trash fs-5"></i></button>
+                        </td>
+                        <td class="sticky-hab text-primary fw-bold">{{ it.habitacion || '---' }}</td>
+                        <td class="text-uppercase fw-bold">{{ it.titular || 'HUESPED' }}</td>
+                        <td class="text-center fw-bold">{{ it.pax }}</td>
+                        <td class="text-center">
+                            <select v-model="it.incluye_desayuno" @change="autoGuardar"
+                                    class="form-select form-select-sm desayuno-select shadow-sm"
+                                    :style="{
+                                        backgroundColor: it.incluye_desayuno ? '#d1fae5' : '#fee2e2',
+                                        color: it.incluye_desayuno ? '#065f46' : '#991b1b',
+                                        borderColor: it.incluye_desayuno ? '#34d399' : '#f87171'
+                                    }">
+                                <option :value="true">SÍ</option>
+                                <option :value="false">NO</option>
+                            </select>
+                        </td>
+                    </tr>
+                    
+                    <tr v-if="actual.detalles.length === 0 && !loading">
+                        <td colspan="5" class="text-center py-5 text-muted fst-italic">
+                            No hay huéspedes registrados para esta fecha.
+                        </td>
+                    </tr>
+                    <tr v-if="loading">
+                        <td colspan="5" class="text-center py-5">
+                            <div class="spinner-border text-primary spinner-border-sm"></div> Cargando...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <!-- ADD ROW FOOTER -->
+            <div class="d-flex align-items-center p-2 border-top bg-white">
+                <button class="btn-add-dashed shadow-sm" @click="añadirFila">
+                    <i class="bi bi-plus-lg"></i>
+                </button>
+                <span class="row-add-info">Haga clic en el botón + de la izquierda para agregar un nuevo registro al final de la tabla.</span>
             </div>
         </div>
 
-        <!-- NOTAS GENERALES -->
-        <div v-if="!loading" class="card border-0 shadow-sm mt-3" style="border-radius:12px;">
-            <div class="card-body py-2 px-3 d-flex align-items-center gap-3">
-                <label class="form-label fw-bold mb-0 text-uppercase text-muted" style="white-space: nowrap; font-size:11px; letter-spacing:0.5px;">
-                    <i class="bi bi-pencil-square me-1"></i>Notas del Día:
-                </label>
-                <input type="text" class="form-control form-control-sm bg-white text-dark border-secondary-subtle" 
-                       v-model="actual.observacion" 
-                       placeholder="Indicaciones adicionales del desayuno..."
-                       :disabled="soloLectura" @input="triggerAutoGuardarDebounced"
-                       style="font-size:13px; border-radius:6px; height: 31px;">
+        <!-- NOTAS -->
+        <div class="card border-0 shadow-sm mb-3" style="border-radius:8px; border: 1px solid #e2e8f0 !important;">
+            <div class="card-body d-flex align-items-center gap-3 py-1 px-3" style="min-height: 46px;">
+                 <div class="text-uppercase fw-bold text-muted" style="font-size: 11px; white-space: nowrap; letter-spacing: 0.5px;">
+                    NOTAS DEL DÍA:
+                 </div>
+                 <input type="text" v-model="actual.observacion" @input="triggerAutoGuardarDebounced" 
+                        class="form-control form-control-sm border-0 shadow-none ps-2" 
+                        style="background-color: #f1f5f9; border-radius: 6px; height: 32px; font-size: 13px; color: #1e293b;"
+                        placeholder="Escribir indicaciones adicionales...">
             </div>
         </div>
 
         <!-- Alerta Solo Lectura -->
-        <div v-if="!loading && soloLectura" class="alert alert-info border-0 shadow-sm d-flex align-items-center mt-3" style="border-radius:12px;">
-            <i class="bi bi-info-circle-fill fs-4 me-3"></i>
-            <div>
-                <strong>Registro Finalizado:</strong> Este registro es histórico o ha superado el límite de las 12:00 PM para edición.
+        <div v-if="!loading && soloLectura" class="alert d-flex align-items-center py-2 px-3 mb-0" 
+             style="border-radius:8px; background-color: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd !important; min-height: 46px;">
+            <i class="bi bi-info-circle-fill me-2" style="font-size: 18px; color: #0369a1;"></i>
+            <div style="font-size: 13px; line-height: 1.2;">
+                <strong class="fw-bold">Registro Finalizado:</strong> Este registro es histórico o ha superado el límite de las 12:00 PM para edición.
             </div>
         </div>
-
     </div>
+</div>
 </div>
 
 <!-- SERVER DATA: URLs absolutas para el JS -->

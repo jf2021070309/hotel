@@ -33,7 +33,7 @@ class DesayunoModel {
 
     public function getDetalle(int $id): array {
         $stmt = $this->pdo->prepare(
-            "SELECT dd.*, h.numero AS habitacion,
+            "SELECT dd.*, h.numero AS habitacion, h.id AS habitacion_id,
                     (SELECT c.nombre_razon_social FROM rooming_pax rp JOIN clientes c ON rp.cliente_id = c.id WHERE rp.stay_id = dd.stay_id AND rp.es_titular_acompanante = 1 LIMIT 1) AS titular
              FROM desayunos_detalle dd
              JOIN rooming_stays rs ON rs.id = dd.stay_id
@@ -48,7 +48,7 @@ class DesayunoModel {
     public function getOcupacionActual(string $fecha): array {
         // Huéspedes activos para la fecha: check-in <= fecha Y checkout >= fecha
         $sql = "SELECT s.id as checkin_id, h.numero as habitacion, h.id as habitacion_id, s.id as stay_id,
-                       (SELECT c.nombre_razon_social FROM rooming_pax rp JOIN clientes c ON rp.cliente_id = c.id WHERE rp.stay_id = s.id AND rp.es_titular_acompanante = 1 LIMIT 1) as titular,
+                       COALESCE((SELECT c.nombre_razon_social FROM rooming_pax rp JOIN clientes c ON rp.cliente_id = c.id WHERE rp.stay_id = s.id AND rp.es_titular_acompanante = 1 LIMIT 1), '---') as titular,
                        s.pax_total as pax
                 FROM rooming_stays s
                 JOIN habitaciones h ON s.habitacion_id = h.id

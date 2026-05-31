@@ -31,14 +31,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
         </h4>
         <p class="mb-0 small text-muted fw-semibold">Edición directa de todos los check-ins estilo Excel</p>
       </div>
-      
-      <!-- Banner Informativo de Acompañantes -->
-      <div class="alert alert-info py-2 px-3 mb-0 ms-3 d-none d-lg-flex align-items-center gap-2 border-0 shadow-sm" style="border-radius: 8px; font-size: 11px; background: rgba(59, 130, 246, 0.08); color: #1e3a8a; max-width: 500px;">
-        <i class="bi bi-info-circle-fill text-primary fs-6"></i>
-        <span>
-          <strong>¿Cómo agregar acompañantes?</strong> Presiona <strong>ENTER</strong> (nueva línea) en las celdas del huésped (Nombre, Documento, etc.) para agregar acompañantes apilados en la misma fila.
-        </span>
-      </div>
+    
       
       <!-- Mes y Año Filtros -->
       <div class="ms-auto d-flex gap-2 align-items-center flex-wrap">

@@ -2,135 +2,86 @@
  * assets/js/desayunos.js
  */
 const { createApp, ref, computed, onMounted } = Vue;
+const API = window.SERVER_DATA?.apiBase ?? '../../../ajax/desayunos.php';
 
 createApp({
     setup() {
-        const tab = ref('lista'); // 'lista' | 'detalle'
         const loading = ref(false);
         const guardando = ref(false);
         const soloLectura = ref(false);
-        
-        const filtro = ref({
-            mes: new Date().getMonth() + 1,
-            anio: new Date().getFullYear()
-        });
 
-        const lista = ref([]);
         const actual = ref({
             id: null,
-            fecha: '',
+            fecha: window.SERVER_DATA?.hoy ?? new Date().toISOString().split('T')[0],
             pax_calculado: 0,
             pax_ajustado: 0,
             observacion: '',
             detalles: []
         });
 
-        const totalHuespedes = computed(() => {
-            let total = 0;
-            actual.value.detalles.forEach(d => {
-                total += parseInt(d.pax || 0);
+        const busqueda = ref('');
+        const detallesFiltrados = computed(() => {
+            if (!actual.value.detalles) return [];
+            const q = busqueda.value.toLowerCase().trim();
+            if (!q) return actual.value.detalles;
+            return actual.value.detalles.filter(d => {
+                const habMatch = d.habitacion && d.habitacion.toString().toLowerCase().includes(q);
+                const titMatch = d.titular && d.titular.toLowerCase().includes(q);
+                return habMatch || titMatch;
             });
-            return total;
+        });
+
+        const totalHuespedes = computed(() => {
+            return actual.value.detalles.reduce((s, d) => s + parseInt(d.pax || 0), 0);
         });
 
         const totalFinal = computed(() => {
-            let total = 0;
-            actual.value.detalles.forEach(d => {
-                if (d.incluye_desayuno) total += parseInt(d.pax || 0);
-            });
-            return total;
+            return actual.value.detalles.reduce((s, d) => s + (d.incluye_desayuno ? parseInt(d.pax || 0) : 0), 0);
         });
 
-        const fetchLista = async () => {
+        const nuevoRegistro = async (fecha = null) => {
             loading.value = true;
             try {
-                const res = await axios.get(`../../../api/desayunos.php?action=listar&mes=${filtro.value.mes}&anio=${filtro.value.anio}&t=${Date.now()}`);
-                if (res.data.ok) lista.value = res.data.data;
-            } catch (e) { console.error(e); }
-            loading.value = false;
-        };
-
-        const nuevoRegistro = async () => {
-            loading.value = true;
-            try {
-                const res = await axios.get(`../../../api/desayunos.php?action=hoy&t=${Date.now()}`);
+                const url = fecha
+                    ? `${API}?action=hoy&fecha=${fecha}&t=${Date.now()}`
+                    : `${API}?action=hoy&t=${Date.now()}`;
+                const res = await axios.get(url);
                 if (res.data.ok) {
                     actual.value = res.data.data;
-                    tab.value = 'detalle';
                     verificarSoloLectura(actual.value.fecha);
                 }
             } catch (e) {
-                Swal.fire('Error', 'No se pudo generar el cálculo automático.', 'error');
+                console.error('Error al cargar desayunos:', e);
             }
             loading.value = false;
-        };
-
-        const verDetalle = (item) => {
-            loading.value = true;
-            
-            // Sincronizar URL
-            const url = new URL(window.location);
-            url.searchParams.set('fecha', item.fecha);
-            window.history.pushState({}, '', url);
-
-            axios.get(`../../../api/desayunos.php?action=hoy&fecha=${item.fecha}&t=${Date.now()}`)
-                .then(res => {
-                    if (res.data.ok) {
-                        actual.value = res.data.data;
-                        tab.value = 'detalle';
-                        verificarSoloLectura(actual.value.fecha);
-                    }
-                })
-                .catch(e => console.error(e))
-                .finally(() => loading.value = false);
         };
 
         const verDetallePorFecha = () => {
             if (!actual.value.fecha) return;
-            // Actualizar URL sin recargar
             const url = new URL(window.location);
             url.searchParams.set('fecha', actual.value.fecha);
             window.history.pushState({}, '', url);
-
-            verDetalle({ fecha: actual.value.fecha });
+            nuevoRegistro(actual.value.fecha);
         };
 
         const verificarSoloLectura = (fecha) => {
             const hoy = new Date().toISOString().split('T')[0];
-            const horaActual = new Date().getHours();
-            
-            if (fecha < hoy) {
-                soloLectura.value = true;
-            } else if (fecha === hoy && horaActual >= 12) {
-                soloLectura.value = true;
-            } else {
-                soloLectura.value = false;
-            }
+            const hora = new Date().getHours();
+            soloLectura.value = (fecha < hoy) || (fecha === hoy && hora >= 12);
         };
 
         let autoGuardarTimer = null;
         const autoGuardar = async () => {
             if (soloLectura.value) return;
             guardando.value = true;
-            
-            const payload = {
-                ...actual.value,
-                pax_ajustado: totalFinal.value
-            };
-            
             try {
-                const res = await axios.post('../../../api/desayunos.php?action=guardar', payload);
-                if (res.data.ok) {
-                    if (res.data.id) actual.value.id = res.data.id;
-                }
+                const payload = { ...actual.value, pax_ajustado: totalFinal.value };
+                const res = await axios.post(`${API}?action=guardar`, payload);
+                if (res.data.ok && res.data.id) actual.value.id = res.data.id;
             } catch (e) {
-                console.error("Error en auto-guardado", e);
+                console.error('Error en auto-guardado', e);
             }
-            
-            // Simular un pequeño delay para que el usuario vea el estado "Guardando"
-            setTimeout(() => {
-                guardando.value = false;
-            }, 500);
+            setTimeout(() => { guardando.value = false; }, 500);
         };
 
         const triggerAutoGuardarDebounced = () => {
@@ -138,65 +89,18 @@ createApp({
             autoGuardarTimer = setTimeout(autoGuardar, 1000);
         };
 
-        const guardar = async () => {
-            guardando.value = true;
-            const payload = {
-                ...actual.value,
-                pax_ajustado: totalFinal.value
-            };
-            try {
-                const res = await axios.post('../../../api/desayunos.php?action=guardar', payload);
-                if (res.data.ok) {
-                    // Actualizar ID local
-                    if (res.data.id) actual.value.id = res.data.id;
-
-                    Swal.fire({
-                        title: '¡Guardado!',
-                        text: res.data.msg,
-                        icon: 'success',
-                        timer: 1500
-                    });
-                    tab.value = 'lista';
-                    
-                    // Limpiar URL
-                    const url = new URL(window.location);
-                    url.searchParams.delete('fecha');
-                    window.history.pushState({}, '', url);
-
-                    fetchLista();
-                } else {
-                    Swal.fire('Atención', res.data.msg, 'warning');
-                }
-            } catch (e) {
-                Swal.fire('Error', 'Error de conexión al servidor.', 'error');
-            }
-            guardando.value = false;
-        };
-
         const exportarReporte = () => {
-            const columnas = [
-                { header: 'N° HAB.', key: 'habitacion' },
-                { header: 'HUESPED TITULAR', key: 'titular' },
-                { header: 'CANT. PAX', key: 'pax' },
-                { header: 'ESTADO DESAYUNO', key: 'estado_str' }
-            ];
-
+            if (typeof XLSX === 'undefined') return;
             const filas = actual.value.detalles.map(d => ({
-                ...d,
-                estado_str: d.incluye_desayuno ? 'SÍ' : 'NO'
+                'N° HAB.':          d.habitacion,
+                'HUESPED TITULAR':  d.titular,
+                'CANT. PAX':        d.pax,
+                'INCLUYE DESAYUNO': d.incluye_desayuno ? 'SÍ' : 'NO'
             }));
-
-            const nombreArchivo = `Reporte_Desayunos_${actual.value.fecha}`;
-            const tituloTabla = `REPORTE DIARIO DE DESAYUNOS (${actual.value.fecha})`;
-            exportarExcel(tituloTabla, columnas, filas, nombreArchivo);
-        };
-
-        const volverALista = () => {
-            tab.value = 'lista';
-            const url = new URL(window.location);
-            url.searchParams.delete('fecha');
-            window.history.pushState({}, '', url);
-            fetchLista();
+            const ws = XLSX.utils.json_to_sheet(filas);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Desayunos');
+            XLSX.writeFile(wb, `Reporte_Desayunos_${actual.value.fecha}.xlsx`);
         };
 
         const formatFecha = (f) => {
@@ -205,27 +109,18 @@ createApp({
             return `${d[2]}/${d[1]}/${d[0]}`;
         };
 
-        const imprimir = (id) => {
-            window.open(`../../../api/desayunos.php?action=imprimir&id=${id}`, '_blank');
-        };
-
         onMounted(async () => {
-            await fetchLista();
-            
-            // Si hay fecha en la URL, cargar esa. Si no, hoy.
             const params = new URLSearchParams(window.location.search);
             const fechaUrl = params.get('fecha');
-            
-            if (fechaUrl) {
-                verDetalle({ fecha: fechaUrl });
-            } else {
-                nuevoRegistro();
-            }
+            await nuevoRegistro(fechaUrl || null);
         });
 
         return {
-            tab, lista, filtro, actual, loading, guardando, soloLectura,
-            totalHuespedes, totalFinal, fetchLista, nuevoRegistro, verDetalle, verDetallePorFecha, guardar, autoGuardar, triggerAutoGuardarDebounced, volverALista, formatFecha, imprimir, exportarReporte
+            actual, loading, guardando, soloLectura,
+            busqueda, detallesFiltrados,
+            totalHuespedes, totalFinal,
+            verDetallePorFecha, autoGuardar, triggerAutoGuardarDebounced,
+            exportarReporte, formatFecha
         };
     }
 }).mount('#app-desayunos');

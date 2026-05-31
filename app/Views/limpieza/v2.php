@@ -41,50 +41,7 @@ include $_projectRoot . 'app/Views/layouts/head.php';
         </div>
       </div>
 
-      <!-- Controles del topbar -->
-      <div class="ms-auto d-flex align-items-center gap-2">
 
-        <!-- Selector de fecha -->
-        <input type="date" v-model="fecha" @change="cargarDatos"
-               style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);
-                      color:#fff;border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;
-                      width:140px;cursor:pointer;" />
-
-        <!-- Generar lista -->
-        <button v-if="!yaGenerado" @click="generarLista" :disabled="loading"
-                class="btn btn-sm fw-bold px-3"
-                style="background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;border:none;
-                       font-size:11px;border-radius:6px;box-shadow:0 3px 8px rgba(109,40,217,.4);">
-          <i class="bi bi-magic me-1"></i>Generar Lista
-        </button>
-
-        <!-- Limpieza Diaria -->
-        <button @click="resetNocturno" :disabled="loading"
-                class="btn btn-sm fw-bold px-3"
-                style="background:linear-gradient(135deg,#d97706,#b45309);color:#fff;border:none;
-                       font-size:11px;border-radius:6px;box-shadow:0 3px 8px rgba(180,83,9,.4);"
-                title="Marca habitaciones ocupadas como SUCIAS para limpieza diaria">
-          <i class="bi bi-sun-fill me-1"></i>Limpieza Diaria
-        </button>
-
-        <!-- Exportar Excel -->
-        <button @click="exportarExcel" :disabled="loading || lista.length === 0"
-                class="btn btn-sm fw-bold px-3"
-                style="background:linear-gradient(135deg,#059669,#047857);color:#fff;border:none;
-                       font-size:11px;border-radius:6px;box-shadow:0 3px 8px rgba(5,150,105,.35);">
-          <i class="bi bi-file-earmark-excel me-1"></i>Excel
-        </button>
-
-        <!-- Actualizar -->
-        <button @click="cargarDatos" :disabled="loading"
-                class="btn btn-sm text-white"
-                style="background:transparent;border:1px solid rgba(255,255,255,.2);border-radius:6px;
-                       padding:4px 10px;font-size:11px;font-weight:600;">
-          <i class="bi bi-arrow-clockwise me-1" :class="{'spin-anim': loading}"></i>
-          <span class="d-none d-sm-inline">Actualizar</span>
-        </button>
-
-      </div>
     </div><!-- /topbar -->
 
     <!-- ── PAGE BODY ─────────────────────────────────────────────── -->
@@ -93,54 +50,58 @@ include $_projectRoot . 'app/Views/layouts/head.php';
       <!-- BARRA DE FILTROS / RESUMEN -->
       <div class="card border-0 shadow-sm mb-3" style="border-radius:12px;">
         <div class="card-body p-3">
-          <div class="d-flex flex-wrap gap-3 align-items-center justify-content-between">
+          <div class="d-flex flex-wrap gap-2 align-items-center w-100">
 
-            <!-- Izquierda: búsqueda + conteo -->
-            <div class="d-flex align-items-center gap-3 flex-wrap">
-              <div class="input-group input-group-sm rounded shadow-sm" style="width:260px;">
-                <span class="input-group-text bg-white border-end-0 text-muted px-2">
-                  <i class="bi bi-search"></i>
-                </span>
-                <input type="text" class="form-control border-start-0 bg-white text-dark"
-                       style="font-size:12px;" v-model="busqueda"
-                       placeholder="Buscar habitación, estado...">
-              </div>
-
-              <!-- Pills de estado -->
-              <div class="d-flex gap-1 flex-wrap">
-                <span @click="filtroEstado='todos'"
-                      class="badge px-3 py-2 cursor-pointer"
-                      :style="filtroEstado==='todos' ? 'background:#1e293b;color:#fff;' : 'background:#e2e8f0;color:#475569;'"
-                      style="font-size:10px;cursor:pointer;">Todos ({{ lista.length }})</span>
-                <span @click="filtroEstado='pendiente'"
-                      class="badge px-3 py-2"
-                      :style="filtroEstado==='pendiente' ? 'background:#dc2626;color:#fff;' : 'background:#fee2e2;color:#dc2626;'"
-                      style="font-size:10px;cursor:pointer;">Pendiente ({{ countEstado('pendiente') }})</span>
-                <span @click="filtroEstado='en proceso'"
-                      class="badge px-3 py-2"
-                      :style="filtroEstado==='en proceso' ? 'background:#d97706;color:#fff;' : 'background:#fef3c7;color:#d97706;'"
-                      style="font-size:10px;cursor:pointer;">En Proceso ({{ countEstado('en proceso') }})</span>
-                <span @click="filtroEstado='lista'"
-                      class="badge px-3 py-2"
-                      :style="filtroEstado==='lista' ? 'background:#059669;color:#fff;' : 'background:#d1fae5;color:#059669;'"
-                      style="font-size:10px;cursor:pointer;">Lista ({{ countEstado('lista') }})</span>
-              </div>
-
-              <div class="text-muted fw-semibold" style="font-size:12px;" v-if="!loading">
-                <i class="bi bi-table me-1"></i>{{ listaFiltrada.length }} filas
-              </div>
+            <!-- Búsqueda -->
+            <div class="input-group input-group-sm rounded shadow-sm" style="width: 320px;">
+              <span class="input-group-text bg-white border-end-0 text-muted px-2">
+                <i class="bi bi-search"></i>
+              </span>
+              <input type="text" class="form-control border-start-0 bg-white text-dark"
+                     style="font-size: 13px;" v-model="busqueda"
+                     placeholder="Buscar habitación, estado...">
             </div>
 
-            <!-- Derecha: barra de progreso global -->
-            <div class="d-flex align-items-center gap-2" style="min-width:180px;" v-if="lista.length > 0">
-              <span class="text-muted" style="font-size:11px;white-space:nowrap;">Completado:</span>
-              <div class="progress flex-grow-1" style="height:8px;border-radius:999px;">
-                <div class="progress-bar bg-success" :style="{ width: porcentajeGlobal + '%' }"
-                     style="transition:width .4s;border-radius:999px;"></div>
-              </div>
-              <span class="fw-bold" style="font-size:11px;color:#059669;white-space:nowrap;">
-                {{ porcentajeGlobal }}%
-              </span>
+            <!-- Filtro de estado (Combobox) -->
+            <div style="width: 160px;">
+              <select v-model="filtroEstado" class="form-select form-select-sm shadow-sm text-dark bg-white border-secondary-subtle" style="font-size: 13px; cursor: pointer; height: 31px; border-radius: 6px;">
+                <option value="todos">Todos ({{ lista.length }})</option>
+                <option value="pendiente">Pendiente ({{ countEstado('pendiente') }})</option>
+                <option value="en proceso">En Proceso ({{ countEstado('en proceso') }})</option>
+                <option value="lista">Lista ({{ countEstado('lista') }})</option>
+              </select>
+            </div>
+
+            <!-- Selector de fecha -->
+            <div style="width: 140px;">
+              <input type="date" v-model="fecha" @change="cargarDatos"
+                     class="form-control form-control-sm shadow-sm text-dark bg-white border-secondary-subtle"
+                     style="font-size: 13px; cursor: pointer; height: 31px; border-radius: 6px; font-weight: 500;" />
+            </div>
+
+            <!-- Botones de Acción alineados a la derecha -->
+            <div class="d-flex align-items-center gap-2 ms-md-auto">
+              <!-- Generar lista -->
+              <button v-if="!yaGenerado" @click="generarLista" :disabled="loading"
+                      class="btn btn-sm btn-custom-blue fw-bold px-3 d-flex align-items-center gap-1 shadow-sm"
+                      style="font-size:12px;height:31px;border-radius:6px;">
+                <i class="bi bi-magic"></i>Generar Lista
+              </button>
+
+              <!-- Limpieza Diaria (Azul celeste) -->
+              <button @click="resetNocturno" :disabled="loading"
+                      class="btn btn-sm btn-custom-blue fw-bold px-3 d-flex align-items-center gap-1 shadow-sm"
+                      style="font-size:12px;height:31px;border-radius:6px;"
+                      title="Marca habitaciones ocupadas como SUCIAS para limpieza diaria">
+                <i class="bi bi-sun-fill"></i>Limpieza Diaria
+              </button>
+
+              <!-- Exportar Excel -->
+              <button @click="exportarExcel" :disabled="loading || lista.length === 0"
+                      class="btn btn-sm btn-custom-green fw-bold px-3 d-flex align-items-center gap-1 shadow-sm"
+                      style="font-size:12px;height:31px;border-radius:6px;">
+                <i class="bi bi-file-earmark-excel"></i>Exportar Excel
+              </button>
             </div>
 
           </div>
@@ -152,30 +113,29 @@ include $_projectRoot . 'app/Views/layouts/head.php';
         <div class="lv2-grid-container">
           <table class="table table-bordered mb-0 lv2-table">
             <thead>
-              <!-- Nivel 1: Grupos de columnas -->
+              <!-- Fila agrupada de cabeceras (Nivel 1) -->
               <tr class="text-center text-white text-uppercase"
                   style="font-size:10px;letter-spacing:.5px;font-weight:800;">
-                <th colspan="2" style="background:#111827!important;position:sticky;left:0;z-index:15;">HABITACIÓN</th>
-                <th colspan="2" style="background:#1e3a5f!important;">LIMPIEZA</th>
-                <th colspan="2" style="background:#14532d!important;">HUÉSPED</th>
-                <th colspan="1" style="background:#7c2d12!important;">ACCIÓN</th>
+                <th colspan="2" class="lv2-sticky" style="background:#111827!important; border-bottom: 1px solid rgba(255,255,255,0.1) !important; position:sticky; left:0; z-index:15;">HABITACIÓN</th>
+                <th colspan="1" style="background:#293b95!important; border-bottom: 1px solid rgba(255,255,255,0.1) !important; border-left: 1px solid rgba(255,255,255,0.1) !important;">LIMPIEZA</th>
+                <th colspan="2" style="background:#293b95!important; border-bottom: 1px solid rgba(255,255,255,0.1) !important; border-left: 1px solid rgba(255,255,255,0.1) !important;">HUÉSPED</th>
+                <th colspan="1" style="background:#6a1b9a!important; border-bottom: 1px solid rgba(255,255,255,0.1) !important; border-left: 1px solid rgba(255,255,255,0.1) !important;">ACCIÓN</th>
               </tr>
-              <!-- Nivel 2: Sub-cabeceras -->
-              <tr class="text-white text-uppercase" style="font-size:11px;letter-spacing:.4px;">
-                <th class="lv2-sticky" style="width:50px;background:#111827!important;z-index:14;">HAB</th>
-                <th style="width:90px;top:38px;background:#111827!important;">TIPO HAB</th>
-                <th style="width:110px;top:38px;background:#1e3a5f!important;">TIPO LIMP.</th>
-                <th style="width:110px;top:38px;background:#1e3a5f!important;">ESTADO</th>
-                <th style="width:55px;top:38px;background:#14532d!important;">PAX</th>
-                <th style="width:110px;top:38px;background:#14532d!important;">ROOM ESTADO</th>
-                <th style="width:130px;top:38px;background:#7c2d12!important;">ACCIÓN RÁPIDA</th>
+              <!-- Subcabeceras (Nivel 2) -->
+              <tr class="text-white text-uppercase" style="font-size:11px;letter-spacing:.5px;">
+                <th class="lv2-sticky text-center" style="width:50px; background:#111827!important; z-index:14; border-right: 1px solid rgba(255,255,255,0.1) !important;">HAB</th>
+                <th style="width:90px; top:38px; background:#111827!important; border-right: 1px solid rgba(255,255,255,0.1) !important;">TIPO HAB</th>
+                <th style="width:110px; top:38px; background:#293b95!important; border-right: 1px solid rgba(255,255,255,0.1) !important;">ESTADO</th>
+                <th style="width:55px; top:38px; background:#293b95!important; border-right: 1px solid rgba(255,255,255,0.1) !important;">PAX</th>
+                <th style="width:110px; top:38px; background:#293b95!important; border-right: 1px solid rgba(255,255,255,0.1) !important;">ROOM ESTADO</th>
+                <th style="width:130px; top:38px; background:#6a1b9a!important; text-align: center;">ACCIÓN RÁPIDA</th>
               </tr>
             </thead>
 
             <tbody>
               <!-- Cargando -->
               <tr v-if="loading">
-                <td colspan="7" class="text-center py-5">
+                <td colspan="6" class="text-center py-5">
                   <div class="spinner-border text-primary me-2"></div>
                   <span class="text-muted fw-semibold">Cargando datos...</span>
                 </td>
@@ -183,7 +143,7 @@ include $_projectRoot . 'app/Views/layouts/head.php';
 
               <!-- Sin datos -->
               <tr v-else-if="listaFiltrada.length === 0">
-                <td colspan="7" class="text-center py-5 text-muted">
+                <td colspan="6" class="text-center py-5 text-muted">
                   <i class="bi bi-inbox fs-1 d-block opacity-25 mb-2"></i>
                   <span>No hay registros para esta fecha o filtro.</span>
                   <br>
@@ -199,23 +159,15 @@ include $_projectRoot . 'app/Views/layouts/head.php';
                   :class="getRowClass(h)">
 
                 <!-- HAB (sticky) -->
-                <td class="lv2-sticky text-center fw-black"
+                <td class="lv2-sticky text-center fw-bold"
                     :style="{ borderLeft: '4px solid ' + getColorTipo(h.tipo_limpieza) }"
-                    style="font-size:1.4rem;letter-spacing:-1px;color:#1e293b;line-height:1;">
+                    style="font-size:12px;color:#1e293b;">
                   {{ h.habitacion }}
                 </td>
 
                 <!-- TIPO HAB -->
-                <td class="text-center text-muted" style="font-size:11px;">
+                <td class="text-center text-muted fw-semibold" style="font-size:12px;">
                   {{ h.tipo_hab ? h.tipo_hab.toUpperCase() : '—' }}
-                </td>
-
-                <!-- TIPO LIMPIEZA (badge) -->
-                <td class="text-center">
-                  <span class="badge px-2 py-1 fw-bold" style="font-size:10px;"
-                        :style="{ background: getColorTipo(h.tipo_limpieza), color: '#fff' }">
-                    {{ labelTipo(h.tipo_limpieza) }}
-                  </span>
                 </td>
 
                 <!-- ESTADO (select editable) -->
@@ -223,10 +175,10 @@ include $_projectRoot . 'app/Views/layouts/head.php';
                   <select v-model="h.estado" @change="actualizarEstado(h)"
                           class="lv2-select fw-bold"
                           :class="getEstadoSelectClass(h.estado)">
-                    <option value="pendiente">⏳ Pendiente</option>
-                    <option value="en proceso">🧹 En Proceso</option>
-                    <option value="lista">✅ Lista</option>
-                    <option value="mantenimiento" v-if="h.estado==='mantenimiento'">🔧 Mantenimiento</option>
+                    <option value="pendiente">Pendiente</option>
+                    <option value="en proceso">En Proceso</option>
+                    <option value="lista">Lista</option>
+                    <option value="mantenimiento" v-if="h.estado==='mantenimiento'">Mantenimiento</option>
                   </select>
                 </td>
 
@@ -236,13 +188,13 @@ include $_projectRoot . 'app/Views/layouts/head.php';
                   {{ h.pax ?? h.ocupantes ?? '—' }}
                 </td>
 
-                <!-- ROOM ESTADO badge -->
+                <!-- ROOM ESTADO (texto con color, sin badge de fondo) -->
                 <td class="text-center">
-                  <span v-if="h.room_estado" class="badge px-2 py-1" style="font-size:10px;"
-                        :style="{ background: getRoomEstadoColor(h.room_estado), color: '#fff' }">
-                    {{ h.room_estado.toUpperCase() }}
+                  <span v-if="h.room_estado" class="fw-bold text-uppercase" style="font-size:12px;"
+                        :style="{ color: getRoomEstadoColor(h.room_estado) }">
+                    {{ h.room_estado }}
                   </span>
-                  <span v-else class="text-muted" style="font-size:11px;">—</span>
+                  <span v-else class="text-muted" style="font-size:12px;">—</span>
                 </td>
 
                 <!-- ACCIÓN RÁPIDA -->
@@ -251,18 +203,18 @@ include $_projectRoot . 'app/Views/layouts/head.php';
                           @click="toggleListo(h)" :disabled="loading"
                           class="btn btn-sm fw-bold w-100"
                           style="background:linear-gradient(135deg,#059669,#047857);color:#fff;
-                                 font-size:10px;border:none;border-radius:6px;padding:5px 4px;">
+                                 font-size:12px;border:none;border-radius:6px;padding:5px 4px;">
                     <i class="bi bi-check2-circle me-1"></i>Marcar Lista
                   </button>
                   <button v-else-if="h.estado === 'lista'"
                           @click="toggleListo(h)" :disabled="loading"
                           class="btn btn-sm fw-bold w-100"
-                          style="background:#d1fae5;color:#065f46;font-size:10px;
+                          style="background:#d1fae5;color:#065f46;font-size:12px;
                                  border:1px solid #a7f3d0;border-radius:6px;padding:5px 4px;">
                     <i class="bi bi-check-all me-1"></i>Lista ✓
                   </button>
                   <span v-else class="badge bg-danger-subtle text-danger"
-                        style="font-size:10px;padding:5px 8px;">
+                        style="font-size:12px;padding:5px 8px;">
                     <i class="bi bi-tools me-1"></i>Bloqueada
                   </span>
                 </td>
@@ -304,12 +256,16 @@ include $_projectRoot . 'app/Views/layouts/head.php';
   .lv2-table thead th {
     position: sticky;
     top: 0;
-    color: #fff !important;
+    z-index: 10;
+    color: #ffffff !important;
     font-weight: 700;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.5px;
     text-align: center;
+    border: 1px solid #cbd5e1;
     vertical-align: middle;
-    padding: 9px 6px;
-    border: 1px solid rgba(255,255,255,0.08);
+    padding: 10px 6px;
     white-space: nowrap;
   }
   /* Segunda fila de thead */
@@ -323,7 +279,7 @@ include $_projectRoot . 'app/Views/layouts/head.php';
     left: 0;
     z-index: 6;
     background-color: #f8fafc;
-    border-right: 2px solid #e2e8f0 !important;
+    border-right: 1px solid #cbd5e1 !important;
   }
   .lv2-table thead th.lv2-sticky {
     z-index: 16 !important;
@@ -331,9 +287,9 @@ include $_projectRoot . 'app/Views/layouts/head.php';
   }
 
   .lv2-table td {
-    padding: 4px 6px;
+    padding: 3px 4px;
     vertical-align: middle;
-    border: 1px solid #e2e8f0;
+    border: 1px solid #cbd5e1;
     background: #fff;
     white-space: nowrap;
   }
@@ -346,7 +302,7 @@ include $_projectRoot . 'app/Views/layouts/head.php';
     background: transparent;
     padding: 4px 6px;
     border-radius: 6px;
-    font-size: 11px;
+    font-size: 12px;
     width: 100%;
     cursor: pointer;
     transition: all .15s;
@@ -371,6 +327,49 @@ include $_projectRoot . 'app/Views/layouts/head.php';
   /* Spinner animación */
   @keyframes spin { to { transform: rotate(360deg); } }
   .spin-anim { animation: spin .6s linear infinite; display: inline-block; }
+
+  /* Botones premium con bordes finos y colores sólidos idénticos a Clientes V2 */
+  .btn-custom-blue {
+    background-color: #1a56db !important; /* Azul vibrante corporativo */
+    color: #ffffff !important;
+    border: 1px solid #1e429f !important;
+    transition: all 0.2s ease-in-out;
+  }
+  .btn-custom-blue:hover:not(:disabled) {
+    background-color: #1e429f !important;
+    border-color: #1e429f !important;
+  }
+  .btn-custom-blue:disabled {
+    opacity: 0.65;
+  }
+
+  .btn-custom-green {
+    background-color: #059669 !important; /* Verde sólido oscuro */
+    color: #ffffff !important;
+    border: 1px solid #047857 !important;
+    transition: all 0.2s ease-in-out;
+  }
+  .btn-custom-green:hover:not(:disabled) {
+    background-color: #047857 !important;
+    border-color: #047857 !important;
+  }
+  .btn-custom-green:disabled {
+    opacity: 0.65;
+  }
+
+  .btn-custom-orange {
+    background-color: #d97706 !important; /* Naranja/Ámbar sólido */
+    color: #ffffff !important;
+    border: 1px solid #b45309 !important;
+    transition: all 0.2s ease-in-out;
+  }
+  .btn-custom-orange:hover:not(:disabled) {
+    background-color: #b45309 !important;
+    border-color: #b45309 !important;
+  }
+  .btn-custom-orange:disabled {
+    opacity: 0.65;
+  }
 </style>
 
 <!-- ── SERVER DATA ───────────────────────────────────────────── -->

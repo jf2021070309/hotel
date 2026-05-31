@@ -46,14 +46,14 @@ class DesayunoModel {
     }
 
     public function getOcupacionActual(string $fecha): array {
-        // Consultar rooming_stays activos para la fecha calculada (pernoctaron la noche anterior)
+        // Huéspedes activos para la fecha: check-in <= fecha Y checkout >= fecha
         $sql = "SELECT s.id as checkin_id, h.numero as habitacion, h.id as habitacion_id, s.id as stay_id,
                        (SELECT c.nombre_razon_social FROM rooming_pax rp JOIN clientes c ON rp.cliente_id = c.id WHERE rp.stay_id = s.id AND rp.es_titular_acompanante = 1 LIMIT 1) as titular,
                        s.pax_total as pax
                 FROM rooming_stays s
                 JOIN habitaciones h ON s.habitacion_id = h.id
                 WHERE s.estado IN ('activo', 'late_checkout', 'finalizado')
-                  AND DATE(s.fecha_registro) < :f1
+                  AND DATE(s.fecha_registro) <= :f1
                   AND DATE(s.fecha_checkout) >= :f2";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([':f1' => $fecha, ':f2' => $fecha]);

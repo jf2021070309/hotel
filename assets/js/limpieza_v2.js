@@ -142,10 +142,10 @@ createApp({
       const { isConfirmed } = await Swal.fire({
         title: '¿Ejecutar Limpieza Diaria?',
         text: 'Marcará todas las habitaciones ocupadas como SUCIAS para su repaso.',
-        icon: 'warning',
+        icon: 'question',
         showCancelButton: true,
         confirmButtonText: 'Sí, ejecutar',
-        confirmButtonColor: '#d97706',
+        confirmButtonColor: '#1a56db',
         cancelButtonText: 'Cancelar',
       });
       if (!isConfirmed) return;

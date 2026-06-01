@@ -20,15 +20,15 @@ include __DIR__ . '/../layouts/head.php';
           <button class="btn btn-dark btn-sm rounded-circle d-md-none" onclick="handleMenuClick()" style="width:32px;height:32px;padding:0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.1);border:none;">
             <i class="bi bi-list text-white"></i>
           </button>
-          <div class="d-flex align-items-center gap-3">
-            <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#f59e0b,#d97706);display:flex;align-items:center;justify-content:center;box-shadow:0 0 15px rgba(245,158,11,0.4);">
-              <i class="bi bi-shield-check-fill text-white fs-5"></i>
-            </div>
-            <div>
-              <h4 class="fw-bold mb-0 text-white" style="font-size:18px;letter-spacing:-0.5px;">Auditoría del Sistema</h4>
-              <div class="text-white-50" style="font-size:11px;">Seguimiento detallado de operaciones &mdash; solo lectura &mdash; <?= date('d/m/Y') ?></div>
-            </div>
+        <div class="d-flex align-items-center gap-3">
+          <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#f59e0b,#d97706);display:flex;align-items:center;justify-content:center;box-shadow:0 0 15px rgba(245,158,11,0.4);">
+            <i class="bi bi-journal-text text-white" style="font-size:20px;"></i>
           </div>
+          <div>
+            <h4 class="fw-bold mb-0 text-white" style="font-size:18px;letter-spacing:-0.5px;">Auditoría del Sistema</h4>
+            <div class="text-white-50" style="font-size:11px;">Seguimiento detallado de operaciones &mdash; solo lectura &mdash; <?= date('d/m/Y') ?></div>
+          </div>
+        </div>
         </div>
       </div>
     </div>

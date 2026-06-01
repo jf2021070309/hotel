@@ -212,27 +212,69 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
 
     .summary-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 1.5rem;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 2rem;
         margin-top: 3rem;
+        margin-bottom: 3rem;
     }
 
     .summary-card {
-        background: #fff;
-        padding: 2rem;
-        border-radius: 24px;
-        box-shadow: var(--soft-shadow);
+        background: linear-gradient(135deg, #ffffff 0%, #f9f7f4 100%);
+        padding: 2.5rem;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(212, 175, 55, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .summary-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 15px 50px rgba(212, 175, 55, 0.15);
+    }
+
+    .summary-card h5 {
+        font-size: 1.3rem !important;
+        font-weight: 700 !important;
+        margin-bottom: 2rem !important;
+        color: #1a1c1a !important;
+    }
+
+    .summary-card h5 i {
+        font-size: 1.5rem !important;
+        margin-right: 0.75rem !important;
     }
 
     .summary-item {
         display: flex;
         justify-content: space-between;
-        padding: 1rem 0;
-        border-bottom: 1px solid #f0f0f0;
+        align-items: center;
+        padding: 1.2rem;
+        border-radius: 12px;
+        margin-bottom: 1rem;
+        background: #f5f3f0;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        transition: all 0.2s ease;
+    }
+
+    .summary-item:hover {
+        background: #efefeb;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
     }
 
     .summary-item:last-child {
-        border-bottom: none;
+        margin-bottom: 0;
+    }
+
+    .summary-item span:first-child {
+        font-size: 0.95rem;
+        font-weight: 500;
+        color: #5a5450;
+    }
+
+    .summary-item .amount-font {
+        font-size: 1.15rem !important;
+        font-weight: 700 !important;
+        color: #1a1c1a !important;
     }
 
     .bg-pos { background: #5a4409 !important; color: #fff !important; }
@@ -251,36 +293,50 @@ window.MENDOZA_CONFIG = {
 </script>
 
 <div class="main-content" id="app-mendoza" v-cloak>
-    <div class="premium-topbar">
-        <div>
-            <h1>Reporte Mendoza</h1>
-            <p class="text-muted mb-0">Control financiero y auditoría de ingresos</p>
+    <!-- TOPBAR PREMIUM DARK -->
+    <div class="topbar" style="background-color:#111827;padding:0.75rem 1.5rem;border-bottom:1px solid rgba(255,255,255,0.05);">
+      <div class="d-flex align-items-center justify-content-between w-100">
+        <div class="d-flex align-items-center gap-3">
+          <button class="btn btn-dark btn-sm rounded-circle d-md-none" onclick="handleMenuClick()" style="width:32px;height:32px;padding:0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.1);border:none;">
+            <i class="bi bi-list text-white"></i>
+          </button>
+          <div class="d-flex align-items-center gap-3">
+            <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#16a34a,#15803d);display:flex;align-items:center;justify-content:center;box-shadow:0 0 15px rgba(22,163,74,0.3);">
+              <i class="bi bi-file-earmark-bar-graph text-white" style="font-size:20px;"></i>
+            </div>
+            <div>
+              <h4 class="fw-bold mb-0 text-white" style="font-size:18px;letter-spacing:-0.5px;">Reporte Mendoza</h4>
+              <div class="text-white-50" style="font-size:11px;">Control financiero y auditoría de ingresos</div>
+            </div>
+          </div>
         </div>
-        <div class="d-flex gap-3 align-items-center">
-            <select v-model="filtro.mes" class="form-select border-0 shadow-sm" style="border-radius: 12px; padding: 0.6rem 1.2rem;" @change="fetchData">
-                <option v-for="m in 12" :key="m" :value="m">{{ getMesNombre(m) }}</option>
-            </select>
-            <select v-model="filtro.anio" class="form-select border-0 shadow-sm" style="border-radius: 12px; padding: 0.6rem 1.2rem;" @change="fetchData">
-                <option v-for="y in [2024, 2025, 2026]" :key="y" :value="y">{{ y }}</option>
-            </select>
-            <button @click="exportar" class="export-btn">
-                <i class="bi bi-file-earmark-excel"></i> Exportar
-            </button>
+        <div class="d-flex align-items-center gap-2">
+          <select v-model="filtro.mes" class="form-select border-0 shadow-sm" style="border-radius: 12px; padding: 0.6rem 1.2rem; background-color:#1f2937; color:#fff; border-color:#374151;" @change="fetchData">
+            <option v-for="m in 12" :key="m" :value="m" style="background-color:#1f2937; color:#fff;">{{ getMesNombre(m) }}</option>
+          </select>
+          <select v-model="filtro.anio" class="form-select border-0 shadow-sm" style="border-radius: 12px; padding: 0.6rem 1.2rem; background-color:#1f2937; color:#fff; border-color:#374151;" @change="fetchData">
+            <option v-for="y in [2024, 2025, 2026]" :key="y" :value="y" style="background-color:#1f2937; color:#fff;">{{ y }}</option>
+          </select>
+          <button @click="exportar" class="btn btn-sm btn-outline-light d-flex align-items-center gap-2" style="font-size:12px;padding:4px 12px;border-color:rgba(255,255,255,0.2);">
+            <i class="bi bi-file-earmark-excel"></i>
+            <span class="d-none d-md-inline">Exportar</span>
+          </button>
         </div>
+      </div>
     </div>
 
     <!-- Filtros Avanzados (Sin afectar el estado actual) -->
     <div class="container-fluid px-5 mb-5">
-        <div class="premium-card p-3 d-flex gap-4 align-items-center" style="background: rgba(255,255,255,0.6); backdrop-filter: blur(10px); border-radius: 20px;">
-            <div class="flex-grow-1 position-relative">
-                <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+        <div class="premium-card p-4 d-flex gap-3 align-items-center flex-wrap" style="background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(249,247,244,0.95) 100%); border: 1px solid rgba(212,175,55,0.15); box-shadow: 0 8px 25px rgba(0,0,0,0.06); border-radius: 16px;">
+            <div class="flex-grow-1 position-relative" style="min-width: 300px;">
+                <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted" style="opacity: 0.5;"></i>
                 <input type="text" v-model="filtroAvanzado.search" 
                        class="form-control border-0 bg-white shadow-sm" 
                        placeholder="Buscar por habitación, producto o método..."
-                       style="border-radius: 12px; padding: 0.7rem 1rem 0.7rem 2.8rem;">
+                       style="border-radius: 12px; padding: 0.75rem 1rem 0.75rem 2.8rem; font-size: 0.95rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
             </div>
-            <div style="min-width: 220px;">
-                <select v-model="filtroAvanzado.metodo" class="form-select border-0 bg-white shadow-sm" style="border-radius: 12px; padding: 0.7rem 1.2rem;">
+            <div style="min-width: 200px;">
+                <select v-model="filtroAvanzado.metodo" class="form-select border-0 bg-white shadow-sm" style="border-radius: 12px; padding: 0.75rem 1.2rem; font-size: 0.95rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
                     <option value="">Todos los métodos</option>
                     <option value="EFECTIVO">Efectivo</option>
                     <option value="POS">POS (Tarjetas)</option>
@@ -288,8 +344,9 @@ window.MENDOZA_CONFIG = {
                     <option value="TRANSFER">Transferencias</option>
                 </select>
             </div>
-            <div class="text-muted small d-none d-lg-block">
-                <i class="bi bi-funnel me-1"></i> Filtros inteligentes
+            <div class="text-muted small d-none d-lg-flex align-items-center" style="gap: 0.5rem; padding: 0.5rem 1rem; background: rgba(212,175,55,0.08); border-radius: 10px;">
+                <i class="bi bi-funnel" style="font-size: 0.95rem;"></i> 
+                <span>Filtros inteligentes</span>
             </div>
         </div>
     </div>

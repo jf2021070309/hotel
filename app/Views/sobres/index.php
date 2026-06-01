@@ -38,54 +38,31 @@ $fecha = date('Y-m-d');
 </script>
 
 <div class="main-content bg-slate-50 min-h-screen font-sans font-normal text-slate-800" id="app-sobres" v-cloak>
-  <!-- TOPBAR HEADER CON GLASSMORPHISM -->
-  <header class="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-200/80 px-6 py-4 transition-all shadow-sm">
-    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-      <div class="flex items-center gap-3 w-full sm:w-auto">
-        <button class="btn-burger p-2 hover:bg-slate-100 rounded-xl transition-colors text-slate-700" onclick="handleMenuClick()">
-          <i class="bi bi-list text-2xl"></i>
+  <!-- TOPBAR HEADER -->
+  <div class="topbar" style="background-color: #111827; padding: 0.75rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05);">
+    <div class="d-flex align-items-center justify-content-between w-100">
+      <div class="d-flex align-items-center gap-3">
+        <button class="btn btn-dark btn-sm rounded-circle d-md-none" onclick="handleMenuClick()" style="width:32px;height:32px;padding:0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.1);border:none;">
+          <i class="bi bi-list text-white"></i>
         </button>
-        <div class="flex flex-col">
-          <div class="flex items-center gap-2.5">
-            <h1 class="text-2xl font-black bg-gradient-to-r from-emerald-600 via-teal-600 to-indigo-600 bg-clip-text text-transparent tracking-tight">
-              Sobre de Alex
-            </h1>
-            <span class="bg-emerald-50 text-emerald-700 border border-emerald-200/80 px-3 py-0.5 rounded-full text-xs font-bold tracking-wide shadow-xs flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              {{ dias.length }} DÍAS ACTIVOS
-            </span>
+        <div class="d-flex align-items-center gap-3">
+          <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#10b981,#14b8a6);display:flex;align-items:center;justify-content:center;box-shadow:0 0 15px rgba(16,185,129,0.3);">
+            <i class="bi bi-envelope-paper-fill text-white fs-5"></i>
           </div>
-          <p class="text-xs text-slate-500 font-medium tracking-wide uppercase mt-0.5">Control Financiero de Efectivo Físico en Caja</p>
+          <div>
+            <h4 class="fw-bold mb-0 text-white" style="font-size:18px;letter-spacing:-0.5px;">Sobre de Alex</h4>
+            <div class="text-white-50" style="font-size:11px;">Control Financiero de Efectivo Físico en Caja</div>
+          </div>
         </div>
       </div>
-
-      <!-- CONTROLES Y FILTROS -->
-      <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-end">
-        <!-- Selector Mes / Año -->
-        <div class="flex items-center bg-white border border-slate-200/80 rounded-2xl p-1 shadow-xs hover:border-slate-300 transition-colors">
-          <select class="bg-transparent text-sm font-bold text-slate-700 pl-3 pr-2 py-1.5 focus:outline-none cursor-pointer" v-model="mesFiltro" @change="consultar">
-            <option v-for="(n, i) in meses" :key="i" :value="i+1">{{ n }}</option>
-          </select>
-          <div class="h-4 w-[1px] bg-slate-200 mx-1"></div>
-          <select class="bg-transparent text-sm font-bold text-slate-700 pl-2 pr-3 py-1.5 focus:outline-none cursor-pointer" v-model="anioFiltro" @change="consultar">
-            <option v-for="a in anios" :key="a" :value="a">{{ a }}</option>
-          </select>
-        </div>
-
-        <!-- Botón Debug -->
-        <button @click="toggleDebug" class="flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 border border-slate-200 px-3.5 py-2 rounded-2xl text-xs font-bold transition-all shadow-xs hover:shadow-sm">
-          <i class="bi bi-bug-fill text-indigo-500 text-sm"></i>
-          <span class="hidden md:inline">Debug</span>
-        </button>
-
-        <!-- Botón Imprimir -->
-        <button @click="imprimirReporte" class="flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white px-5 py-2 rounded-2xl text-xs font-bold transition-all shadow-lg shadow-emerald-600/20 hover:shadow-xl hover:shadow-emerald-600/30 active:scale-95">
-          <i class="bi bi-printer-fill text-sm"></i>
-          <span>Imprimir Reporte</span>
+      <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-sm btn-outline-light d-flex align-items-center gap-2" @click="consultar" style="font-size:12px;padding:4px 12px;border-color:rgba(255,255,255,0.2);">
+          <i class="bi bi-arrow-clockwise"></i>
+          <span class="d-none d-md-inline">Actualizar</span>
         </button>
       </div>
     </div>
-  </header>
+  </div>
 
   <main class="max-w-7xl mx-auto px-6 py-8">
     <div v-if="loading" class="min-h-[400px] flex flex-col items-center justify-center gap-4">

@@ -55,6 +55,7 @@ if (!function_exists('clean_route_map')) {
             'limpieza/index.php'        => 'limpieza',
             'limpieza/v2.php'           => 'limpieza/v2',
             'clientes/index.php'        => 'clientes',
+            'clientes/v2.php'           => 'clientes/v2',
             'clientes/frecuentes.php'   => 'clientes-frecuentes',
             'admin/usuarios.php'        => 'admin/usuarios',
             'admin/medios_pago.php'     => 'admin/medios-pago',

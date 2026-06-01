@@ -23,19 +23,28 @@ include __DIR__ . '/../layouts/head.php';
 <?php include __DIR__ . '/../layouts/sidebar.php'; ?>
 <div class="main-content">
 
-  <!-- TOPBAR -->
-  <div class="topbar border-bottom-0 shadow-sm" style="background: linear-gradient(to right, #ffffff, #f8faff);">
-    <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list fs-4"></i></button>
-    <div>
-      <h4 class="fw-bold mb-0" style="color:#111; letter-spacing:-0.5px;">
-        <i class="bi bi-calculator-fill me-2" style="color:#d4af37;"></i>Calculadora de Tipos de Cambio
-      </h4>
-      <p class="mb-0 small text-muted fw-semibold">Conversión en tiempo real · PEN · USD · CLP</p>
-    </div>
-    <div class="ms-auto d-flex gap-2">
-      <span class="badge" style="background:#f0fdf4; color:#166534; font-size:11px; padding:6px 12px; border-radius:8px; border:1px solid #bbf7d0;">
-        <i class="bi bi-calendar3 me-1"></i><?= htmlspecialchars($tc['fecha']) ?>
-      </span>
+  <!-- TOPBAR PREMIUM DARK -->
+  <div class="topbar" style="background-color:#111827;padding:0.75rem 1.5rem;border-bottom:1px solid rgba(255,255,255,0.05);">
+    <div class="d-flex align-items-center justify-content-between w-100">
+      <div class="d-flex align-items-center gap-3">
+        <button class="btn btn-dark btn-sm rounded-circle d-md-none" onclick="openSidebar()" style="width:32px;height:32px;padding:0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.1);border:none;">
+          <i class="bi bi-list text-white"></i>
+        </button>
+        <div class="d-flex align-items-center gap-3">
+          <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#f59e0b,#d97706);display:flex;align-items:center;justify-content:center;box-shadow:0 0 15px rgba(245,158,11,0.4);">
+            <i class="bi bi-calculator-fill text-white fs-5"></i>
+          </div>
+          <div>
+            <h4 class="fw-bold mb-0 text-white" style="font-size:18px;letter-spacing:-0.5px;">Calculadora de Tipos de Cambio</h4>
+            <div class="text-white-50" style="font-size:11px;">Conversión en tiempo real &middot; PEN &middot; USD &middot; CLP</div>
+          </div>
+        </div>
+      </div>
+      <div class="ms-auto d-flex gap-2">
+        <span class="badge d-flex align-items-center gap-1" style="background:rgba(255,255,255,0.1); color:#fff; font-size:11px; padding:6px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.2);">
+          <i class="bi bi-calendar3"></i><?= htmlspecialchars($tc['fecha']) ?>
+        </span>
+      </div>
     </div>
   </div>
 

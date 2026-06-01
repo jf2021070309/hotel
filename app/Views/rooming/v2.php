@@ -23,42 +23,48 @@ include $_projectRoot . '/app/Views/layouts/head.php';
   
   <div class="main-content">
     <!-- TOPBAR -->
-    <div class="topbar border-bottom-0 shadow-sm" style="background: linear-gradient(to right, #ffffff, #f8f9fa);">
-      <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list fs-4"></i></button>
-      <div>
-        <h4 class="fw-bold mb-0" style="color: #111; letter-spacing: -0.5px;">
-          <i class="bi bi-table text-primary me-2"></i>Rooming V2 — Planilla Plana
-        </h4>
-        <p class="mb-0 small text-muted fw-semibold">Edición directa de todos los check-ins estilo Excel</p>
-      </div>
-    
-      
-      <!-- Mes y Año Filtros -->
-      <div class="ms-auto d-flex gap-2 align-items-center flex-wrap">
-        <div>
-          <select v-model="filtro.mes" class="form-select form-select-sm fw-bold shadow-sm" style="width: 120px;" @change="cargarDatos">
-            <option value="1">Enero</option>
-            <option value="2">Febrero</option>
-            <option value="3">Marzo</option>
-            <option value="4">Abril</option>
-            <option value="5">Mayo</option>
-            <option value="6">Junio</option>
-            <option value="7">Julio</option>
-            <option value="8">Agosto</option>
-            <option value="9">Septiembre</option>
-            <option value="10">Octubre</option>
-            <option value="11">Noviembre</option>
-            <option value="12">Diciembre</option>
-          </select>
+    <div class="topbar" style="background-color:#111827;padding:0.75rem 1.5rem;border-bottom:1px solid rgba(255,255,255,0.05);">
+      <div class="d-flex align-items-center justify-content-between w-100">
+        <div class="d-flex align-items-center gap-3">
+          <button class="btn btn-dark btn-sm rounded-circle d-md-none" onclick="handleMenuClick()" style="width:32px;height:32px;padding:0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.1);border:none;">
+            <i class="bi bi-list text-white"></i>
+          </button>
+          <div class="d-flex align-items-center gap-3">
+            <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#f59e0b,#d97706);display:flex;align-items:center;justify-content:center;box-shadow:0 0 15px rgba(245,158,11,0.4);">
+              <i class="bi bi-table text-white fs-5"></i>
+            </div>
+            <div>
+              <h4 class="fw-bold mb-0 text-white" style="font-size:18px;letter-spacing:-0.5px;">Rooming V2 &mdash; Planilla Plana</h4>
+              <div class="text-white-50" style="font-size:11px;">Edición directa de todos los check-ins estilo Excel</div>
+            </div>
+          </div>
         </div>
-        <div>
-          <select v-model="filtro.anio" class="form-select form-select-sm fw-bold shadow-sm" style="width: 90px;" @change="cargarDatos">
-            <option v-for="y in filtro.anios" :key="y" :value="y">{{ y }}</option>
-          </select>
+        <div class="d-flex align-items-center gap-2">
+          <div class="d-flex align-items-center rounded px-2 py-1" style="background-color:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);">
+            <select v-model="filtro.mes" class="form-select form-select-sm border-0 fw-bold text-white bg-transparent py-0 px-2" @change="cargarDatos" style="width:auto;font-size:12px;cursor:pointer;outline:none;box-shadow:none;">
+              <option value="1" class="text-dark">Enero</option>
+              <option value="2" class="text-dark">Febrero</option>
+              <option value="3" class="text-dark">Marzo</option>
+              <option value="4" class="text-dark">Abril</option>
+              <option value="5" class="text-dark">Mayo</option>
+              <option value="6" class="text-dark">Junio</option>
+              <option value="7" class="text-dark">Julio</option>
+              <option value="8" class="text-dark">Agosto</option>
+              <option value="9" class="text-dark">Septiembre</option>
+              <option value="10" class="text-dark">Octubre</option>
+              <option value="11" class="text-dark">Noviembre</option>
+              <option value="12" class="text-dark">Diciembre</option>
+            </select>
+            <div class="vr mx-1" style="height:16px;background:rgba(255,255,255,0.3);"></div>
+            <select v-model="filtro.anio" class="form-select form-select-sm border-0 fw-bold text-white bg-transparent py-0 px-1" @change="cargarDatos" style="width:75px;font-size:12px;cursor:pointer;outline:none;box-shadow:none;">
+              <option v-for="y in filtro.anios" :key="y" :value="y" class="text-dark">{{ y }}</option>
+            </select>
+          </div>
+          <button class="btn btn-sm btn-outline-light d-flex align-items-center gap-2" @click="cargarDatos" :disabled="loading" style="font-size:12px;padding:4px 12px;border-color:rgba(255,255,255,0.2);">
+            <i class="bi bi-arrow-clockwise"></i>
+            <span class="d-none d-md-inline">Actualizar</span>
+          </button>
         </div>
-        <button class="btn btn-sm btn-light border shadow-sm px-2 px-sm-3" @click="cargarDatos" :disabled="loading" title="Actualizar datos">
-          <i class="bi bi-arrow-clockwise fs-6"></i>
-        </button>
       </div>
     </div>
 

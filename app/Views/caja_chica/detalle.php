@@ -13,15 +13,28 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
 ?>
 
 <div class="main-content" id="app-cchica-detalle">
-  <div class="topbar">
-    <button class="btn-burger" onclick="openSidebar()"><i class="bi bi-list"></i></button>
-    <div>
-      <h4><i class="bi bi-piggy-bank me-2 text-primary"></i>Caja Chica en Curso</h4>
-      <p class="mb-0 small text-muted">Gestión de gastos menores sobre fondo fijo</p>
-    </div>
-    <div class="ms-auto">
-      <a href="index.php" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Ver
-        Historial</a>
+  <div class="topbar" style="background-color:#111827;padding:0.75rem 1.5rem;border-bottom:1px solid rgba(255,255,255,0.05);">
+    <div class="d-flex align-items-center justify-content-between w-100">
+      <div class="d-flex align-items-center gap-3">
+        <button class="btn btn-dark btn-sm rounded-circle d-md-none" onclick="handleMenuClick()" style="width:32px;height:32px;padding:0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.1);border:none;">
+          <i class="bi bi-list text-white"></i>
+        </button>
+        <div class="d-flex align-items-center gap-3">
+          <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#f59e0b,#d97706);display:flex;align-items:center;justify-content:center;box-shadow:0 0 15px rgba(245,158,11,0.4);">
+            <i class="bi bi-piggy-bank text-white fs-5"></i>
+          </div>
+          <div>
+            <h4 class="fw-bold mb-0 text-white" style="font-size:18px;letter-spacing:-0.5px;">Caja Chica en Curso</h4>
+            <div class="text-white-50" style="font-size:11px;">Gestión de gastos menores sobre fondo fijo</div>
+          </div>
+        </div>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <a href="index.php" class="btn btn-sm btn-outline-light d-flex align-items-center gap-2" style="font-size:12px;padding:4px 12px;border-color:rgba(255,255,255,0.2);">
+          <i class="bi bi-arrow-left"></i>
+          <span class="d-none d-md-inline">Ver Historial</span>
+        </a>
+      </div>
     </div>
   </div>
 

@@ -5,139 +5,281 @@
 require_once __DIR__ . '/../../../app/Middleware/auth.php';
 protegerPorRol('admin', 'medios_pago');
 
+require_once __DIR__ . '/../../../config/db.php';
+
 $page_title = 'Medios de Pago — Hotel Manager';
 include __DIR__ . '/../layouts/head.php';
-include __DIR__ . '/../layouts/sidebar.php';
 ?>
 
-<div class="main-content">
-  <div class="topbar border-bottom-0 shadow-sm" style="background: linear-gradient(to right, #ffffff, #f8f9fa);">
-    <div class="d-flex align-items-center gap-3">
-      <button class="btn-burger" onclick="handleMenuClick()"><i class="bi bi-list fs-4"></i></button>
-      <div class="d-flex align-items-center gap-1">
-        <i class="bi bi-credit-card-2-back-fill fs-5 d-none d-sm-block" style="color: #0d6efd;"></i>
-        <div class="text-nowrap">
-          <h5 class="fw-bold mb-0" style="color: #111; letter-spacing: -0.5px; font-size: 1.15rem;">Medios de Pago</h5>
-          <p class="mb-0 small text-muted d-none d-sm-block" style="font-size: 10px;">Configuración de métodos de cobro</p>
+<div id="app-medios-pago" style="display:contents" v-cloak>
+  <?php include __DIR__ . '/../layouts/sidebar.php'; ?>
+  
+  <div class="main-content">
+    <!-- TOPBAR PREMIUM DARK -->
+    <div class="topbar" style="background-color:#111827;padding:0.75rem 1.5rem;border-bottom:1px solid rgba(255,255,255,0.05);">
+      <div class="d-flex align-items-center justify-content-between w-100">
+        <div class="d-flex align-items-center gap-3">
+          <button class="btn btn-dark btn-sm rounded-circle d-md-none" onclick="handleMenuClick()" style="width:32px;height:32px;padding:0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.1);border:none;">
+            <i class="bi bi-list text-white"></i>
+          </button>
+          <div class="d-flex align-items-center gap-3">
+            <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#f59e0b,#d97706);display:flex;align-items:center;justify-content:center;box-shadow:0 0 15px rgba(245,158,11,0.4);">
+              <i class="bi bi-credit-card-2-back-fill text-white fs-5"></i>
+            </div>
+            <div>
+              <h4 class="fw-bold mb-0 text-white" style="font-size:18px;letter-spacing:-0.5px;">Medios de Pago</h4>
+              <div class="text-white-50" style="font-size:11px;">Configuración de métodos de cobro estilo Excel</div>
+            </div>
+          </div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <button class="btn btn-sm btn-outline-light d-flex align-items-center gap-2" @click="fetchMedios" :disabled="loading" style="font-size:12px;padding:4px 12px;border-color:rgba(255,255,255,0.2);">
+            <i class="bi bi-arrow-clockwise" :class="{'spin-anim': loading}"></i>
+            <span class="d-none d-md-inline">Actualizar</span>
+          </button>
         </div>
       </div>
     </div>
-    <div class="ms-auto d-flex align-items-center gap-2">
-       <button class="btn btn-primary d-flex align-items-center gap-2 shadow-sm fw-bold px-3 py-2" @click="abrirNuevo" style="font-size: 12px; border: 1px solid #111;">
-          <i class="bi bi-plus-lg text-warning"></i> <span class="d-none d-sm-inline">NUEVO MEDIO</span>
-       </button>
-    </div>
-  </div>
 
-  <div id="app-medios-pago" v-cloak style="display:contents">
-
-  <div class="page-body">
-    <div class="row g-3">
-      <div class="col-lg-12">
-        <div class="card border-0 shadow-sm overflow-hidden" style="border-radius:12px;">
-          <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-              <thead class="bg-light">
-                <tr>
-                  <th class="ps-4" style="width: 80px;">ORDEN</th>
-                  <th>DESCRIPCIÓN</th>
-                  <th style="width: 150px;">ESTADO</th>
-                  <th class="text-end pe-4" style="width: 150px;">ACCIONES</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-if="loading" ><td colspan="4" class="text-center py-5"><div class="spinner-border text-primary"></div></td></tr>
-                <tr v-else v-for="m in medios" :key="m.id">
-                  <td class="ps-4">
-                    <span class="badge bg-light text-dark border">{{ m.orden }}</span>
-                  </td>
-                  <td>
-                    <div class="fw-bold">{{ m.nombre }}</div>
-                    <div class="text-muted mini text-uppercase">ID Categoría: {{ m.id }}</div>
-                  </td>
-                  <td>
-                    <div class="form-check form-switch cursor-pointer" @click.prevent="toggleEstado(m)">
-                      <input class="form-check-input" type="checkbox" :checked="m.activo == 1">
-                      <label class="form-check-label small" :class="m.activo == 1 ? 'text-success' : 'text-danger'">
-                        {{ m.activo == 1 ? 'Activo' : 'Inactivo' }}
-                      </label>
-                    </div>
-                  </td>
-                  <td class="text-end pe-4">
-                    <div class="btn-group">
-                      <button class="btn btn-sm btn-light" @click="editar(m)" title="Editar">
-                        <i class="bi bi-pencil-square text-primary"></i>
-                      </button>
-                      <button class="btn btn-sm btn-light" @click="eliminar(m)" title="Eliminar">
-                        <i class="bi bi-trash text-danger"></i>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-                <tr v-if="!loading && medios.length === 0">
-                  <td colspan="4" class="text-center py-5 text-muted">No se encontraron medios de pago configurados.</td>
-                </tr>
-              </tbody>
-            </table>
+    <!-- BODY -->
+    <div class="page-body pt-3">
+      <!-- CONTROL BAR & ACCIONES -->
+      <div class="card border-0 shadow-sm mb-3" style="border-radius: 12px;">
+        <div class="card-body p-3">
+          <div class="d-flex flex-wrap gap-3 align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-3">
+              <div class="input-group input-group-sm rounded shadow-sm" style="width: 300px;">
+                <span class="input-group-text bg-white border-end-0 text-muted px-2"><i class="bi bi-search"></i></span>
+                <input type="text" class="form-control border-start-0 bg-white text-dark" 
+                       style="font-size: 13px;" v-model="busqueda" placeholder="Buscar medio de pago...">
+              </div>
+              <div class="text-muted fw-semibold" style="font-size: 12px;" v-if="!loading">
+                <i class="bi bi-list-ul me-1"></i>{{ mediosFiltrados.length }} registros
+              </div>
+            </div>
+            
+            <div class="d-flex align-items-center gap-2">
+              <button class="btn btn-sm btn-custom-blue fw-bold px-3 shadow-sm" @click="guardarCambiosMasivos" :disabled="loading || cambiosCount === 0" style="font-size: 12px;">
+                <i class="bi bi-save me-1"></i>Guardar Cambios
+                <span v-if="cambiosCount > 0" class="badge bg-warning text-dark ms-1" style="font-size: 10px;">{{ cambiosCount }}</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
-      
-    </div>
-  </div>
 
-  <!-- MODAL FORMULARIO -->
-  <div class="modal fade" id="modalMedio" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content border-0 shadow" style="border-radius:16px;">
-        <div class="modal-header bg-light border-0 py-3" style="border-radius:16px 16px 0 0;">
-          <h5 class="modal-title fw-bold">{{ form.id ? 'Editar Medio' : 'Nuevo Medio de Pago' }}</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <form @submit.prevent="guardar">
-          <div class="modal-body p-4">
-            <div class="mb-3">
-              <label class="form-label small fw-bold text-muted">DESCRIPCIÓN (Eje: POS SOLES, YAPE, etc.)</label>
-              <input type="text" class="form-control" v-model="form.nombre" required placeholder="Nombre del medio de pago">
-            </div>
-            <div class="row g-3">
-              <div class="col-md-6">
-                <label class="form-label small fw-bold text-muted">ORDEN</label>
-                <input type="number" class="form-control" v-model="form.orden" min="0">
-              </div>
-              <div class="col-md-6">
-                  <label class="form-label small fw-bold text-muted">ESTADO</label>
-                  <select class="form-select" v-model="form.activo">
-                    <option :value="1">ACTIVO</option>
-                    <option :value="0">INACTIVO</option>
+      <!-- GRID INTERACTIVE CONTAINER -->
+      <div class="card border-0 shadow-sm overflow-hidden" style="border-radius: 12px;">
+        <div class="mensual-grid-container">
+          <table class="table table-bordered table-hover mb-0 align-middle table-mensual">
+            <thead>
+              <tr class="text-center text-white text-uppercase" style="font-size: 10px; letter-spacing: 0.5px; font-weight: 800;">
+                <th colspan="3" class="sticky-col" style="background-color: #111827 !important; border-bottom: 1px solid rgba(255,255,255,0.1) !important; z-index: 13 !important;">DATOS DEL MEDIO</th>
+                <th colspan="1" style="background-color: #293b95 !important; border-bottom: 1px solid rgba(255,255,255,0.1) !important; border-left: 1px solid rgba(255,255,255,0.1) !important;">DESCRIPCIÓN</th>
+                <th colspan="1" style="background-color: #6a1b9a !important; border-bottom: 1px solid rgba(255,255,255,0.1) !important; border-left: 1px solid rgba(255,255,255,0.1) !important;">SISTEMA</th>
+              </tr>
+              <tr class="text-center text-white text-uppercase" style="font-size: 11px; letter-spacing: 0.5px;">
+                <th class="sticky-col text-center" style="width: 50px; top: 38px; z-index: 12 !important; background-color: #111827 !important; border-right: 1px solid rgba(255,255,255,0.1) !important;"><i class="bi bi-trash"></i></th>
+                <th class="sticky-col text-center" style="width: 70px; top: 38px; z-index: 12 !important; background-color: #111827 !important; border-right: 1px solid rgba(255,255,255,0.1) !important;">ID</th>
+                <th style="width: 100px; top: 38px; background-color: #111827 !important; border-right: 1px solid rgba(255,255,255,0.1) !important;">ORDEN</th>
+                <th style="width: auto; min-width: 300px; top: 38px; background-color: #293b95 !important; border-right: 1px solid rgba(255,255,255,0.1) !important;">NOMBRE / DETALLE</th>
+                <th class="text-center" style="width: 150px; top: 38px; background-color: #6a1b9a !important;">ESTADO</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-if="loading">
+                <td colspan="5" class="text-center py-5">
+                  <div class="spinner-border text-primary me-2"></div>
+                  <span class="text-muted fw-semibold">Cargando medios de pago...</span>
+                </td>
+              </tr>
+              <tr v-else-if="mediosFiltrados.length === 0">
+                <td colspan="5" class="text-center py-5 text-muted">
+                  <i class="bi bi-credit-card-2-back fs-1 d-block opacity-25 mb-2"></i>
+                  <span>No se encontraron medios de pago.</span>
+                </td>
+              </tr>
+              <tr v-else v-for="(m, idx) in mediosFiltrados" :key="m.id || m.temp_id" :class="{'unsaved-row': m.modificado || !m.id}">
+                <!-- ELIMINAR -->
+                <td class="sticky-col text-center px-1">
+                  <button class="btn btn-sm btn-link text-danger p-0" @click="eliminarFila(m, idx)" title="Eliminar registro">
+                    <i class="bi bi-trash-fill fs-6"></i>
+                  </button>
+                </td>
+                
+                <!-- ID -->
+                <td class="sticky-col text-center px-1">
+                  <span v-if="m.id" class="badge bg-light text-dark border">#{{ m.id }}</span>
+                  <span v-else class="badge bg-warning text-dark border">Nuevo</span>
+                </td>
+                
+                <!-- ORDEN -->
+                <td class="px-1">
+                  <input type="number" v-model="m.orden" class="table-editable-input fw-bold text-dark text-center" @input="marcarModificado(m)" style="width: 100%;" min="0">
+                </td>
+
+                <!-- NOMBRE -->
+                <td class="px-1">
+                  <input type="text" v-model="m.nombre" class="table-editable-input text-dark fw-bold text-uppercase" @input="marcarModificado(m)" style="width: 100%;">
+                </td>
+                
+                <!-- ESTADO -->
+                <td class="px-1">
+                  <select v-model="m.activo" class="table-editable-input fw-bold text-dark" @change="marcarModificado(m)" style="width: 100%; cursor: pointer;">
+                    <option :value="1">Activo</option>
+                    <option :value="0">Inactivo</option>
                   </select>
-              </div>
-            </div>
-          </div>
-          <div class="modal-footer border-0 p-4 pt-0">
-            <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancelar</button>
-            <button type="submit" class="btn btn-primary px-4" :disabled="isSaving">
-                <span v-if="isSaving" class="spinner-border spinner-border-sm me-1"></span>
-                {{ form.id ? 'Actualizar' : 'Guardar Medio' }}
-            </button>
-          </div>
-        </form>
+                </td>
+              </tr>
+
+              <!-- Fila adicional para "Añadir Fila" -->
+              <tr v-if="!loading && busqueda === ''">
+                <td class="sticky-col text-center px-1" style="background-color: #f8fafc;">
+                  <button class="btn btn-sm text-primary p-0 w-100 d-flex align-items-center justify-content-center hover-bg-premium" 
+                          @click="agregarFila" title="Añadir nuevo medio" 
+                          style="min-height: 28px; border: 2px dashed #93c5fd; background-color: #eff6ff; border-radius: 4px;">
+                    <i class="bi bi-plus-lg fw-bold" style="font-size: 15px;"></i>
+                  </button>
+                </td>
+                <td colspan="4" class="bg-light text-muted" style="vertical-align: middle; padding-left: 15px; font-size: 11px;">
+                  Haga clic en el botón <i class="bi bi-plus-lg text-primary fw-bold"></i> para agregar un nuevo medio de pago al final de la tabla. Al guardar, se le asignará el siguiente orden disponible.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
     </div> <!-- /page-body -->
-  </div> <!-- /app-medios-pago -->
-</div> <!-- /main-content -->
+  </div> <!-- /main-content -->
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  window.authUser = <?= json_encode(['id' => $_SESSION['usuario_id'] ?? null, 'rol' => $_SESSION['rol'] ?? null]) ?>;
+</script>
 <script src="medios_pago.js?v=<?= time() ?>"></script>
 
 <style>
-.badge { font-family: monospace; }
-.cursor-pointer { cursor: pointer; }
-.mini { font-size: 10px; }
+  [v-cloak] { display: none !important; }
+  body { background-color: #f8f9fa; font-family: 'Inter', sans-serif; }
+  
+  /* GRID STYLES */
+  .mensual-grid-container {
+    overflow-x: auto;
+    background: #fff;
+    position: relative;
+  }
+  .table-mensual {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+  .table-mensual thead th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 10px 8px;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.1);
+    vertical-align: middle;
+    color: #ffffff !important;
+  }
+  .table-mensual tbody td {
+    padding: 0;
+    vertical-align: middle;
+    border-bottom: 1px solid #f1f5f9;
+    background-color: #fff;
+    transition: background-color 0.2s;
+  }
+  
+  .sticky-col {
+    position: sticky;
+    left: 0;
+    background-color: #f8fafc !important;
+    z-index: 5;
+    border-right: 1px solid #e2e8f0 !important;
+  }
+  .table-mensual thead th.sticky-col {
+    z-index: 15 !important;
+  }
+
+  /* Eliminar bordes internos entre las dos filas del encabezado */
+  .table-mensual thead tr:first-child th {
+    border-bottom: none !important;
+  }
+  .table-mensual thead tr:last-child th {
+    border-top: none !important;
+  }
+  /* Forzar que los bordes laterales internos del thead sean invisibles */
+  .table-mensual thead th {
+    border-left: none !important;
+    border-right: none !important;
+  }
+  /* Excepto la línea divisoria entre grupos de color */
+  .table-mensual thead th[style*="border-left"] {
+    border-left: 1px solid rgba(255,255,255,0.15) !important;
+  }
+  
+  /* INPUTS ESTILO EXCEL */
+  .table-editable-input {
+    width: 100%;
+    min-width: 60px;
+    border: 1px solid transparent;
+    background-color: transparent;
+    padding: 10px 8px;
+    font-size: 12.5px;
+    color: #1e293b;
+    border-radius: 0;
+    outline: none;
+    transition: all 0.2s;
+  }
+  .table-editable-input:focus, .table-editable-input:hover:not(:disabled) {
+    background-color: #f8fafc;
+    border-color: #cbd5e1;
+    border-radius: 4px;
+  }
+  .table-editable-input:disabled {
+    color: #94a3b8 !important;
+    background-color: #f1f5f9;
+    cursor: not-allowed;
+  }
+  select.table-editable-input {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%2364748b' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.5rem center;
+    background-size: 16px 12px;
+    padding-right: 2rem;
+  }
+  
+  /* ESTADOS */
+  .unsaved-row td {
+    background-color: #fffbeb !important;
+  }
+  .unsaved-row .sticky-col {
+    background-color: #fef3c7 !important;
+  }
+  
+  .btn-custom-blue {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: #fff;
+    border: none;
+  }
+  .btn-custom-blue:hover:not(:disabled) {
+    background: linear-gradient(135deg, #1e40af, #1e3a8a);
+    color: #fff;
+  }
+  .spin-anim {
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 100% { transform: rotate(360deg); } }
+  
+  .hover-bg-premium:hover { background-color: #e0e7ff !important; color: #3730a3 !important; }
+  .hover-bg-danger:hover { background-color: #fee2e2 !important; color: #b91c1c !important; }
 </style>
 
 </body></html>

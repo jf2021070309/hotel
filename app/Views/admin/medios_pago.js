@@ -1,129 +1,148 @@
 /**
- * app/Views/admin/medios_pago.js
+ * Módulo Frontend de Medios de Pago V2.
  */
-const { createApp, ref, onMounted, reactive } = Vue;
+Vue.createApp({
+  data() {
+    return {
+      medios: [],
+      busqueda: '',
+      loading: false,
+      authUser: window.authUser || {}
+    };
+  },
 
-createApp({
-  setup() {
-    const medios = ref([]);
-    const loading = ref(false);
-    const isSaving = ref(false);
-    const modal = ref(null);
+  computed: {
+    mediosFiltrados() {
+      let f = this.medios;
+      if (this.busqueda) {
+        const q = this.busqueda.toLowerCase();
+        f = f.filter(m => 
+          (m.nombre && m.nombre.toLowerCase().includes(q)) ||
+          (m.id && m.id.toString().includes(q))
+        );
+      }
+      return f;
+    },
+    cambiosCount() {
+      return this.medios.filter(m => m.modificado || !m.id).length;
+    }
+  },
 
-    const form = reactive({
-      id: null,
-      nombre: '',
-      orden: 0,
-      activo: 1
-    });
-
-    const cargarMedios = async () => {
-      loading.value = true;
+  methods: {
+    async fetchMedios() {
+      this.loading = true;
       try {
         const res = await axios.get('../../../api/medios_pago.php?action=listar');
-        if (res.data.ok) {
-          medios.value = res.data.data;
-        }
+        const data = res.data.data || [];
+        this.medios = data.map(m => ({
+          ...m,
+          modificado: false
+        }));
       } catch (err) {
-        showToast('Error al cargar medios', 'error');
+        this.showToast('Error al cargar medios', 'error');
       } finally {
-        loading.value = false;
+        this.loading = false;
       }
-    };
+    },
 
-    const abrirNuevo = () => {
-      resetForm();
-      if (!modal.value) modal.value = new bootstrap.Modal('#modalMedio');
-      modal.value.show();
-    };
-
-    const resetForm = () => {
-      form.id = null;
-      form.nombre = '';
-      form.orden = medios.value.length + 1;
-      form.activo = 1;
-    };
-
-    const editar = (m) => {
-      form.id = m.id;
-      form.nombre = m.nombre;
-      form.orden = m.orden;
-      form.activo = m.activo;
-      if (!modal.value) modal.value = new bootstrap.Modal('#modalMedio');
-      modal.value.show();
-    };
-
-    const guardar = async () => {
-      isSaving.value = true;
-      try {
-        const res = await axios.post('../../../api/medios_pago.php?action=guardar', form);
-        if (res.data.ok) {
-          showToast(res.data.msg, 'success');
-          modal.value.hide();
-          cargarMedios();
-        } else {
-          showToast(res.data.msg, 'error');
-        }
-      } catch (err) {
-        showToast('Error al guardar', 'error');
-      } finally {
-        isSaving.value = false;
+    agregarFila() {
+      let maxOrden = 0;
+      if (this.medios.length > 0) {
+        maxOrden = Math.max(...this.medios.map(m => Number(m.orden) || 0));
       }
-    };
 
-    const toggleEstado = async (m) => {
-      try {
-        const res = await axios.get(`../../../api/medios_pago.php?action=toggle&id=${m.id}`);
-        if (res.data.ok) {
-          showToast(res.data.msg, 'success');
-          m.activo = 1 - m.activo;
-        }
-      } catch (err) {
-        showToast('Error al cambiar estado', 'error');
+      this.medios.push({
+        id: null,
+        temp_id: 'temp_' + Date.now(),
+        nombre: '',
+        orden: maxOrden + 1,
+        activo: 1,
+        modificado: true
+      });
+      // Scroll to bottom
+      setTimeout(() => {
+        const container = document.querySelector('.mensual-grid-container');
+        if (container) container.scrollTop = container.scrollHeight;
+      }, 100);
+    },
+
+    marcarModificado(m) {
+      if (m.id) {
+        m.modificado = true;
       }
-    };
+    },
 
-    const eliminar = async (m) => {
-      const { isConfirmed } = await Swal.fire({
+    async eliminarFila(m, index) {
+      if (!m.id) {
+        this.medios.splice(this.medios.indexOf(m), 1);
+        return;
+      }
+      
+      const res = await Swal.fire({
         title: '¿Eliminar medio de pago?',
-        text: `Se eliminará "${m.nombre}". Esta acción puede fallar si ya tiene movimientos asociados.`,
+        text: `¿Deseas eliminar "${m.nombre}"? Fallará si tiene registros asociados.`,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonText: 'Sí, eliminar',
         cancelButtonText: 'Cancelar'
       });
 
-      if (isConfirmed) {
+      if (res.isConfirmed) {
         try {
-          const res = await axios.get(`../../../api/medios_pago.php?action=eliminar&id=${m.id}`);
-          if (res.data.ok) {
-            showToast(res.data.msg, 'success');
-            cargarMedios();
+          const apiRes = await axios.get(`../../../api/medios_pago.php?action=eliminar&id=${m.id}`);
+          if (apiRes.data.ok) {
+            this.showToast(apiRes.data.msg, 'success');
+            await this.fetchMedios();
           } else {
-            showToast(res.data.msg, 'error');
+            this.showToast(apiRes.data.msg || 'Error al eliminar', 'error');
           }
         } catch (err) {
-          showToast('Error al eliminar', 'error');
+          this.showToast('Error al eliminar', 'error');
         }
       }
-    };
+    },
 
-    const showToast = (msg, icon) => {
+    async guardarCambiosMasivos() {
+      const cambiados = this.medios.filter(m => m.modificado || !m.id);
+      if (cambiados.length === 0) return;
+
+      // Validate required fields
+      for (const m of cambiados) {
+        if (!m.nombre || !m.nombre.trim()) {
+          return this.showToast('Todos los medios deben tener una Descripción', 'error');
+        }
+      }
+
+      this.loading = true;
+      try {
+        let successCount = 0;
+        for (const m of cambiados) {
+          const res = await axios.post(`../../../api/medios_pago.php?action=guardar`, m);
+          if (res.data.ok) {
+            successCount++;
+          }
+        }
+        
+        this.showToast(`Se guardaron ${successCount} medios de pago correctamente`, 'success');
+        await this.fetchMedios();
+      } catch (err) {
+        this.showToast('Hubo un error al guardar algunos cambios', 'error');
+        console.error(err);
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    showToast(msg, icon) {
       Swal.fire({
-        toast: true,
-        position: 'top-end',
-        showConfirmButton: false,
-        timer: 3000,
-        icon,
-        title: msg
+        toast: true, position: 'top-end', icon: icon,
+        title: msg, showConfirmButton: false, timer: 3000,
+        timerProgressBar: true
       });
-    };
+    }
+  },
 
-    onMounted(cargarMedios);
-
-    return {
-      medios, loading, isSaving, form,
-      abrirNuevo, editar, guardar, toggleEstado, eliminar
-    };
+  mounted() {
+    this.fetchMedios();
   }
 }).mount('#app-medios-pago');

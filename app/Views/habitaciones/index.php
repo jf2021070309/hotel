@@ -8,25 +8,34 @@ include __DIR__ . '/../layouts/sidebar.php';
 ?>
 <div id="app-habitaciones" style="display:contents">
 <div class="main-content">
-  <div class="topbar border-bottom-0 shadow-sm" style="background: linear-gradient(to right, #ffffff, #f8f9fa);">
-    <button class="btn-burger" onclick="handleMenuClick()"><i class="bi bi-list fs-4"></i></button>
-    <div>
-      <h4 class="fw-bold" style="color: #111; letter-spacing: -0.5px;">
-        <i class="bi bi-building me-2" style="color: #d4af37;"></i>Habitaciones
-      </h4>
-      <p class="mb-0 small text-muted fw-semibold">Gestión de habitaciones del hotel</p>
-    </div>
-    <div class="ms-auto d-flex flex-wrap gap-1 justify-content-end">
-      <button class="btn btn-sm btn-primary shadow-sm px-2 px-sm-3" @click="abrirModal(null)" title="Nueva Habitación" style="border: 1px solid #111; font-weight: 700; font-size: 11px;">
-        <i class="bi bi-plus-circle-fill text-warning me-1"></i>
-        <span>NUEVA</span>
-      </button>
-      <button class="btn btn-sm btn-outline-danger shadow-sm px-2" @click="exportarPDF" title="Exportar PDF">
-        <i class="bi bi-file-earmark-pdf-fill"></i>
-      </button>
-      <button class="btn btn-sm btn-outline-success shadow-sm px-2" @click="exportarExcel" title="Exportar Excel">
-        <i class="bi bi-file-earmark-excel-fill"></i>
-      </button>
+  <div class="topbar" style="background-color:#111827;padding:0.75rem 1.5rem;border-bottom:1px solid rgba(255,255,255,0.05);">
+    <div class="d-flex align-items-center justify-content-between w-100">
+      <div class="d-flex align-items-center gap-3">
+        <button class="btn btn-dark btn-sm rounded-circle d-md-none" onclick="handleMenuClick()" style="width:32px;height:32px;padding:0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.1);border:none;">
+          <i class="bi bi-list text-white"></i>
+        </button>
+        <div class="d-flex align-items-center gap-3">
+          <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#f59e0b,#d97706);display:flex;align-items:center;justify-content:center;box-shadow:0 0 15px rgba(245,158,11,0.4);">
+            <i class="bi bi-building text-white fs-5"></i>
+          </div>
+          <div>
+            <h4 class="fw-bold mb-0 text-white" style="font-size:18px;letter-spacing:-0.5px;">Habitaciones</h4>
+            <div class="text-white-50" style="font-size:11px;">Gestión de habitaciones del hotel</div>
+          </div>
+        </div>
+      </div>
+      <div class="ms-auto d-flex flex-wrap gap-2 justify-content-end align-items-center">
+        <button class="btn btn-sm btn-outline-light d-flex align-items-center gap-2" @click="abrirModal(null)" style="font-size:12px;padding:4px 12px;border-color:rgba(255,255,255,0.2);">
+          <i class="bi bi-plus-circle-fill text-warning"></i>
+          <span class="d-none d-md-inline">Nueva</span>
+        </button>
+        <button class="btn btn-sm btn-outline-light" @click="exportarPDF" title="Exportar PDF" style="padding:4px 10px;border-color:rgba(255,255,255,0.2);">
+          <i class="bi bi-file-earmark-pdf-fill"></i>
+        </button>
+        <button class="btn btn-sm btn-outline-light" @click="exportarExcel" title="Exportar Excel" style="padding:4px 10px;border-color:rgba(255,255,255,0.2);">
+          <i class="bi bi-file-earmark-excel-fill"></i>
+        </button>
+      </div>
     </div>
   </div>
 

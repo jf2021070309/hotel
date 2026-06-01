@@ -17,35 +17,36 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
 
 <div class="main-content" id="app-flujo-v2" v-cloak>
   <!-- TOPBAR -->
-  <div class="topbar border-bottom-0 shadow-sm" style="background: linear-gradient(to right, #0f172a, #1e293b); color: #fff; padding: 12px 24px;">
-    <div class="d-flex align-items-center gap-3">
-      <button class="btn-burger text-white border-0 bg-transparent" onclick="handleMenuClick()"><i class="bi bi-list fs-4"></i></button>
+  <div class="topbar" style="background-color: #111827; padding: 0.75rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05);">
+    <div class="d-flex align-items-center justify-content-between w-100">
+      <div class="d-flex align-items-center gap-3">
+        <button class="btn btn-dark btn-sm rounded-circle d-md-none" onclick="handleMenuClick()" style="width:32px;height:32px;padding:0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.1);border:none;">
+          <i class="bi bi-list text-white"></i>
+        </button>
+        <div class="d-flex align-items-center gap-3">
+          <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#f59e0b,#d97706);display:flex;align-items:center;justify-content:center;box-shadow:0 0 15px rgba(245,158,11,0.4);">
+            <i class="bi bi-table text-white fs-5"></i>
+          </div>
+          <div>
+            <h4 class="fw-bold mb-0 text-white" style="font-size:18px;letter-spacing:-0.5px;">Flujo de Caja Mensual V2</h4>
+            <div class="text-white-50" style="font-size:11px;">Mapeo completo del mes en vista cuadrícula estilo Excel</div>
+          </div>
+        </div>
+      </div>
       <div class="d-flex align-items-center gap-2">
-        <div class="brand-icon d-flex align-items-center justify-content-center" style="background: linear-gradient(135deg, #f59e0b, #d97706); width: 34px; height: 34px; border-radius: 8px; color: #fff; box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);">
-          <i class="bi bi-table fs-5"></i>
+        <div class="d-flex align-items-center rounded px-2 py-1" style="background-color:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);">
+          <select class="form-select form-select-sm border-0 fw-bold text-white bg-transparent py-0 px-2" v-model="filtros.mes" @change="generarCalendario" style="width:auto;font-size:12px;cursor:pointer;outline:none;box-shadow:none;">
+            <option v-for="(m, i) in meses" :key="i" :value="i+1" class="text-dark">{{ m }}</option>
+          </select>
+          <div class="vr mx-1" style="height:16px;background:rgba(255,255,255,0.3);"></div>
+          <input type="number" class="form-control form-control-sm border-0 fw-bold text-white bg-transparent py-0 px-1 text-center" v-model="filtros.anio" @change="generarCalendario" style="width:65px;font-size:12px;outline:none;box-shadow:none;" min="2020">
         </div>
-        <div>
-          <h5 class="fw-bold mb-0 text-white" style="letter-spacing: -0.5px; font-size: 1.1rem;">Flujo de Caja Mensual V2</h5>
-          <p class="mb-0 text-slate-300 d-none d-md-block" style="font-size: 10px; color: #94a3b8;">Mapeo completo del mes en vista cuadrícula estilo Excel</p>
-        </div>
+        <button class="btn btn-sm btn-outline-light d-flex align-items-center gap-2" @click="cargarDatos" :disabled="loading" style="font-size:12px;padding:4px 12px;border-color:rgba(255,255,255,0.2);">
+          <span v-if="loading" class="spinner-border spinner-border-sm"></span>
+          <i v-else class="bi bi-arrow-clockwise"></i>
+          <span class="d-none d-md-inline">Actualizar</span>
+        </button>
       </div>
-    </div>
-
-    <div class="ms-auto d-flex align-items-center gap-2">
-      <!-- Selector de Mes/Año Premium -->
-      <div class="d-flex align-items-center bg-slate-800 border border-secondary rounded shadow-sm px-2 py-1" style="background-color: rgba(30, 41, 59, 0.8);">
-        <select class="form-select form-select-sm border-0 fw-bold text-white bg-transparent py-0 px-2" v-model="filtros.mes" @change="generarCalendario" style="width: auto; font-size: 12px; cursor: pointer; outline: none; box-shadow: none;">
-          <option v-for="(m, i) in meses" :key="i" :value="i+1" class="text-dark">{{ m }}</option>
-        </select>
-        <div class="vr bg-secondary mx-1" style="height: 16px;"></div>
-        <input type="number" class="form-control form-control-sm border-0 fw-bold text-white bg-transparent py-0 px-1 text-center" v-model="filtros.anio" @change="generarCalendario" style="width: 65px; font-size: 12px; outline: none; box-shadow: none;" min="2020">
-      </div>
-      
-      <button class="btn btn-sm btn-outline-light d-flex align-items-center gap-1 shadow-sm px-3 fw-bold" @click="cargarDatos" :disabled="loading" style="font-size: 11px; height: 32px;">
-        <span v-if="loading" class="spinner-border spinner-border-sm"></span>
-        <i v-else class="bi bi-arrow-clockwise"></i>
-        <span class="d-none d-sm-inline">Actualizar</span>
-      </button>
     </div>
   </div>
 

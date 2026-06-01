@@ -1,28 +1,18 @@
 /**
- * Módulo Frontend de Gestión de Usuarios.
- *
- * Implementa la lógica reactiva en Vue 3 para administrar los usuarios del sistema,
- * gestionar sus estados, credenciales y asignar permisos modulares.
- * Compatible con TypeDoc y Mintlify.
- *
- * @module Admin/UsuariosJS
+ * Módulo Frontend de Gestión de Usuarios V2.
  */
 Vue.createApp({
   data() {
     return {
       usuarios: [],
+      busqueda: '',
       loading: false,
-      editMode: false,
-      current: {
-        id: null,
-        usuario: '',
-        nombre: '',
-        rol: 'cajera',
-        password: '',
-        estado: 1
-      },
-      newPassword: '',
       authUser: window.authUser || {},
+      
+      // Para contraseñas
+      current: {},
+      newPassword: '',
+      
       // Permisos de módulos
       usuarioPermisos: null,
       permisosModulos: [],
@@ -31,20 +21,33 @@ Vue.createApp({
     };
   },
 
+  computed: {
+    usuariosFiltrados() {
+      let f = this.usuarios;
+      if (this.busqueda) {
+        const q = this.busqueda.toLowerCase();
+        f = f.filter(u => 
+          (u.nombre && u.nombre.toLowerCase().includes(q)) ||
+          (u.usuario && u.usuario.toLowerCase().includes(q))
+        );
+      }
+      return f;
+    },
+    cambiosCount() {
+      return this.usuarios.filter(u => u.modificado || !u.id).length;
+    }
+  },
+
   methods: {
-    /**
-     * Obtiene y actualiza la lista de usuarios invocando a la API.
-     * Maneja el estado de carga y muestra alertas en caso de error.
-     * 
-     * @async
-     * @function fetchUsuarios
-     * @returns {Promise<void>} Resolucion de la carga
-     */
     async fetchUsuarios() {
       this.loading = true;
       try {
         const res = await axios.get('../../../api/usuarios.php?action=listar');
-        this.usuarios = res.data.data || [];
+        const data = res.data.data || [];
+        this.usuarios = data.map(u => ({
+          ...u,
+          modificado: false
+        }));
       } catch (err) {
         this.showToast('Error al cargar usuarios', 'error');
       } finally {
@@ -52,32 +55,87 @@ Vue.createApp({
       }
     },
 
-    /**
-     * Prepara el formulario reactivo para registrar un nuevo usuario.
-     * Limpia el estado actual y despliega el componente modal.
-     * 
-     * @function nuevaUsuario
-     * @returns {void}
-     */
-    nuevaUsuario() {
-      this.editMode = false;
-      this.current = { id: null, usuario: '', nombre: '', rol: 'cajera', password: '', estado: 1 };
-      const modal = new bootstrap.Modal(document.getElementById('modalUsuario'));
-      modal.show();
+    agregarFila() {
+      this.usuarios.push({
+        id: null,
+        temp_id: 'temp_' + Date.now(),
+        nombre: '',
+        usuario: '',
+        rol: 'cajera',
+        estado: 1,
+        modificado: true
+      });
+      // Scroll to bottom
+      setTimeout(() => {
+        const container = document.querySelector('.mensual-grid-container');
+        if (container) container.scrollTop = container.scrollHeight;
+      }, 100);
     },
 
-    /**
-     * Prepara el formulario para modificar los datos de un usuario previamente registrado.
-     * 
-     * @function abrirModalEditar
-     * @param {Object} u Mapa de propiedades del usuario a editar
-     * @returns {void}
-     */
-    abrirModalEditar(u) {
-      this.editMode = true;
-      this.current = { ...u, password: '' };
-      const modal = new bootstrap.Modal(document.getElementById('modalUsuario'));
-      modal.show();
+    marcarModificado(u) {
+      if (u.id) {
+        u.modificado = true;
+      }
+    },
+
+    async eliminarFila(u, index) {
+      if (!u.id) {
+        this.usuarios.splice(this.usuarios.indexOf(u), 1);
+        return;
+      }
+      
+      if (u.id == 1 || u.id == this.authUser.id) {
+        return this.showToast('No puedes desactivar este usuario', 'error');
+      }
+
+      const res = await Swal.fire({
+        title: '¿Desactivar usuario?',
+        text: `¿Deseas cambiar el estado de ${u.nombre} a Inactivo?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, desactivar'
+      });
+
+      if (res.isConfirmed) {
+        u.estado = 0;
+        this.marcarModificado(u);
+        await this.guardarCambiosMasivos();
+      }
+    },
+
+    async guardarCambiosMasivos() {
+      const cambiados = this.usuarios.filter(u => u.modificado || !u.id);
+      if (cambiados.length === 0) return;
+
+      // Validate required fields
+      for (const u of cambiados) {
+        if (!u.nombre || !u.nombre.trim() || !u.usuario || !u.usuario.trim()) {
+          return this.showToast('Todos los usuarios deben tener Nombre y Login', 'error');
+        }
+      }
+
+      this.loading = true;
+      try {
+        // Enviar cada cambio uno por uno (o en bulk si el backend lo soporta, pero lo haremos uno por uno por seguridad con la API actual)
+        let successCount = 0;
+        for (const u of cambiados) {
+          const action = u.id ? 'editar' : 'crear';
+          if (!u.id && !u.password) {
+            u.password = '123456'; // Password default para nuevos
+          }
+          
+          await axios.post(`../../../api/usuarios.php?action=${action}`, u);
+          successCount++;
+        }
+        
+        this.showToast(`Se guardaron ${successCount} usuarios correctamente`, 'success');
+        await this.fetchUsuarios();
+      } catch (err) {
+        this.showToast('Hubo un error al guardar algunos cambios', 'error');
+        console.error(err);
+      } finally {
+        this.loading = false;
+      }
     },
 
     abrirModalPass(u) {
@@ -85,42 +143,6 @@ Vue.createApp({
       this.newPassword = '';
       const modal = new bootstrap.Modal(document.getElementById('modalPass'));
       modal.show();
-    },
-
-    /**
-     * Dispara la petición POST para registrar o editar un usuario.
-     * Valida campos obligatorios de forma asíncrona ante la API y refresca la UI si es necesario.
-     * 
-     * @async
-     * @function guardarUsuario
-     * @returns {Promise<void>}
-     */
-    async guardarUsuario() {
-      if (!this.current.usuario || !this.current.nombre) {
-        return this.showToast('Completa los campos obligatorios', 'error');
-      }
-      
-      this.loading = true;
-      try {
-        const action = this.editMode ? 'editar' : 'crear';
-        const url = `../../../api/usuarios.php?action=${action}`;
-        const res = await axios.post(url, this.current);
-        
-        if (res.data.ok) {
-          this.showToast(res.data.msg, 'success');
-          bootstrap.Modal.getInstance(document.getElementById('modalUsuario')).hide();
-          this.fetchUsuarios();
-
-          // Sincronizar sidebar si es mi perfil
-          if (this.editMode && this.current.id === this.authUser.id) {
-            this.syncSidebar();
-          }
-        }
-      } catch (err) {
-        this.showToast(err.response?.data?.msg || 'Error al guardar', 'error');
-      } finally {
-        this.loading = false;
-      }
     },
 
     async cambiarPass() {
@@ -142,54 +164,6 @@ Vue.createApp({
       }
     },
 
-    async toggleEstado(u) {
-      if (u.id === this.authUser.id) {
-        return Swal.fire('Error', 'No puedes desactivar tu propia cuenta', 'error');
-      }
-
-      const accion = u.estado == 1 ? 'desactivar' : 'activar';
-      const result = await Swal.fire({
-        title: `¿${accion.charAt(0).toUpperCase() + accion.slice(1)} usuario?`,
-        text: `Vas a ${accion} a ${u.nombre}`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Sí, continuar',
-        cancelButtonText: 'Cancelar'
-      });
-
-      if (result.isConfirmed) {
-        try {
-          const nuevoEstado = u.estado == 1 ? 0 : 1;
-          await axios.post('../../../api/usuarios.php?action=editar', { ...u, estado: nuevoEstado });
-          this.showToast('Estado actualizado', 'success');
-          this.fetchUsuarios();
-        } catch (err) {
-          this.showToast('Error al cambiar estado', 'error');
-        }
-      }
-    },
-
-    syncSidebar() {
-      const elName  = document.getElementById('sidebarUserName');
-      const elLogin = document.getElementById('sidebarUserLogin');
-      const elRole  = document.getElementById('sidebarUserRole');
-      const elAvatar= document.getElementById('sidebarAvatarLetter');
-
-      if (elName) elName.textContent = this.current.nombre;
-      if (elLogin) elLogin.textContent = this.current.usuario;
-      if (elRole) elRole.textContent = this.current.rol.charAt(0).toUpperCase() + this.current.rol.slice(1);
-      if (elAvatar) elAvatar.textContent = this.current.nombre.charAt(0).toUpperCase();
-    },
-
-    /**
-     * Abre la interfaz de gestión de permisos modulares para un usuario específico,
-     * obteniendo previamente su configuración desde la base de datos vía API.
-     * 
-     * @async
-     * @function abrirPermisos
-     * @param {Object} u El usuario seleccionado para asignar permisos
-     * @returns {Promise<void>}
-     */
     async abrirPermisos(u) {
       this.usuarioPermisos  = u;
       this.permisosModulos  = [];
@@ -205,14 +179,6 @@ Vue.createApp({
       }
     },
 
-    /**
-     * Consolida y transfiere los permisos configurados hacia el backend
-     * para su persistencia en el control de acceso ACL.
-     * 
-     * @async
-     * @function guardarPermisos
-     * @returns {Promise<void>}
-     */
     async guardarPermisos() {
       this.guardandoPermisos = true;
       try {
@@ -235,31 +201,20 @@ Vue.createApp({
 
     showToast(msg, icon) {
       Swal.fire({
-        toast: true,
-        position: 'top-end',
-        icon: icon,
-        title: msg,
-        showConfirmButton: false,
-        timer: 3000,
+        toast: true, position: 'top-end', icon: icon,
+        title: msg, showConfirmButton: false, timer: 3000,
         timerProgressBar: true
       });
     },
 
-    getRolClass(rol) {
+    getRolTextClass(rol) {
       switch(rol) {
-        case 'admin': return 'bg-danger text-white';
-        case 'supervisor': return 'bg-warning text-dark';
-        case 'cajera': return 'bg-primary text-white';
-        case 'limpieza': return 'bg-success text-white';
-        default: return 'bg-secondary';
+        case 'admin': return 'text-danger';
+        case 'supervisor': return 'text-warning';
+        case 'cajera': return 'text-primary';
+        case 'limpieza': return 'text-success';
+        default: return 'text-secondary';
       }
-    },
-
-    fmtFecha(fecha) {
-      return new Date(fecha).toLocaleDateString('es-PE', { 
-        day:'2-digit', month:'2-digit', year:'numeric', 
-        hour:'2-digit', minute:'2-digit' 
-      });
     }
   },
 

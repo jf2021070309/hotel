@@ -172,27 +172,16 @@ function isActive(string $page, string $folder_): string {
 
     <?php if (tieneAccesoModulo('limpieza')): ?>
     <div class="nav-item">
-      <a href="<?= route('limpieza/index.php', $base) ?>" class="<?= isActive('index.php','limpieza') ?>" onclick="closeSidebarOnMobile()">
-        <i class="bi bi-stars text-info"></i> <span>Limpieza</span>
-      </a>
-    </div>
-    <div class="nav-item">
       <a href="<?= route('limpieza/v2.php', $base) ?>" class="<?= isActive('v2.php','limpieza') ?>" onclick="closeSidebarOnMobile()">
-        <i class="bi bi-table" style="color:#818cf8;"></i> <span>Limpieza V2</span>
+        <i class="bi bi-stars text-info"></i> <span>Limpieza</span>
       </a>
     </div>
     <?php endif; ?>
 
     <?php if (tieneAccesoModulo('clientes')): ?>
     <div class="nav-item">
-      <a href="<?= route('clientes/index.php', $base) ?>" class="<?= isActive('index.php','clientes') ?>" onclick="closeSidebarOnMobile()">
-        <i class="bi bi-people-fill"></i> <span>Clientes</span>
-      </a>
-    </div>
-
-    <div class="nav-item">
       <a href="<?= route('clientes/v2.php', $base) ?>" class="<?= isActive('v2.php','clientes') ?>" onclick="closeSidebarOnMobile()">
-        <i class="bi bi-table text-info"></i> <span>Clientes V2</span>
+        <i class="bi bi-people-fill"></i> <span>Clientes</span>
       </a>
     </div>
     

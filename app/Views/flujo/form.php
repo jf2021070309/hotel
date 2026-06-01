@@ -20,23 +20,30 @@ $fechaQuery = $_GET['fecha'] ?? date('Y-m-d');
 ?>
 
 <div class="main-content">
-  <div class="topbar border-bottom-0 shadow-sm" style="background: linear-gradient(to right, #ffffff, #f8f9fa);">
-    <div class="d-flex align-items-center gap-3">
-      <button class="btn-burger" onclick="handleMenuClick()"><i class="bi bi-list fs-4"></i></button>
-      <div class="d-flex align-items-center gap-2">
-        <i class="bi bi-wallet2 fs-5 d-none d-sm-block" style="color:#2563eb"></i>
-        <div class="text-nowrap">
-          <h5 class="fw-bold mb-0" style="color: #111; letter-spacing: -0.5px; font-size: 1.05rem;">
-            Flujo de Caja
-            <span class="badge bg-secondary ms-1 p-1 d-none" style="font-size:9px" id="badge-estado"></span>
-          </h5>
+  <div class="topbar" style="background-color:#111827;padding:0.75rem 1.5rem;border-bottom:1px solid rgba(255,255,255,0.05);">
+    <div class="d-flex align-items-center justify-content-between w-100">
+      <div class="d-flex align-items-center gap-3">
+        <button class="btn btn-dark btn-sm rounded-circle d-md-none" onclick="handleMenuClick()" style="width:32px;height:32px;padding:0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.1);border:none;">
+          <i class="bi bi-list text-white"></i>
+        </button>
+        <div class="d-flex align-items-center gap-3">
+          <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#f59e0b,#d97706);display:flex;align-items:center;justify-content:center;box-shadow:0 0 15px rgba(245,158,11,0.4);">
+            <i class="bi bi-wallet2 text-white fs-5"></i>
+          </div>
+          <div>
+            <h4 class="fw-bold mb-0 text-white" style="font-size:18px;letter-spacing:-0.5px;">Flujo de Caja
+              <span class="badge bg-secondary ms-2 p-1 d-none" style="font-size:9px" id="badge-estado"></span>
+            </h4>
+            <div class="text-white-50" style="font-size:11px;">Registro detallado de ingresos y egresos del turno</div>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="ms-auto d-flex align-items-center gap-2">
-       <a href="<?= route('flujo/index.php') ?>?noredirect=1" class="btn btn-sm btn-outline-secondary px-2 d-flex align-items-center gap-1" style="font-size: 11px; border-radius: 8px;">
-          <i class="bi bi-arrow-left"></i> <span class="d-none d-sm-inline">LISTADO</span>
-       </a>
+      <div class="d-flex align-items-center gap-2">
+        <a href="<?= route('flujo/index.php') ?>?noredirect=1" class="btn btn-sm btn-outline-light d-flex align-items-center gap-2" style="font-size:12px;padding:4px 12px;border-color:rgba(255,255,255,0.2);">
+          <i class="bi bi-arrow-left"></i>
+          <span class="d-none d-md-inline">Listado</span>
+        </a>
+      </div>
     </div>
   </div>
 

@@ -126,28 +126,29 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
 <div id="app-desayunos" v-cloak style="display:contents">
 <div class="main-content">
     <!-- TOPBAR -->
-    <div class="topbar border-bottom-0 shadow-sm d-flex align-items-center" style="background: #0f172a; color: #fff; padding: 6px 20px; height: 50px;">
-        <div class="d-flex align-items-center gap-2 w-100">
-            <button class="btn-burger text-white border-0 bg-transparent d-lg-none" onclick="openSidebar()"><i class="bi bi-list fs-4"></i></button>
-            <div class="d-flex align-items-center gap-2">
-                <!-- Icono Naranja con Sombra -->
-                <div class="brand-icon d-flex align-items-center justify-content-center" 
-                     style="background: linear-gradient(135deg, #f59e0b, #d97706); width: 34px; height: 34px; border-radius: 8px; color: #fff; box-shadow: 0 3px 8px rgba(245, 158, 11, 0.3);">
-                    <i class="bi bi-egg-fried fs-6"></i>
-                </div>
-                <div>
-                    <h6 class="fw-bold mb-0 text-white" style="letter-spacing: -0.2px; font-size: 1rem;">Gestión de Desayunos</h6>
-                    <p class="mb-0 text-secondary" style="font-size: 10px; opacity: 0.7; line-height: 1;">Planificación diaria estilo Excel según ocupación real</p>
+    <div class="topbar" style="background-color: #111827; padding: 0.75rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05);">
+        <div class="d-flex align-items-center justify-content-between w-100">
+            <div class="d-flex align-items-center gap-3">
+                <button class="btn btn-dark btn-sm rounded-circle d-md-none" onclick="handleMenuClick()" style="width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.1); border: none;">
+                    <i class="bi bi-list text-white"></i>
+                </button>
+                <div class="d-flex align-items-center gap-3">
+                    <div style="width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, #f59e0b, #d97706); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(245, 158, 11, 0.4);">
+                        <i class="bi bi-egg-fried text-white fs-5"></i>
+                    </div>
+                    <div>
+                        <h4 class="fw-bold mb-0 text-white" style="font-size: 18px; letter-spacing: -0.5px;">Desayunos</h4>
+                        <div class="text-white-50" style="font-size: 11px;">Gestión de desayunos y consumos extra estilo Excel</div>
+                    </div>
                 </div>
             </div>
 
             <!-- Botón Actualizar a la derecha estilo imagen 2 -->
-            <div class="ms-auto">
-                <button class="btn btn-sm btn-outline-light d-flex align-items-center gap-1 px-2 fw-normal" 
+            <div class="d-flex align-items-center gap-2">
+                <button class="btn btn-sm btn-outline-light d-flex align-items-center gap-2" 
                         @click="verDetallePorFecha" 
-                        style="height: 30px; border-radius: 6px; border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); font-size: 11px;">
-                    <i class="bi bi-arrow-clockwise" style="font-size: 14px;"></i>
-                    <span>Actualizar</span>
+                        style="font-size: 12px; padding: 4px 12px; border-color: rgba(255,255,255,0.2);">
+                    <i class="bi bi-arrow-clockwise"></i> <span class="d-none d-md-inline">Actualizar</span>
                 </button>
             </div>
         </div>

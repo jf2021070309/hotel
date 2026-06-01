@@ -43,10 +43,11 @@ class InventarioController {
             'nombre'       => 'Nombre',
             'categoria'    => 'Categoría',
             'precio_venta' => 'Precio',
-            'refrigeradora'=> 'Refri'
+            'refrigeradora'=> 'Refri',
+            'stock_actual' => 'Stock'
         ];
 
-        foreach (['nombre', 'categoria', 'precio_venta', 'refrigeradora'] as $key) {
+        foreach (['nombre', 'categoria', 'precio_venta', 'refrigeradora', 'stock_actual'] as $key) {
             if (isset($data[$key]) && (string)$original[$key] !== (string)$data[$key]) {
                 $cambios[$labels[$key]] = ['antes' => $original[$key], 'despues' => $data[$key]];
             }

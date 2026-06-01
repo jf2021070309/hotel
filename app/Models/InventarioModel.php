@@ -81,15 +81,38 @@ class InventarioModel {
     }
 
     public function actualizar(int $id, array $data): bool {
+        $prod = $this->getPorId($id);
+        $stockAntes = (int)($prod['stock_actual'] ?? 0);
+        $stockDespues = isset($data['stock_actual']) ? (int)$data['stock_actual'] : $stockAntes;
+
         $sql = "UPDATE inventario_productos SET 
                 nombre = :nombre, 
                 categoria = :categoria, 
                 precio_venta = :precio_venta, 
-                refrigeradora = :refrigeradora 
+                refrigeradora = :refrigeradora,
+                stock_actual = :stock_actual
                 WHERE id = :id";
-        $data['id'] = $id;
+        
+        $dataUpdate = [
+            'id' => $id,
+            'nombre' => $data['nombre'],
+            'categoria' => $data['categoria'],
+            'precio_venta' => $data['precio_venta'],
+            'refrigeradora' => $data['refrigeradora'],
+            'stock_actual' => $stockDespues
+        ];
+        
         $stmt = $this->pdo->prepare($sql);
-        return $stmt->execute($data);
+        $res = $stmt->execute($dataUpdate);
+        
+        if ($res && $stockAntes !== $stockDespues) {
+            $tipo = $stockDespues > $stockAntes ? 'RECARGA' : 'AJUSTE';
+            $diff = abs($stockDespues - $stockAntes);
+            $uid = $_SESSION['auth_id'] ?? 1;
+            $this->registrarMovimiento($id, $tipo, $diff, $stockAntes, $stockDespues, $uid);
+        }
+        
+        return $res;
     }
 
     public function eliminar(int $id): bool {

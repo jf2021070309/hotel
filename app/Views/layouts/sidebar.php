@@ -321,13 +321,16 @@ window.toggleSidebar = function() {
 };
 
 // --- SIDEBAR SCROLL PERSISTENCE ---
-(function() {
+document.addEventListener('DOMContentLoaded', () => {
   const sidebarNav = document.querySelector('.sidebar-nav');
   if (!sidebarNav) return;
 
   const savedScroll = sessionStorage.getItem('sidebar_scroll');
   if (savedScroll) {
-    sidebarNav.scrollTop = parseInt(savedScroll, 10);
+    // Usamos un pequeño timeout para asegurar que el navegador haya terminado de pintar el layout
+    setTimeout(() => {
+      sidebarNav.scrollTop = parseInt(savedScroll, 10);
+    }, 50);
   }
 
   sidebarNav.addEventListener('click', (e) => {
@@ -339,7 +342,7 @@ window.toggleSidebar = function() {
   sidebarNav.addEventListener('scroll', () => {
     sessionStorage.setItem('sidebar_scroll', sidebarNav.scrollTop);
   }, { passive: true });
-})();
+});
 
 // Restore state on load
 (function() {

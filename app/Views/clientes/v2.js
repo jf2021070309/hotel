@@ -47,7 +47,10 @@ createApp({
           (f.dni || '').toLowerCase().includes(term) ||
           (f.ruc || '').toLowerCase().includes(term) ||
           (f.empresa || '').toLowerCase().includes(term) ||
-          (f.celular || '').toLowerCase().includes(term)
+          (f.celular || '').toLowerCase().includes(term) ||
+          (f.email || '').toLowerCase().includes(term) ||
+          (f.nacionalidad || '').toLowerCase().includes(term) ||
+          (f.ciudad || '').toLowerCase().includes(term)
         );
       });
     });
@@ -71,6 +74,9 @@ createApp({
         ruc: '',
         empresa: '',
         celular: '',
+        email: '',
+        nacionalidad: '',
+        ciudad: '',
         modificado: true
       });
       // Hacer scroll hacia abajo para asegurar que la nueva fila es visible
@@ -152,13 +158,15 @@ createApp({
       }
     };
 
-    // Exportar a Excel
     const exportarExcel = () => {
       const data = filasFiltradas.value.map(f => ({
         'NOMBRE': f.nombre || '',
         'DNI': f.dni || '',
-        'RUC': f.ruc || '',
+        'NACIONALIDAD': f.nacionalidad || '',
+        'CIUDAD': f.ciudad || '',
         'CELULAR': f.celular || '',
+        'EMAIL': f.email || '',
+        'RUC': f.ruc || '',
         'EMPRESA': f.empresa || ''
       }));
 
@@ -169,8 +177,11 @@ createApp({
       ws['!cols'] = [
         { wch: 35 }, // NOMBRE
         { wch: 15 }, // DNI
-        { wch: 15 }, // RUC
+        { wch: 20 }, // NACIONALIDAD
+        { wch: 20 }, // CIUDAD
         { wch: 15 }, // CELULAR
+        { wch: 30 }, // EMAIL
+        { wch: 15 }, // RUC
         { wch: 35 }  // EMPRESA
       ];
 
@@ -221,13 +232,16 @@ createApp({
           dni: c.dni,
           nombre: c.nombre,
           celular: c.celular,
+          email: c.email,
+          nacionalidad: c.nacionalidad,
+          ciudad: c.ciudad,
           ruc: c.ruc,
           empresa: c.empresa,
           tipo_doc: c.dni && c.dni.length === 11 ? 'RUC' : 'DNI',
           frecuente: true
       };
-      localStorage.setItem('quick_checkin_pax', JSON.stringify(data));
-      window.location.href = '../rooming/index.php';
+      localStorage.setItem('quick_checkin_v2_pax', JSON.stringify(data));
+      window.location.href = '../rooming/v2.php';
     };
 
     const crearReservaRapida = (c) => {
@@ -235,6 +249,9 @@ createApp({
           dni: c.dni,
           nombre: c.nombre,
           celular: c.celular,
+          email: c.email,
+          nacionalidad: c.nacionalidad,
+          ciudad: c.ciudad,
           tipo_doc: c.dni && c.dni.length === 11 ? 'RUC' : 'DNI',
           frecuente: true
       };

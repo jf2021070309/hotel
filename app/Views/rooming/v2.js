@@ -426,6 +426,70 @@ createApp({
   },
 
   mounted() {
-    this.cargarDatos();
+    this.cargarDatos().then(() => {
+      // QUICK CHECK-IN desde Pax Frecuentes → pre-llena una nueva fila
+      const quickRaw = localStorage.getItem('quick_checkin_v2_pax');
+      if (quickRaw) {
+        localStorage.removeItem('quick_checkin_v2_pax');
+        try {
+          const d = JSON.parse(quickRaw);
+
+          // Agregar una fila nueva con los datos del cliente
+          const hoyStr = new Date().toISOString().split('T')[0];
+          const tempId = 'new_' + Date.now();
+
+          const nuevaFila = {
+            stay_id: null,
+            pax_ids: '',
+            temp_id: tempId,
+            operador: window.SERVER_DATA.operadorDefault || '',
+            fecha: hoyStr,
+            hab: '',
+            tipo_hab: '',
+            pax: 1,
+            pax_list: [{
+              nombre_apellido: d.nombre || '',
+              documento_tipo: d.tipo_doc || 'DNI',
+              documento_num: d.dni || '',
+              nacionalidad: d.nacionalidad || 'Peruana',
+              ciudad: d.ciudad || ''
+            }],
+            medio_reserva: 'DIRECTO',
+            hora_checkin: new Date().toTimeString().slice(0, 5),
+            fecha_checkin: hoyStr,
+            checkout_list: [{ fecha: hoyStr }],
+            pago_total: '',
+            late_checkout: '',
+            medio_pago: '',
+            comprobante_pago: '',
+            numero_comprobante: '',
+            quien_cobro: window.SERVER_DATA.operadorDefault || '',
+            carro: '',
+            observaciones: '',
+            modificado: true
+          };
+
+          this.filas.push(nuevaFila);
+
+          // Scroll al fondo y mostrar confirmación
+          setTimeout(() => {
+            const container = document.querySelector('.mensual-grid-container');
+            if (container) container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+
+            Swal.fire({
+              toast: true,
+              position: 'top-end',
+              icon: 'success',
+              title: `✅ ${d.nombre || 'Cliente'} cargado — completa los datos restantes y guarda.`,
+              showConfirmButton: false,
+              timer: 4000
+            });
+          }, 300);
+
+        } catch (e) {
+          console.error('Error al cargar cliente frecuente:', e);
+        }
+      }
+    });
   }
 }).mount('#app-rooming-v2');

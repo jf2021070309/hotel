@@ -85,26 +85,29 @@ include $_projectRoot . '/app/Views/layouts/head.php';
             <thead>
               <!-- Fila agrupada de cabeceras (Nivel 1) -->
               <tr class="text-center text-white text-uppercase" style="font-size: 10px; letter-spacing: 0.5px; font-weight: 800;">
-                <th colspan="3" class="sticky-col" style="background-color: #111827 !important; border-bottom: 1px solid rgba(255,255,255,0.1) !important; z-index: 13 !important;">INFORMACIÓN</th>
-                <th colspan="3" style="background-color: #293b95 !important; border-bottom: 1px solid rgba(255,255,255,0.1) !important; border-left: 1px solid rgba(255,255,255,0.1) !important;">DATOS DE EMPRESA Y CONTACTO</th>
+                <th colspan="5" class="sticky-col" style="background-color: #111827 !important; border-bottom: 1px solid rgba(255,255,255,0.1) !important; z-index: 13 !important;">INFORMACIÓN</th>
+                <th colspan="4" style="background-color: #293b95 !important; border-bottom: 1px solid rgba(255,255,255,0.1) !important; border-left: 1px solid rgba(255,255,255,0.1) !important;">DATOS DE EMPRESA Y CONTACTO</th>
                 <th colspan="1" style="background-color: #6a1b9a !important; border-bottom: 1px solid rgba(255,255,255,0.1) !important; border-left: 1px solid rgba(255,255,255,0.1) !important;">ACCIONES PRINCIPALES</th>
               </tr>
               <!-- Subcabeceras (Nivel 2) -->
-              <tr class="text-white text-uppercase" style="font-size: 11px; letter-spacing: 0.5px;">
-                <th class="sticky-col text-center" style="width: 50px; top: 38px; z-index: 12 !important; background-color: #111827 !important; border-right: 1px solid rgba(255,255,255,0.1) !important;"><i class="bi bi-trash"></i></th>
-                <th style="width: 250px; top: 38px; background-color: #111827 !important; border-right: 1px solid rgba(255,255,255,0.1) !important;">NOMBRE</th>
-                <th style="width: 100px; top: 38px; background-color: #111827 !important; border-right: 1px solid rgba(255,255,255,0.1) !important;">DNI</th>
-                <th style="width: 120px; top: 38px; background-color: #293b95 !important; border-right: 1px solid rgba(255,255,255,0.1) !important;">RUC</th>
-                <th style="width: 120px; top: 38px; background-color: #293b95 !important; border-right: 1px solid rgba(255,255,255,0.1) !important;">CELULAR</th>
-                <th style="width: 250px; top: 38px; background-color: #293b95 !important; border-right: 1px solid rgba(255,255,255,0.1) !important;">EMPRESA</th>
-                <th class="text-center" style="width: 190px; top: 38px; background-color: #6a1b9a !important;">ACCIONES</th>
+              <tr class="text-white text-uppercase" style="font-size: 10px; letter-spacing: 0.5px;">
+                <th class="sticky-col text-center" style="width: 40px; top: 38px; z-index: 12 !important; background-color: #111827 !important; border-right: 1px solid rgba(255,255,255,0.1) !important;"><i class="bi bi-trash"></i></th>
+                <th style="width: 200px; top: 38px; background-color: #111827 !important; border-right: 1px solid rgba(255,255,255,0.1) !important;">NOMBRE</th>
+                <th style="width: 90px; top: 38px; background-color: #111827 !important; border-right: 1px solid rgba(255,255,255,0.1) !important;">DNI</th>
+                <th style="width: 110px; top: 38px; background-color: #111827 !important; border-right: 1px solid rgba(255,255,255,0.1) !important;">NACIONALIDAD</th>
+                <th style="width: 110px; top: 38px; background-color: #111827 !important; border-right: 1px solid rgba(255,255,255,0.1) !important;">CIUDAD</th>
+                <th style="width: 100px; top: 38px; background-color: #293b95 !important; border-right: 1px solid rgba(255,255,255,0.1) !important;">CELULAR</th>
+                <th style="width: 150px; top: 38px; background-color: #293b95 !important; border-right: 1px solid rgba(255,255,255,0.1) !important;">EMAIL</th>
+                <th style="width: 100px; top: 38px; background-color: #293b95 !important; border-right: 1px solid rgba(255,255,255,0.1) !important;">RUC</th>
+                <th style="width: 180px; top: 38px; background-color: #293b95 !important; border-right: 1px solid rgba(255,255,255,0.1) !important;">EMPRESA</th>
+                <th class="text-center" style="width: 150px; top: 38px; background-color: #6a1b9a !important;">ACCIONES</th>
               </tr>
             </thead>
             
             <tbody>
               <!-- Spinner de carga -->
               <tr v-if="loading">
-                <td colspan="7" class="text-center py-5">
+                <td colspan="10" class="text-center py-5">
                   <div class="spinner-border text-primary me-2"></div>
                   <span class="text-muted fw-semibold">Cargando registros...</span>
                 </td>
@@ -112,7 +115,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
               
               <!-- Sin datos -->
               <tr v-else-if="filasFiltradas.length === 0">
-                <td colspan="7" class="text-center py-5 text-muted">
+                <td colspan="10" class="text-center py-5 text-muted">
                   <i class="bi bi-inbox fs-1 d-block opacity-25 mb-2"></i>
                   <span>No se encontraron clientes.</span>
                 </td>
@@ -142,6 +145,26 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                   </div>
                 </td>
                 
+                <!-- NACIONALIDAD -->
+                <td class="px-1">
+                  <input type="text" v-model="f.nacionalidad" class="table-editable-input" @input="marcarModificado(f)" placeholder="Ej: Peruana" style="width: 100%;">
+                </td>
+
+                <!-- CIUDAD -->
+                <td class="px-1">
+                  <input type="text" v-model="f.ciudad" class="table-editable-input" @input="marcarModificado(f)" placeholder="Ej: Lima" style="width: 100%;">
+                </td>
+                
+                <!-- CELULAR -->
+                <td class="px-1">
+                  <input type="text" v-model="f.celular" class="table-editable-input text-center" @input="marcarModificado(f)" placeholder="Celular..." style="width: 100%;">
+                </td>
+
+                <!-- EMAIL -->
+                <td class="px-1">
+                  <input type="text" v-model="f.email" class="table-editable-input" @input="marcarModificado(f)" placeholder="ejemplo@correo.com" style="width: 100%;">
+                </td>
+
                 <!-- RUC -->
                 <td class="px-1 position-relative">
                   <div class="d-flex align-items-center">
@@ -150,11 +173,6 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                            placeholder="RUC..." style="width: 100%;" maxlength="20">
                     <span v-if="lookupRucLoading[idx]" class="spinner-border spinner-border-sm text-success ms-1" style="width: 12px; height: 12px;"></span>
                   </div>
-                </td>
-                
-                <!-- CELULAR -->
-                <td class="px-1">
-                  <input type="text" v-model="f.celular" class="table-editable-input text-center" @input="marcarModificado(f)" placeholder="Celular..." style="width: 100%;">
                 </td>
                 
                 <!-- EMPRESA -->
@@ -184,7 +202,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                     <i class="bi bi-plus-lg fw-bold" style="font-size: 15px;"></i>
                   </button>
                 </td>
-                <td colspan="6" class="bg-light text-muted" style="vertical-align: middle; padding-left: 15px; font-size: 11px;">
+                <td colspan="9" class="bg-light text-muted" style="vertical-align: middle; padding-left: 15px; font-size: 11px;">
                   Haga clic en el botón <i class="bi bi-plus-lg text-primary fw-bold"></i> de la izquierda para agregar un nuevo registro al final de la tabla.
                 </td>
               </tr>
@@ -226,8 +244,8 @@ include $_projectRoot . '/app/Views/layouts/head.php';
   }
 
   .table-mensual {
-    min-width: 1000px;
-    font-size: 11.5px;
+    min-width: 100%;
+    font-size: 11px;
     border-collapse: separate;
     border-spacing: 0;
   }
@@ -291,9 +309,9 @@ include $_projectRoot . '/app/Views/layouts/head.php';
   .table-editable-input {
     border: 1px solid transparent;
     background: transparent;
-    padding: 4px 6px;
+    padding: 3px 5px;
     border-radius: 4px;
-    font-size: 11px;
+    font-size: 10.5px;
     font-weight: inherit;
     color: inherit;
     text-align: inherit;

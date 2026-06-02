@@ -25,7 +25,10 @@ class ClientesV2Controller {
                     nombre_razon_social as nombre, 
                     ruc, 
                     empresa, 
-                    celular 
+                    celular,
+                    nacionalidad,
+                    ciudad,
+                    email
                 FROM clientes 
                 ORDER BY id DESC";
         $stmt = $this->pdo->query($sql);
@@ -42,6 +45,10 @@ class ClientesV2Controller {
             $empresa = $row['empresa'] ?? '';
             $celular = $row['celular'] ?? '';
 
+            $nacionalidad = $row['nacionalidad'] ?? '';
+            $ciudad = $row['ciudad'] ?? '';
+            $email = $row['email'] ?? '';
+
             if (empty($dni) && empty($nombre)) continue;
 
             if (!empty($id)) {
@@ -51,9 +58,12 @@ class ClientesV2Controller {
                     nombre_razon_social = ?, 
                     ruc = ?, 
                     empresa = ?, 
-                    celular = ?
+                    celular = ?,
+                    nacionalidad = ?,
+                    ciudad = ?,
+                    email = ?
                     WHERE id = ?");
-                if ($stmt->execute([$dni, $nombre, $ruc, $empresa, $celular, $id])) {
+                if ($stmt->execute([$dni, $nombre, $ruc, $empresa, $celular, $nacionalidad, $ciudad, $email, $id])) {
                     $okCount++;
                 }
             } else {
@@ -67,15 +77,18 @@ class ClientesV2Controller {
                         nombre_razon_social = ?, 
                         ruc = ?, 
                         empresa = ?, 
-                        celular = ?
+                        celular = ?,
+                        nacionalidad = ?,
+                        ciudad = ?,
+                        email = ?
                         WHERE id = ?");
-                    if ($stmt->execute([$nombre, $ruc, $empresa, $celular, $existing['id']])) {
+                    if ($stmt->execute([$nombre, $ruc, $empresa, $celular, $nacionalidad, $ciudad, $email, $existing['id']])) {
                         $okCount++;
                     }
                 } else {
                     // INSERT
-                    $stmt = $this->pdo->prepare("INSERT INTO clientes (documento_tipo, documento_num, nombre_razon_social, ruc, empresa, celular, tipo_cliente) VALUES ('DNI', ?, ?, ?, ?, ?, 'NATURAL')");
-                    if ($stmt->execute([$dni, $nombre, $ruc, $empresa, $celular])) {
+                    $stmt = $this->pdo->prepare("INSERT INTO clientes (documento_tipo, documento_num, nombre_razon_social, ruc, empresa, celular, nacionalidad, ciudad, email, tipo_cliente) VALUES ('DNI', ?, ?, ?, ?, ?, ?, ?, ?, 'NATURAL')");
+                    if ($stmt->execute([$dni, $nombre, $ruc, $empresa, $celular, $nacionalidad, $ciudad, $email])) {
                         $okCount++;
                     }
                 }

@@ -971,4 +971,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="<?= $base ?>app/Views/reservas/reservas.js?v=<?= filemtime(__DIR__ . '/reservas.js') ?>"></script>
+<script>
+  const PROJECT_BASE_URL = '<?= project_base_url() ?>';
+</script>
+<script src="<?= project_base_url() ?>app/Views/reservas/reservas.js?v=<?= filemtime(__DIR__ . '/reservas.js') ?>"></script>

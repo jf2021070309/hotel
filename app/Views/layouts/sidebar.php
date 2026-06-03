@@ -317,23 +317,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const sidebarNav = document.querySelector('.sidebar-nav');
   if (!sidebarNav) return;
 
-  const savedScroll = sessionStorage.getItem('sidebar_scroll');
-  if (savedScroll) {
-    // Usamos un pequeño timeout para asegurar que el navegador haya terminado de pintar el layout
+  // Encontrar el elemento activo actual
+  const activeItem = sidebarNav.querySelector('a.active');
+  
+  if (activeItem) {
+    // Si la pantalla es pequeña y el scroll no es necesario, no forzamos
+    // Utilizamos un pequeño retraso visual para que la animación suave sea perceptible y fluida
     setTimeout(() => {
-      sidebarNav.scrollTop = parseInt(savedScroll, 10);
-    }, 50);
+      activeItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
   }
-
-  sidebarNav.addEventListener('click', (e) => {
-    if (e.target.closest('a')) {
-      sessionStorage.setItem('sidebar_scroll', sidebarNav.scrollTop);
-    }
-  });
-
-  sidebarNav.addEventListener('scroll', () => {
-    sessionStorage.setItem('sidebar_scroll', sidebarNav.scrollTop);
-  }, { passive: true });
 });
 
 // Restore state on load

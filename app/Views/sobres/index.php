@@ -17,6 +17,9 @@ $fecha = date('Y-m-d');
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
   tailwind.config = {
+    corePlugins: {
+      preflight: false,
+    },
     theme: {
       extend: {
         fontFamily: {
@@ -259,6 +262,14 @@ $fecha = date('Y-m-d');
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
   ::-webkit-scrollbar-track { background: transparent; }
+  
+  /* Tailwind preflight replacement for #app-sobres ONLY */
+  #app-sobres *, #app-sobres ::before, #app-sobres ::after {
+    border-width: 0;
+    border-style: solid;
+    border-color: #e5e7eb;
+    box-sizing: border-box;
+  }
 </style>
 
 <?php include $_projectRoot . '/app/Views/layouts/footer.php'; ?>

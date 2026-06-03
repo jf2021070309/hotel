@@ -6,8 +6,8 @@ const { createApp, ref, reactive, computed, onMounted, onUnmounted } = Vue;
 
 createApp({
   setup() {
-    const BASE = '../../../api/reservas.php?action=';
-    const ROOMING_API = '../../../api/rooming.php?action=';
+    const BASE = PROJECT_BASE_URL + 'api/reservas.php?action=';
+    const ROOMING_API = PROJECT_BASE_URL + 'api/rooming.php?action=';
     console.log("RESERVAS_CARGADO_V2_SIN_VISITAS");
 
     // ─── State ─────────────────────────────────────────────────────────

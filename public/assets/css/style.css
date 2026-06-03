@@ -184,7 +184,7 @@ body {
     font-weight: 500;
     border-radius: 8px;
     margin: 2px 8px;
-    transition: all .2s;
+    transition: background 0.2s, color 0.2s, box-shadow 0.2s;
 }
 
 .nav-item a i {
@@ -236,7 +236,7 @@ body {
     text-decoration: none;
     padding: 8px 12px;
     border-radius: 8px;
-    transition: all .2s;
+    transition: background 0.2s, color 0.2s;
 }
 
 .sidebar-footer a:hover {

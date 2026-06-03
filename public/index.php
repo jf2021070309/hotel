@@ -35,7 +35,7 @@ foreach ($cleanMap as $file => $cleanUrl) {
     if (strpos($file, 'app/Views/') === 0) {
         $webRoutes[$cleanUrl] = $file;
     } elseif ($file === 'index.php') {
-        $webRoutes[''] = 'app/Views/flujo/v2.php';
+        // Ignorar para que el fallback lo redirija a reservas
     } elseif ($file === 'logout.php') {
         $webRoutes['logout.php'] = 'app/Controllers/LogoutController.php';
         $webRoutes['logout'] = 'app/Controllers/LogoutController.php';
@@ -50,6 +50,12 @@ $webRoutes['login.php'] = 'app/Views/auth/login.php';
 $webRoutes['reportes/alex'] = 'app/Views/reportes/alex.php';
 
 // ─── RESOLVER RUTA ─────────────────────────────────────────
+
+// Redireccionar raíz a reservas explícitamente para mantener estado activo del menú
+if ($uri === '' || $uri === 'index.php') {
+    header('Location: ' . project_base_url() . 'reservas');
+    exit;
+}
 
 // Redireccionar V1 a V2 automáticamente
 if ($uri === 'rooming' || $uri === 'rooming/index.php') {
@@ -98,6 +104,6 @@ foreach ($directPrefixes as $prefix) {
     }
 }
 
-// 5. Si nada coincide → flujo de caja
-header('Location: ' . project_base_url() . 'flujo/v2');
+// 5. Si nada coincide → cuadro de reservas
+header('Location: ' . project_base_url() . 'reservas');
 exit;

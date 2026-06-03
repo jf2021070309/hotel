@@ -12,6 +12,32 @@ createApp({
     const ciclos = ref([]);
     let pollingTimer = null;
 
+    const filtros = ref({
+      fecha: '',
+      estado: 'todos' // 'todos', 'abierta', 'cerrada'
+    });
+
+    const ciclosFiltrados = computed(() => {
+      return ciclos.value.filter(c => {
+        let passFecha = true;
+        if (filtros.value.fecha) {
+          passFecha = c.fecha_apertura && c.fecha_apertura.startsWith(filtros.value.fecha);
+        }
+        
+        let passEstado = true;
+        if (filtros.value.estado !== 'todos') {
+          passEstado = c.estado === filtros.value.estado;
+        }
+
+        return passFecha && passEstado;
+      });
+    });
+
+    const limpiarFiltros = () => {
+      filtros.value.fecha = '';
+      filtros.value.estado = 'todos';
+    };
+
     const hayCicloActivo = computed(() => {
       return ciclos.value.some(c => c.estado === 'abierta');
     });
@@ -140,7 +166,7 @@ createApp({
     });
 
     return {
-      loading, ciclos, hayCicloActivo,
+      loading, ciclos, ciclosFiltrados, filtros, limpiarFiltros, hayCicloActivo,
       listar, abrirNuevoCiclo
     };
   }

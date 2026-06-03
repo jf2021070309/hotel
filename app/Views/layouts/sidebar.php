@@ -82,18 +82,10 @@ function isActive(string $page, string $folder_): string {
   <nav class="sidebar-nav">
     <div class="nav-label">Menú Principal</div>
 
-    <?php if (tieneAccesoModulo('dashboard')): ?>
+    <?php if (tieneAccesoModulo('reservas')): ?>
     <div class="nav-item">
-      <a href="<?= route('index.php', $base) ?>" class="<?= isActive('index.php','') ?>" onclick="closeSidebarOnMobile()">
-        <i class="bi bi-grid-1x2-fill"></i> <span>Dashboard</span>
-      </a>
-    </div>
-    <?php endif; ?>
-
-    <?php if (tieneAccesoModulo('flujo')): ?>
-    <div class="nav-item">
-      <a href="<?= route('flujo/v2.php', $base) ?>" class="<?= isActive('v2.php','flujo') ?>" onclick="closeSidebarOnMobile()">
-        <i class="bi bi-cash-stack text-success"></i> <span>Flujo de Caja</span>
+      <a href="<?= route('reservas/index.php', $base) ?>" class="<?= isActive('index.php','reservas') ?>" onclick="closeSidebarOnMobile()">
+        <i class="bi bi-grid-3x3-gap-fill text-warning"></i> <span>Cuadro de Reservas</span>
       </a>
     </div>
     <?php endif; ?>
@@ -106,10 +98,10 @@ function isActive(string $page, string $folder_): string {
     </div>
     <?php endif; ?>
 
-    <?php if (tieneAccesoModulo('reservas')): ?>
+    <?php if (tieneAccesoModulo('flujo')): ?>
     <div class="nav-item">
-      <a href="<?= route('reservas/index.php', $base) ?>" class="<?= isActive('index.php','reservas') ?>" onclick="closeSidebarOnMobile()">
-        <i class="bi bi-grid-3x3-gap-fill text-warning"></i> <span>Cuadro de Reservas</span>
+      <a href="<?= route('flujo/v2.php', $base) ?>" class="<?= isActive('v2.php','flujo') ?>" onclick="closeSidebarOnMobile()">
+        <i class="bi bi-cash-stack text-success"></i> <span>Flujo de Caja</span>
       </a>
     </div>
     <?php endif; ?>

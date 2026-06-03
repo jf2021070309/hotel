@@ -39,9 +39,33 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
 
   <div class="page-body px-3 py-3" v-cloak>
 
-    <!-- BARRA DE ACCIONES -->
-    <div class="card border-0 shadow-sm mb-3" style="border-radius:12px;">
-        <div class="card-body p-3 d-flex align-items-center justify-content-between">
+    <!-- BARRA DE ACCIONES Y FILTROS -->
+    <div class="card border-0 shadow-sm mb-3" style="border-radius:12px; background: white;">
+        <div class="card-body p-3 d-flex flex-wrap align-items-center justify-content-between gap-3">
+            
+            <div class="d-flex align-items-center gap-3">
+                <!-- Filtro de Fecha -->
+                <div class="d-flex align-items-center gap-2">
+                    <div class="bg-light rounded p-1 text-muted border"><i class="bi bi-calendar3" style="font-size: 12px; padding: 0 4px;"></i></div>
+                    <input type="date" v-model="filtros.fecha" class="form-control form-control-sm border-secondary-subtle fw-bold text-secondary" style="width: 140px; font-size: 12px; height: 30px;">
+                </div>
+                
+                <!-- Filtro de Estado -->
+                <div class="d-flex align-items-center gap-2">
+                    <div class="bg-light rounded p-1 text-muted border"><i class="bi bi-funnel" style="font-size: 12px; padding: 0 4px;"></i></div>
+                    <select v-model="filtros.estado" class="form-select form-select-sm border-secondary-subtle fw-bold text-secondary" style="width: 130px; font-size: 12px; height: 30px; cursor: pointer;">
+                        <option value="todos">Todos (Estado)</option>
+                        <option value="abierta">Abierta</option>
+                        <option value="cerrada">Cerrada</option>
+                    </select>
+                </div>
+
+                <!-- Botón Limpiar -->
+                <button v-if="filtros.fecha || filtros.estado !== 'todos'" @click="limpiarFiltros" class="btn btn-sm btn-light border fw-bold text-muted px-2 shadow-sm" style="font-size: 11px; height: 30px; letter-spacing: 0.5px;" title="Limpiar todos los filtros">
+                    Limpiar
+                </button>
+            </div>
+
             <button @click="abrirNuevoCiclo" class="btn btn-sm btn-success fw-bold shadow-sm px-3" style="font-size: 12px; height: 30px;">
                 <i class="bi bi-plus-circle me-1"></i> Abrir Nuevo Ciclo
             </button>
@@ -62,7 +86,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
                 <th colspan="1" class="text-center align-middle" style="background-color: #111827 !important; color: white !important; border: 1px solid rgba(255,255,255,0.1) !important; padding: 12px;">INFORMACIÓN</th>
                 <th colspan="2" class="text-center align-middle" style="background-color: #293b95 !important; color: white !important; border: 1px solid rgba(255,255,255,0.1) !important; padding: 12px;">TIEMPO Y REGISTRO</th>
                 <th colspan="3" class="text-center align-middle" style="background-color: #6a1b9a !important; color: white !important; border: 1px solid rgba(255,255,255,0.1) !important; padding: 12px;">ESTADO FINANCIERO</th>
-                <th colspan="2" class="text-center align-middle" style="background-color: #0f766e !important; color: white !important; border: 1px solid rgba(255,255,255,0.1) !important; padding: 12px;">ACCIONES PRINCIPALES</th>
+                <th colspan="1" class="text-center align-middle" style="background-color: #0f766e !important; color: white !important; border: 1px solid rgba(255,255,255,0.1) !important; padding: 12px;">ESTADO FINANCIERO</th>
             </tr>
             <tr style="font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase;">
               <th class="text-center align-middle" style="background-color: #111827 !important; color: white !important; border-top: none !important; width: 150px; padding: 12px;">NOMBRE DEL CICLO</th>
@@ -72,17 +96,17 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
               <th class="text-center align-middle" style="background-color: #6a1b9a !important; color: white !important; border-top: none !important; width: 110px; padding: 12px;">GASTADO</th>
               <th class="text-center align-middle" style="background-color: #6a1b9a !important; color: white !important; border-top: none !important; width: 110px; padding: 12px;">SALDO ACTUAL</th>
               <th class="text-center align-middle" style="background-color: #0f766e !important; color: white !important; border-top: none !important; border-left: 1px solid rgba(255,255,255,0.1) !important; width: 100px; padding: 12px;">ESTADO</th>
-              <th class="text-center align-middle" style="background-color: #0f766e !important; color: white !important; border-top: none !important; width: 80px; padding: 12px;">ACCIÓN</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-if="ciclos.length === 0">
-              <td colspan="8" class="text-center py-5 text-muted">
+            <tr v-if="ciclosFiltrados.length === 0">
+              <td colspan="7" class="text-center py-5 text-muted">
                 <i class="bi bi-box-seam fs-1 d-block opacity-25 mb-2"></i>
-                <span>No se encontraron ciclos de caja chica.</span>
+                <span v-if="filtros.fecha || filtros.estado !== 'todos'">No se encontraron ciclos con los filtros aplicados.</span>
+                <span v-else>No se encontraron ciclos de caja chica.</span>
               </td>
             </tr>
-            <tr v-for="c in ciclos" :key="c.id">
+            <tr v-for="c in ciclosFiltrados" :key="c.id" @click="window.location.href = 'detalle.php?id=' + c.id" style="cursor: pointer;" class="hover-row">
               <td class="fw-bold text-dark px-3">{{ c.nombre }}</td>
               <td class="px-3">
                 <div class="fw-bold text-dark">{{ c.fecha_apertura.split(' ')[0] }}</div>
@@ -108,11 +132,6 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
                   <span class="badge rounded-pill" :class="c.estado === 'abierta' ? 'bg-success' : 'bg-secondary'" style="font-size: 9.5px; padding: 4px 10px; letter-spacing: 0.5px;">
                       {{ c.estado.toUpperCase() }}
                   </span>
-              </td>
-              <td class="text-center px-2">
-                  <a :href="'detalle.php?id=' + c.id" class="btn btn-sm btn-light border shadow-sm px-2 py-1 text-primary fw-bold" style="font-size: 11px;" title="Ver Detalle">
-                      <i class="bi bi-eye"></i> Detalle
-                  </a>
               </td>
             </tr>
           </tbody>

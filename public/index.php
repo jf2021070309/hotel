@@ -35,7 +35,7 @@ foreach ($cleanMap as $file => $cleanUrl) {
     if (strpos($file, 'app/Views/') === 0) {
         $webRoutes[$cleanUrl] = $file;
     } elseif ($file === 'index.php') {
-        $webRoutes[''] = 'app/Views/dashboard_shell.php';
+        $webRoutes[''] = 'app/Views/flujo/v2.php';
     } elseif ($file === 'logout.php') {
         $webRoutes['logout.php'] = 'app/Controllers/LogoutController.php';
         $webRoutes['logout'] = 'app/Controllers/LogoutController.php';
@@ -98,5 +98,6 @@ foreach ($directPrefixes as $prefix) {
     }
 }
 
-// 5. Si nada coincide → dashboard
-require BASE_PATH . 'app/Views/dashboard_shell.php';
+// 5. Si nada coincide → flujo de caja
+header('Location: ' . project_base_url() . 'flujo/v2');
+exit;

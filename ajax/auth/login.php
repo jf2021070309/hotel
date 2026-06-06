@@ -2,11 +2,11 @@
 /**
  * api/auth/login.php
  */
-require_once '../../config/db.php';
-require_once '../../app/Models/UsuarioModel.php';
-require_once '../../app/Models/AuditoriaModel.php';
-require_once '../../app/Middleware/session.php';
-require_once '../../app/Helpers/url.php';
+require_once BASE_PATH . 'config/db.php';
+require_once BASE_PATH . 'app/Models/UsuarioModel.php';
+require_once BASE_PATH . 'app/Models/AuditoriaModel.php';
+require_once BASE_PATH . 'app/Middleware/session.php';
+require_once BASE_PATH . 'app/Helpers/url.php';
 
 $usuario_model = new UsuarioModel($pdo);
 $audit_model   = new AuditoriaModel($pdo);

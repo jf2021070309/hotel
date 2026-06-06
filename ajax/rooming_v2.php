@@ -25,7 +25,8 @@ switch ($action) {
 
     case 'guardar':
         $rows = $input['rows'] ?? [];
-        json_response(true, $controller->guardar($rows));
+        $res  = $controller->guardar($rows);
+        json_response($res['ok'], null, $res['ok'] ? 200 : 500, $res['msg']);
         break;
 
     case 'eliminar':

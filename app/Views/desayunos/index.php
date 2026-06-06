@@ -283,9 +283,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
   };
 </script>
 
-<!-- LIBS -->
+<!-- LIBS específicas de Desayunos -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/vue@3.3.4/dist/vue.global.prod.js"></script>
-<script src="<?= $base ?>assets/js/desayunos.js?v=<?= time() ?>"></script>
+<script src="<?= $_root ?>public/assets/js/desayunos.js?v=<?= time() ?>"></script>
 <?php include $_projectRoot . '/app/Views/layouts/footer.php'; ?>

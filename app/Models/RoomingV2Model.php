@@ -48,9 +48,9 @@ class RoomingV2Model {
                 s.carro,
                 s.observaciones
             FROM rooming_stays s
-            JOIN habitaciones h  ON h.id = s.habitacion_id
-            JOIN rooming_pax p   ON p.stay_id = s.id
-            JOIN clientes c      ON c.id = p.cliente_id
+            LEFT JOIN habitaciones h  ON h.id = s.habitacion_id
+            JOIN rooming_pax p        ON p.stay_id = s.id
+            JOIN clientes c           ON c.id = p.cliente_id
             WHERE MONTH(s.fecha_registro) = :mes
               AND YEAR(s.fecha_registro)  = :anio
               AND s.checkin_realizado = 1

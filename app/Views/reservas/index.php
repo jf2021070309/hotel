@@ -652,7 +652,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
                      class="stay-block animate__animated animate__fadeIn shadow-sm"
                      :class="getStayColorClass(getCeldaStay(hab, d))"
                      :style="{ width: (colWidth - 3) + 'px' }"
-                     @click.stop="abrirDetalle(getCeldaStay(hab, d))">
+                     @click.stop="abrirDetalle(getCeldaStay(hab, d), hab.numero)">
                      
                   <div v-if="getCeldaStay(hab, d).observaciones && getCeldaStay(hab, d).observaciones.trim() !== ''" class="note-indicator"></div>
                   

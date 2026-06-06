@@ -31,7 +31,7 @@ class RoomingV2Model {
                 DATE_FORMAT(s.fecha_checkin_real, '%H:%i') AS hora_checkin,
                 GROUP_CONCAT(c.nombre_razon_social ORDER BY p.es_titular_acompanante DESC, c.id ASC SEPARATOR '\n') AS nombre_apellido,
                 GROUP_CONCAT(c.documento_tipo ORDER BY p.es_titular_acompanante DESC, c.id ASC SEPARATOR '\n') AS documento_tipo,
-                GROUP_CONCAT(c.documento_num ORDER BY p.es_titular_acompanante DESC, c.id ASC SEPARATOR '\n') AS documento_num,
+                GROUP_CONCAT(IF(c.documento_num LIKE 'R_%', '', c.documento_num) ORDER BY p.es_titular_acompanante DESC, c.id ASC SEPARATOR '\n') AS documento_num,
                 GROUP_CONCAT(COALESCE(c.nacionalidad, '') ORDER BY p.es_titular_acompanante DESC, c.id ASC SEPARATOR '\n') AS nacionalidad,
                 GROUP_CONCAT(COALESCE(c.ciudad, '') ORDER BY p.es_titular_acompanante DESC, c.id ASC SEPARATOR '\n') AS ciudad,
                 s.fecha_registro AS fecha_checkin,
@@ -206,6 +206,16 @@ class RoomingV2Model {
                         $paxId = $paxIds[$i] ?? null;
 
                         if ($paxId) {
+                            if (empty($docNum)) {
+                                $stmtGet = $this->pdo->prepare("SELECT documento_num FROM clientes WHERE id = ?");
+                                $stmtGet->execute([$paxId]);
+                                $existingDoc = $stmtGet->fetchColumn();
+                                if ($existingDoc && str_starts_with($existingDoc, 'R_')) {
+                                    $docNum = $existingDoc;
+                                } else {
+                                    $docNum = uniqid('R_');
+                                }
+                            }
                             // Actualizar cliente existente
                             $stmtUpdateCliente->execute([
                                 'nombre'       => $name,
@@ -572,7 +582,9 @@ class RoomingV2Model {
         $nombre  = trim($pax['nombre_apellido'] ?? 'HUÉSPED');
         $tipoCliente = ($docTipo === 'RUC') ? 'JURIDICO' : 'NATURAL';
 
-        if (!empty($docNum)) {
+        if (empty($docNum)) {
+            $docNum = uniqid('R_');
+        } else {
             $stmt = $this->pdo->prepare("SELECT id FROM clientes WHERE documento_tipo = ? AND documento_num = ? LIMIT 1");
             $stmt->execute([$docTipo, $docNum]);
             $existingId = $stmt->fetchColumn();

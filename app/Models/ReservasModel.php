@@ -215,9 +215,9 @@ class ReservasModel {
             $this->pdo->beginTransaction();
         }
         try {
-            // First insert a placeholder client
-            $stmtCli = $this->pdo->prepare("INSERT INTO clientes (nombre_razon_social, documento_tipo, documento_num, tipo_cliente) VALUES (?, 'DNI', '', 'NATURAL')");
-            $stmtCli->execute([$data['titular']]);
+            // First insert a placeholder client (Unique dummy doc to avoid UNIQUE constraint conflicts)
+            $stmtCli = $this->pdo->prepare("INSERT INTO clientes (nombre_razon_social, documento_tipo, documento_num, tipo_cliente) VALUES (?, 'DNI', ?, 'NATURAL')");
+            $stmtCli->execute([$data['titular'], uniqid('R_')]);
             $clienteId = (int)$this->pdo->lastInsertId();
 
             $sql = "INSERT INTO rooming_stays (
@@ -272,8 +272,10 @@ class ReservasModel {
             $this->pdo->beginTransaction();
         }
         try {
-            // 1. Update stay status
-            $stmt = $this->pdo->prepare("UPDATE rooming_stays SET estado = 'activo' WHERE id = ?");
+            // 1. Update stay status + mark as checked-in
+            $stmt = $this->pdo->prepare(
+                "UPDATE rooming_stays SET estado = 'activo', checkin_realizado = 1 WHERE id = ?"
+            );
             $stmt->execute([$id]);
 
             // 2. Get hab_id
@@ -346,9 +348,9 @@ class ReservasModel {
                 $stmtUpCli = $this->pdo->prepare("UPDATE clientes SET nombre_razon_social = ? WHERE id = ?");
                 $stmtUpCli->execute([$data['titular'], $clienteId]);
             } else {
-                // Create new client + pax link
-                $stmtCli = $this->pdo->prepare("INSERT INTO clientes (nombre_razon_social, documento_tipo, documento_num, tipo_cliente) VALUES (?, 'DNI', '', 'NATURAL')");
-                $stmtCli->execute([$data['titular']]);
+                // Create new client + pax link (Unique dummy doc to avoid UNIQUE constraint conflicts)
+                $stmtCli = $this->pdo->prepare("INSERT INTO clientes (nombre_razon_social, documento_tipo, documento_num, tipo_cliente) VALUES (?, 'DNI', ?, 'NATURAL')");
+                $stmtCli->execute([$data['titular'], uniqid('R_')]);
                 $newCliId = (int)$this->pdo->lastInsertId();
                 
                 $stmtInsPax = $this->pdo->prepare("INSERT INTO rooming_pax (stay_id, cliente_id, es_titular_acompanante) VALUES (?, ?, 1)");

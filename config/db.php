@@ -30,8 +30,8 @@ if ($railway_host) {
     // LOCAL (Obligamos TCP con 127.0.0.1)
     $host = '127.0.0.1';
     $port = 3306;
-    $user = 'root';
-    $pass = '';
+    $user = 'hotel_user';
+    $pass = 'Surgas654321';
     $db = 'hotel_db';
 }
 

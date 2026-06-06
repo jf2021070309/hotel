@@ -2,6 +2,7 @@
 /**
  * api/auth/login.php
  */
+require_once __DIR__ . '/../../ajax/bootstrap.php';
 require_once BASE_PATH . 'config/db.php';
 require_once BASE_PATH . 'app/Models/UsuarioModel.php';
 require_once BASE_PATH . 'app/Models/AuditoriaModel.php';

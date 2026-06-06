@@ -3,6 +3,7 @@
  * ajax/rooming_v2.php
  * API Endpoint para Rooming V2.
  */
+require_once __DIR__ . '/../ajax/bootstrap.php';
 header('Content-Type: application/json; charset=utf-8');
 require_once BASE_PATH . 'config/db.php';
 require_once BASE_PATH . 'app/Middleware/auth.php';

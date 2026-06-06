@@ -2,6 +2,7 @@
 /**
  * api/reservas.php - Thin router for Reservas
  */
+require_once __DIR__ . '/../ajax/bootstrap.php';
 require_once BASE_PATH . 'config/db.php';
 require_once BASE_PATH . 'app/Middleware/session.php';
 require_once BASE_PATH . 'app/Middleware/auth.php';

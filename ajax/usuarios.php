@@ -7,11 +7,11 @@
  *
  * @package API\Usuarios
  */
-require_once '../config/db.php';
-require_once '../app/Middleware/session.php';
-require_once '../app/Middleware/auth.php';
-require_once '../app/Controllers/UsuarioController.php';
-require_once '../app/Helpers/DocumentLookupService.php';
+require_once BASE_PATH . 'config/db.php';
+require_once BASE_PATH . 'app/Middleware/session.php';
+require_once BASE_PATH . 'app/Middleware/auth.php';
+require_once BASE_PATH . 'app/Controllers/UsuarioController.php';
+require_once BASE_PATH . 'app/Helpers/DocumentLookupService.php';
 
 // Detectar acción y método
 $action = $_GET['action'] ?? '';

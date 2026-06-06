@@ -2,9 +2,9 @@
 /**
  * api/auth/logout.php
  */
-require_once '../../config/db.php';
-require_once '../../app/Middleware/session.php';
-require_once '../../app/Models/AuditoriaModel.php';
+require_once BASE_PATH . 'config/db.php';
+require_once BASE_PATH . 'app/Middleware/session.php';
+require_once BASE_PATH . 'app/Models/AuditoriaModel.php';
 
 if (estaAutenticado()) {
     $user = obtenerUsuarioActual();

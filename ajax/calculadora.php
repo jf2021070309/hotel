@@ -2,10 +2,10 @@
 /**
  * api/calculadora.php — Router API para el módulo Calculadora
  */
-require_once __DIR__ . '/../config/db.php';
-require_once __DIR__ . '/../app/Middleware/session.php';
-require_once __DIR__ . '/../app/Middleware/auth.php';
-require_once __DIR__ . '/../app/Controllers/CalculadoraController.php';
+require_once BASE_PATH . 'config/db.php';
+require_once BASE_PATH . 'app/Middleware/session.php';
+require_once BASE_PATH . 'app/Middleware/auth.php';
+require_once BASE_PATH . 'app/Controllers/CalculadoraController.php';
 
 protegerPorRol('cajera', 'calculadora');
 

@@ -6,10 +6,10 @@
  * 
  * @package API\Clientes
  */
-require_once '../config/db.php';
-require_once '../app/Middleware/session.php';
-require_once '../app/Middleware/auth.php';
-require_once '../app/Controllers/ClienteController.php';
+require_once BASE_PATH . 'config/db.php';
+require_once BASE_PATH . 'app/Middleware/session.php';
+require_once BASE_PATH . 'app/Middleware/auth.php';
+require_once BASE_PATH . 'app/Controllers/ClienteController.php';
 
 // Proteger endpoint para todos los operativos
 protegerPorRol('cajera', 'clientes');

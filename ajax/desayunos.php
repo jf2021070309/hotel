@@ -3,10 +3,10 @@
  * api/desayunos.php
  * Router for Breakfasts module actions.
  */
-require_once '../config/db.php';
-require_once '../app/Middleware/session.php';
-require_once '../app/Middleware/auth.php';
-require_once '../app/Controllers/DesayunoController.php';
+require_once BASE_PATH . 'config/db.php';
+require_once BASE_PATH . 'app/Middleware/session.php';
+require_once BASE_PATH . 'app/Middleware/auth.php';
+require_once BASE_PATH . 'app/Controllers/DesayunoController.php';
 
 protegerPorRol('limpieza', 'desayunos');
 

@@ -2,10 +2,10 @@
 /**
  * api/tipos_cambio.php
  */
-require_once '../config/db.php';
-require_once '../app/Middleware/session.php';
-require_once '../app/Middleware/auth.php';
-require_once '../app/Models/TipoCambioModel.php';
+require_once BASE_PATH . 'config/db.php';
+require_once BASE_PATH . 'app/Middleware/session.php';
+require_once BASE_PATH . 'app/Middleware/auth.php';
+require_once BASE_PATH . 'app/Models/TipoCambioModel.php';
 
 // tipos_cambio es recurso de soporte: accesible si tiene rol cajera o módulo rooming
 protegerPorRol('cajera', 'rooming');

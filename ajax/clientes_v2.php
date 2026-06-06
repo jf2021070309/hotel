@@ -4,14 +4,14 @@
  * API Endpoint para Clientes V2.
  */
 header('Content-Type: application/json; charset=utf-8');
-require_once __DIR__ . '/../config/db.php';
-require_once __DIR__ . '/../app/Middleware/auth.php';
+require_once BASE_PATH . 'config/db.php';
+require_once BASE_PATH . 'app/Middleware/auth.php';
 
 // Validar inicio de sesión
 protegerPorRol('cajera', 'clientes');
 
-require_once __DIR__ . '/../app/Controllers/ClientesV2Controller.php';
-require_once __DIR__ . '/../app/Helpers/DocumentLookupService.php';
+require_once BASE_PATH . 'app/Controllers/ClientesV2Controller.php';
+require_once BASE_PATH . 'app/Helpers/DocumentLookupService.php';
 
 $controller = new ClientesV2Controller($pdo);
 $lookupService = new DocumentLookupService();

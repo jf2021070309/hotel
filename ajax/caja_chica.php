@@ -2,10 +2,10 @@
 /**
  * api/caja_chica.php — Thin router for Caja Chica
  */
-require_once __DIR__ . '/../config/db.php';
-require_once __DIR__ . '/../app/Middleware/session.php';
-require_once __DIR__ . '/../app/Middleware/auth.php';
-require_once __DIR__ . '/../app/Controllers/CajaChicaController.php';
+require_once BASE_PATH . 'config/db.php';
+require_once BASE_PATH . 'app/Middleware/session.php';
+require_once BASE_PATH . 'app/Middleware/auth.php';
+require_once BASE_PATH . 'app/Controllers/CajaChicaController.php';
 
 // Caja Chica es accesible probablemente por cajeras/supervisores igual
 protegerPorRol('cajera', 'caja_chica');

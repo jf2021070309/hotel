@@ -2,10 +2,10 @@
 /**
  * api/reservas.php - Thin router for Reservas
  */
-require_once __DIR__ . '/../config/db.php';
-require_once __DIR__ . '/../app/Middleware/session.php';
-require_once __DIR__ . '/../app/Middleware/auth.php';
-require_once __DIR__ . '/../app/Controllers/ReservasController.php';
+require_once BASE_PATH . 'config/db.php';
+require_once BASE_PATH . 'app/Middleware/session.php';
+require_once BASE_PATH . 'app/Middleware/auth.php';
+require_once BASE_PATH . 'app/Controllers/ReservasController.php';
 
 protegerPorRol('cajera', 'reservas');
 

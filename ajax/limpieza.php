@@ -3,12 +3,12 @@
  * api/limpieza.php
  * Router for Cleaning module actions.
  */
-require_once '../config/db.php';
-require_once '../app/Middleware/session.php';
-require_once '../app/Middleware/auth.php';
-require_once '../app/Models/LimpiezaModel.php';
-require_once '../app/Controllers/LimpiezaController.php';
-require_once '../api/cron.php'; // expone la función nocheReset()
+require_once BASE_PATH . 'config/db.php';
+require_once BASE_PATH . 'app/Middleware/session.php';
+require_once BASE_PATH . 'app/Middleware/auth.php';
+require_once BASE_PATH . 'app/Models/LimpiezaModel.php';
+require_once BASE_PATH . 'app/Controllers/LimpiezaController.php';
+require_once BASE_PATH . 'api/cron.php'; // expone la función nocheReset()
 
 protegerPorRol('limpieza', 'limpieza');
 

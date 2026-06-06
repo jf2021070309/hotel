@@ -2,10 +2,10 @@
 /**
  * api/medios_pago.php
  */
-require_once '../config/db.php';
-require_once '../app/Middleware/session.php';
-require_once '../app/Middleware/auth.php';
-require_once '../app/Controllers/MedioPagoController.php';
+require_once BASE_PATH . 'config/db.php';
+require_once BASE_PATH . 'app/Middleware/session.php';
+require_once BASE_PATH . 'app/Middleware/auth.php';
+require_once BASE_PATH . 'app/Controllers/MedioPagoController.php';
 
 // Acceso base: rol cajera O módulo rooming habilitado (necesario para check-in)
 protegerPorRol('cajera', 'rooming');

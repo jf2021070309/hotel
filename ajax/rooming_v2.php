@@ -4,13 +4,13 @@
  * API Endpoint para Rooming V2.
  */
 header('Content-Type: application/json; charset=utf-8');
-require_once __DIR__ . '/../config/db.php';
-require_once __DIR__ . '/../app/Middleware/auth.php';
+require_once BASE_PATH . 'config/db.php';
+require_once BASE_PATH . 'app/Middleware/auth.php';
 
 // Validar inicio de sesión
 protegerPorRol('cajera', 'rooming');
 
-require_once __DIR__ . '/../app/Controllers/RoomingV2Controller.php';
+require_once BASE_PATH . 'app/Controllers/RoomingV2Controller.php';
 $controller = new RoomingV2Controller($pdo);
 
 $action = $_GET['action'] ?? '';

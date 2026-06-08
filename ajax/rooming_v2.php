@@ -21,7 +21,12 @@ switch ($action) {
     case 'listar':
         $mes  = (int)($_GET['mes']  ?? date('n'));
         $anio = (int)($_GET['anio'] ?? date('Y'));
-        json_response(true, $controller->listar($mes, $anio));
+        require_once BASE_PATH . 'app/Models/HabitacionModel.php';
+        $habModel = new HabitacionModel($pdo);
+        json_response(true, [
+            'filas' => $controller->listar($mes, $anio),
+            'habitaciones' => $habModel->getAll()
+        ]);
         break;
 
     case 'guardar':

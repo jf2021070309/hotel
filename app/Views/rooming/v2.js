@@ -56,8 +56,17 @@ createApp({
         const json = await resp.json();
         
         if (json.ok) {
+          // Extraer datos (soporta nuevo formato con filas y habitaciones, o el formato antiguo)
+          let rawData = json.data;
+          if (json.data && json.data.filas !== undefined) {
+            rawData = json.data.filas;
+            if (json.data.habitaciones) {
+              this.habitaciones = json.data.habitaciones;
+            }
+          }
+          
           // Sanitizar y mapear modificado = false
-          this.filas = json.data.map(f => {
+          this.filas = rawData.map(f => {
             const names = (f.nombre_apellido || '').split('\n');
             const docTypes = (f.documento_tipo || '').split('\n');
             const docNums = (f.documento_num || '').split('\n');

@@ -11,7 +11,7 @@ protegerPorRol('cajera', 'rooming');
 require_once $_projectRoot . '/config/db.php'; // Asegurar PDO
 
 // Obtener lista de habitaciones para el select y auto-completado de tipo
-$stmtH = $pdo->query("SELECT numero, tipo FROM habitaciones ORDER BY numero ASC");
+$stmtH = $pdo->query("SELECT numero, tipo, estado FROM habitaciones ORDER BY numero ASC");
 $habitacionesList = $stmtH->fetchAll(PDO::FETCH_ASSOC);
 
 $page_title = 'Rooming V2 — Hotel Manager';
@@ -115,7 +115,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 <th class="sticky-col text-center" style="width: 75px; z-index:12 !important;"><i class="bi bi-gear"></i></th>
                 <th class="text-center" style="width: 100px;">OPERADOR</th>
                 <th style="width: 110px;">FECHA</th>
-                <th style="width: 70px;">HAB</th>
+                <th style="width: 110px;">HAB</th>
                 <th style="width: 130px;">TIPO DE HAB</th>
                 <th style="width: 60px;">PAX</th>
                 <th style="width: 120px;">MEDIO RESERVA</th>
@@ -186,7 +186,9 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 <td class="px-1">
                   <select v-model="f.hab" class="form-select form-select-sm table-editable-select fw-bold text-center" @change="onHabChange(f)" style="width: 100%;">
                     <option value="">-</option>
-                    <option v-for="h in habitaciones" :key="h.numero" :value="h.numero">{{ h.numero }}</option>
+                    <option v-for="h in habitaciones" :key="h.numero" :value="h.numero">
+                      {{ h.numero }} - {{ (h.estado || 'LIBRE').toUpperCase() }}
+                    </option>
                   </select>
                 </td>
                 

@@ -100,6 +100,7 @@ body {
 }
 
 .sidebar.collapsed .brand-text,
+.sidebar.collapsed .brand-image,
 .sidebar.collapsed .nav-label,
 .sidebar.collapsed .nav-item a span,
 .sidebar.collapsed .sidebar-footer a span,
@@ -150,12 +151,11 @@ body {
 }
 
 .sidebar.collapsed .btn-toggle-sidebar {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 20px;
-    height: 20px;
-    font-size: 10px;
+    position: static !important;
+    width: 36px !important;
+    height: 36px !important;
+    font-size: 18px !important;
+    margin: 0 auto;
 }
 
 .sidebar-nav {

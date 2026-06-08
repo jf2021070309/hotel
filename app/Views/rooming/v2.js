@@ -190,6 +190,58 @@ createApp({
       fila.checkout_list.push({ fecha: '' });
     },
 
+    async procederCheckout(fila) {
+      if (!fila.stay_id) return;
+      
+      const result = await Swal.fire({
+        title: '¿Confirmar Checkout?',
+        text: `La habitación #${fila.hab || ''} pasará a estado de limpieza y se registrará la salida.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, hacer checkout',
+        cancelButtonText: 'Cancelar'
+      });
+
+      if (result.isConfirmed) {
+        this.loading = true;
+        try {
+          const resp = await fetch(`../../../api/rooming.php?action=checkout`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: fila.stay_id })
+          });
+          const json = await resp.json();
+          if (json.ok) {
+            Swal.fire({
+              icon: 'success',
+              title: 'Checkout realizado',
+              text: json.msg || 'La habitación ha sido liberada correctamente.',
+              timer: 2000,
+              showConfirmButton: false
+            });
+            this.cargarDatos();
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: 'Atención',
+              text: json.msg || 'No se pudo procesar el checkout.'
+            });
+          }
+        } catch (err) {
+          console.error(err);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error de red',
+            text: 'No se pudo conectar con el servidor.'
+          });
+        } finally {
+          this.loading = false;
+        }
+      }
+    },
+
     async eliminarFila(fila, idx) {
       if (!fila.stay_id) {
         // Es una fila nueva que no ha sido guardada en BD

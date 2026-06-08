@@ -63,18 +63,14 @@ function isActive(string $page, string $folder_): string {
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
 <aside class="sidebar" id="mainSidebar">
-  <div class="sidebar-brand">
-    <div class="d-flex align-items-center gap-3 overflow-hidden">
-      <!-- Icono lujoso para el logo PLATINIUM -->
-      <div class="brand-icon" style="background: linear-gradient(135deg, #111, #333); border: 1px solid #d4af37; color: #d4af37; box-shadow: 0 4px 10px rgba(212, 175, 55, 0.2);">
-        <i class="bi bi-star-fill" style="font-size: 16px;"></i>
-      </div>
-      <div class="brand-text">
-        <h6 style="letter-spacing: 1px; font-weight: 800; text-transform: uppercase;">PLATINIUM</h6>
-        <small style="letter-spacing: 2px; color: #d4af37; font-weight: 600;">HOTEL ★★★</small>
+  <div class="sidebar-brand" style="justify-content: center; position: relative;">
+    <div class="d-flex align-items-center overflow-hidden w-100 justify-content-center">
+      <!-- Logo de la empresa -->
+      <div class="brand-image">
+        <img src="<?= $projectBase ?>assets/img/logo2.png" alt="Platinium Hotel" style="max-width: 160px; height: auto;">
       </div>
     </div>
-    <button id="btnToggleSidebar" class="btn-toggle-sidebar" onclick="toggleSidebar()" title="Alternar menú">
+    <button id="btnToggleSidebar" class="btn-toggle-sidebar" style="position: absolute; right: 15px;" onclick="toggleSidebar()" title="Alternar menú">
       <i class="bi bi-chevron-left"></i>
     </button>
   </div>

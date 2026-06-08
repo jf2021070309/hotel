@@ -112,7 +112,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
           <table class="table table-bordered table-hover mb-0 align-middle table-mensual">
             <thead>
               <tr class="table-dark text-white text-uppercase" style="font-size: 10px; letter-spacing: 0.5px;">
-                <th class="sticky-col text-center" style="width: 50px; z-index:12 !important;"><i class="bi bi-trash"></i></th>
+                <th class="sticky-col text-center" style="width: 75px; z-index:12 !important;"><i class="bi bi-gear"></i></th>
                 <th class="text-center" style="width: 100px;">OPERADOR</th>
                 <th style="width: 110px;">FECHA</th>
                 <th style="width: 70px;">HAB</th>
@@ -157,11 +157,16 @@ include $_projectRoot . '/app/Views/layouts/head.php';
               
               <!-- Filas de datos -->
               <tr v-else v-for="(f, idx) in filasFiltradas" :key="f.stay_id || f.temp_id" :class="{'unsaved-row': f.modificado || !f.stay_id}">
-                <!-- Botón Eliminar Fila (Sticky 1) -->
+                <!-- Botones de Acción (Sticky 1) -->
                 <td class="sticky-col text-center px-1">
-                  <button class="btn btn-sm btn-link text-danger p-0" @click="eliminarFila(f, idx)" title="Eliminar registro">
-                    <i class="bi bi-trash-fill fs-6"></i>
-                  </button>
+                  <div class="d-flex align-items-center justify-content-center gap-2">
+                    <button v-if="f.stay_id" class="btn btn-sm btn-link text-danger p-0" @click="procederCheckout(f)" title="Hacer Checkout (Libera habitación)">
+                      <i class="bi bi-door-closed-fill fs-6"></i>
+                    </button>
+                    <button class="btn btn-sm btn-link text-secondary p-0" @click="eliminarFila(f, idx)" title="Eliminar registro">
+                      <i class="bi bi-trash-fill fs-6"></i>
+                    </button>
+                  </div>
                 </td>
                 
                 <!-- OPERADOR -->

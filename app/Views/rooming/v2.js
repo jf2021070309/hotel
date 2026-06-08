@@ -120,6 +120,10 @@ createApp({
 
     agregarFila() {
       const hoyStr = new Date().toISOString().split('T')[0];
+      const manana = new Date();
+      manana.setDate(manana.getDate() + 1);
+      const mananaStr = manana.toISOString().split('T')[0];
+      
       const tempId = 'new_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
       
       this.filas.push({
@@ -137,7 +141,7 @@ createApp({
         medio_reserva: '',
         hora_checkin: '',
         fecha_checkin: hoyStr,
-        checkout_list: [{ fecha: hoyStr }],
+        checkout_list: [{ fecha: mananaStr }],
         pago_total: '',
         late_checkout: '',
         medio_pago: '',
@@ -497,6 +501,9 @@ createApp({
 
           // Agregar una fila nueva con los datos del cliente
           const hoyStr = new Date().toISOString().split('T')[0];
+          const manana = new Date();
+          manana.setDate(manana.getDate() + 1);
+          const mananaStr = manana.toISOString().split('T')[0];
           const tempId = 'new_' + Date.now();
 
           const nuevaFila = {
@@ -518,7 +525,7 @@ createApp({
             medio_reserva: 'DIRECTO',
             hora_checkin: new Date().toTimeString().slice(0, 5),
             fecha_checkin: hoyStr,
-            checkout_list: [{ fecha: hoyStr }],
+            checkout_list: [{ fecha: mananaStr }],
             pago_total: '',
             late_checkout: '',
             medio_pago: '',

@@ -801,161 +801,124 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
 
   <!-- ─── MODAL DETALLE PREMIUM ────────────────────────────── -->
   <div class="modal fade" id="modalDetalleReservas" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered" style="max-width: 460px;">
-      <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;" v-if="staySeleccionado">
-        <div class="modal-header border-0 p-2" :class="staySeleccionado.estado_pago === 'pagado' ? 'bg-success text-white' : 'bg-dark text-white'">
-          <div class="d-flex align-items-center gap-2">
-            <div class="bg-white bg-opacity-25 rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-              <i class="bi bi-info-circle"></i>
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 480px;">
+      <div class="modal-content border-0 shadow" style="border-radius: 12px; overflow: hidden;" v-if="staySeleccionado">
+        
+        <div class="modal-header border-bottom px-4 py-3 bg-white">
+          <div class="d-flex flex-column">
+            <h5 class="modal-title fw-bold text-dark mb-1" style="font-size: 1.15rem;">
+              Estadía #{{ staySeleccionado.id }}
+            </h5>
+            <span class="text-muted" style="font-size: 0.85rem;">{{ staySeleccionado.titular }}</span>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body px-4 py-3">
+          
+          <!-- Metadatos (PAX, Canal) -->
+          <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
+            <div class="d-flex align-items-center gap-2">
+              <i class="bi bi-people text-muted"></i>
+              <span class="fw-medium text-dark" style="font-size: 0.9rem;">{{ staySeleccionado.pax }} Personas</span>
             </div>
-            <div>
-              <h5 class="modal-title fw-bold mb-0">Estadía #{{ staySeleccionado.id }}</h5>
-              <span class="small opacity-75">Resumen de cuenta y alojamiento</span>
+            <div class="d-flex align-items-center gap-2">
+              <i class="bi bi-tag text-muted"></i>
+              <span class="fw-medium text-dark" style="font-size: 0.9rem;">{{ staySeleccionado.canal || 'DIRECTO' }}</span>
+            </div>
+            <div class="ms-auto">
+               <span class="badge rounded-pill bg-light text-dark border fw-medium" style="font-size: 0.75rem;">
+                 {{ staySeleccionado.estado.toUpperCase() }}
+               </span>
             </div>
           </div>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-        </div>
 
-        <div class="modal-body p-2">
-          <!-- Bloque Info Principal -->
-          <div class="row g-1">
-            <div class="col-md-6">
-              <div class="modal-info-card">
-                <div class="modal-info-label"><i class="bi bi-person-fill me-1"></i> Huésped Titular</div>
-                <div class="modal-info-value" style="font-size: 11px;">{{ staySeleccionado.titular }}</div>
-              </div>
+          <!-- Fechas -->
+          <div class="row g-3 mb-4">
+            <div class="col-5">
+              <div class="text-muted small mb-1" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Check-in</div>
+              <div class="fw-bold text-dark">{{ staySeleccionado.fecha_inicio }}</div>
             </div>
-            <div class="col-md-3 col-6">
-              <div class="modal-info-card">
-                <div class="modal-info-label"><i class="bi bi-people-fill me-1"></i> PAX</div>
-                <div class="modal-info-value">{{ staySeleccionado.pax }} Personas</div>
-              </div>
+            <div class="col-2 d-flex align-items-center justify-content-center">
+              <i class="bi bi-arrow-right text-muted opacity-50"></i>
             </div>
-            <div class="col-md-3 col-6">
-              <div class="modal-info-card">
-                <div class="modal-info-label"><i class="bi bi-tag-fill me-1"></i> Canal</div>
-                <div class="modal-info-value">
-                  <span class="badge" :class="'canal-' + (staySeleccionado.canal || '').toLowerCase()">{{ staySeleccionado.canal }}</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Bloque Fechas -->
-            <div class="col-md-4 col-6">
-              <div class="modal-info-card border-start border-4 border-primary">
-                <div class="modal-info-label text-primary">Ingreso</div>
-                <div class="modal-info-value"><i class="bi bi-calendar-check me-1"></i> {{ staySeleccionado.fecha_inicio }}</div>
-              </div>
-            </div>
-            <div class="col-md-4 col-6">
-              <div class="modal-info-card border-start border-4 border-danger">
-                <div class="modal-info-label text-danger">Salida</div>
-                <div class="modal-info-value"><i class="bi bi-calendar-x me-1"></i> {{ staySeleccionado.fecha_fin }}</div>
-              </div>
-            </div>
-            <div class="col-md-4 col-12">
-              <div class="modal-info-card text-center bg-light">
-                <div class="modal-info-label">Duración</div>
-                <div class="modal-info-value"><i class="bi bi-moon-stars me-1 text-warning"></i> {{ staySeleccionado.noches }} Noches</div>
-              </div>
-            </div>
-
-            <!-- SECCIÓN DE PAGO (Regla de Oro) -->
-            <div class="col-12 mt-3">
-              <div class="payment-section">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                   <h6 class="fw-bold mb-0 text-uppercase small" style="letter-spacing: 1px;">Estado Financiero</h6>
-                   <span class="badge rounded-pill px-2 py-1 shadow-sm" :class="badgeClass(staySeleccionado.estado_pago)">
-                     {{ staySeleccionado.estado_pago.toUpperCase() }}
-                   </span>
-                </div>
-                
-                 <div class="row align-items-center g-2">
-                  <div class="col-md-4 text-center">
-                    <div class="small text-muted mb-1">Pagado</div>
-                    <div class="fw-bold text-success mb-0" style="font-size: .9rem;">{{ staySeleccionado.moneda_pago }} {{ formatNumber(staySeleccionado.total_cobrado) }}</div>
-                  </div>
-                  <div class="col-md-4 text-center border-start border-end">
-                     <div class="small text-muted mb-1">Por cobrar</div>
-                      <div class="fw-bold text-danger mb-0" style="font-size: .9rem;">{{ staySeleccionado.moneda_pago }} {{ formatNumber(staySeleccionado.total_pago - staySeleccionado.total_cobrado) }}</div>
-                  </div>
-                  <div class="col-md-4 text-center">
-                    <div class="small text-muted mb-1">Total Reserva</div>
-                    <div class="fw-bold text-dark mb-0" style="font-size: .9rem;">{{ staySeleccionado.moneda_pago }} {{ formatNumber(staySeleccionado.total_pago) }}</div>
-                  </div>
-                </div>
-
-                <div class="mt-2">
-                  <div class="progress rounded-pill shadow-sm" style="height: 9px; background: #edf2f7;">
-                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
-                         :class="barClass(staySeleccionado.estado_pago)"
-                         :style="{ width: porcentajePago(staySeleccionado) + '%' }"></div>
-                  </div>
-                  <div class="text-center mt-2 small text-muted fw-bold">{{ porcentajePago(staySeleccionado) }}% cubierto</div>
-                </div>
-              </div>
-            </div>
-
-            <!-- ACCIÓN: CHECK-IN RÁPIDO (SOLO SI ESTÁ RESERVADO) -->
-            <div class="col-12 mt-3 reserva-stay-actions" v-if="staySeleccionado.estado === 'reservado'">
-              <button class="btn btn-outline-dark w-100 py-2 rounded-4 shadow-sm d-flex align-items-center justify-content-center gap-2 mb-2"
-                      @click="editarQuickReserva(staySeleccionado)">
-                <div class="rounded-circle p-2 d-flex align-items-center justify-content-center border bg-white" style="width: 34px; height: 34px;">
-                  <i class="bi bi-pencil-square text-dark h5 mb-0"></i>
-                </div>
-                <div class="text-start">
-                  <div class="fw-bold text-dark">EDITAR RESERVA</div>
-                  <div class="small text-muted">Modificar los mismos datos del registro rapido</div>
-                </div>
-              </button>
-              <button class="btn btn-primary w-100 py-2 rounded-4 shadow-lg d-flex align-items-center justify-content-center gap-2 border-0" 
-                      @click="confirmarReserva(staySeleccionado)" 
-                      style="background: linear-gradient(135deg, #0288D1 0%, #01579B 100%);">
-                <div class="bg-white text-primary rounded-circle p-2 d-flex align-items-center justify-content-center shadow-sm" style="width: 34px; height: 34px;">
-                   <i class="bi bi-person-check-fill h4 mb-0"></i>
-                </div>
-                <div class="text-start text-white">
-                   <div class="fw-bold">CONFIRMAR RESERVA</div>
-                   <div class="small opacity-75">Marcar entrada del huésped (Check-in)</div>
-                </div>
-              </button>
-              <button class="btn btn-danger w-100 py-2 rounded-4 shadow-lg d-flex align-items-center justify-content-center gap-2 border-0 mt-2"
-                      @click="rechazarReserva(staySeleccionado)"
-                      style="background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%);">
-                <div class="bg-white text-danger rounded-circle p-2 d-flex align-items-center justify-content-center shadow-sm" style="width: 34px; height: 34px;">
-                   <i class="bi bi-x-circle-fill h4 mb-0"></i>
-                </div>
-                <div class="text-start text-white">
-                   <div class="fw-bold">RECHAZAR RESERVA</div>
-                   <div class="small opacity-75">Cancelar la reserva sin ir a Rooming</div>
-                </div>
-              </button>
-            </div>
-
-            <!-- ACCIÓN: GESTIONAR EN ROOMING -->
-            <div class="col-12 mt-3" v-if="staySeleccionado.estado_pago !== 'pagado'">
-              <button class="btn btn-dark w-100 py-3 rounded-4 shadow-lg d-flex align-items-center justify-content-center gap-3 border-0" 
-                      @click="irARooming(staySeleccionado)" 
-                      style="background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);">
-                <div class="bg-success rounded-circle p-2 d-flex align-items-center justify-content-center shadow-sm" style="width: 40px; height: 40px;">
-                  <i class="bi bi-cash-stack fs-5 text-white"></i>
-                </div>
-                <div class="text-start">
-                  <div class="fw-bold lh-1 text-warning" style="letter-spacing: 0.5px;">GESTIONAR CUENTA Y PAGOS</div>
-                  <div class="small opacity-75 lh-1 mt-1 text-white">Ir al módulo oficial de Rooming</div>
-                </div>
-                <i class="bi bi-arrow-right ms-auto fs-5 text-warning opacity-75"></i>
-              </button>
+            <div class="col-5 text-end">
+              <div class="text-muted small mb-1" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Check-out</div>
+              <div class="fw-bold text-dark">{{ staySeleccionado.fecha_fin }}</div>
             </div>
           </div>
+
+          <div class="d-flex justify-content-center mb-4">
+             <span class="badge bg-light text-muted border px-3 py-2 fw-medium rounded-pill">
+               <i class="bi bi-moon-stars me-1"></i> {{ staySeleccionado.noches }} Noches
+             </span>
+          </div>
+
+          <!-- Finanzas -->
+          <div class="bg-light rounded-3 p-3 mb-3 border">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+               <span class="fw-bold text-dark" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Estado de Cuenta</span>
+               <span class="fw-bold" :class="staySeleccionado.estado_pago === 'pagado' ? 'text-success' : 'text-warning'" style="font-size: 0.85rem; text-transform: uppercase;">
+                 {{ staySeleccionado.estado_pago }}
+               </span>
+            </div>
+            
+            <div class="row text-center mb-3 g-0">
+              <div class="col-4">
+                <div class="text-muted mb-1" style="font-size: 0.75rem;">Total</div>
+                <div class="fw-bold text-dark">{{ staySeleccionado.moneda_pago }} {{ formatNumber(staySeleccionado.total_pago) }}</div>
+              </div>
+              <div class="col-4 border-start border-end">
+                <div class="text-muted mb-1" style="font-size: 0.75rem;">Pagado</div>
+                <div class="fw-bold text-dark">{{ staySeleccionado.moneda_pago }} {{ formatNumber(staySeleccionado.total_cobrado) }}</div>
+              </div>
+              <div class="col-4">
+                <div class="text-muted mb-1" style="font-size: 0.75rem;">Saldo</div>
+                <div class="fw-bold" :class="(staySeleccionado.total_pago - staySeleccionado.total_cobrado) > 0 ? 'text-danger' : 'text-dark'">
+                  {{ staySeleccionado.moneda_pago }} {{ formatNumber(staySeleccionado.total_pago - staySeleccionado.total_cobrado) }}
+                </div>
+              </div>
+            </div>
+
+            <div class="progress rounded-pill" style="height: 4px; background: #e2e8f0;">
+              <div class="progress-bar" 
+                   :class="staySeleccionado.estado_pago === 'pagado' ? 'bg-success' : 'bg-dark'"
+                   :style="{ width: porcentajePago(staySeleccionado) + '%' }"></div>
+            </div>
+          </div>
+
+          <!-- Acciones -->
+          <div class="d-flex flex-column gap-2 mt-4" v-if="staySeleccionado.estado === 'reservado'">
+             <button class="btn btn-outline-dark py-2 fw-medium" @click="editarQuickReserva(staySeleccionado)">
+               <i class="bi bi-pencil-square me-2"></i> Editar Reserva
+             </button>
+             <button class="btn btn-dark py-2 fw-medium" @click="confirmarReserva(staySeleccionado)">
+               <i class="bi bi-check-lg me-2"></i> Confirmar Ingreso (Check-in)
+             </button>
+             <button class="btn btn-outline-danger py-2 fw-medium border-0" @click="rechazarReserva(staySeleccionado)">
+               Cancelar Reserva
+             </button>
+          </div>
+
+          <div class="mt-4" v-if="staySeleccionado.estado_pago !== 'pagado' && staySeleccionado.estado !== 'reservado'">
+             <button class="btn btn-dark w-100 py-2 fw-medium" @click="irARooming(staySeleccionado)">
+               <i class="bi bi-receipt me-2"></i> Gestionar Cuenta en Rooming
+             </button>
+          </div>
+
         </div>
 
-        <div class="modal-footer border-0 p-2 pt-0 gap-1">
-          <button class="btn btn-danger rounded-pill px-4 shadow-sm" @click="checkout(staySeleccionado)">
-            <i class="bi bi-door-open-fill me-2"></i>Check Out
-          </button>
-          <button class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cerrar</button>
+        <div class="modal-footer bg-light border-top px-4 py-3 d-flex justify-content-between">
+           <div>
+             <button v-if="staySeleccionado.estado === 'activo' || staySeleccionado.estado === 'late_checkout'" 
+                     class="btn btn-outline-danger fw-medium" 
+                     @click="checkout(staySeleccionado)">
+               <i class="bi bi-door-open me-2"></i> Registrar Salida
+             </button>
+           </div>
+           <button class="btn btn-secondary fw-medium px-4" data-bs-dismiss="modal">Cerrar</button>
         </div>
+
       </div>
     </div>
   </div>

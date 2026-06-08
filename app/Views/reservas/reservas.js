@@ -139,7 +139,27 @@ createApp({
 
     // ─── Helpers de celda ─────────────────────────────────────────────
     const getCeldaStay = (hab, dia) => {
-      return hab.stays.find(s => s.dia_inicio <= dia && s.dia_fin >= dia) || null;
+      const staysInDay = hab.stays.filter(s => s.dia_inicio <= dia && s.dia_fin >= dia);
+      if (staysInDay.length === 0) return null;
+      if (staysInDay.length === 1) return staysInDay[0];
+
+      // Si hay choque (Ej: Checkout y Checkin el mismo día)
+      const priorities = {
+        'inhouse': 1,
+        'activo': 1,
+        'late_checkout': 2,
+        'reservado': 3,
+        'finalizado': 4,
+        'cancelado': 5
+      };
+      
+      staysInDay.sort((a, b) => {
+        const pA = priorities[a.estado] || 99;
+        const pB = priorities[b.estado] || 99;
+        return pA - pB;
+      });
+
+      return staysInDay[0];
     };
 
     const getPaxTotalDia = (dia) => {

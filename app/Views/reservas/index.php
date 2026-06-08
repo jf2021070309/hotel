@@ -647,38 +647,40 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
                   :style="{ width: colWidth + 'px', height: rowHeight + 'px' }"
                   @click="onCeldaClick(hab, d)">
 
-                <!-- Stay block: render on every day of stay independently -->
-                <div v-if="getCeldaStay(hab, d)"
-                     class="stay-block animate__animated animate__fadeIn shadow-sm"
-                     :class="getStayColorClass(getCeldaStay(hab, d))"
-                     :style="{ width: (colWidth - 3) + 'px' }"
-                     @click.stop="abrirDetalle(getCeldaStay(hab, d), hab.numero)">
-                     
-                  <div v-if="getCeldaStay(hab, d).observaciones && getCeldaStay(hab, d).observaciones.trim() !== ''" class="note-indicator"></div>
-                  
-                  <div v-if="getCeldaStay(hab, d).observaciones && getCeldaStay(hab, d).observaciones.trim() !== ''" class="stay-tooltip text-dark">
-                    <strong style="color: #0288D1; display: block; margin-bottom: 3px; font-size: 12px;">Observaciones</strong>
-                    {{ getCeldaStay(hab, d).observaciones }}
-                  </div>
-                  
-                  <span class="titular">{{ getCeldaStay(hab, d).titular }}</span>
-                  <span v-if="viewMode !== 'compacto'" class="badge-pax">
-                    <i class="bi bi-people-fill"></i> {{ getCeldaStay(hab, d).pax }} PAX
-                  </span>
+                <div class="w-100 h-100 position-relative">
+                  <!-- Stay block: render on every day of stay independently -->
+                  <div v-for="stay in getTodosCeldaStays(hab, d)" :key="stay.id"
+                       class="stay-block animate__animated animate__fadeIn shadow-sm"
+                       :class="getStayColorClass(stay)"
+                       :style="getStayStyle(stay, d, colWidth)"
+                       @click.stop="abrirDetalle(stay, hab.numero)">
+                       
+                    <div v-if="stay.observaciones && stay.observaciones.trim() !== ''" class="note-indicator"></div>
+                    
+                    <div v-if="stay.observaciones && stay.observaciones.trim() !== ''" class="stay-tooltip text-dark">
+                      <strong style="color: #0288D1; display: block; margin-bottom: 3px; font-size: 12px;">Observaciones</strong>
+                      {{ stay.observaciones }}
+                    </div>
+                    
+                    <span class="titular">{{ stay.titular }}</span>
+                    <span v-if="viewMode !== 'compacto'" class="badge-pax">
+                      <i class="bi bi-people-fill"></i> {{ stay.pax }} PAX
+                    </span>
 
-                  <!-- Micro-barra de pago -->
-                  <div class="stay-progress-container">
-                    <div class="stay-progress-bar" 
-                         :style="{ width: porcentajePago(getCeldaStay(hab, d)) + '%', backgroundColor: getColorPago(getCeldaStay(hab, d)) }"></div>
+                    <!-- Micro-barra de pago -->
+                    <div class="stay-progress-container">
+                      <div class="stay-progress-bar" 
+                           :style="{ width: porcentajePago(stay) + '%', backgroundColor: getColorPago(stay) }"></div>
+                    </div>
                   </div>
-                </div>
 
-                <!-- Estado especial sin huésped (Solo hoy) -->
-                <div v-else-if="!getCeldaStay(hab,d) && esDiaEstadoEspecial(hab, d)"
-                     class="stay-block"
-                     :class="'est-' + hab.estado"
-                     :style="{ width: (colWidth - 3) + 'px' }">
-                  <span class="titular" style="font-size:8px; text-transform:uppercase;">{{ hab.estado }}</span>
+                  <!-- Estado especial sin huésped (Solo hoy) -->
+                  <div v-if="getTodosCeldaStays(hab, d).length === 0 && esDiaEstadoEspecial(hab, d)"
+                       class="stay-block"
+                       :class="'est-' + hab.estado"
+                       :style="{ width: (colWidth - 3) + 'px' }">
+                    <span class="titular" style="font-size:8px; text-transform:uppercase;">{{ hab.estado }}</span>
+                  </div>
                 </div>
 
               </td>

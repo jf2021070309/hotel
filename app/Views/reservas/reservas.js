@@ -139,23 +139,56 @@ createApp({
 
     // ─── Helpers de celda ─────────────────────────────────────────────
     const getCeldaStay = (hab, dia) => {
-      return hab.stays.find(s => s.dia_inicio <= dia && s.dia_fin >= dia) || null;
+      const stays = hab.stays.filter(s => s.dia_inicio <= dia && s.dia_fin >= dia);
+      return stays.length ? stays[0] : null;
+    };
+
+    const getTodosCeldaStays = (hab, dia) => {
+      // Retorna TODAS las reservas que tocan este día
+      return hab.stays.filter(s => s.dia_inicio <= dia && s.dia_fin >= dia);
+    };
+
+    const getStayStyle = (stay, dia, colW) => {
+      const isStart = (stay.dia_inicio === dia);
+      const isEnd = (stay.dia_fin === dia);
+      const isDayUse = (isStart && isEnd);
+      
+      let w = colW - 3;
+      let l = 1;
+      
+      if (!isDayUse) {
+        if (isStart) {
+          w = (colW / 2) - 1;
+          l = (colW / 2);
+        } else if (isEnd) {
+          w = (colW / 2) - 1;
+          l = 1;
+        }
+      }
+
+      return {
+        width: w + 'px',
+        left: l + 'px'
+      };
     };
 
     const getPaxTotalDia = (dia) => {
       let total = 0;
       for (const hab of habitacionesFiltradas.value) {
-        const stay = getCeldaStay(hab, dia);
-        if (stay && stay.pax) {
-          total += Number(stay.pax) || 0;
+        const stays = getTodosCeldaStays(hab, dia);
+        for (const stay of stays) {
+          // Si el día es de checkout, no cuenta el pax para esa noche
+          if (stay.dia_fin !== dia || stay.dia_inicio === stay.dia_fin) {
+            total += Number(stay.pax) || 0;
+          }
         }
       }
       return total;
     };
 
     const esInicioStay = (hab, dia) => {
-      const s = getCeldaStay(hab, dia);
-      return s && s.dia_inicio === dia;
+      const stays = getTodosCeldaStays(hab, dia);
+      return stays.some(s => s.dia_inicio === dia);
     };
 
     const esDiaEstadoEspecial = (hab, dia) => {
@@ -747,7 +780,7 @@ createApp({
       habitacionesFiltradas, staysHoyMovil,
       // methods
       cargarDatos, cambiarMes, irHoy,
-      getCeldaStay, getPaxTotalDia, esInicioStay, esDiaEstadoEspecial, calcCols,
+      getCeldaStay, getTodosCeldaStays, getStayStyle, getPaxTotalDia, esInicioStay, esDiaEstadoEspecial, calcCols,
       getDiaSemana, onCeldaClick, abrirDetalle,
       openContextMenu, handleCtxAction, ctxMenu,
       guardarPagoRapido, checkout,

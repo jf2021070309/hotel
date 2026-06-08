@@ -145,7 +145,7 @@ class RoomingV2Model {
                 $stayId = isset($row['stay_id']) ? (int)$row['stay_id'] : null;
 
                 // Formatear fechas
-                $fechaReg  = $this->parseFecha($row['fecha'] ?? null) ?: date('Y-m-d');
+                $fechaReg  = $this->parseFecha($row['fecha_checkin'] ?? $row['fecha'] ?? null) ?: date('Y-m-d');
                 $fechasCheckoutArr = isset($row['fechas_checkout_all']) ? explode("\n", str_replace("\r", "", $row['fechas_checkout_all'])) : [];
                 $fechaOutRaw = !empty($fechasCheckoutArr) ? end($fechasCheckoutArr) : ($row['fecha_checkout'] ?? null);
                 $fechaOut  = $this->parseFecha($fechaOutRaw) ?: date('Y-m-d', strtotime('+1 day'));

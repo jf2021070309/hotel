@@ -139,10 +139,7 @@ createApp({
 
     // ─── Helpers de celda ─────────────────────────────────────────────
     const getCeldaStay = (hab, dia) => {
-      return hab.stays.find(s => 
-        (s.dia_inicio === s.dia_fin && s.dia_inicio === dia) ||
-        (s.dia_inicio !== s.dia_fin && s.dia_inicio <= dia && s.dia_fin > dia)
-      ) || null;
+      return hab.stays.find(s => s.dia_inicio <= dia && s.dia_fin >= dia) || null;
     };
 
     const getPaxTotalDia = (dia) => {

@@ -361,7 +361,6 @@ createApp({
             };
           }
         });
-        });
     };
 
     const abrirQuickReserva = (hab, dia) => {

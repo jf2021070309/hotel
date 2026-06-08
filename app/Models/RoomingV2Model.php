@@ -46,6 +46,7 @@ class RoomingV2Model {
                 s.num_comprobante AS numero_comprobante,
                 s.cobrador      AS quien_cobro,
                 s.carro,
+                s.estado        AS estado_stay,
                 s.observaciones
             FROM rooming_stays s
             LEFT JOIN habitaciones h  ON h.id = s.habitacion_id

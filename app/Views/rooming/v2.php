@@ -160,9 +160,12 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 <!-- Botones de Acción (Sticky 1) -->
                 <td class="sticky-col text-center px-1">
                   <div class="d-flex align-items-center justify-content-center gap-2">
-                    <button v-if="f.stay_id" class="btn btn-sm btn-link text-danger p-0" @click="procederCheckout(f)" title="Hacer Checkout (Libera habitación)">
+                    <button v-if="f.stay_id && f.estado_stay !== 'finalizado'" class="btn btn-sm btn-link text-danger p-0" @click="procederCheckout(f)" title="Hacer Checkout (Libera habitación)">
                       <i class="bi bi-door-closed-fill fs-6"></i>
                     </button>
+                    <span v-else-if="f.stay_id && f.estado_stay === 'finalizado'" class="text-success p-0 d-inline-flex align-items-center" title="Checkout ya realizado">
+                      <i class="bi bi-check-circle-fill fs-6"></i>
+                    </span>
                     <button class="btn btn-sm btn-link text-secondary p-0" @click="eliminarFila(f, idx)" title="Eliminar registro">
                       <i class="bi bi-trash-fill fs-6"></i>
                     </button>

@@ -17,6 +17,7 @@ if (estaAutenticado()) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Acceso — Platinium Hotel</title>
+    <link rel="icon" type="image/png" href="assets/img/icono.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link
@@ -25,7 +26,7 @@ if (estaAutenticado()) {
     <style>
         :root {
             --platinium-primary: #1A1A1A;
-            --platinium-accent: #A68966;
+            --platinium-accent: #070400ff;
             --platinium-gray: #757575;
             --platinium-neutral: #F5F5F5;
         }
@@ -88,6 +89,14 @@ if (estaAutenticado()) {
             margin-bottom: 10px;
         }
 
+        .brand-logo-img {
+            max-width: 380px;
+            width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto 30px auto;
+        }
+
         .brand-stars {
             color: var(--platinium-accent);
             font-size: 14px;
@@ -97,15 +106,17 @@ if (estaAutenticado()) {
 
         h2 {
             font-family: 'Noto Serif', serif;
-            font-weight: 400;
-            font-size: 24px;
-            margin-bottom: 5px;
+            font-weight: 600;
+            font-size: 32px;
+            margin-bottom: 8px;
+            text-align: center;
         }
 
         .subtitle {
             color: var(--platinium-gray);
-            font-size: 13px;
-            margin-bottom: 3vh;
+            font-size: 14px;
+            margin-bottom: 4vh;
+            text-align: center;
         }
 
         .form-label {
@@ -207,13 +218,8 @@ if (estaAutenticado()) {
 
         <div class="login-content reveal">
             <div class="brand-header">
-                <div class="brand-logo">PLATINIUM <span class="brand-stars"><i class="bi bi-star-fill"></i><i
-                            class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i></span> <br> <span
-                        style="font-size:18px; font-weight:400; border:none;">HOTEL</span></div>
+                <img src="assets/img/logo.png" alt="Logo Hotel" class="brand-logo-img">
             </div>
-
-            <h2>Bienvenido</h2>
-            <p class="subtitle">Acceda al sistema de gestión hotelera utilizando sus credenciales autorizadas</p>
 
             <form @submit.prevent="handleSubmit">
                 <!-- Alerta SweetAlert manejada por JS -->

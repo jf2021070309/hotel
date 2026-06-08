@@ -22,8 +22,8 @@ $view_base_href = view_base_href_for_request();
 <?php endif; ?>
 
   <!-- Favicon -->
-  <link rel="icon" type="image/jpeg" href="<?= $_root ?>public/assets/img/logo.jpg">
-  <link rel="shortcut icon" type="image/jpeg" href="<?= $_root ?>public/assets/img/logo.jpg">
+  <link rel="icon" type="image/png" href="<?= $_root ?>assets/img/icono.png">
+  <link rel="shortcut icon" type="image/png" href="<?= $_root ?>assets/img/icono.png">
 
   <!-- Bootstrap 5 CSS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">

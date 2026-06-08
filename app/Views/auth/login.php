@@ -213,7 +213,7 @@ if (estaAutenticado()) {
             </div>
 
             <h2>Bienvenido</h2>
-            <p class="subtitle">Use las credenciales corporativas para acceder al sistema.</p>
+            <p class="subtitle">Acceda al sistema de gestión hotelera utilizando sus credenciales autorizadas</p>
 
             <form @submit.prevent="handleSubmit">
                 <!-- Alerta SweetAlert manejada por JS -->

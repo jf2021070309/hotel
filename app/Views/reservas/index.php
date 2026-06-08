@@ -292,10 +292,9 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
   .res-booking { background: #F57C00 !important; color: #fff !important; border: 1px solid #E65100 !important; }
   .res-directo { background: #2E7D32 !important; color: #fff !important; border: 1px solid #1B5E20 !important; }
   .res-inhouse { background: #0288D1 !important; color: #fff !important; border: 1px solid #01579B !important; }
-  .res-finalizado { background: #64748b !important; color: #fff !important; border: 1px solid #475569 !important; opacity: 0.85; }
   
-  .res-booking .titular, .res-directo .titular, .res-inhouse .titular, .res-finalizado .titular { color: #fff !important; }
-  .res-booking .badge-pax, .res-directo .badge-pax, .res-inhouse .badge-pax, .res-finalizado .badge-pax { background: rgba(0,0,0,0.25) !important; color: #fff !important; }
+  .res-booking .titular, .res-directo .titular, .res-inhouse .titular { color: #fff !important; }
+  .res-booking .badge-pax, .res-directo .badge-pax, .res-inhouse .badge-pax { background: rgba(0,0,0,0.25) !important; color: #fff !important; }
   
   /* Mantener el resto para otros elementos */
   /* Estados: limpieza = plomo, sucio = café, mantenimiento = rojo */

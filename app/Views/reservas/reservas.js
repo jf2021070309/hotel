@@ -139,27 +139,7 @@ createApp({
 
     // ─── Helpers de celda ─────────────────────────────────────────────
     const getCeldaStay = (hab, dia) => {
-      const staysInDay = hab.stays.filter(s => s.dia_inicio <= dia && s.dia_fin >= dia);
-      if (staysInDay.length === 0) return null;
-      if (staysInDay.length === 1) return staysInDay[0];
-
-      // Si hay choque (Ej: Checkout y Checkin el mismo día)
-      const priorities = {
-        'inhouse': 1,
-        'activo': 1,
-        'late_checkout': 2,
-        'reservado': 3,
-        'finalizado': 4,
-        'cancelado': 5
-      };
-      
-      staysInDay.sort((a, b) => {
-        const pA = priorities[a.estado] || 99;
-        const pB = priorities[b.estado] || 99;
-        return pA - pB;
-      });
-
-      return staysInDay[0];
+      return hab.stays.find(s => s.dia_inicio <= dia && s.dia_fin >= dia) || null;
     };
 
     const getPaxTotalDia = (dia) => {
@@ -663,9 +643,6 @@ createApp({
 
     const getStayColorClass = (stay) => {
       if (!stay) return '';
-      // Prioridad 0: Si ya hizo checkout (Finalizado)
-      if (stay.estado === 'finalizado') return 'res-finalizado';
-      
       // Prioridad 1: Si ya está en el hotel (In-house / Activo)
       if (stay.estado === 'activo' || stay.estado === 'inhouse' || stay.checkin_realizado) return 'res-inhouse';
       

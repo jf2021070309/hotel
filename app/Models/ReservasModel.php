@@ -51,7 +51,7 @@ class ReservasModel {
              FROM rooming_stays s
              LEFT JOIN rooming_pax p ON p.stay_id = s.id AND p.es_titular_acompanante = 1
              LEFT JOIN clientes c ON c.id = p.cliente_id
-             WHERE s.estado IN ('activo','late_checkout','reservado','finalizado')
+             WHERE s.estado IN ('activo','late_checkout','reservado')
                AND s.fecha_registro <= :ultimo
                AND s.fecha_checkout  > :primero"
         );

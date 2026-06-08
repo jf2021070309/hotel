@@ -142,15 +142,15 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
               <h6 class="fw-bold mb-0 text-dark">Movimientos Registrados</h6>
             </div>
             <div class="table-responsive">
-              <table class="table table-hover align-middle mb-0" style="font-size:13px;">
-                <thead class="table-light text-secondary">
-                  <tr style="font-size:11px;">
-                    <th>Fecha</th>
-                    <th>Operador</th>
-                    <th>Documento</th>
-                    <th>Observación</th>
-                    <th class="text-end">Monto</th>
-                    <th class="text-center">Acción</th>
+              <table class="table table-bordered table-hover align-middle mb-0 table-mensual" style="font-size:13px;">
+                <thead>
+                  <tr class="table-dark text-white text-uppercase" style="font-size: 10px; letter-spacing: 0.5px;">
+                    <th style="padding: 12px 16px;">Fecha</th>
+                    <th style="padding: 12px 16px;">Operador</th>
+                    <th style="padding: 12px 16px;">Documento</th>
+                    <th style="padding: 12px 16px;">Observación</th>
+                    <th class="text-end" style="padding: 12px 16px;">Monto</th>
+                    <th class="text-center" style="padding: 12px 16px;">Acción</th>
                   </tr>
                 </thead>
                 <tbody>

@@ -44,33 +44,33 @@ include $_projectRoot . 'app/Views/layouts/sidebar.php';
             </div>
         </div>
 
-        <div class="table-responsive bg-white rounded shadow-sm">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
+        <div class="table-responsive bg-white rounded shadow-sm table-mensual" style="border-radius: 12px; overflow: hidden;">
+            <table class="table table-bordered table-hover align-middle mb-0" style="font-size: 12.5px;">
+                <thead class="table-dark text-white text-uppercase text-center" style="font-size: 10px; letter-spacing: 0.5px;">
                     <tr>
-                        <th class="ps-3">FECHA</th>
-                        <th class="text-center">TOTAL HABITACIONES</th>
-                        <th class="text-center">COMPLETADAS</th>
-                        <th class="text-center">PENDIENTES</th>
-                        <th class="text-center">EFECTIVIDAD</th>
-                        <th class="text-end pe-3">ACCIONES</th>
+                        <th style="padding: 12px 16px;">FECHA</th>
+                        <th style="padding: 12px 16px;">TOTAL HABITACIONES</th>
+                        <th style="padding: 12px 16px;">COMPLETADAS</th>
+                        <th style="padding: 12px 16px;">PENDIENTES</th>
+                        <th style="padding: 12px 16px;">EFECTIVIDAD</th>
+                        <th style="padding: 12px 16px;">ACCIONES</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-if="loading" class="text-center"><td colspan="6" class="py-5"><div class="spinner-border text-primary"></div></td></tr>
                     <tr v-if="!loading && listaHistorial.length === 0" class="text-center"><td colspan="6" class="py-5 text-muted">No se encontraron registros en este periodo.</td></tr>
-                    <tr v-for="r in listaHistorial">
-                        <td class="ps-3 fw-bold">{{ formatFecha(r.fecha) }}</td>
+                    <tr v-for="r in listaHistorial" class="hover-row bg-white">
+                        <td class="text-center fw-bold">{{ formatFecha(r.fecha) }}</td>
                         <td class="text-center">{{ r.total }}</td>
                         <td class="text-center text-success fw-bold">{{ r.completadas }}</td>
                         <td class="text-center text-danger">{{ r.pendientes }}</td>
-                        <td class="text-center">
+                        <td class="text-center px-3">
                              <div class="progress" style="height: 10px;">
                                 <div class="progress-bar bg-success" :style="{width: (r.completadas * 100 / r.total) + '%'}"></div>
                              </div>
                              <small class="fw-bold">{{ Math.round(r.completadas * 100 / r.total) }}%</small>
                         </td>
-                        <td class="text-end pe-3">
+                        <td class="text-center">
                             <button class="btn btn-sm btn-outline-primary" @click="verDetalle(r.fecha)">
                                 <i class="bi bi-eye me-1"></i> Ver Detalle
                             </button>
@@ -91,23 +91,23 @@ include $_projectRoot . 'app/Views/layouts/sidebar.php';
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-0">
-                    <table class="table table-sm table-hover mb-0">
-                        <thead class="table-light">
+                    <table class="table table-bordered table-sm table-hover mb-0 table-mensual" style="font-size: 12.5px;">
+                        <thead class="table-dark text-white text-uppercase text-center" style="font-size: 10px; letter-spacing: 0.5px;">
                             <tr>
-                                <th class="ps-3">HAB</th>
-                                <th>TIPO</th>
-                                <th>ESTADO</th>
-                                <th>RESPONSABLE</th>
-                                <th>FIN</th>
+                                <th style="padding: 10px 12px;">HAB</th>
+                                <th style="padding: 10px 12px;">TIPO</th>
+                                <th style="padding: 10px 12px;">ESTADO</th>
+                                <th style="padding: 10px 12px;">RESPONSABLE</th>
+                                <th style="padding: 10px 12px;">FIN</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="d in detalleDia">
-                                <td class="ps-3 fw-bold">{{ d.habitacion }}</td>
-                                <td>{{ d.tipo_limpieza }}</td>
-                                <td>{{ d.estado }}</td>
-                                <td>{{ d.responsable || '---' }}</td>
-                                <td>{{ d.hora_fin ? d.hora_fin.substring(0,5) : '---' }}</td>
+                            <tr v-for="d in detalleDia" class="bg-white hover-row">
+                                <td class="text-center fw-bold">{{ d.habitacion }}</td>
+                                <td class="text-center">{{ d.tipo_limpieza }}</td>
+                                <td class="text-center">{{ d.estado }}</td>
+                                <td class="text-center">{{ d.responsable || '---' }}</td>
+                                <td class="text-center">{{ d.hora_fin ? d.hora_fin.substring(0,5) : '---' }}</td>
                             </tr>
                         </tbody>
                     </table>

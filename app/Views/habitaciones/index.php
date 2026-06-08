@@ -91,26 +91,26 @@ include __DIR__ . '/../layouts/sidebar.php';
     <!-- Tabla -->
     <div class="card border-0 shadow-sm" v-if="!loading" style="border-radius:10px; overflow:hidden;">
       <div class="table-responsive">
-      <table class="table table-bordered table-hover align-middle mb-0 text-sm" style="white-space: nowrap; background: #fff;">
-        <thead class="table-dark text-white text-uppercase" style="font-size: 11px; letter-spacing: 0.5px;">
-          <tr>
-            <th class="text-center" style="width: 50px;">#</th>
-            <th>Número</th>
-            <th>Tipo</th>
-            <th>Piso</th>
-            <th class="text-center">Estado</th>
-            <th class="text-end">Precio Base</th>
-            <th class="text-end pe-3">Acciones</th>
+      <table class="table table-bordered table-hover align-middle mb-0 table-mensual" style="font-size: 12.5px; white-space: nowrap; background: #fff;">
+        <thead>
+          <tr class="table-dark text-white text-uppercase text-center" style="font-size: 10px; letter-spacing: 0.5px;">
+            <th style="padding: 12px 16px; width: 50px;">#</th>
+            <th style="padding: 12px 16px;">NÚMERO</th>
+            <th style="padding: 12px 16px;">TIPO</th>
+            <th style="padding: 12px 16px;">PISO</th>
+            <th style="padding: 12px 16px;">ESTADO</th>
+            <th style="padding: 12px 16px;">PRECIO BASE</th>
+            <th style="padding: 12px 16px;">ACCIONES</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(h, i) in habitacionesFiltradas" :key="h.id" class="bg-white">
-            <td class="text-center text-muted">{{ i+1 }}</td>
-            <td>
-              <span class="fw-bold fs-6" style="color: #0f172a;"><i class="bi bi-door-closed me-1 text-secondary"></i> {{ h.numero }}</span>
+          <tr v-for="(h, i) in habitacionesFiltradas" :key="h.id" class="bg-white hover-row">
+            <td class="text-center text-muted fw-bold">{{ i+1 }}</td>
+            <td class="text-center">
+              <span class="fw-bold text-dark">{{ h.numero }}</span>
             </td>
-            <td class="fw-semibold text-secondary" style="font-size: 0.85rem;">{{ h.tipo }}</td>
-            <td>
+            <td class="text-center fw-bold text-secondary">{{ h.tipo }}</td>
+            <td class="text-center">
               <span class="px-badge shadow-sm" :style="colorPiso(h.piso)" style="font-size: 0.73rem; letter-spacing: 0.5px;">
                 <i class="bi bi-layers-half me-1" style="opacity:0.8"></i> PISO {{ h.piso }}
               </span>
@@ -127,8 +127,8 @@ include __DIR__ . '/../layouts/sidebar.php';
                 {{ h.estado.charAt(0).toUpperCase() + h.estado.slice(1) }}
               </span>
             </td>
-            <td class="text-end fw-bold text-success fs-6">S/ {{ parseFloat(h.precio_base).toFixed(2) }}</td>
-            <td class="text-end pe-3">
+            <td class="text-center fw-bold text-success">S/ {{ parseFloat(h.precio_base).toFixed(2) }}</td>
+            <td class="text-center">
               <button @click="abrirModal(h)" class="btn btn-sm btn-outline-primary shadow-sm" style="font-size: 11.5px; font-weight: 600;">
                 <i class="bi bi-pencil-square"></i> Editar
               </button>

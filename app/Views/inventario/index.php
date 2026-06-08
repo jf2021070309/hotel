@@ -72,22 +72,15 @@ include __DIR__ . '/../layouts/head.php';
     <div class="card border-0 shadow-sm overflow-hidden" style="border-radius: 12px;">
       <div class="inv-grid-container">
         <table class="table table-bordered table-hover mb-0 align-middle table-mensual">
-          <thead>
-            <!-- Fila 1: grupos -->
-            <tr class="text-center text-white text-uppercase" style="font-size: 10px; letter-spacing: 0.5px; font-weight: 800;">
-              <th colspan="4" style="background-color: #111827 !important; border-bottom: none !important;">IDENTIFICACIÓN DEL PRODUCTO</th>
-              <th colspan="2" style="background-color: #293b95 !important; border-bottom: none !important; border-left: 1px solid rgba(255,255,255,0.1) !important;">PRECIO Y ALMACENAMIENTO</th>
-              <th colspan="1" style="background-color: #6a1b9a !important; border-bottom: none !important; border-left: 1px solid rgba(255,255,255,0.1) !important;">STOCK ACTUAL</th>
-            </tr>
-            <!-- Fila 2: sub-cabeceras -->
-            <tr class="text-center text-white text-uppercase" style="font-size: 11px; letter-spacing: 0.5px;">
-              <th style="width: 50px; top: 38px; background-color: #111827 !important; border-top: none !important;"><i class="bi bi-trash"></i></th>
-              <th style="width: 60px; top: 38px; background-color: #111827 !important; border-top: none !important;">ID</th>
-              <th style="min-width: 240px; top: 38px; background-color: #111827 !important; border-top: none !important;">PRODUCTO</th>
-              <th style="width: 130px; top: 38px; background-color: #111827 !important; border-top: none !important;">CATEGORÍA</th>
-              <th style="width: 140px; top: 38px; background-color: #293b95 !important; border-top: none !important; border-left: 1px solid rgba(255,255,255,0.1) !important;">PRECIO VENTA</th>
-              <th style="width: 110px; top: 38px; background-color: #293b95 !important; border-top: none !important;">REFRIGERADORA #</th>
-              <th style="width: 140px; top: 38px; background-color: #6a1b9a !important; border-top: none !important; border-left: 1px solid rgba(255,255,255,0.1) !important;">STOCK ACTUAL</th>
+          <thead class="table-dark text-white text-uppercase text-center" style="font-size: 10px; letter-spacing: 0.5px;">
+            <tr>
+              <th style="padding: 12px 16px; width: 50px; z-index: 12 !important;"><i class="bi bi-trash"></i></th>
+              <th style="padding: 12px 16px; width: 60px;">ID</th>
+              <th style="padding: 12px 16px; min-width: 240px;">PRODUCTO</th>
+              <th style="padding: 12px 16px; width: 130px;">CATEGORÍA</th>
+              <th style="padding: 12px 16px; width: 140px;">PRECIO VENTA</th>
+              <th style="padding: 12px 16px; width: 110px;">REFRIGERADORA #</th>
+              <th style="padding: 12px 16px; width: 140px;">STOCK ACTUAL</th>
             </tr>
           </thead>
           <tbody>

@@ -80,22 +80,16 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
       </div>
 
       <div class="table-responsive" v-else>
-        <table class="table table-hover align-middle mb-0" style="font-size:12.5px; white-space: nowrap;">
+        <table class="table table-bordered table-hover mb-0 align-middle table-mensual" style="font-size:12.5px; white-space: nowrap;">
           <thead>
-            <tr style="font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase;">
-                <th colspan="1" class="text-center align-middle" style="background-color: #111827 !important; color: white !important; border: 1px solid rgba(255,255,255,0.1) !important; padding: 12px;">INFORMACIÓN</th>
-                <th colspan="2" class="text-center align-middle" style="background-color: #293b95 !important; color: white !important; border: 1px solid rgba(255,255,255,0.1) !important; padding: 12px;">TIEMPO Y REGISTRO</th>
-                <th colspan="3" class="text-center align-middle" style="background-color: #6a1b9a !important; color: white !important; border: 1px solid rgba(255,255,255,0.1) !important; padding: 12px;">ESTADO FINANCIERO</th>
-                <th colspan="1" class="text-center align-middle" style="background-color: #0f766e !important; color: white !important; border: 1px solid rgba(255,255,255,0.1) !important; padding: 12px;">ESTADO FINANCIERO</th>
-            </tr>
-            <tr style="font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase;">
-              <th class="text-center align-middle" style="background-color: #111827 !important; color: white !important; border-top: none !important; width: 150px; padding: 12px;">NOMBRE DEL CICLO</th>
-              <th class="text-center align-middle" style="background-color: #293b95 !important; color: white !important; border-top: none !important; border-left: 1px solid rgba(255,255,255,0.1) !important; width: 140px; padding: 12px;">APERTURA</th>
-              <th class="text-center align-middle" style="background-color: #293b95 !important; color: white !important; border-top: none !important; width: 140px; padding: 12px;">CIERRE</th>
-              <th class="text-center align-middle" style="background-color: #6a1b9a !important; color: white !important; border-top: none !important; border-left: 1px solid rgba(255,255,255,0.1) !important; width: 110px; padding: 12px;">INICIAL</th>
-              <th class="text-center align-middle" style="background-color: #6a1b9a !important; color: white !important; border-top: none !important; width: 110px; padding: 12px;">GASTADO</th>
-              <th class="text-center align-middle" style="background-color: #6a1b9a !important; color: white !important; border-top: none !important; width: 110px; padding: 12px;">SALDO ACTUAL</th>
-              <th class="text-center align-middle" style="background-color: #0f766e !important; color: white !important; border-top: none !important; border-left: 1px solid rgba(255,255,255,0.1) !important; width: 100px; padding: 12px;">ESTADO</th>
+            <tr class="table-dark text-white text-uppercase text-center" style="font-size: 10px; letter-spacing: 0.5px;">
+              <th style="padding: 12px 16px;">NOMBRE DEL CICLO</th>
+              <th style="padding: 12px 16px;">APERTURA</th>
+              <th style="padding: 12px 16px;">CIERRE</th>
+              <th style="padding: 12px 16px;">INICIAL</th>
+              <th style="padding: 12px 16px;">GASTADO</th>
+              <th style="padding: 12px 16px;">SALDO ACTUAL</th>
+              <th style="padding: 12px 16px;">ESTADO</th>
             </tr>
           </thead>
           <tbody>

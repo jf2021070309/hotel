@@ -113,22 +113,13 @@ include $_projectRoot . 'app/Views/layouts/head.php';
         <div class="lv2-grid-container">
           <table class="table table-bordered mb-0 lv2-table">
             <thead>
-              <!-- Fila agrupada de cabeceras (Nivel 1) -->
-              <tr class="text-center text-white text-uppercase"
-                  style="font-size:10px;letter-spacing:.5px;font-weight:800;">
-                <th colspan="2" class="lv2-sticky" style="background:#111827!important; border-bottom: 1px solid rgba(255,255,255,0.1) !important; position:sticky; left:0; z-index:15;">HABITACIÓN</th>
-                <th colspan="1" style="background:#293b95!important; border-bottom: 1px solid rgba(255,255,255,0.1) !important; border-left: 1px solid rgba(255,255,255,0.1) !important;">LIMPIEZA</th>
-                <th colspan="2" style="background:#293b95!important; border-bottom: 1px solid rgba(255,255,255,0.1) !important; border-left: 1px solid rgba(255,255,255,0.1) !important;">HUÉSPED</th>
-                <th colspan="1" style="background:#6a1b9a!important; border-bottom: 1px solid rgba(255,255,255,0.1) !important; border-left: 1px solid rgba(255,255,255,0.1) !important;">ACCIÓN</th>
-              </tr>
-              <!-- Subcabeceras (Nivel 2) -->
-              <tr class="text-white text-uppercase" style="font-size:11px;letter-spacing:.5px;">
-                <th class="lv2-sticky text-center" style="width:50px; background:#111827!important; z-index:14; border-right: 1px solid rgba(255,255,255,0.1) !important;">HAB</th>
-                <th style="width:90px; top:38px; background:#111827!important; border-right: 1px solid rgba(255,255,255,0.1) !important;">TIPO HAB</th>
-                <th style="width:110px; top:38px; background:#293b95!important; border-right: 1px solid rgba(255,255,255,0.1) !important;">ESTADO</th>
-                <th style="width:55px; top:38px; background:#293b95!important; border-right: 1px solid rgba(255,255,255,0.1) !important;">PAX</th>
-                <th style="width:110px; top:38px; background:#293b95!important; border-right: 1px solid rgba(255,255,255,0.1) !important;">ROOM ESTADO</th>
-                <th style="width:130px; top:38px; background:#6a1b9a!important; text-align: center;">ACCIÓN RÁPIDA</th>
+              <tr class="table-dark text-white text-uppercase text-center" style="font-size: 10px; letter-spacing: 0.5px;">
+                <th class="lv2-sticky" style="padding: 12px 16px; width: 50px; z-index: 15 !important;">HAB</th>
+                <th style="padding: 12px 16px; width: 90px;">TIPO HAB</th>
+                <th style="padding: 12px 16px; width: 110px;">ESTADO</th>
+                <th style="padding: 12px 16px; width: 55px;">PAX</th>
+                <th style="padding: 12px 16px; width: 110px;">ROOM ESTADO</th>
+                <th style="padding: 12px 16px; width: 130px;">ACCIÓN RÁPIDA</th>
               </tr>
             </thead>
 

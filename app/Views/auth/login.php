@@ -51,7 +51,7 @@ if (estaAutenticado()) {
         .login-hero {
             flex: 1.2;
             background: linear-gradient(rgba(26, 26, 26, 0.2), rgba(26, 26, 26, 0.2)),
-                url('<?= project_base_url() ?>public/assets/img/edificio.png') center/cover no-repeat;
+                url('<?= project_base_url() ?>assets/img/fotohotel.png') center/cover no-repeat;
             display: none;
         }
 

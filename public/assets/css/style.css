@@ -206,18 +206,18 @@ body {
 }
 
 .nav-item a.active {
-    background: linear-gradient(90deg, rgba(212, 175, 55, 0.25) 0%, rgba(212, 175, 55, 0) 100%);
-    border-left: 3px solid #d4af37;
+    background: linear-gradient(90deg, rgba(203, 213, 225, 0.25) 0%, rgba(203, 213, 225, 0) 100%);
+    border-left: 3px solid #cbd5e1;
     color: #fff;
     border-radius: 0 8px 8px 0;
     margin-left: 0;
     padding-left: 25px;
-    box-shadow: 0 0 12px rgba(212, 175, 55, 0.2);
+    box-shadow: 0 0 12px rgba(203, 213, 225, 0.2);
 }
 
 .nav-item a.active i {
-    color: #d4af37 !important;
-    /* Force icons to be gold when active */
+    color: #cbd5e1 !important;
+    /* Force icons to be silver when active */
 }
 
 
@@ -263,8 +263,8 @@ body {
 
 .sidebar::-webkit-scrollbar-thumb:hover,
 .sidebar-nav::-webkit-scrollbar-thumb:hover {
-    background: rgba(212, 175, 55, 0.5);
-    /* Gold handle on hover */
+    background: rgba(203, 213, 225, 0.5);
+    /* Silver handle on hover */
 }
 
 /* ─── WRAPPER ─── */

@@ -454,6 +454,18 @@ createApp({
       }, 250);
     },
 
+    estadoCheckout(f) {
+      if (!f.stay_id || f.estado_stay === 'finalizado') return '';
+      const dates = f.checkout_list.map(c => c.fecha).filter(Boolean);
+      if (!dates.length) return '';
+      const lastCheckout = dates[dates.length - 1];
+      const today = new Date().toISOString().split('T')[0];
+      
+      if (lastCheckout < today) return 'atrasado';
+      if (lastCheckout === today) return 'hoy';
+      return '';
+    },
+
     // Exportar tabla visible a Excel usando XLSX
     exportarExcel() {
       try {

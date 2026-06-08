@@ -18,6 +18,28 @@ $page_title = 'Rooming V2 — Hotel Manager';
 include $_projectRoot . '/app/Views/layouts/head.php';
 ?>
 
+<style>
+  /* Alertas de Checkout */
+  .checkout-atrasado input[type="date"] {
+    background-color: #fee2e2 !important; /* rojo suave */
+    color: #dc2626 !important; /* rojo fuerte */
+    border-radius: 4px;
+    font-weight: 900 !important;
+    animation: pulse-red 2s infinite;
+  }
+  .checkout-hoy input[type="date"] {
+    background-color: #fef9c3 !important; /* amarillo suave */
+    color: #ca8a04 !important; /* amarillo oscuro */
+    border-radius: 4px;
+    font-weight: 900 !important;
+  }
+  @keyframes pulse-red {
+    0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); }
+    70% { box-shadow: 0 0 0 4px rgba(220, 38, 38, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+  }
+</style>
+
 <div id="app-rooming-v2" style="display:contents" v-cloak>
   <?php include $_projectRoot . '/app/Views/layouts/sidebar.php'; ?>
   
@@ -297,8 +319,13 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 <!-- CHECK OUT FECHA -->
                 <td class="p-0 position-relative" style="vertical-align: stretch;">
                   <div class="d-flex flex-column h-100 justify-content-start align-items-stretch">
-                    <div v-for="(c, cIdx) in f.checkout_list" :key="cIdx" class="pax-input-container w-100" :style="{ borderBottom: cIdx === f.checkout_list.length - 1 ? 'none' : '1px dashed #cbd5e1' }">
-                      <input type="date" v-model="c.fecha" class="table-editable-input text-center text-danger fw-bold w-100 border-0 bg-transparent px-1" @change="marcarModificado(f)" @keydown.enter.prevent="onCheckoutEnter(f)" style="height: 32px; font-size: 11px;">
+                    <div v-for="(c, cIdx) in f.checkout_list" :key="cIdx" class="pax-input-container w-100" 
+                         :class="{
+                           'checkout-atrasado': estadoCheckout(f) === 'atrasado',
+                           'checkout-hoy': estadoCheckout(f) === 'hoy'
+                         }"
+                         :style="{ borderBottom: cIdx === f.checkout_list.length - 1 ? 'none' : '1px dashed #cbd5e1', padding: '2px 4px' }">
+                      <input type="date" v-model="c.fecha" class="table-editable-input text-center text-danger fw-bold w-100 border-0 bg-transparent px-1" @change="marcarModificado(f)" @keydown.enter.prevent="onCheckoutEnter(f)" style="height: 30px; font-size: 11px;">
                     </div>
                   </div>
                 </td>

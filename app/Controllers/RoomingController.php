@@ -262,7 +262,14 @@ class RoomingController {
             return ['ok' => false, 'msg' => "No se puede realizar el checkout. La habitación tiene un saldo pendiente de: S/ " . number_format($saldoPendiente, 2)];
         }
 
-        if ($this->model->finalizarStay($id, date('Y-m-d'), $pago)) {
+        // Determinar fecha de checkout
+        $fechaOutReal = $stay['fecha_checkout'];
+        // Si están haciendo checkout anticipado (la fecha programada es en el futuro), usar la fecha de hoy
+        if (strtotime($fechaOutReal) > strtotime(date('Y-m-d'))) {
+            $fechaOutReal = date('Y-m-d');
+        }
+
+        if ($this->model->finalizarStay($id, $fechaOutReal, $pago)) {
             $numHab = $stay['nro_habitacion'] ?? $stay['habitacion_id'];
             $this->audit->registrar($_SESSION['auth_id'], 'CHECKOUT_REALIZADO', 'ROOMING', "Check-out realizado (Habitación #$numHab)");
             return ['ok' => true, 'msg' => "Check-out realizado"];

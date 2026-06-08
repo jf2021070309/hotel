@@ -643,6 +643,9 @@ createApp({
 
     const getStayColorClass = (stay) => {
       if (!stay) return '';
+      // Prioridad 0: Si ya hizo checkout (Finalizado)
+      if (stay.estado === 'finalizado') return 'res-finalizado';
+      
       // Prioridad 1: Si ya está en el hotel (In-house / Activo)
       if (stay.estado === 'activo' || stay.estado === 'inhouse' || stay.checkin_realizado) return 'res-inhouse';
       

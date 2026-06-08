@@ -291,10 +291,6 @@ createApp({
     };
 
     const onCeldaClick = (hab, dia) => {
-      const stay = getCeldaStay(hab, dia);
-      if (stay) {
-        abrirDetalle(stay, hab.numero);
-      } else {
         Swal.fire({
           title: `Habitación #${hab.numero} — Día ${dia}/${mesActual.value}`,
           html: `
@@ -365,7 +361,7 @@ createApp({
             };
           }
         });
-      }
+        });
     };
 
     const abrirQuickReserva = (hab, dia) => {

@@ -275,6 +275,8 @@ include $_projectRoot . 'app/Views/layouts/head.php';
   .lv2-table thead th.lv2-sticky {
     z-index: 16 !important;
     top: 0;
+    background-color: #212529 !important;
+    border-right: none !important;
   }
 
   .lv2-table td {

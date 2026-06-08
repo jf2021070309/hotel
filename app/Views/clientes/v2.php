@@ -82,25 +82,18 @@ include $_projectRoot . '/app/Views/layouts/head.php';
       <div class="card border-0 shadow-sm overflow-hidden" style="border-radius: 12px;">
         <div class="mensual-grid-container">
           <table class="table table-bordered table-hover mb-0 align-middle table-mensual">
-            <thead>
-              <!-- Fila agrupada de cabeceras (Nivel 1) -->
-              <tr class="text-center text-white text-uppercase" style="font-size: 10px; letter-spacing: 0.5px; font-weight: 800;">
-                <th colspan="5" class="sticky-col" style="background-color: #111827 !important; border-bottom: 1px solid rgba(255,255,255,0.1) !important; z-index: 13 !important;">INFORMACIÓN</th>
-                <th colspan="4" style="background-color: #293b95 !important; border-bottom: 1px solid rgba(255,255,255,0.1) !important; border-left: 1px solid rgba(255,255,255,0.1) !important;">DATOS DE EMPRESA Y CONTACTO</th>
-                <th colspan="1" style="background-color: #6a1b9a !important; border-bottom: 1px solid rgba(255,255,255,0.1) !important; border-left: 1px solid rgba(255,255,255,0.1) !important;">ACCIONES PRINCIPALES</th>
-              </tr>
-              <!-- Subcabeceras (Nivel 2) -->
-              <tr class="text-white text-uppercase" style="font-size: 10px; letter-spacing: 0.5px;">
-                <th class="sticky-col text-center" style="width: 40px; top: 38px; z-index: 12 !important; background-color: #111827 !important; border-right: 1px solid rgba(255,255,255,0.1) !important;"><i class="bi bi-trash"></i></th>
-                <th style="width: 200px; top: 38px; background-color: #111827 !important; border-right: 1px solid rgba(255,255,255,0.1) !important;">NOMBRE</th>
-                <th style="width: 90px; top: 38px; background-color: #111827 !important; border-right: 1px solid rgba(255,255,255,0.1) !important;">DNI</th>
-                <th style="width: 110px; top: 38px; background-color: #111827 !important; border-right: 1px solid rgba(255,255,255,0.1) !important;">NACIONALIDAD</th>
-                <th style="width: 110px; top: 38px; background-color: #111827 !important; border-right: 1px solid rgba(255,255,255,0.1) !important;">CIUDAD</th>
-                <th style="width: 100px; top: 38px; background-color: #293b95 !important; border-right: 1px solid rgba(255,255,255,0.1) !important;">CELULAR</th>
-                <th style="width: 150px; top: 38px; background-color: #293b95 !important; border-right: 1px solid rgba(255,255,255,0.1) !important;">EMAIL</th>
-                <th style="width: 100px; top: 38px; background-color: #293b95 !important; border-right: 1px solid rgba(255,255,255,0.1) !important;">RUC</th>
-                <th style="width: 180px; top: 38px; background-color: #293b95 !important; border-right: 1px solid rgba(255,255,255,0.1) !important;">EMPRESA</th>
-                <th class="text-center" style="width: 150px; top: 38px; background-color: #6a1b9a !important;">ACCIONES</th>
+            <thead class="table-dark text-white text-uppercase text-center" style="font-size: 10px; letter-spacing: 0.5px;">
+              <tr>
+                <th class="sticky-col" style="padding: 12px 16px; width: 40px; z-index: 12 !important;"><i class="bi bi-trash"></i></th>
+                <th style="padding: 12px 16px; width: 200px;">NOMBRE</th>
+                <th style="padding: 12px 16px; width: 90px;">DNI</th>
+                <th style="padding: 12px 16px; width: 110px;">NACIONALIDAD</th>
+                <th style="padding: 12px 16px; width: 110px;">CIUDAD</th>
+                <th style="padding: 12px 16px; width: 100px;">CELULAR</th>
+                <th style="padding: 12px 16px; width: 150px;">EMAIL</th>
+                <th style="padding: 12px 16px; width: 100px;">RUC</th>
+                <th style="padding: 12px 16px; width: 180px;">EMPRESA</th>
+                <th style="padding: 12px 16px; width: 150px;">ACCIONES</th>
               </tr>
             </thead>
             
@@ -278,6 +271,8 @@ include $_projectRoot . '/app/Views/layouts/head.php';
   
   .table-mensual thead th.sticky-col {
     z-index: 12 !important;
+    background-color: #212529 !important;
+    border-right: none !important;
   }
 
   .table-mensual td {

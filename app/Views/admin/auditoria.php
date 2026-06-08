@@ -93,22 +93,14 @@ include __DIR__ . '/../layouts/head.php';
       <div class="card border-0 shadow-sm overflow-hidden" style="border-radius: 12px;">
         <div class="audit-grid-container">
           <table class="table table-bordered table-hover mb-0 align-middle table-mensual">
-            <thead>
-              <!-- Fila 1: Grupos de color -->
-              <tr class="text-center text-white text-uppercase" style="font-size: 10px; letter-spacing: 0.5px; font-weight: 800;">
-                <th colspan="2" style="background-color: #111827 !important; border-bottom: none !important; z-index: 13;">FECHA Y USUARIO</th>
-                <th colspan="2" style="background-color: #293b95 !important; border-bottom: none !important; border-left: 1px solid rgba(255,255,255,0.1) !important;">ACCIÓN</th>
-                <th colspan="1" style="background-color: #6a1b9a !important; border-bottom: none !important; border-left: 1px solid rgba(255,255,255,0.1) !important;">DETALLES / CAMBIOS</th>
-                <th colspan="1" style="background-color: #0f766e !important; border-bottom: none !important; border-left: 1px solid rgba(255,255,255,0.1) !important;">DISPOSITIVO</th>
-              </tr>
-              <!-- Fila 2: Sub-cabeceras -->
-              <tr class="text-center text-white text-uppercase" style="font-size: 11px; letter-spacing: 0.5px;">
-                <th style="width: 130px; top: 38px; background-color: #111827 !important; border-top: none !important;">FECHA / HORA</th>
-                <th style="width: 160px; top: 38px; background-color: #111827 !important; border-top: none !important;">USUARIO / ROL</th>
-                <th style="width: 130px; top: 38px; background-color: #293b95 !important; border-top: none !important; border-left: 1px solid rgba(255,255,255,0.1) !important;">MÓDULO</th>
-                <th style="width: 160px; top: 38px; background-color: #293b95 !important; border-top: none !important;">ACCIÓN</th>
-                <th style="min-width: 380px; top: 38px; background-color: #6a1b9a !important; border-top: none !important; border-left: 1px solid rgba(255,255,255,0.1) !important;">DETALLE</th>
-                <th style="width: 150px; top: 38px; background-color: #0f766e !important; border-top: none !important; border-left: 1px solid rgba(255,255,255,0.1) !important;">IP / DISPOSITIVO</th>
+            <thead class="table-dark text-white text-uppercase text-center" style="font-size: 10px; letter-spacing: 0.5px;">
+              <tr>
+                <th style="padding: 12px 16px; width: 130px;">FECHA / HORA</th>
+                <th style="padding: 12px 16px; width: 160px;">USUARIO / ROL</th>
+                <th style="padding: 12px 16px; width: 130px;">MÓDULO</th>
+                <th style="padding: 12px 16px; width: 160px;">ACCIÓN</th>
+                <th style="padding: 12px 16px; min-width: 380px;">DETALLE</th>
+                <th style="padding: 12px 16px; width: 150px;">IP / DISPOSITIVO</th>
               </tr>
             </thead>
             <tbody>
@@ -127,7 +119,7 @@ include __DIR__ . '/../layouts/head.php';
                 </td>
               </tr>
               <!-- Filas de datos (solo lectura) -->
-              <tr v-else v-for="log in logs" :key="log.id" class="audit-row">
+              <tr v-else v-for="log in paginatedLogs" :key="log.id" class="audit-row">
                 <!-- FECHA / HORA -->
                 <td class="text-center px-2 py-3">
                   <div class="fw-bold text-dark" style="font-size: 13px;">{{ fmtFechaSolo(log.fecha_hora) }}</div>
@@ -177,6 +169,20 @@ include __DIR__ . '/../layouts/head.php';
               </tr>
             </tbody>
           </table>
+        </div>
+        <div class="card-footer bg-white border-top py-3 d-flex align-items-center justify-content-between" v-if="logs.length > 0">
+          <div class="text-muted" style="font-size: 13px;">
+            Mostrando <b>{{ (currentPage - 1) * itemsPerPage + 1 }}</b> - <b>{{ Math.min(currentPage * itemsPerPage, logs.length) }}</b> de <b>{{ logs.length }}</b> registros
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-sm btn-outline-secondary" @click="currentPage--" :disabled="currentPage === 1" style="font-size: 12px; padding: 4px 10px;">
+              <i class="bi bi-chevron-left me-1"></i>Anterior
+            </button>
+            <span class="text-dark fw-bold px-2" style="font-size: 13px;">Página {{ currentPage }} de {{ totalPages }}</span>
+            <button class="btn btn-sm btn-outline-secondary" @click="currentPage++" :disabled="currentPage === totalPages" style="font-size: 12px; padding: 4px 10px;">
+              Siguiente<i class="bi bi-chevron-right ms-1"></i>
+            </button>
+          </div>
         </div>
       </div>
 

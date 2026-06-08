@@ -72,18 +72,13 @@ include __DIR__ . '/../layouts/head.php';
       <div class="card border-0 shadow-sm overflow-hidden" style="border-radius: 12px;">
         <div class="mensual-grid-container">
           <table class="table table-bordered table-hover mb-0 align-middle table-mensual">
-            <thead>
-              <tr class="text-center text-white text-uppercase" style="font-size: 10px; letter-spacing: 0.5px; font-weight: 800;">
-                <th colspan="3" class="sticky-col" style="background-color: #111827 !important; border-bottom: 1px solid rgba(255,255,255,0.1) !important; z-index: 13 !important;">DATOS DEL MEDIO</th>
-                <th colspan="1" style="background-color: #293b95 !important; border-bottom: 1px solid rgba(255,255,255,0.1) !important; border-left: 1px solid rgba(255,255,255,0.1) !important;">DESCRIPCIÓN</th>
-                <th colspan="1" style="background-color: #6a1b9a !important; border-bottom: 1px solid rgba(255,255,255,0.1) !important; border-left: 1px solid rgba(255,255,255,0.1) !important;">SISTEMA</th>
-              </tr>
-              <tr class="text-center text-white text-uppercase" style="font-size: 11px; letter-spacing: 0.5px;">
-                <th class="sticky-col text-center" style="width: 50px; top: 38px; z-index: 12 !important; background-color: #111827 !important; border-right: 1px solid rgba(255,255,255,0.1) !important;"><i class="bi bi-trash"></i></th>
-                <th class="sticky-col text-center" style="width: 70px; top: 38px; z-index: 12 !important; background-color: #111827 !important; border-right: 1px solid rgba(255,255,255,0.1) !important;">ID</th>
-                <th style="width: 100px; top: 38px; background-color: #111827 !important; border-right: 1px solid rgba(255,255,255,0.1) !important;">ORDEN</th>
-                <th style="width: auto; min-width: 300px; top: 38px; background-color: #293b95 !important; border-right: 1px solid rgba(255,255,255,0.1) !important;">NOMBRE / DETALLE</th>
-                <th class="text-center" style="width: 150px; top: 38px; background-color: #6a1b9a !important;">ESTADO</th>
+            <thead class="table-dark text-white text-uppercase text-center" style="font-size: 10px; letter-spacing: 0.5px;">
+              <tr>
+                <th class="sticky-col" style="padding: 12px 16px; width: 50px; z-index: 12 !important;"><i class="bi bi-trash"></i></th>
+                <th class="sticky-col" style="padding: 12px 16px; width: 70px; z-index: 12 !important;">ID</th>
+                <th style="padding: 12px 16px; width: 100px;">ORDEN</th>
+                <th style="padding: 12px 16px; min-width: 300px;">NOMBRE / DETALLE</th>
+                <th style="padding: 12px 16px; width: 150px;">ESTADO</th>
               </tr>
             </thead>
             <tbody>
@@ -205,6 +200,8 @@ include __DIR__ . '/../layouts/head.php';
   }
   .table-mensual thead th.sticky-col {
     z-index: 15 !important;
+    background-color: #212529 !important;
+    border-right: none !important;
   }
 
   /* Eliminar bordes internos entre las dos filas del encabezado */

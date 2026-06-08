@@ -361,24 +361,15 @@ window.MENDOZA_CONFIG = {
                         <!-- Tabla Auditoria Style -->
                         <div class="audit-grid-container mb-3">
                           <table class="table table-bordered table-hover mb-0 align-middle table-mensual">
-                              <thead>
-                                  <!-- Fila 1: Grupos de color -->
-                                  <tr class="text-center text-white text-uppercase" style="font-size: 10px; letter-spacing: 0.5px; font-weight: 800;">
-                                      <th colspan="2" style="background-color: #111827 !important; border-bottom: none !important; z-index: 13;">ESTADÍA Y CLIENTE</th>
-                                      <th colspan="3" style="background-color: #293b95 !important; border-bottom: none !important; border-left: 1px solid rgba(255,255,255,0.1) !important;">TIEMPOS</th>
-                                      <th colspan="2" style="background-color: #0f766e !important; border-bottom: none !important; border-left: 1px solid rgba(255,255,255,0.1) !important;">FINANZAS</th>
-                                  </tr>
-                                  <!-- Fila 2: Sub-cabeceras -->
-                                  <tr class="text-center text-white text-uppercase" style="font-size: 11px; letter-spacing: 0.5px;">
-                                      <th style="width: 80px; top: 38px; background-color: #111827 !important; border-top: none !important;">HAB</th>
-                                      <th style="top: 38px; background-color: #111827 !important; border-top: none !important;">CONCEPTO</th>
-                                      
-                                      <th style="width: 130px; top: 38px; background-color: #293b95 !important; border-top: none !important; border-left: 1px solid rgba(255,255,255,0.1) !important;">CHECK IN</th>
-                                      <th style="width: 130px; top: 38px; background-color: #293b95 !important; border-top: none !important;">CHECK OUT</th>
-                                      <th style="width: 90px; top: 38px; background-color: #293b95 !important; border-top: none !important;">NOCHES</th>
-
-                                      <th style="width: 150px; top: 38px; background-color: #0f766e !important; border-top: none !important; border-left: 1px solid rgba(255,255,255,0.1) !important;">MÉTODO</th>
-                                      <th style="width: 140px; top: 38px; background-color: #0f766e !important; border-top: none !important;">MONTO</th>
+                              <thead class="table-dark text-white text-uppercase text-center" style="font-size: 10px; letter-spacing: 0.5px;">
+                                  <tr>
+                                      <th style="padding: 12px 16px; width: 80px;">HAB</th>
+                                      <th style="padding: 12px 16px;">CONCEPTO</th>
+                                      <th style="padding: 12px 16px; width: 130px;">CHECK IN</th>
+                                      <th style="padding: 12px 16px; width: 130px;">CHECK OUT</th>
+                                      <th style="padding: 12px 16px; width: 90px;">NOCHES</th>
+                                      <th style="padding: 12px 16px; width: 150px;">MÉTODO</th>
+                                      <th style="padding: 12px 16px; width: 140px;">MONTO</th>
                                   </tr>
                               </thead>
                               <tbody>

@@ -72,20 +72,15 @@ include __DIR__ . '/../layouts/head.php';
       <div class="card border-0 shadow-sm overflow-hidden" style="border-radius: 12px;">
         <div class="mensual-grid-container">
           <table class="table table-bordered table-hover mb-0 align-middle table-mensual">
-            <thead>
-              <tr class="text-center text-white text-uppercase" style="font-size: 10px; letter-spacing: 0.5px; font-weight: 800;">
-                <th colspan="4" class="sticky-col" style="background-color: #111827 !important; border-bottom: 1px solid rgba(255,255,255,0.1) !important; z-index: 13 !important;">DATOS DEL USUARIO</th>
-                <th colspan="2" style="background-color: #293b95 !important; border-bottom: 1px solid rgba(255,255,255,0.1) !important; border-left: 1px solid rgba(255,255,255,0.1) !important;">SISTEMA Y ACCESO</th>
-                <th colspan="1" style="background-color: #6a1b9a !important; border-bottom: 1px solid rgba(255,255,255,0.1) !important; border-left: 1px solid rgba(255,255,255,0.1) !important;">MÁS ACCIONES</th>
-              </tr>
-              <tr class="text-white text-uppercase" style="font-size: 11px; letter-spacing: 0.5px;">
-                <th class="sticky-col text-center" style="width: 50px; top: 38px; z-index: 12 !important; background-color: #111827 !important; border-right: 1px solid rgba(255,255,255,0.1) !important;"><i class="bi bi-trash"></i></th>
-                <th class="sticky-col text-center" style="width: 70px; top: 38px; z-index: 12 !important; background-color: #111827 !important; border-right: 1px solid rgba(255,255,255,0.1) !important;">ID</th>
-                <th style="width: 250px; top: 38px; background-color: #111827 !important; border-right: 1px solid rgba(255,255,255,0.1) !important;">NOMBRE</th>
-                <th style="width: 150px; top: 38px; background-color: #111827 !important; border-right: 1px solid rgba(255,255,255,0.1) !important;">LOGIN (USUARIO)</th>
-                <th style="width: 150px; top: 38px; background-color: #293b95 !important; border-right: 1px solid rgba(255,255,255,0.1) !important;">ROL</th>
-                <th style="width: 120px; top: 38px; background-color: #293b95 !important; border-right: 1px solid rgba(255,255,255,0.1) !important;">ESTADO</th>
-                <th class="text-center" style="width: 150px; top: 38px; background-color: #6a1b9a !important;">SEGURIDAD</th>
+            <thead class="table-dark text-white text-uppercase text-center" style="font-size: 10px; letter-spacing: 0.5px;">
+              <tr>
+                <th class="sticky-col" style="padding: 12px 16px; width: 50px; z-index: 12 !important;"><i class="bi bi-trash"></i></th>
+                <th class="sticky-col" style="padding: 12px 16px; width: 70px; z-index: 12 !important;">ID</th>
+                <th style="padding: 12px 16px; width: 250px;">NOMBRE</th>
+                <th style="padding: 12px 16px; width: 150px;">LOGIN (USUARIO)</th>
+                <th style="padding: 12px 16px; width: 150px;">ROL</th>
+                <th style="padding: 12px 16px; width: 120px;">ESTADO</th>
+                <th style="padding: 12px 16px; width: 150px;">SEGURIDAD</th>
               </tr>
             </thead>
             <tbody>
@@ -320,7 +315,11 @@ include __DIR__ . '/../layouts/head.php';
     border-right: 1px solid #cbd5e1;
   }
   
-  .table-mensual thead th.sticky-col { z-index: 12 !important; }
+  .table-mensual thead th.sticky-col { 
+    z-index: 12 !important; 
+    background-color: #212529 !important;
+    border-right: none !important;
+  }
   .table-mensual td { padding: 3px 4px; vertical-align: middle; border: 1px solid #e2e8f0; background-color: #ffffff; }
   .table-mensual tbody tr:hover td { background-color: #f1f5f9; }
   .table-mensual tbody tr:hover td.sticky-col { background-color: #e2e8f0; }

@@ -7,6 +7,8 @@ Vue.createApp({
     return {
       logs: [],
       loading: false,
+      currentPage: 1,
+      itemsPerPage: 20,
       filters: {
         nombre: '',
         rol: 'TODOS',
@@ -16,9 +18,20 @@ Vue.createApp({
     };
   },
 
+  computed: {
+    totalPages() {
+      return Math.ceil(this.logs.length / this.itemsPerPage) || 1;
+    },
+    paginatedLogs() {
+      const start = (this.currentPage - 1) * this.itemsPerPage;
+      return this.logs.slice(start, start + this.itemsPerPage);
+    }
+  },
+
   methods: {
     async fetchLogs() {
       this.loading = true;
+      this.currentPage = 1;
       try {
         const params = new URLSearchParams(this.filters);
         const res = await axios.get('../../../api/auditoria.php?action=listar&' + params.toString());

@@ -228,7 +228,7 @@ class ReservasModel {
             ) VALUES (
                 :operador, :fecha_reg, :fecha_out, :medio, 
                 :hab_id, 'RESERVA', 1, 0, 
-                'PEN', 'EFECTIVO', 'RECIBO', :cobrador, 
+                'PEN', 'EFECTIVO', 'TICKET', :cobrador, 
                 :obs, :uid, 'reservado', 'pendiente', :cliente_titular_id
             )";
             

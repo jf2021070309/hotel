@@ -292,54 +292,67 @@ createApp({
 
     const onCeldaClick = (hab, dia) => {
         Swal.fire({
-          title: `Habitación #${hab.numero} — Día ${dia}/${mesActual.value}`,
           html: `
-            <div class="d-flex flex-column gap-2 mt-3">
-              <button id="btn-opt-reserva" class="btn btn-primary py-3 fw-bold text-start shadow-sm d-flex align-items-center gap-3 border-0" style="background: linear-gradient(135deg, #0288D1, #01579B); border-radius: 12px;">
-                <div class="bg-white text-primary rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 38px; height: 38px;">
+            <div class="text-center mb-4 mt-2">
+              <h4 class="fw-bolder mb-2" style="color: #0f172a; font-size: 22px; letter-spacing: -0.5px;">Habitación #${hab.numero}</h4>
+              <div class="badge px-3 py-2" style="background-color: #f1f5f9; color: #475569; font-size: 13px; font-weight: 600; border-radius: 8px;">Día ${dia} / ${mesActual.value}</div>
+            </div>
+
+            <div class="d-flex flex-column gap-2 text-start px-1">
+              <button id="btn-opt-reserva" class="btn custom-opt-btn p-3 border-0 d-flex align-items-center gap-3 w-100" style="background: #ffffff; border-radius: 14px; border: 1px solid #e2e8f0 !important; transition: all 0.2s;">
+                <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 46px; height: 46px; background: #e0f2fe; color: #0284c7;">
                   <i class="bi bi-calendar-plus fs-5"></i>
                 </div>
-                <div class="text-white">
-                  <div class="fs-6 mb-0">Crear Reserva</div>
-                  <div class="small opacity-75 fw-normal" style="font-size: 11px;">Registrar nueva reserva para esta fecha</div>
+                <div>
+                  <div class="fw-bold text-dark mb-1" style="font-size: 15px;">Crear Reserva</div>
+                  <div class="text-muted" style="font-size: 12px; line-height: 1.2;">Registrar nueva reserva para esta fecha</div>
                 </div>
               </button>
 
-              <button id="btn-opt-sucio" class="btn btn-secondary py-3 fw-bold text-start shadow-sm d-flex align-items-center gap-3 border-0" style="background: linear-gradient(135deg, #8D6E63, #5D4037); border-radius: 12px;">
-                <div class="bg-white rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 38px; height: 38px; color: #5D4037;">
+              <button id="btn-opt-sucio" class="btn custom-opt-btn p-3 border-0 d-flex align-items-center gap-3 w-100" style="background: #ffffff; border-radius: 14px; border: 1px solid #e2e8f0 !important; transition: all 0.2s;">
+                <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 46px; height: 46px; background: #ffedd5; color: #ea580c;">
                   <i class="bi bi-droplet-half fs-5"></i>
                 </div>
-                <div class="text-white">
-                  <div class="fs-6 mb-0">Cambiar estado sucio</div>
-                  <div class="small opacity-75 fw-normal" style="font-size: 11px;">Marcar habitación para limpieza</div>
+                <div>
+                  <div class="fw-bold text-dark mb-1" style="font-size: 15px;">Marcar como Sucio</div>
+                  <div class="text-muted" style="font-size: 12px; line-height: 1.2;">Habitación pendiente de limpieza</div>
                 </div>
               </button>
 
-              <button id="btn-opt-mant" class="btn btn-danger py-3 fw-bold text-start shadow-sm d-flex align-items-center gap-3 border-0" style="background: linear-gradient(135deg, #E53935, #B71C1C); border-radius: 12px;">
-                <div class="bg-white text-danger rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 38px; height: 38px;">
+              <button id="btn-opt-mant" class="btn custom-opt-btn p-3 border-0 d-flex align-items-center gap-3 w-100" style="background: #ffffff; border-radius: 14px; border: 1px solid #e2e8f0 !important; transition: all 0.2s;">
+                <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 46px; height: 46px; background: #fee2e2; color: #dc2626;">
                   <i class="bi bi-tools fs-5"></i>
                 </div>
-                <div class="text-white">
-                  <div class="fs-6 mb-0">Cambiar a mantenimiento</div>
-                  <div class="small opacity-75 fw-normal" style="font-size: 11px;">Bloquear por reparaciones o mantenimiento</div>
+                <div>
+                  <div class="fw-bold text-dark mb-1" style="font-size: 15px;">Mantenimiento</div>
+                  <div class="text-muted" style="font-size: 12px; line-height: 1.2;">Bloquear por reparaciones</div>
                 </div>
               </button>
 
-              <button id="btn-opt-libre" class="btn btn-success py-3 fw-bold text-start shadow-sm d-flex align-items-center gap-3 border-0" style="background: linear-gradient(135deg, #2E7D32, #1B5E20); border-radius: 12px;">
-                <div class="bg-white text-success rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 38px; height: 38px;">
+              <button id="btn-opt-libre" class="btn custom-opt-btn p-3 border-0 d-flex align-items-center gap-3 w-100" style="background: #ffffff; border-radius: 14px; border: 1px solid #e2e8f0 !important; transition: all 0.2s;">
+                <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 46px; height: 46px; background: #dcfce7; color: #16a34a;">
                   <i class="bi bi-check-circle fs-5"></i>
                 </div>
-                <div class="text-white">
-                  <div class="fs-6 mb-0">Cambiar a libre</div>
-                  <div class="small opacity-75 fw-normal" style="font-size: 11px;">Habilitar habitación disponible</div>
+                <div>
+                  <div class="fw-bold text-dark mb-1" style="font-size: 15px;">Marcar como Libre</div>
+                  <div class="text-muted" style="font-size: 12px; line-height: 1.2;">Habilitar habitación disponible</div>
                 </div>
               </button>
             </div>
+            <style>
+              .custom-opt-btn:hover {
+                background: #f8fafc !important;
+                border-color: #cbd5e1 !important;
+                transform: translateY(-2px);
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025) !important;
+              }
+            </style>
           `,
           showConfirmButton: false,
           showCloseButton: true,
+          padding: '1.5rem',
           customClass: {
-            popup: 'rounded-4 shadow-lg'
+            popup: 'rounded-4 shadow-lg border-0'
           },
           didOpen: () => {
             const popup = Swal.getPopup();

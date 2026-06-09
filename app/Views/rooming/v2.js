@@ -560,9 +560,9 @@ createApp({
               toast: true,
               position: 'top-end',
               icon: 'success',
-              title: `✅ ${d.nombre || 'Cliente'} cargado — completa los datos restantes y guarda.`,
+              title: `Datos de ${d.nombre || 'huésped'} importados. Complete la habitación y guarde los cambios.`,
               showConfirmButton: false,
-              timer: 4000
+              timer: 5000
             });
           }, 300);
 

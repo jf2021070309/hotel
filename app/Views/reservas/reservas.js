@@ -144,31 +144,17 @@ createApp({
     };
 
     const getTodosCeldaStays = (hab, dia) => {
-      // Retorna TODAS las reservas que tocan este día
-      return hab.stays.filter(s => s.dia_inicio <= dia && s.dia_fin >= dia);
+      // Retorna TODAS las reservas que aplican a la noche de este día
+      return hab.stays.filter(s => {
+        if (s.dia_inicio === s.dia_fin) return s.dia_inicio === dia;
+        return s.dia_inicio <= dia && s.dia_fin > dia;
+      });
     };
 
     const getStayStyle = (stay, dia, colW) => {
-      const isStart = (stay.dia_inicio === dia);
-      const isEnd = (stay.dia_fin === dia);
-      const isDayUse = (isStart && isEnd);
-      
-      let w = colW - 3;
-      let l = 1;
-      
-      if (!isDayUse) {
-        if (isStart) {
-          w = (colW / 2) - 1;
-          l = (colW / 2);
-        } else if (isEnd) {
-          w = (colW / 2) - 1;
-          l = 1;
-        }
-      }
-
       return {
-        width: w + 'px',
-        left: l + 'px'
+        width: (colW - 3) + 'px',
+        left: '1px'
       };
     };
 
@@ -177,10 +163,7 @@ createApp({
       for (const hab of habitacionesFiltradas.value) {
         const stays = getTodosCeldaStays(hab, dia);
         for (const stay of stays) {
-          // Si el día es de checkout, no cuenta el pax para esa noche
-          if (stay.dia_fin !== dia || stay.dia_inicio === stay.dia_fin) {
-            total += Number(stay.pax) || 0;
-          }
+          total += Number(stay.pax) || 0;
         }
       }
       return total;

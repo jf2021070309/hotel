@@ -84,16 +84,16 @@ include $_projectRoot . '/app/Views/layouts/head.php';
           <table class="table table-bordered table-hover mb-0 align-middle table-mensual">
             <thead class="table-dark text-white text-uppercase text-center" style="font-size: 10px; letter-spacing: 0.5px;">
               <tr>
-                <th class="sticky-col" style="padding: 12px 16px; width: 40px; z-index: 12 !important;"><i class="bi bi-trash"></i></th>
-                <th style="padding: 12px 16px; width: 200px;">NOMBRE</th>
-                <th style="padding: 12px 16px; width: 90px;">DNI</th>
-                <th style="padding: 12px 16px; width: 110px;">NACIONALIDAD</th>
-                <th style="padding: 12px 16px; width: 110px;">CIUDAD</th>
-                <th style="padding: 12px 16px; width: 100px;">CELULAR</th>
-                <th style="padding: 12px 16px; width: 150px;">EMAIL</th>
-                <th style="padding: 12px 16px; width: 100px;">RUC</th>
-                <th style="padding: 12px 16px; width: 180px;">EMPRESA</th>
-                <th style="padding: 12px 16px; width: 150px;">ACCIONES</th>
+                <th class="sticky-col" style="padding: 12px 16px; min-width: 60px; width: 60px; z-index: 12 !important;"><i class="bi bi-trash"></i></th>
+                <th style="padding: 12px 16px; min-width: 600px; width: 600px;">NOMBRE</th>
+                <th style="padding: 12px 16px; min-width: 200px; width: 200px;">DNI</th>
+                <th style="padding: 12px 16px; min-width: 200px; width: 200px;">NACIONALIDAD</th>
+                <th style="padding: 12px 16px; min-width: 200px; width: 200px;">CIUDAD</th>
+                <th style="padding: 12px 16px; min-width: 200px; width: 200px;">CELULAR</th>
+                <th style="padding: 12px 16px; min-width: 400px; width: 400px;">EMAIL</th>
+                <th style="padding: 12px 16px; min-width: 200px; width: 200px;">RUC</th>
+                <th style="padding: 12px 16px; min-width: 600px; width: 600px;">EMPRESA</th>
+                <th style="padding: 12px 16px; min-width: 250px; width: 250px;">ACCIONES</th>
               </tr>
             </thead>
             
@@ -237,10 +237,13 @@ include $_projectRoot . '/app/Views/layouts/head.php';
   }
 
   .table-mensual {
-    min-width: 100%;
+    width: 3000px !important;
+    min-width: 3000px !important;
+    max-width: none !important;
     font-size: 11px;
     border-collapse: separate;
     border-spacing: 0;
+    table-layout: fixed !important;
   }
   
   /* Sticky de headers */

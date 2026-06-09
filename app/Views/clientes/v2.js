@@ -261,6 +261,46 @@ createApp({
 
     onMounted(() => {
       cargarDatos();
+
+      setTimeout(() => {
+        const slider = document.querySelector('.mensual-grid-container');
+        if (slider) {
+          let isDown = false;
+          let startX, startY, scrollLeft, scrollTop;
+
+          slider.addEventListener('mousedown', (e) => {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON' || e.target.closest('button') || e.target.closest('a')) {
+              return;
+            }
+            isDown = true;
+            startX = e.pageX - slider.offsetLeft;
+            startY = e.pageY - slider.offsetTop;
+            scrollLeft = slider.scrollLeft;
+            scrollTop = slider.scrollTop;
+            slider.style.cursor = 'grabbing';
+            document.body.style.userSelect = 'none';
+          });
+
+          window.addEventListener('mouseup', () => {
+            if (isDown) {
+              isDown = false;
+              slider.style.cursor = '';
+              document.body.style.userSelect = '';
+            }
+          });
+
+          slider.addEventListener('mousemove', (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - slider.offsetLeft;
+            const y = e.pageY - slider.offsetTop;
+            const walkX = (x - startX) * 1.5;
+            const walkY = (y - startY) * 1.5;
+            slider.scrollLeft = scrollLeft - walkX;
+            slider.scrollTop = scrollTop - walkY;
+          });
+        }
+      }, 300);
     });
 
     return {

@@ -282,53 +282,50 @@ createApp({
               <div class="text-secondary" style="font-size: 14px;">Día ${dia} / ${mesActual.value}</div>
             </div>
 
-            <div class="d-flex flex-column text-start px-2">
-              <button id="btn-opt-reserva" class="btn custom-opt-btn p-3 border-0 d-flex align-items-center gap-3 w-100 text-start" style="background: transparent; border-radius: 8px; transition: all 0.15s;">
-                <div class="d-flex align-items-center justify-content-center text-dark" style="width: 32px; height: 32px;">
+            <div class="d-flex flex-column text-start px-2 gap-2">
+              <button id="btn-opt-reserva" class="btn p-3 border-0 d-flex align-items-center gap-3 w-100 text-start" style="background: #111827; border-radius: 12px; transition: filter 0.15s;">
+                <div class="d-flex align-items-center justify-content-center text-white" style="width: 32px; height: 32px;">
                   <i class="bi bi-calendar-plus fs-5"></i>
                 </div>
                 <div>
-                  <div class="fw-bold text-dark mb-0" style="font-size: 15px;">Crear Reserva</div>
-                  <div class="text-muted mt-1" style="font-size: 12px; line-height: 1.2;">Registrar nueva reserva para esta fecha</div>
+                  <div class="fw-bold text-white mb-0" style="font-size: 15px;">Crear Reserva</div>
+                  <div class="text-white-50 mt-1" style="font-size: 12px; line-height: 1.2;">Registrar nueva reserva para esta fecha</div>
                 </div>
               </button>
 
-              <button id="btn-opt-sucio" class="btn custom-opt-btn p-3 border-0 d-flex align-items-center gap-3 w-100 text-start" style="background: transparent; border-radius: 8px; transition: all 0.15s;">
-                <div class="d-flex align-items-center justify-content-center text-dark" style="width: 32px; height: 32px;">
+              <button id="btn-opt-sucio" class="btn p-3 border-0 d-flex align-items-center gap-3 w-100 text-start" style="background: #795548; border-radius: 12px; transition: filter 0.15s;">
+                <div class="d-flex align-items-center justify-content-center text-white" style="width: 32px; height: 32px;">
                   <i class="bi bi-droplet fs-5"></i>
                 </div>
                 <div>
-                  <div class="fw-bold text-dark mb-0" style="font-size: 15px;">Marcar como Sucio</div>
-                  <div class="text-muted mt-1" style="font-size: 12px; line-height: 1.2;">Habitación pendiente de limpieza</div>
+                  <div class="fw-bold text-white mb-0" style="font-size: 15px;">Marcar como Sucio</div>
+                  <div class="text-white-50 mt-1" style="font-size: 12px; line-height: 1.2;">Habitación pendiente de limpieza</div>
                 </div>
               </button>
 
-              <button id="btn-opt-mant" class="btn custom-opt-btn p-3 border-0 d-flex align-items-center gap-3 w-100 text-start" style="background: transparent; border-radius: 8px; transition: all 0.15s;">
-                <div class="d-flex align-items-center justify-content-center text-dark" style="width: 32px; height: 32px;">
+              <button id="btn-opt-mant" class="btn p-3 border-0 d-flex align-items-center gap-3 w-100 text-start" style="background: #ef4444; border-radius: 12px; transition: filter 0.15s;">
+                <div class="d-flex align-items-center justify-content-center text-white" style="width: 32px; height: 32px;">
                   <i class="bi bi-tools fs-5"></i>
                 </div>
                 <div>
-                  <div class="fw-bold text-dark mb-0" style="font-size: 15px;">Mantenimiento</div>
-                  <div class="text-muted mt-1" style="font-size: 12px; line-height: 1.2;">Bloquear por reparaciones</div>
+                  <div class="fw-bold text-white mb-0" style="font-size: 15px;">Mantenimiento</div>
+                  <div class="text-white-50 mt-1" style="font-size: 12px; line-height: 1.2;">Bloquear por reparaciones</div>
                 </div>
               </button>
 
-              <button id="btn-opt-libre" class="btn custom-opt-btn p-3 border-0 d-flex align-items-center gap-3 w-100 text-start" style="background: transparent; border-radius: 8px; transition: all 0.15s;">
-                <div class="d-flex align-items-center justify-content-center text-dark" style="width: 32px; height: 32px;">
+              <button id="btn-opt-libre" class="btn p-3 border-0 d-flex align-items-center gap-3 w-100 text-start" style="background: #10b981; border-radius: 12px; transition: filter 0.15s;">
+                <div class="d-flex align-items-center justify-content-center text-white" style="width: 32px; height: 32px;">
                   <i class="bi bi-check2-circle fs-5"></i>
                 </div>
                 <div>
-                  <div class="fw-bold text-dark mb-0" style="font-size: 15px;">Marcar como Libre</div>
-                  <div class="text-muted mt-1" style="font-size: 12px; line-height: 1.2;">Habilitar habitación disponible</div>
+                  <div class="fw-bold text-white mb-0" style="font-size: 15px;">Marcar como Libre</div>
+                  <div class="text-white-50 mt-1" style="font-size: 12px; line-height: 1.2;">Habilitar habitación disponible</div>
                 </div>
               </button>
             </div>
             <style>
-              .custom-opt-btn:hover {
-                background: #f1f5f9 !important;
-              }
-              .custom-opt-btn:active {
-                background: #e2e8f0 !important;
+              #btn-opt-reserva:hover, #btn-opt-sucio:hover, #btn-opt-mant:hover, #btn-opt-libre:hover {
+                filter: brightness(1.15);
               }
             </style>
           `,

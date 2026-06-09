@@ -889,15 +889,18 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
           </div>
 
           <!-- Acciones -->
-          <div class="d-flex flex-column gap-2 mt-4" v-if="staySeleccionado.estado === 'reservado'">
-             <button class="btn btn-outline-dark py-2 fw-medium" @click="editarQuickReserva(staySeleccionado)">
-               <i class="bi bi-pencil-square me-2"></i> Editar Reserva
+          <div class="reserva-actions-grid mt-4" v-if="staySeleccionado.estado === 'reservado'">
+             <button class="btn reserva-action-btn text-white shadow-sm" style="background: #64748b; border: none;" @click="editarQuickReserva(staySeleccionado)">
+               <div class="icon-wrap text-secondary shadow-sm"><i class="bi bi-pencil-square"></i></div>
+               <span style="font-size: 11px; letter-spacing: 0.3px;">Editar</span>
              </button>
-             <button class="btn btn-dark py-2 fw-medium" @click="confirmarReserva(staySeleccionado)">
-               <i class="bi bi-check-lg me-2"></i> Confirmar Ingreso (Check-in)
+             <button class="btn reserva-action-btn text-white shadow-sm" style="background: #111827; border: none;" @click="confirmarReserva(staySeleccionado)">
+               <div class="icon-wrap text-dark shadow-sm"><i class="bi bi-check-lg fs-5"></i></div>
+               <span style="font-size: 11px; letter-spacing: 0.3px;">Check-in</span>
              </button>
-             <button class="btn btn-outline-danger py-2 fw-medium border-0" @click="rechazarReserva(staySeleccionado)">
-               Cancelar Reserva
+             <button class="btn reserva-action-btn text-white shadow-sm" style="background: #ef4444; border: none;" @click="rechazarReserva(staySeleccionado)">
+               <div class="icon-wrap text-danger shadow-sm"><i class="bi bi-x-lg"></i></div>
+               <span style="font-size: 11px; letter-spacing: 0.3px;">Cancelar</span>
              </button>
           </div>
 

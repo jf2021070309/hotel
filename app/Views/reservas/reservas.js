@@ -294,57 +294,58 @@ createApp({
         Swal.fire({
           html: `
             <div class="text-center mb-4 mt-2">
-              <h4 class="fw-bolder mb-2" style="color: #0f172a; font-size: 22px; letter-spacing: -0.5px;">Habitación #${hab.numero}</h4>
-              <div class="badge px-3 py-2" style="background-color: #f1f5f9; color: #475569; font-size: 13px; font-weight: 600; border-radius: 8px;">Día ${dia} / ${mesActual.value}</div>
+              <div class="text-muted text-uppercase mb-1" style="font-size: 10px; letter-spacing: 1px; font-weight: 600;">Opciones de celda</div>
+              <h4 class="fw-bolder mb-1" style="color: #111827; font-size: 24px; letter-spacing: -0.5px;">Habitación #${hab.numero}</h4>
+              <div class="text-secondary" style="font-size: 14px;">Día ${dia} / ${mesActual.value}</div>
             </div>
 
-            <div class="d-flex flex-column gap-2 text-start px-1">
-              <button id="btn-opt-reserva" class="btn custom-opt-btn p-3 border-0 d-flex align-items-center gap-3 w-100" style="background: #ffffff; border-radius: 14px; border: 1px solid #e2e8f0 !important; transition: all 0.2s;">
-                <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 46px; height: 46px; background: #e0f2fe; color: #0284c7;">
+            <div class="d-flex flex-column text-start px-2">
+              <button id="btn-opt-reserva" class="btn custom-opt-btn p-3 border-0 d-flex align-items-center gap-3 w-100 text-start" style="background: transparent; border-radius: 8px; transition: all 0.15s;">
+                <div class="d-flex align-items-center justify-content-center text-dark" style="width: 32px; height: 32px;">
                   <i class="bi bi-calendar-plus fs-5"></i>
                 </div>
                 <div>
-                  <div class="fw-bold text-dark mb-1" style="font-size: 15px;">Crear Reserva</div>
-                  <div class="text-muted" style="font-size: 12px; line-height: 1.2;">Registrar nueva reserva para esta fecha</div>
+                  <div class="fw-bold text-dark mb-0" style="font-size: 15px;">Crear Reserva</div>
+                  <div class="text-muted mt-1" style="font-size: 12px; line-height: 1.2;">Registrar nueva reserva para esta fecha</div>
                 </div>
               </button>
 
-              <button id="btn-opt-sucio" class="btn custom-opt-btn p-3 border-0 d-flex align-items-center gap-3 w-100" style="background: #ffffff; border-radius: 14px; border: 1px solid #e2e8f0 !important; transition: all 0.2s;">
-                <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 46px; height: 46px; background: #ffedd5; color: #ea580c;">
-                  <i class="bi bi-droplet-half fs-5"></i>
+              <button id="btn-opt-sucio" class="btn custom-opt-btn p-3 border-0 d-flex align-items-center gap-3 w-100 text-start" style="background: transparent; border-radius: 8px; transition: all 0.15s;">
+                <div class="d-flex align-items-center justify-content-center text-dark" style="width: 32px; height: 32px;">
+                  <i class="bi bi-droplet fs-5"></i>
                 </div>
                 <div>
-                  <div class="fw-bold text-dark mb-1" style="font-size: 15px;">Marcar como Sucio</div>
-                  <div class="text-muted" style="font-size: 12px; line-height: 1.2;">Habitación pendiente de limpieza</div>
+                  <div class="fw-bold text-dark mb-0" style="font-size: 15px;">Marcar como Sucio</div>
+                  <div class="text-muted mt-1" style="font-size: 12px; line-height: 1.2;">Habitación pendiente de limpieza</div>
                 </div>
               </button>
 
-              <button id="btn-opt-mant" class="btn custom-opt-btn p-3 border-0 d-flex align-items-center gap-3 w-100" style="background: #ffffff; border-radius: 14px; border: 1px solid #e2e8f0 !important; transition: all 0.2s;">
-                <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 46px; height: 46px; background: #fee2e2; color: #dc2626;">
+              <button id="btn-opt-mant" class="btn custom-opt-btn p-3 border-0 d-flex align-items-center gap-3 w-100 text-start" style="background: transparent; border-radius: 8px; transition: all 0.15s;">
+                <div class="d-flex align-items-center justify-content-center text-dark" style="width: 32px; height: 32px;">
                   <i class="bi bi-tools fs-5"></i>
                 </div>
                 <div>
-                  <div class="fw-bold text-dark mb-1" style="font-size: 15px;">Mantenimiento</div>
-                  <div class="text-muted" style="font-size: 12px; line-height: 1.2;">Bloquear por reparaciones</div>
+                  <div class="fw-bold text-dark mb-0" style="font-size: 15px;">Mantenimiento</div>
+                  <div class="text-muted mt-1" style="font-size: 12px; line-height: 1.2;">Bloquear por reparaciones</div>
                 </div>
               </button>
 
-              <button id="btn-opt-libre" class="btn custom-opt-btn p-3 border-0 d-flex align-items-center gap-3 w-100" style="background: #ffffff; border-radius: 14px; border: 1px solid #e2e8f0 !important; transition: all 0.2s;">
-                <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 46px; height: 46px; background: #dcfce7; color: #16a34a;">
-                  <i class="bi bi-check-circle fs-5"></i>
+              <button id="btn-opt-libre" class="btn custom-opt-btn p-3 border-0 d-flex align-items-center gap-3 w-100 text-start" style="background: transparent; border-radius: 8px; transition: all 0.15s;">
+                <div class="d-flex align-items-center justify-content-center text-dark" style="width: 32px; height: 32px;">
+                  <i class="bi bi-check2-circle fs-5"></i>
                 </div>
                 <div>
-                  <div class="fw-bold text-dark mb-1" style="font-size: 15px;">Marcar como Libre</div>
-                  <div class="text-muted" style="font-size: 12px; line-height: 1.2;">Habilitar habitación disponible</div>
+                  <div class="fw-bold text-dark mb-0" style="font-size: 15px;">Marcar como Libre</div>
+                  <div class="text-muted mt-1" style="font-size: 12px; line-height: 1.2;">Habilitar habitación disponible</div>
                 </div>
               </button>
             </div>
             <style>
               .custom-opt-btn:hover {
-                background: #f8fafc !important;
-                border-color: #cbd5e1 !important;
-                transform: translateY(-2px);
-                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025) !important;
+                background: #f1f5f9 !important;
+              }
+              .custom-opt-btn:active {
+                background: #e2e8f0 !important;
               }
             </style>
           `,

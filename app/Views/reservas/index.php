@@ -431,30 +431,22 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
     gap: 8px;
   }
   .reserva-action-btn {
-    min-height: 74px;
-    border-radius: 14px;
-    border: 1px solid #dbe3ef;
+    min-height: 44px;
+    border-radius: 10px;
+    border: none;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    font-weight: 800;
-    font-size: 11px;
-    line-height: 1.1;
-    transition: transform .15s ease, box-shadow .15s ease, background .15s ease, border-color .15s ease;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 13px;
+    line-height: 1;
+    transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
   }
   .reserva-action-btn:hover {
     transform: translateY(-1px);
-  }
-  .reserva-action-btn .icon-wrap {
-    width: 30px;
-    height: 30px;
-    border-radius: 999px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255,255,255,.95);
+    filter: brightness(1.1);
   }
   .reserva-action-btn.action-edit {
     background: #fff;
@@ -890,17 +882,17 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
 
           <!-- Acciones -->
           <div class="reserva-actions-grid mt-4" v-if="staySeleccionado.estado === 'reservado'">
-             <button class="btn reserva-action-btn text-white shadow-sm" style="background: #64748b; border: none;" @click="editarQuickReserva(staySeleccionado)">
-               <div class="icon-wrap text-secondary shadow-sm"><i class="bi bi-pencil-square"></i></div>
-               <span style="font-size: 11px; letter-spacing: 0.3px;">Editar</span>
+             <button class="btn reserva-action-btn text-white shadow-sm" style="background: #64748b;" @click="editarQuickReserva(staySeleccionado)">
+               <i class="bi bi-pen-fill"></i>
+               <span style="letter-spacing: 0.3px;">Editar</span>
              </button>
-             <button class="btn reserva-action-btn text-white shadow-sm" style="background: #111827; border: none;" @click="confirmarReserva(staySeleccionado)">
-               <div class="icon-wrap text-dark shadow-sm"><i class="bi bi-check-lg fs-5"></i></div>
-               <span style="font-size: 11px; letter-spacing: 0.3px;">Check-in</span>
+             <button class="btn reserva-action-btn text-white shadow-sm" style="background: #111827;" @click="confirmarReserva(staySeleccionado)">
+               <i class="bi bi-box-arrow-in-right fs-5"></i>
+               <span style="letter-spacing: 0.3px;">Check-in</span>
              </button>
-             <button class="btn reserva-action-btn text-white shadow-sm" style="background: #ef4444; border: none;" @click="rechazarReserva(staySeleccionado)">
-               <div class="icon-wrap text-danger shadow-sm"><i class="bi bi-x-lg"></i></div>
-               <span style="font-size: 11px; letter-spacing: 0.3px;">Cancelar</span>
+             <button class="btn reserva-action-btn text-white shadow-sm" style="background: #ef4444;" @click="rechazarReserva(staySeleccionado)">
+               <i class="bi bi-trash-fill"></i>
+               <span style="letter-spacing: 0.3px;">Cancelar</span>
              </button>
           </div>
 

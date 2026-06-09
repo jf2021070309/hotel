@@ -93,7 +93,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 <th style="padding: 12px 16px; min-width: 250px; width: 250px;">EMAIL</th>
                 <th style="padding: 12px 16px; min-width: 150px; width: 150px;">RUC</th>
                 <th style="padding: 12px 16px; min-width: 350px; width: 350px;">EMPRESA</th>
-                <th style="padding: 12px 16px; min-width: 160px; width: 160px;">ACCIONES</th>
+                <th style="padding: 12px 16px; min-width: 220px; width: 220px;">ACCIONES</th>
               </tr>
             </thead>
             
@@ -237,8 +237,8 @@ include $_projectRoot . '/app/Views/layouts/head.php';
   }
 
   .table-mensual {
-    width: 1800px !important;
-    min-width: 1800px !important;
+    width: 1860px !important;
+    min-width: 1860px !important;
     max-width: none !important;
     font-size: 11px;
     border-collapse: separate;

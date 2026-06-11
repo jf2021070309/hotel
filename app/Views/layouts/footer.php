@@ -68,11 +68,17 @@
             const count = response.data.count;
             const data = response.data.data;
             
+            const sidebarBadge = document.getElementById('sidebarNotifBadge');
             if (count > 0) {
               notifCountBadge.innerText = count;
               notifCountBadge.style.display = 'block';
+              if (sidebarBadge) {
+                  sidebarBadge.innerText = count;
+                  sidebarBadge.style.display = 'inline-block';
+              }
             } else {
               notifCountBadge.style.display = 'none';
+              if (sidebarBadge) sidebarBadge.style.display = 'none';
             }
             
             if (count === 0) {

@@ -217,6 +217,15 @@ function isActive(string $page, string $folder_): string {
     </div>
     <?php endif; ?>
 
+    <div class="nav-label mt-2">Alertas</div>
+    <div class="nav-item">
+      <a href="#" class="" onclick="event.preventDefault(); var offcanvas = new bootstrap.Offcanvas(document.getElementById('offcanvasNotifications')); offcanvas.show(); if(window.innerWidth <= 768) closeSidebar();">
+        <i class="bi bi-bell-fill text-danger animate__animated animate__swing animate__infinite animate__slower" style="display: inline-block;"></i>
+        <span>Notificaciones</span>
+        <span id="sidebarNotifBadge" class="badge bg-danger rounded-pill ms-auto" style="display: none; font-size: 10px;">0</span>
+      </a>
+    </div>
+
   </nav>
 
   <div class="sidebar-user px-3 py-3 border-top" style="border-color: rgba(255,255,255,0.05) !important;">

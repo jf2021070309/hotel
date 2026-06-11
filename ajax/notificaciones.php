@@ -27,7 +27,7 @@ try {
     if (!$flujo || $flujo['estado'] === 'borrador') {
         $notificaciones[] = [
             'tipo' => 'warning',
-            'titulo' => 'Flujo de Caja',
+            'titulo' => 'Caja Chica',
             'mensaje' => 'Recuerda revisar y gestionar tu caja (Turno ' . $turno_actual . ').',
             'icono' => 'bi-cash-stack',
             'url' => 'flujo/v2.php'

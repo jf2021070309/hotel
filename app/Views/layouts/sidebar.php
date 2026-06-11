@@ -401,13 +401,71 @@ document.addEventListener('DOMContentLoaded', function() {
   // Use the PHP variable $_root defined in head.php for exact project root
   let basePath = '<?= $_root ?? "/" ?>';
   
+  // Global dismiss function
+  window.dismissNotification = function(sig, event) {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    let dismissed = JSON.parse(localStorage.getItem('dismissedNotifs') || '[]');
+    const today = new Date().toDateString();
+    const lastDate = localStorage.getItem('dismissedNotifsDate');
+    
+    if (lastDate !== today) {
+        dismissed = [];
+        localStorage.setItem('dismissedNotifsDate', today);
+    }
+    
+    if (!dismissed.includes(sig)) {
+        dismissed.push(sig);
+        localStorage.setItem('dismissedNotifs', JSON.stringify(dismissed));
+    }
+    
+    // Remove visually instantly
+    const el = document.getElementById('notif-' + sig);
+    if (el) el.remove();
+    
+    // Update counters
+    const listItems = document.getElementById('notificationList').querySelectorAll('a.list-group-item');
+    const count = listItems.length;
+    
+    if (count > 0) {
+      if(notifCountBadge) {
+        notifCountBadge.innerText = count;
+        notifCountBadge.style.display = 'block';
+      }
+      if (document.getElementById('sidebarNotifBadge')) {
+          document.getElementById('sidebarNotifBadge').innerText = count;
+          document.getElementById('sidebarNotifBadge').style.display = 'inline-block';
+      }
+    } else {
+      if(notifCountBadge) notifCountBadge.style.display = 'none';
+      if (document.getElementById('sidebarNotifBadge')) document.getElementById('sidebarNotifBadge').style.display = 'none';
+      document.getElementById('notificationList').innerHTML = '<div class="p-5 text-center text-muted"><i class="bi bi-bell-slash text-secondary fs-1 mb-3 d-block opacity-50"></i><p class="mb-0 fw-semibold">No hay notificaciones nuevas</p></div>';
+    }
+  };
+
   function fetchNotifications() {
     if (typeof axios === 'undefined') return; // En caso de que no haya cargado Axios
     axios.get(basePath + 'ajax/notificaciones.php')
       .then(response => {
         if (response.data && response.data.status === 'success') {
-          const count = response.data.count;
-          const data = response.data.data;
+          let data = response.data.data;
+          
+          // Clear old dismissed on a new day
+          const today = new Date().toDateString();
+          if (localStorage.getItem('dismissedNotifsDate') !== today) {
+              localStorage.setItem('dismissedNotifs', '[]');
+              localStorage.setItem('dismissedNotifsDate', today);
+          }
+          const dismissed = JSON.parse(localStorage.getItem('dismissedNotifs') || '[]');
+          
+          // Filter out dismissed
+          data = data.filter(item => {
+             const sig = btoa(encodeURIComponent(item.titulo + item.mensaje)).replace(/=/g, '');
+             return !dismissed.includes(sig);
+          });
+          
+          const count = data.length;
           
           const sidebarBadge = document.getElementById('sidebarNotifBadge');
           if (count > 0) {
@@ -431,6 +489,7 @@ document.addEventListener('DOMContentLoaded', function() {
           
           let html = '';
           data.forEach(item => {
+            const sig = btoa(encodeURIComponent(item.titulo + item.mensaje)).replace(/=/g, '');
             let bgIcon = 'bg-primary';
             if (item.tipo === 'warning') bgIcon = 'bg-warning text-dark';
             if (item.tipo === 'danger') bgIcon = 'bg-danger';
@@ -438,11 +497,12 @@ document.addEventListener('DOMContentLoaded', function() {
             if (item.tipo === 'info') bgIcon = 'bg-info text-dark';
             
             html += `
-              <a href="${basePath + item.url}" class="list-group-item list-group-item-action p-3 border-bottom d-flex align-items-start" style="transition: all 0.2s;">
+              <a href="${basePath + item.url}" id="notif-${sig}" class="list-group-item list-group-item-action p-3 border-bottom d-flex align-items-start position-relative" style="transition: all 0.2s;">
+                <button type="button" class="btn-close position-absolute top-0 end-0 m-2" style="font-size: 10px; z-index: 5;" aria-label="Cerrar" onclick="dismissNotification('${sig}', event)"></button>
                 <div class="rounded-circle ${bgIcon} p-2 d-flex align-items-center justify-content-center me-3 shadow-sm" style="width: 40px; height: 40px; flex-shrink: 0;">
                   <i class="bi ${item.icono} fs-5 ${item.tipo !== 'warning' && item.tipo !== 'info' ? 'text-white' : ''}"></i>
                 </div>
-                <div class="w-100">
+                <div class="w-100 pe-3">
                   <div class="d-flex w-100 justify-content-between mb-1">
                     <h6 class="mb-0 fw-bold" style="font-size: 14px;">${item.titulo}</h6>
                   </div>

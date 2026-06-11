@@ -35,6 +35,10 @@ $view_base_href = view_base_href_for_request();
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <!-- Axios CDN -->
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <!-- Bootstrap 5 JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- SweetAlert 2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <?php if ($export_enabled): ?>
   <!-- Exportación PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>

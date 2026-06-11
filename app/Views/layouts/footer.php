@@ -51,15 +51,8 @@
     const notifCountBadge = document.getElementById('notificationCount');
     const notifList = document.getElementById('notificationList');
     
-    // Attempt to determine correct base path, fallback to absolute path if needed
-    let basePath = '/hotel/'; 
-    if (typeof window._root !== 'undefined') {
-        basePath = window._root;
-    } else if (document.querySelector('base')) {
-        basePath = document.querySelector('base').href;
-    } else if (window.location.pathname.includes('/hotel/')) {
-        basePath = window.location.origin + '/hotel/';
-    }
+    // Use the PHP variable $_root defined in head.php for exact project root
+    let basePath = '<?= $_root ?? "/" ?>';
     
     function fetchNotifications() {
       axios.get(basePath + 'ajax/notificaciones.php')

@@ -78,7 +78,7 @@ try {
     
     // 4. Recordatorios de Limpieza
     $stmt = $pdo->prepare("
-        SELECT numero FROM habitaciones WHERE estado IN ('limpieza', 'sucio')
+        SELECT id, numero FROM habitaciones WHERE estado IN ('limpieza', 'sucio')
     ");
     $stmt->execute();
     $limpieza = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -88,7 +88,13 @@ try {
             'titulo' => 'Limpieza de Habitación',
             'mensaje' => 'La Hab. ' . $l['numero'] . ' requiere limpieza.',
             'icono' => 'bi-stars',
-            'url' => 'limpieza/v2.php'
+            'url' => 'limpieza/v2.php',
+            'accion' => [
+                'tipo' => 'marcar_limpia',
+                'habitacion_id' => $l['id'],
+                'label' => 'Lista',
+                'icono' => 'bi-check-circle'
+            ]
         ];
     }
 

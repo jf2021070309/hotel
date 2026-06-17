@@ -444,6 +444,60 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   };
 
+  // Global action handler
+  window.handleNotifAction = function(event, actionDataStr, sig) {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    try {
+        const data = JSON.parse(actionDataStr.replace(/&quot;/g, '"'));
+        const btn = event.currentTarget;
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Procesando...';
+        btn.disabled = true;
+
+        if (typeof axios === 'undefined') {
+            alert('Error: Axios no está cargado.');
+            return;
+        }
+
+        axios.post(basePath + 'ajax/notificaciones_action.php', {
+            action: data.tipo,
+            habitacion_id: data.habitacion_id
+        })
+        .then(response => {
+            if (response.data && response.data.status === 'success') {
+                window.dismissNotification(sig, event);
+                
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'success',
+                        title: response.data.message,
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true
+                    });
+                }
+            } else {
+                alert('Error: ' + (response.data.message || 'Error desconocido'));
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error(error);
+            alert('Error de red al procesar la acción.');
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+        });
+    } catch (e) {
+        console.error(e);
+        alert('Error interno al ejecutar la acción.');
+    }
+  };
+
   function fetchNotifications() {
     if (typeof axios === 'undefined') return; // En caso de que no haya cargado Axios
     axios.get(basePath + 'ajax/notificaciones.php')
@@ -496,6 +550,18 @@ document.addEventListener('DOMContentLoaded', function() {
             if (item.tipo === 'success') bgIcon = 'bg-success';
             if (item.tipo === 'info') bgIcon = 'bg-info text-dark';
             
+            let actionHtml = '';
+            if (item.accion) {
+                const actionJson = JSON.stringify(item.accion).replace(/"/g, '&quot;');
+                actionHtml = `
+                  <div class="mt-2">
+                    <button type="button" class="btn btn-sm btn-outline-${item.tipo === 'info' ? 'primary' : item.tipo} rounded-pill px-3 fw-bold" style="font-size: 11px; transition: all 0.2s;" onclick="handleNotifAction(event, '${actionJson}', '${sig}')">
+                      <i class="bi ${item.accion.icono} me-1"></i> ${item.accion.label}
+                    </button>
+                  </div>
+                `;
+            }
+
             html += `
               <a href="${basePath + item.url}" id="notif-${sig}" class="list-group-item list-group-item-action p-3 border-bottom d-flex align-items-start position-relative" style="transition: all 0.2s;">
                 <button type="button" class="btn-close position-absolute top-0 end-0 m-2" style="font-size: 10px; z-index: 5;" aria-label="Cerrar" onclick="dismissNotification('${sig}', event)"></button>
@@ -507,6 +573,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <h6 class="mb-0 fw-bold" style="font-size: 14px;">${item.titulo}</h6>
                   </div>
                   <p class="mb-0 text-muted" style="font-size: 13px;">${item.mensaje}</p>
+                  ${actionHtml}
                 </div>
               </a>
             `;

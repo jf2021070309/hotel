@@ -217,18 +217,46 @@ class RoomingV2Model {
                                     $docNum = uniqid('R_');
                                 }
                             }
-                            // Actualizar cliente existente
-                            $stmtUpdateCliente->execute([
-                                'nombre'       => $name,
-                                'doc_tipo'     => $docType,
-                                'doc_num'      => $docNum,
-                                'nacionalidad' => $nac,
-                                'ciudad'       => $city,
-                                'cliente_id'   => $paxId
-                            ]);
-                            $actualPaxIds[] = (int)$paxId;
-                            if ($i === 0) {
-                                $titularClienteId = (int)$paxId;
+
+                            // Verificar si el nuevo documento ya existe en OTRO cliente diferente
+                            $stmtCheckOther = $this->pdo->prepare("SELECT id FROM clientes WHERE documento_tipo = ? AND documento_num = ? AND id != ? LIMIT 1");
+                            $stmtCheckOther->execute([$docType, $docNum, $paxId]);
+                            $otherClientId = $stmtCheckOther->fetchColumn();
+
+                            if ($otherClientId) {
+                                // El documento ya pertenece a otro cliente.
+                                // 1. Actualizamos los datos de ese otro cliente.
+                                $stmtUpdateCliente->execute([
+                                    'nombre'       => $name,
+                                    'doc_tipo'     => $docType,
+                                    'doc_num'      => $docNum,
+                                    'nacionalidad' => $nac,
+                                    'ciudad'       => $city,
+                                    'cliente_id'   => $otherClientId
+                                ]);
+                                
+                                // 2. Enlazamos este stay al otro cliente en lugar del actual.
+                                $stmtSwapPax = $this->pdo->prepare("UPDATE rooming_pax SET cliente_id = ? WHERE stay_id = ? AND cliente_id = ?");
+                                $stmtSwapPax->execute([$otherClientId, $stayId, $paxId]);
+
+                                $actualPaxIds[] = (int)$otherClientId;
+                                if ($i === 0) {
+                                    $titularClienteId = (int)$otherClientId;
+                                }
+                            } else {
+                                // No existe conflicto, actualizamos el cliente actual
+                                $stmtUpdateCliente->execute([
+                                    'nombre'       => $name,
+                                    'doc_tipo'     => $docType,
+                                    'doc_num'      => $docNum,
+                                    'nacionalidad' => $nac,
+                                    'ciudad'       => $city,
+                                    'cliente_id'   => $paxId
+                                ]);
+                                $actualPaxIds[] = (int)$paxId;
+                                if ($i === 0) {
+                                    $titularClienteId = (int)$paxId;
+                                }
                             }
                         } else {
                             // Insertar nuevo cliente

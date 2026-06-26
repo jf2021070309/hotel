@@ -55,6 +55,7 @@ createApp({
         { label: 'CARRO',             checked: true },
         { label: 'OBS',              checked: true },
       ]
+    };
   },
 
   computed: {

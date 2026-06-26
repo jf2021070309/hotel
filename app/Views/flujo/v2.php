@@ -70,7 +70,6 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
               <th colspan="2" class="sticky-header" style="background-color: #0f172a; width: 220px; min-width: 220px;">INFORMACIÓN</th>
               <th colspan="7" style="background-color: #1e3a8a; border-left: 2px solid #334155;">INGRESOS</th>
               <th colspan="12" style="background-color: #581c87; border-left: 4px solid #ef4444;" class="separator-header">GASTOS / EGRESOS</th>
-              <th rowspan="2" class="align-middle" style="background-color: #0f172a; width: 120px; min-width: 120px;">ACCIONES</th>
             </tr>
             <!-- Fila de Cabecera Nivel 2 -->
             <tr>
@@ -155,15 +154,6 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
                   <span v-else>-</span>
                 </td>
                 
-                <!-- Acciones MAÑANA -->
-                <td class="text-center">
-                  <a v-if="d.manana.flujo_id" :href="SERVER_ROUTES.form + '?id=' + d.manana.flujo_id" class="btn btn-xs btn-outline-dark fw-bold px-2 py-0" style="font-size: 10px;">
-                    <i class="bi bi-pencil-square me-1"></i>Editar
-                  </a>
-                  <a v-else :href="SERVER_ROUTES.form + '?nuevo=1&turno=MAÑANA&fecha=' + d.fecha" class="btn btn-xs btn-outline-success fw-bold px-2 py-0" style="font-size: 10px;">
-                    <i class="bi bi-plus-lg me-1"></i>Crear
-                  </a>
-                </td>
               </tr>
               
               <!-- Fila Turno TARDE -->
@@ -214,15 +204,6 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
                   <span v-else>-</span>
                 </td>
                 
-                <!-- Acciones TARDE -->
-                <td class="text-center">
-                  <a v-if="d.tarde.flujo_id" :href="SERVER_ROUTES.form + '?id=' + d.tarde.flujo_id" class="btn btn-xs btn-outline-dark fw-bold px-2 py-0" style="font-size: 10px;">
-                    <i class="bi bi-pencil-square me-1"></i>Editar
-                  </a>
-                  <a v-else :href="SERVER_ROUTES.form + '?nuevo=1&turno=TARDE&fecha=' + d.fecha" class="btn btn-xs btn-outline-success fw-bold px-2 py-0" style="font-size: 10px;">
-                    <i class="bi bi-plus-lg me-1"></i>Crear
-                  </a>
-                </td>
               </tr>
               
               <!-- Fila de TOTAL DEL DÍA -->
@@ -253,7 +234,6 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
                 <!-- Totales TOTAL DÍA -->
                 <td class="num-cell fw-bold text-danger">{{ d.total.total_egreso ? 'S/ ' + formatearNumero(d.total.total_egreso) : '-' }}</td>
                 <td class="num-cell fw-bold text-dark" style="background-color: #fde68a !important;">{{ d.total.total_entregar ? 'S/ ' + formatearNumero(d.total.total_entregar) : '-' }}</td>
-                <td class="text-center">-</td>
                 <td class="text-center">-</td>
               </tr>
             </template>
@@ -286,7 +266,6 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
               <!-- Totales TOTAL GENERAL -->
               <td class="num-cell fw-bold text-white" style="background-color: #991b1b !important;">{{ totalesGenerales.total_egreso ? 'S/ ' + formatearNumero(totalesGenerales.total_egreso) : '-' }}</td>
               <td class="num-cell fw-bold text-white" style="background-color: #92400e !important;">{{ totalesGenerales.total_entregar ? 'S/ ' + formatearNumero(totalesGenerales.total_entregar) : '-' }}</td>
-              <td class="text-center">-</td>
               <td class="text-center">-</td>
             </tr>
           </tbody>

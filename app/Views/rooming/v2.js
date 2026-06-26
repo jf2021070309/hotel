@@ -155,8 +155,16 @@ createApp({
               });
             }
 
+            let tHab = f.tipo_hab;
+            if (tHab === 'RESERVA' || !tHab) {
+              const hObj = this.habitaciones.find(h => String(h.numero) === String(f.hab));
+              if (hObj) tHab = hObj.tipo;
+              else tHab = '';
+            }
+
             return {
               ...f,
+              tipo_hab: tHab,
               pax_list,
               periodos_list,
               modificado: false,

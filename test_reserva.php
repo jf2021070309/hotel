@@ -1,18 +1,8 @@
 <?php
-require 'c:\xampp\htdocs\hotel\config\db.php';
-require 'c:\xampp\htdocs\hotel\app\Models\ReservasModel.php';
-$m = new ReservasModel($pdo);
-try {
-    $id = $m->registrarReservaRapida([
-        'hab_id' => 1,
-        'fecha_inicio' => '2026-06-05',
-        'noches' => 1,
-        'titular' => 'Test',
-        'observaciones' => '',
-        'usuario_id' => 1,
-        'canal' => 'DIRECTO'
-    ]);
-    echo "OK: ID $id";
-} catch (Exception $e) {
-    echo "ERROR: " . $e->getMessage();
-}
+require_once __DIR__ . '/config/db.php';
+$stmt = $pdo->query("SELECT numero, tipo FROM habitaciones WHERE tipo = 'RESERVA'");
+$res = $stmt->fetchAll(PDO::FETCH_ASSOC);
+print_r($res);
+
+$stmt2 = $pdo->query("SELECT id, habitacion_id, tipo_hab_declarado FROM rooming_stays WHERE tipo_hab_declarado = 'RESERVA' LIMIT 5");
+print_r($stmt2->fetchAll(PDO::FETCH_ASSOC));

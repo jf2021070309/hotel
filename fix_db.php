@@ -44,4 +44,11 @@ try {
     echo "Error al modificar tipo_comprobante: " . $e->getMessage() . "<br>";
 }
 
+try {
+    $pdo->exec("UPDATE rooming_stays s JOIN habitaciones h ON s.habitacion_id = h.id SET s.tipo_hab_declarado = h.tipo WHERE s.tipo_hab_declarado = 'RESERVA'");
+    echo "Tipos de habitación 'RESERVA' corregidos correctamente.<br>";
+} catch (PDOException $e) {
+    echo "Error al corregir tipo_hab_declarado: " . $e->getMessage() . "<br>";
+}
+
 echo "<br><b>Parche de base de datos finalizado.</b>";

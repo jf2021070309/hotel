@@ -37,4 +37,11 @@ try {
     }
 }
 
+try {
+    $pdo->exec("ALTER TABLE rooming_stays MODIFY tipo_comprobante ENUM('BOLETA','FACTURA','TICKET','F.X.') NOT NULL DEFAULT 'BOLETA'");
+    echo "Columna tipo_comprobante actualizada correctamente para soportar F.X.<br>";
+} catch (PDOException $e) {
+    echo "Error al modificar tipo_comprobante: " . $e->getMessage() . "<br>";
+}
+
 echo "<br><b>Parche de base de datos finalizado.</b>";

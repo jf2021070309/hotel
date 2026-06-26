@@ -88,6 +88,7 @@ class RoomingV2Model {
                     pax_total = :pax_total,
                     medio_reserva = :medio_reserva,
                     total_pago = :total_pago,
+                    moneda_pago = :moneda_pago,
                     estado = :estado,
                     metodo_pago = :metodo_pago,
                     tipo_comprobante = :tipo_comprobante,
@@ -120,7 +121,7 @@ class RoomingV2Model {
                 ) VALUES (
                     :operador, :fecha_registro, :fecha_checkout, :fecha_checkin_real,
                     :habitacion_id, :tipo_hab_declarado, :pax_total, :medio_reserva,
-                    :total_pago, 'PEN', :monto_original, :estado, :metodo_pago,
+                    :total_pago, :moneda_pago, :monto_original, :estado, :metodo_pago,
                     :tipo_comprobante, :num_comprobante, :cobrador, :carro, :observaciones,
                     1, 'pagado', :usuario_id, :cliente_titular_id
                 )
@@ -138,7 +139,7 @@ class RoomingV2Model {
             $stmtDelFlujoMovs = $this->pdo->prepare("DELETE FROM flujo_caja_movimientos WHERE stay_id = ?");
             $stmtInsertAnticipo = $this->pdo->prepare("
                 INSERT INTO anticipos (stay_id, monto, moneda, monto_pen, tc_aplicado, tipo_pago, recibo, fecha, usuario_id) 
-                VALUES (:stay_id, :monto, 'PEN', :monto_pen, 1, :tipo, '', :fecha, :uid)
+                VALUES (:stay_id, :monto, :moneda, :monto_pen, 1, :tipo, '', :fecha, :uid)
             ");
 
             foreach ($rows as $row) {
@@ -165,6 +166,9 @@ class RoomingV2Model {
                         throw new Exception("La habitación #" . $row['hab'] . " no existe.");
                     }
                 }
+                
+                $mpago = strtoupper($row['medio_pago'] ?? '');
+                $monedaDeducida = (strpos($mpago, 'DOLAR') !== false) ? 'USD' : ((strpos($mpago, 'PESO') !== false) ? 'CLP' : 'PEN');
 
                 if ($stayId) {
                     // --- ACTUALIZACIÓN DE EXISTENTE ---
@@ -307,6 +311,7 @@ class RoomingV2Model {
                         'pax_total'      => count($actualPaxIds),
                         'medio_reserva'  => $row['medio_reserva'] ?? 'DIRECTO',
                         'total_pago'     => isset($row['pago_total']) ? (float)$row['pago_total'] : 0.00,
+                        'moneda_pago'    => $monedaDeducida,
                         'estado'         => $estado,
                         'metodo_pago'    => $row['medio_pago'] ?? '',
                         'tipo_comprobante' => $row['comprobante_pago'] ?? '',
@@ -342,6 +347,7 @@ class RoomingV2Model {
                             $stmtInsertAnticipo->execute([
                                 'stay_id'   => $stayId,
                                 'monto'     => $nuevoMonto,
+                                'moneda'    => $monedaDeducida,
                                 'monto_pen' => $nuevoMonto,
                                 'tipo'      => $row['medio_pago'] ?? 'SOLES EFECTIVO',
                                 'fecha'     => $fechaReg,
@@ -357,7 +363,7 @@ class RoomingV2Model {
                                 'stay_id'     => $stayId,
                                 'categoria'   => 'Alojamiento', 
                                 'monto'       => $nuevoMonto, 
-                                'moneda'      => 'PEN',
+                                'moneda'      => $monedaDeducida,
                                 'medio_pago'  => $row['medio_pago'] ?? 'EFECTIVO',
                                 'observacion' => "HOSPEDAJE: " . (explode("\n", $row['nombre_apellido'])[0] ?? 'Huésped') . " (Modificado en grilla V2) - Registro #$stayId (Hab #" . ($row['hab'] ?? 'N/A') . ")",
                                 'fecha'       => $fechaReg,
@@ -432,6 +438,7 @@ class RoomingV2Model {
                         'pax_total'          => count($insertedPaxIds),
                         'medio_reserva'      => $row['medio_reserva'] ?? 'DIRECTO',
                         'total_pago'         => isset($row['pago_total']) ? (float)$row['pago_total'] : 0.00,
+                        'moneda_pago'        => $monedaDeducida,
                         'monto_original'     => isset($row['pago_total']) ? (float)$row['pago_total'] : 0.00,
                         'estado'             => $estado,
                         'metodo_pago'        => $row['medio_pago'] ?? '',
@@ -462,6 +469,7 @@ class RoomingV2Model {
                         $stmtInsertAnticipo->execute([
                             'stay_id'   => $newStayId,
                             'monto'     => $nuevoMonto,
+                            'moneda'    => $monedaDeducida,
                             'monto_pen' => $nuevoMonto,
                             'tipo'      => $row['medio_pago'] ?? 'SOLES EFECTIVO',
                             'fecha'     => $fechaReg,
@@ -477,7 +485,7 @@ class RoomingV2Model {
                             'stay_id'     => $newStayId,
                             'categoria'   => 'Alojamiento', 
                             'monto'       => $nuevoMonto, 
-                            'moneda'      => 'PEN',
+                            'moneda'      => $monedaDeducida,
                             'medio_pago'  => $row['medio_pago'] ?? 'EFECTIVO',
                             'observacion' => "HOSPEDAJE: " . (explode("\n", $row['nombre_apellido'])[0] ?? 'Huésped') . " - Registro #$newStayId (Hab #" . ($row['hab'] ?? 'N/A') . ")",
                             'fecha'       => $fechaReg,

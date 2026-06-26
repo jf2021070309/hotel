@@ -403,7 +403,7 @@ CREATE TABLE IF NOT EXISTS `rooming_stays` (
   `tc_aplicado` decimal(10,4) DEFAULT NULL,
   `recargo_tarjeta` decimal(10,2) DEFAULT 0.00,
   `metodo_pago` varchar(50) NOT NULL,
-  `tipo_comprobante` enum('BOLETA','FACTURA','TICKET') NOT NULL DEFAULT 'BOLETA',
+  `tipo_comprobante` enum('BOLETA','FACTURA','TICKET','F.X.') NOT NULL DEFAULT 'BOLETA',
   `num_comprobante` varchar(50) DEFAULT NULL,
   `cobrador` varchar(50) NOT NULL,
   `procedencia` varchar(100) DEFAULT NULL,

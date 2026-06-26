@@ -132,7 +132,7 @@ createApp({
                   pago_total: i === 0 ? (parseFloat(f.pago_total) || '') : '',
                   late_checkout: i < allCheckouts.length - 1 ? 'SI' : (f.late_checkout || 'NO'),
                   medio_pago: i === 0 ? (f.medio_pago || '') : '',
-                  comprobante_pago: i === 0 ? (f.comprobante_pago || '') : '',
+                  comprobante_pago: i === 0 ? ((f.comprobante_pago === 'TICKET' ? 'F.X.' : f.comprobante_pago) || '') : '',
                   numero_comprobante: i === 0 ? (f.numero_comprobante || '') : '',
                   quien_cobro: i === 0 ? (f.quien_cobro || '') : ''
                 });
@@ -149,7 +149,7 @@ createApp({
                 pago_total: parseFloat(f.pago_total) || '',
                 late_checkout: f.late_checkout || 'NO',
                 medio_pago: f.medio_pago || '',
-                comprobante_pago: f.comprobante_pago || '',
+                comprobante_pago: (f.comprobante_pago === 'TICKET' ? 'F.X.' : f.comprobante_pago) || '',
                 numero_comprobante: f.numero_comprobante || '',
                 quien_cobro: f.quien_cobro || ''
               });
@@ -159,7 +159,8 @@ createApp({
               ...f,
               pax_list,
               periodos_list,
-              modificado: false
+              modificado: false,
+              marcado: false
             };
           });
         } else {
@@ -216,7 +217,8 @@ createApp({
         }],
         carro: '',
         observaciones: '',
-        modificado: true
+        modificado: true,
+        marcado: false
       });
 
       // Hacer scroll al fondo de la tabla de forma suave
@@ -262,6 +264,14 @@ createApp({
 
     marcarModificado(fila) {
       fila.modificado = true;
+    },
+
+    obtenerSimboloMoneda(medio) {
+      if (!medio) return 'S/';
+      const m = String(medio).toUpperCase();
+      if (m.includes('DOLAR')) return '$';
+      if (m.includes('PESO')) return 'CLP';
+      return 'S/';
     },
 
     onCheckoutEnter(fila) {
@@ -773,7 +783,8 @@ createApp({
             }],
             carro: '',
             observaciones: '',
-            modificado: true
+            modificado: true,
+            marcado: false
           };
 
           this.filas.push(nuevaFila);

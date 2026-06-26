@@ -183,16 +183,20 @@ include $_projectRoot . '/app/Views/layouts/head.php';
               </tr>
               
               <!-- Filas de datos -->
-              <tr v-else v-for="(f, idx) in filasFiltradas" :key="f.stay_id || f.temp_id" :class="{'unsaved-row': f.modificado || !f.stay_id}">
+              <tr v-else v-for="(f, idx) in filasFiltradas" :key="f.stay_id || f.temp_id" 
+                  :class="{'unsaved-row': f.modificado || !f.stay_id, 'bg-success bg-opacity-10': f.marcado}">
                 <!-- Botones de Acción (Sticky 1) -->
                 <td class="sticky-col text-center px-1">
                   <div class="d-flex align-items-center justify-content-center gap-2">
-                    <span v-if="f.stay_id && f.estado_stay !== 'finalizado'" class="text-primary p-0 d-inline-flex align-items-center" title="Huésped actualmente alojado (Activo)">
+                    <span v-if="f.stay_id && f.estado_stay !== 'finalizado'" class="text-primary p-0 d-inline-flex align-items-center" title="Huésped alojado">
                       <i class="bi bi-person-workspace fs-6"></i>
                     </span>
                     <span v-else-if="f.stay_id && f.estado_stay === 'finalizado'" class="text-success p-0 d-inline-flex align-items-center" title="Checkout ya realizado">
                       <i class="bi bi-check-circle-fill fs-6"></i>
                     </span>
+                    <button class="btn btn-sm btn-link text-success p-0" @click="f.marcado = !f.marcado" title="Marcar/Desmarcar fila" style="opacity: 0.8;">
+                      <i class="bi" :class="f.marcado ? 'bi-check-square-fill' : 'bi-square'"></i>
+                    </button>
                     <button class="btn btn-sm btn-link text-secondary p-0" @click="eliminarFila(f, idx)" title="Eliminar registro">
                       <i class="bi bi-trash-fill fs-6"></i>
                     </button>
@@ -348,7 +352,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                   <div class="d-flex flex-column h-100">
                     <div v-for="(p, pIdx) in f.periodos_list" :key="'pt'+pIdx" class="pax-input-container w-100 d-flex align-items-center justify-content-end pe-2"
                          :style="{ borderBottom: pIdx===f.periodos_list.length-1?'none':'1px dashed #cbd5e1', padding:'2px 4px' }">
-                      <span class="fw-bold small text-muted me-1">S/</span>
+                      <span class="fw-bold small text-muted me-1">{{ obtenerSimboloMoneda(p.medio_pago) }}</span>
                       <input type="number" step="0.50" v-model.number="p.pago_total"
                              class="table-editable-input text-end fw-bold text-dark border-0 bg-transparent"
                              @input="marcarModificado(f)" style="width:70px;height:28px;font-size:11px;">
@@ -400,7 +404,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                         <option value="NINGUNO">NINGUNO</option>
                         <option value="BOLETA">BOLETA</option>
                         <option value="FACTURA">FACTURA</option>
-                        <option value="TICKET">TICKET</option>
+                        <option value="F.X.">F.X.</option>
                       </select>
                     </div>
                   </div>

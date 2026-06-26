@@ -665,7 +665,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
     max-height: calc(100vh - 145px);
     overflow: auto;
     border-radius: 8px;
-    border: 1px solid #cbd5e1;
+    border: 1px solid #000;
     background-color: #f8fafc;
   }
   
@@ -705,7 +705,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
     font-size: 10px;
     letter-spacing: 0.5px;
     text-align: center;
-    border: 1px solid #334155;
+    border: 1px solid #000;
     vertical-align: middle;
     padding: 8px 6px;
     background-color: #1e293b;
@@ -718,18 +718,18 @@ include $_projectRoot . '/app/Views/layouts/head.php';
     left: 0;
     z-index: 6;
     background-color: #f8fafc;
-    border-right: 1px solid #cbd5e1;
+    border-right: 1px solid #000;
   }
   .table-mensual thead th.sticky-col {
     z-index: 12 !important;
     background-color: #1e293b !important;
     color: #ffffff !important;
-    border: 1px solid #334155;
+    border: 1px solid #000;
   }
 
   .pax-input-container {
     padding: 3px 0;
-    border-bottom: 1px dashed #cbd5e1;
+    border-bottom: 1px dashed #000;
     background-color: #ffffff;
     transition: background-color 0.15s ease;
   }
@@ -750,7 +750,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
   .table-mensual td {
     padding: 3px 4px;
     vertical-align: middle;
-    border: 1px solid #e2e8f0;
+    border: 1px solid #000;
     background-color: #ffffff;
   }
 
@@ -785,7 +785,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
     transition: all 0.15s ease;
   }
   .table-editable-input:hover {
-    border-color: #cbd5e1;
+    border-color: #000;
     background: #f8fafc;
   }
   .table-editable-input:focus {

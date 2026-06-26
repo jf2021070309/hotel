@@ -40,7 +40,10 @@ include $_projectRoot . '/app/Views/layouts/head.php';
   }
   
   /* Fila Marcada */
-  .row-marcado > td {
+  .row-marcado > td,
+  .row-marcado > td .pax-input-container,
+  .row-marcado > td input,
+  .row-marcado > td select {
     background-color: #d1e7dd !important; /* Verde success de Bootstrap */
   }
 </style>
@@ -199,7 +202,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                     <span v-else-if="f.stay_id && f.estado_stay === 'finalizado'" class="text-success p-0 d-inline-flex align-items-center" title="Checkout ya realizado">
                       <i class="bi bi-check-circle-fill fs-6"></i>
                     </span>
-                    <button class="btn btn-sm btn-link text-success p-0" @click="f.marcado = !f.marcado" title="Marcar/Desmarcar fila" style="opacity: 0.8;">
+                    <button class="btn btn-sm btn-link text-success p-0" @click="f.marcado = !f.marcado; marcarModificado(f)" title="Marcar/Desmarcar fila" style="opacity: 0.8;">
                       <i class="bi" :class="f.marcado ? 'bi-check-square-fill' : 'bi-square'"></i>
                     </button>
                     <button class="btn btn-sm btn-link text-secondary p-0" @click="eliminarFila(f, idx)" title="Eliminar registro">

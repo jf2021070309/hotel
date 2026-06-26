@@ -47,6 +47,7 @@ class RoomingV2Model {
                 s.cobrador      AS quien_cobro,
                 s.carro,
                 s.estado        AS estado_stay,
+                s.marcado,
                 s.observaciones
             FROM rooming_stays s
             LEFT JOIN habitaciones h  ON h.id = s.habitacion_id
@@ -95,7 +96,8 @@ class RoomingV2Model {
                     num_comprobante = :num_comprobante,
                     cobrador = :cobrador,
                     carro = :carro,
-                    observaciones = :observaciones
+                    observaciones = :observaciones,
+                    marcado = :marcado
                 WHERE id = :stay_id
             ");
 
@@ -117,13 +119,13 @@ class RoomingV2Model {
                     habitacion_id, tipo_hab_declarado, pax_total, medio_reserva,
                     total_pago, moneda_pago, monto_original, estado, metodo_pago,
                     tipo_comprobante, num_comprobante, cobrador, carro, observaciones,
-                    checkin_realizado, estado_pago, usuario_id, cliente_titular_id
+                    checkin_realizado, estado_pago, usuario_id, cliente_titular_id, marcado
                 ) VALUES (
                     :operador, :fecha_registro, :fecha_checkout, :fecha_checkin_real,
                     :habitacion_id, :tipo_hab_declarado, :pax_total, :medio_reserva,
                     :total_pago, :moneda_pago, :monto_original, :estado, :metodo_pago,
                     :tipo_comprobante, :num_comprobante, :cobrador, :carro, :observaciones,
-                    1, 'pagado', :usuario_id, :cliente_titular_id
+                    1, 'pagado', :usuario_id, :cliente_titular_id, :marcado
                 )
             ");
 
@@ -319,6 +321,7 @@ class RoomingV2Model {
                         'cobrador'       => $row['quien_cobro'] ?? '',
                         'carro'          => $row['carro'] ?? 'NO',
                         'observaciones'  => $row['observaciones'] ?? '',
+                        'marcado'        => !empty($row['marcado']) ? 1 : 0,
                         'stay_id'        => $stayId
                     ]);
 
@@ -448,7 +451,8 @@ class RoomingV2Model {
                         'carro'              => $row['carro'] ?? 'NO',
                         'observaciones'      => $row['observaciones'] ?? '',
                         'usuario_id'         => $_SESSION['auth_id'] ?? 1,
-                        'cliente_titular_id' => $titularId
+                        'cliente_titular_id' => $titularId,
+                        'marcado'            => !empty($row['marcado']) ? 1 : 0
                     ]);
 
                     $newStayId = (int)$this->pdo->lastInsertId();

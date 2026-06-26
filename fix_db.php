@@ -51,4 +51,15 @@ try {
     echo "Error al corregir tipo_hab_declarado: " . $e->getMessage() . "<br>";
 }
 
+try {
+    $pdo->exec("ALTER TABLE rooming_stays ADD COLUMN marcado TINYINT(1) NOT NULL DEFAULT 0");
+    echo "Columna marcado agregada correctamente.<br>";
+} catch (PDOException $e) {
+    if (strpos($e->getMessage(), 'Duplicate column name') !== false) {
+        echo "La columna marcado ya existe.<br>";
+    } else {
+        echo "Error al agregar marcado: " . $e->getMessage() . "<br>";
+    }
+}
+
 echo "<br><b>Parche de base de datos finalizado.</b>";

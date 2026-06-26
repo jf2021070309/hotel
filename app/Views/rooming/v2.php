@@ -45,7 +45,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
   .row-marcado > td input,
   .row-marcado > td select {
     background-color: #70ad47 !important;
-    color: #ffffff !important;
+    color: #000000 !important;
   }
   
   @keyframes flashBg {
@@ -177,8 +177,8 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 <th style="width: 120px;">DOCUMENTO NÚMERO</th>
                 <th style="width: 110px;">NACIONALIDAD</th>
                 <th style="width: 100px;">CIUDAD</th>
-                <th style="width: 110px; background-color:#70ad47 !important; color:#fff !important;">CHECK IN FECHA</th>
-                <th style="width: 110px; background-color:#70ad47 !important; color:#fff !important;">CHECK OUT FECHA</th>
+                <th style="width: 110px; background-color:#70ad47 !important; color:#000 !important;">CHECK IN FECHA</th>
+                <th style="width: 110px; background-color:#70ad47 !important; color:#000 !important;">CHECK OUT FECHA</th>
                 <th style="width: 110px;">PAGO TOTAL</th>
                 <th style="width: 90px;">LATE CHECKOUT</th>
                 <th style="width: 130px;">MEDIO DE PAGO</th>
@@ -345,9 +345,9 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 <td class="p-0" style="vertical-align:stretch; background-color:#70ad47;">
                   <div class="d-flex flex-column h-100">
                     <div v-for="(p, pIdx) in f.periodos_list" :key="'ci'+pIdx" class="pax-input-container w-100"
-                         :style="{ borderBottom: pIdx === f.periodos_list.length-1 ? 'none' : '1px dashed #fff', padding: '2px 4px', backgroundColor: '#70ad47' }">
+                         :style="{ borderBottom: pIdx === f.periodos_list.length-1 ? 'none' : '1px dashed #000', padding: '2px 4px', backgroundColor: '#70ad47' }">
                       <input type="date" v-model="p.fecha_checkin"
-                             class="table-editable-input text-center text-white fw-bold w-100 border-0 bg-transparent px-1"
+                             class="table-editable-input text-center text-dark fw-bold w-100 border-0 bg-transparent px-1"
                              @change="marcarModificado(f)" style="height:30px;font-size:11px;">
                     </div>
                   </div>
@@ -358,16 +358,16 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                   <div class="d-flex flex-column h-100">
                     <div v-for="(p, pIdx) in f.periodos_list" :key="'co'+pIdx" class="pax-input-container w-100 d-flex align-items-center"
                          :class="{ 'checkout-atrasado': pIdx===f.periodos_list.length-1 && estadoCheckout(f)==='atrasado', 'checkout-hoy': pIdx===f.periodos_list.length-1 && estadoCheckout(f)==='hoy' }"
-                         :style="{ borderBottom: pIdx===f.periodos_list.length-1 ? 'none':'1px dashed #fff', padding:'2px 4px', backgroundColor:'#70ad47' }">
+                         :style="{ borderBottom: pIdx===f.periodos_list.length-1 ? 'none':'1px dashed #000', padding:'2px 4px', backgroundColor:'#70ad47' }">
                       <button v-if="pIdx===f.periodos_list.length-1 && f.periodos_list.length > 1"
-                              class="btn btn-sm btn-link text-white p-0 me-1 flex-shrink-0"
+                              class="btn btn-sm btn-link text-dark p-0 me-1 flex-shrink-0"
                               @click="quitarExtension(f)" title="Quitar Extensión"
                               style="font-size:18px;line-height:1;font-weight:700;">-</button>
                       <input type="date" v-model="p.fecha_checkout"
-                             class="table-editable-input text-center text-white fw-bold w-100 border-0 bg-transparent px-1"
+                             class="table-editable-input text-center text-dark fw-bold w-100 border-0 bg-transparent px-1"
                              @change="marcarModificado(f)" style="height:30px;font-size:11px;">
                       <button v-if="pIdx===f.periodos_list.length-1 && p.fecha_checkout"
-                              class="btn btn-sm btn-link text-white p-0 ms-1 flex-shrink-0"
+                              class="btn btn-sm btn-link text-dark p-0 ms-1 flex-shrink-0"
                               @click="agregarExtension(f)" title="Agregar Extensión"
                               style="font-size:18px;line-height:1;font-weight:700;">+</button>
                     </div>

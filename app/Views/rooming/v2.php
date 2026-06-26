@@ -47,6 +47,14 @@ include $_projectRoot . '/app/Views/layouts/head.php';
     background-color: #70ad47 !important;
     color: #000000 !important;
   }
+  .row-marcado ::placeholder {
+    color: #000000 !important;
+    opacity: 0.85 !important;
+  }
+  .row-marcado .text-secondary,
+  .row-marcado .text-muted {
+    color: #000000 !important;
+  }
   
   @keyframes flashBg {
     0% { background-color: #fef08a !important; }

@@ -378,7 +378,7 @@ class FlujoController {
         }
 
         // Obtener hab de stay
-        $stmtS = $this->pdo->prepare("SELECT hab_numero FROM rooming_stays WHERE id = ?");
+        $stmtS = $this->pdo->prepare("SELECT h.numero FROM rooming_stays s JOIN habitaciones h ON s.habitacion_id = h.id WHERE s.id = ?");
         $stmtS->execute([$stayId]);
         $hab = $stmtS->fetchColumn();
 
@@ -413,7 +413,7 @@ class FlujoController {
             $stmtCat->execute();
             $catId = $stmtCat->fetchColumn() ?: null;
 
-            $obsFlujo = "HAB $hab: $obs";
+            $obsFlujo = "$obs - Registro #$stayId (Hab #$hab)";
 
             $stmtF = $this->pdo->prepare("INSERT INTO flujo_caja_movimientos (flujo_id, categoria_id, tipo, moneda, monto, medio_pago, observacion) VALUES (?, ?, 'Ingreso', ?, ?, ?, ?)");
             $stmtF->execute([$flujoId, $catId, $moneda, $precio, $medioPago, $obsFlujo]);

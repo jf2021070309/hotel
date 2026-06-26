@@ -392,6 +392,7 @@ CREATE TABLE IF NOT EXISTS `rooming_stays` (
   `fecha_registro` date NOT NULL COMMENT 'Fecha en que se crea la reserva o ingreso',
   `fecha_checkin_real` datetime DEFAULT NULL COMMENT 'Fecha y hora exacta del Check-In en vivo',
   `fecha_checkout` date DEFAULT NULL COMMENT 'Almacena la fecha de salida real y actual',
+  `hora_checkin` varchar(10) DEFAULT '' COMMENT 'Hora de Check-in manual',
   `medio_reserva` varchar(50) NOT NULL,
   `habitacion_id` int(10) unsigned NOT NULL,
   `tipo_hab_declarado` varchar(60) NOT NULL,

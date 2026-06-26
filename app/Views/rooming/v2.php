@@ -282,7 +282,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 <!-- NOMBRE Y APELLIDO -->
                 <td class="p-0 position-relative" style="vertical-align: stretch;">
                   <div class="d-flex flex-column h-100 justify-content-start align-items-stretch">
-                    <div v-for="(p, pIdx) in f.pax_list" :key="pIdx" class="pax-input-container position-relative w-100" :style="{ borderBottom: pIdx === f.pax_list.length - 1 ? 'none' : '1px dashed #cbd5e1' }">
+                    <div v-for="(p, pIdx) in f.pax_list" :key="pIdx" class="pax-input-container position-relative w-100" :style="{ borderBottom: pIdx === f.pax_list.length - 1 ? 'none' : '1px dashed #000' }">
                       <input type="text" v-model="p.nombre_apellido" 
                              class="table-editable-input fw-bold text-dark w-100 border-0 bg-transparent px-2" 
                              @input="marcarModificado(f); buscarClientes(f, idx, pIdx)" 
@@ -303,7 +303,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 <!-- DOC TIPO -->
                 <td class="p-0" style="vertical-align: stretch;">
                   <div class="d-flex flex-column h-100 justify-content-start align-items-stretch">
-                    <div v-for="(p, pIdx) in f.pax_list" :key="pIdx" class="pax-input-container w-100" :style="{ borderBottom: pIdx === f.pax_list.length - 1 ? 'none' : '1px dashed #cbd5e1' }">
+                    <div v-for="(p, pIdx) in f.pax_list" :key="pIdx" class="pax-input-container w-100" :style="{ borderBottom: pIdx === f.pax_list.length - 1 ? 'none' : '1px dashed #000' }">
                       <input type="text" v-model="p.documento_tipo" 
                              class="table-editable-input text-center fw-bold text-dark w-100 border-0 bg-transparent px-1" 
                              @input="marcarModificado(f)" 
@@ -315,7 +315,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 <!-- DOCUMENTO NÚMERO -->
                 <td class="p-0 position-relative" style="vertical-align: stretch;">
                   <div class="d-flex flex-column h-100 justify-content-start align-items-stretch">
-                    <div v-for="(p, pIdx) in f.pax_list" :key="pIdx" class="pax-input-container w-100 d-flex align-items-center" :style="{ borderBottom: pIdx === f.pax_list.length - 1 ? 'none' : '1px dashed #cbd5e1' }">
+                    <div v-for="(p, pIdx) in f.pax_list" :key="pIdx" class="pax-input-container w-100 d-flex align-items-center" :style="{ borderBottom: pIdx === f.pax_list.length - 1 ? 'none' : '1px dashed #000' }">
                       <input type="text" v-model="p.documento_num" 
                              class="table-editable-input text-center fw-bold text-dark w-100 border-0 bg-transparent px-1" 
                              @input="marcarModificado(f); lookupDni(f, idx, pIdx)" 
@@ -328,7 +328,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 <!-- NACIONALIDAD -->
                 <td class="p-0" style="vertical-align: stretch;">
                   <div class="d-flex flex-column h-100 justify-content-start align-items-stretch">
-                    <div v-for="(p, pIdx) in f.pax_list" :key="pIdx" class="pax-input-container w-100" :style="{ borderBottom: pIdx === f.pax_list.length - 1 ? 'none' : '1px dashed #cbd5e1' }">
+                    <div v-for="(p, pIdx) in f.pax_list" :key="pIdx" class="pax-input-container w-100" :style="{ borderBottom: pIdx === f.pax_list.length - 1 ? 'none' : '1px dashed #000' }">
                       <input type="text" v-model="p.nacionalidad" 
                              class="table-editable-input text-center text-dark w-100 border-0 bg-transparent px-1" 
                              @input="marcarModificado(f)" 
@@ -340,7 +340,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 <!-- CIUDAD -->
                 <td class="p-0" style="vertical-align: stretch;">
                   <div class="d-flex flex-column h-100 justify-content-start align-items-stretch">
-                    <div v-for="(p, pIdx) in f.pax_list" :key="pIdx" class="pax-input-container w-100" :style="{ borderBottom: pIdx === f.pax_list.length - 1 ? 'none' : '1px dashed #cbd5e1' }">
+                    <div v-for="(p, pIdx) in f.pax_list" :key="pIdx" class="pax-input-container w-100" :style="{ borderBottom: pIdx === f.pax_list.length - 1 ? 'none' : '1px dashed #000' }">
                       <input type="text" v-model="p.ciudad" 
                              class="table-editable-input text-center text-dark w-100 border-0 bg-transparent px-1" 
                              @input="marcarModificado(f)" 
@@ -386,7 +386,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 <td class="p-0" style="vertical-align:stretch;">
                   <div class="d-flex flex-column h-100">
                     <div v-for="(p, pIdx) in f.periodos_list" :key="'pt'+pIdx" class="pax-input-container w-100 d-flex align-items-center justify-content-end pe-2"
-                         :style="{ borderBottom: pIdx===f.periodos_list.length-1?'none':'1px dashed #cbd5e1', padding:'2px 4px' }">
+                         :style="{ borderBottom: pIdx===f.periodos_list.length-1?'none':'1px dashed #000', padding:'2px 4px' }">
                       <span class="fw-bold small text-muted me-1">{{ obtenerSimboloMoneda(p.medio_pago) }}</span>
                       <input type="number" step="0.50" v-model.number="p.pago_total"
                              class="table-editable-input text-end fw-bold text-dark border-0 bg-transparent"
@@ -399,7 +399,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 <td class="p-0" style="vertical-align:stretch;">
                   <div class="d-flex flex-column h-100">
                     <div v-for="(p, pIdx) in f.periodos_list" :key="'lc'+pIdx" class="pax-input-container w-100"
-                         :style="{ borderBottom: pIdx===f.periodos_list.length-1?'none':'1px dashed #cbd5e1', padding:'2px 4px' }">
+                         :style="{ borderBottom: pIdx===f.periodos_list.length-1?'none':'1px dashed #000', padding:'2px 4px' }">
                       <select v-model="p.late_checkout" class="form-select form-select-sm table-editable-select text-center border-0 bg-transparent w-100"
                               @change="marcarModificado(f)" style="height:28px;font-size:11px;">
                         <option value="NO">NO</option>
@@ -413,7 +413,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 <td class="p-0" style="vertical-align:stretch;">
                   <div class="d-flex flex-column h-100">
                     <div v-for="(p, pIdx) in f.periodos_list" :key="'mp'+pIdx" class="pax-input-container w-100"
-                         :style="{ borderBottom: pIdx===f.periodos_list.length-1?'none':'1px dashed #cbd5e1', padding:'2px 4px' }">
+                         :style="{ borderBottom: pIdx===f.periodos_list.length-1?'none':'1px dashed #000', padding:'2px 4px' }">
                       <select v-model="p.medio_pago" class="form-select form-select-sm table-editable-select text-center fw-semibold border-0 bg-transparent w-100"
                               @change="marcarModificado(f)" style="height:28px;font-size:11px;">
                         <option value="">-</option>
@@ -434,7 +434,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 <td class="p-0" style="vertical-align:stretch;" v-show="filtro.vista !== 'no_registrados'">
                   <div class="d-flex flex-column h-100">
                     <div v-for="(p, pIdx) in f.periodos_list" :key="'cp'+pIdx" class="pax-input-container w-100"
-                         :style="{ borderBottom: pIdx===f.periodos_list.length-1?'none':'1px dashed #cbd5e1', padding:'2px 4px' }">
+                         :style="{ borderBottom: pIdx===f.periodos_list.length-1?'none':'1px dashed #000', padding:'2px 4px' }">
                       <select v-model="p.comprobante_pago" class="form-select form-select-sm table-editable-select text-center fw-semibold border-0 bg-transparent w-100"
                               @change="marcarModificado(f)" style="height:28px;font-size:11px;">
                         <option value="">-</option>
@@ -451,7 +451,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 <td class="p-0" style="vertical-align:stretch;" v-show="filtro.vista !== 'no_registrados'">
                   <div class="d-flex flex-column h-100">
                     <div v-for="(p, pIdx) in f.periodos_list" :key="'nc'+pIdx" class="pax-input-container w-100"
-                         :style="{ borderBottom: pIdx===f.periodos_list.length-1?'none':'1px dashed #cbd5e1', padding:'2px 4px' }">
+                         :style="{ borderBottom: pIdx===f.periodos_list.length-1?'none':'1px dashed #000', padding:'2px 4px' }">
                       <input type="text" v-model="p.numero_comprobante"
                              class="table-editable-input text-center w-100 border-0 bg-transparent px-1"
                              @input="marcarModificado(f)" placeholder="001-452" style="height:28px;font-size:11px;">
@@ -463,7 +463,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 <td class="p-0" style="vertical-align:stretch;">
                   <div class="d-flex flex-column h-100">
                     <div v-for="(p, pIdx) in f.periodos_list" :key="'qc'+pIdx" class="pax-input-container w-100"
-                         :style="{ borderBottom: pIdx===f.periodos_list.length-1?'none':'1px dashed #cbd5e1', padding:'2px 4px' }">
+                         :style="{ borderBottom: pIdx===f.periodos_list.length-1?'none':'1px dashed #000', padding:'2px 4px' }">
                       <input type="text" v-model="p.quien_cobro"
                              class="table-editable-input text-center fw-semibold text-warning-emphasis w-100 border-0 bg-transparent px-1"
                              @input="marcarModificado(f)" style="height:28px;font-size:11px;">

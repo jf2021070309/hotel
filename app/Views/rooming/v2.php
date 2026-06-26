@@ -44,7 +44,8 @@ include $_projectRoot . '/app/Views/layouts/head.php';
   .row-marcado > td .pax-input-container,
   .row-marcado > td input,
   .row-marcado > td select {
-    background-color: #d1e7dd !important; /* Verde success de Bootstrap */
+    background-color: #70ad47 !important;
+    color: #ffffff !important;
   }
   
   @keyframes flashBg {
@@ -341,32 +342,32 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 </td>
                 
                 <!-- CHECK IN FECHA -->
-                <td class="p-0" style="vertical-align:stretch; background-color:#d1e7dd;">
+                <td class="p-0" style="vertical-align:stretch; background-color:#70ad47;">
                   <div class="d-flex flex-column h-100">
                     <div v-for="(p, pIdx) in f.periodos_list" :key="'ci'+pIdx" class="pax-input-container w-100"
-                         :style="{ borderBottom: pIdx === f.periodos_list.length-1 ? 'none' : '1px dashed #70ad47', padding: '2px 4px', backgroundColor: '#d1e7dd' }">
+                         :style="{ borderBottom: pIdx === f.periodos_list.length-1 ? 'none' : '1px dashed #fff', padding: '2px 4px', backgroundColor: '#70ad47' }">
                       <input type="date" v-model="p.fecha_checkin"
-                             class="table-editable-input text-center text-success fw-bold w-100 border-0 bg-transparent px-1"
+                             class="table-editable-input text-center text-white fw-bold w-100 border-0 bg-transparent px-1"
                              @change="marcarModificado(f)" style="height:30px;font-size:11px;">
                     </div>
                   </div>
                 </td>
                 
                 <!-- CHECK OUT FECHA -->
-                <td class="p-0" style="vertical-align:stretch; background-color:#d1e7dd;">
+                <td class="p-0" style="vertical-align:stretch; background-color:#70ad47;">
                   <div class="d-flex flex-column h-100">
                     <div v-for="(p, pIdx) in f.periodos_list" :key="'co'+pIdx" class="pax-input-container w-100 d-flex align-items-center"
                          :class="{ 'checkout-atrasado': pIdx===f.periodos_list.length-1 && estadoCheckout(f)==='atrasado', 'checkout-hoy': pIdx===f.periodos_list.length-1 && estadoCheckout(f)==='hoy' }"
-                         :style="{ borderBottom: pIdx===f.periodos_list.length-1 ? 'none':'1px dashed #70ad47', padding:'2px 4px', backgroundColor:'#d1e7dd' }">
+                         :style="{ borderBottom: pIdx===f.periodos_list.length-1 ? 'none':'1px dashed #fff', padding:'2px 4px', backgroundColor:'#70ad47' }">
                       <button v-if="pIdx===f.periodos_list.length-1 && f.periodos_list.length > 1"
-                              class="btn btn-sm btn-link text-danger p-0 me-1 flex-shrink-0"
+                              class="btn btn-sm btn-link text-white p-0 me-1 flex-shrink-0"
                               @click="quitarExtension(f)" title="Quitar Extensión"
                               style="font-size:18px;line-height:1;font-weight:700;">-</button>
                       <input type="date" v-model="p.fecha_checkout"
-                             class="table-editable-input text-center text-danger fw-bold w-100 border-0 bg-transparent px-1"
+                             class="table-editable-input text-center text-white fw-bold w-100 border-0 bg-transparent px-1"
                              @change="marcarModificado(f)" style="height:30px;font-size:11px;">
                       <button v-if="pIdx===f.periodos_list.length-1 && p.fecha_checkout"
-                              class="btn btn-sm btn-link text-success p-0 ms-1 flex-shrink-0"
+                              class="btn btn-sm btn-link text-white p-0 ms-1 flex-shrink-0"
                               @click="agregarExtension(f)" title="Agregar Extensión"
                               style="font-size:18px;line-height:1;font-weight:700;">+</button>
                     </div>

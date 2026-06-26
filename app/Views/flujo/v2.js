@@ -388,6 +388,13 @@ const app = createApp({
       let res = `<strong style="color: #0288D1; display: block; margin-bottom: 3px; font-size: 12px;">Desglose de Ingresos</strong>`;
       movs.forEach(m => {
         let label = m.observacion || m.categoria_nombre || 'Venta';
+        
+        // Extraer solo la parte de la habitación si existe (ej. "Hab #304")
+        let matchHab = label.match(/(Hab\s*#?\s*\d+)/i);
+        if (matchHab) {
+          label = matchHab[1];
+        }
+        
         let pre = m.moneda === 'USD' ? '$' : (m.moneda === 'CLP' ? '₱' : 'S/');
         res += `<div>${label}: <span class="fw-bold">${pre} ${formatearNumero(m.monto)}</span></div>`;
       });

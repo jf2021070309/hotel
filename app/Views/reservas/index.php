@@ -565,6 +565,10 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
 
       <div class="divider"></div>
 
+      <input type="date" class="form-control form-control-sm text-center" v-model="fechaBuscador" @change="irAFecha" style="width:125px; cursor: pointer;" title="Buscar fecha en el calendario">
+
+      <div class="divider"></div>
+
       <!-- Filtros -->
       <select class="form-select form-select-sm" v-model="filtroPiso" style="width:120px;">
         <option value="">Todos pisos</option>
@@ -618,6 +622,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
                 Año {{ anioActual }}
               </th>
               <th v-for="d in diasEnAnio" :key="d"
+                  :id="'day-hdr-' + d"
                   class="col-day"
                   :class="{ 'today-hdr': d === hoyDia && anioActual === anioHoy }">
                 <div style="font-size:11px; font-weight:800;">{{ formatDiaHdr(d) }}</div>

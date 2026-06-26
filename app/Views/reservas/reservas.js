@@ -30,6 +30,7 @@ createApp({
 
     const filtroPiso    = ref('');
     const filtroPago    = ref('');
+    const fechaBuscador = ref('');
     const viewMode      = ref('normal');   // 'compacto' | 'normal' | 'ampliado'
     const staySeleccionado = ref(null);
     const ctxMenu = reactive({ visible: false, x: 0, y: 0, stay: null });
@@ -228,6 +229,42 @@ createApp({
       anioActual.value = today.getFullYear();
       await cargarDatos();
       scrollToToday();
+    };
+
+    const irAFecha = async () => {
+      if (!fechaBuscador.value) return;
+      const [y, m, d] = fechaBuscador.value.split('-');
+      if (!y || !m || !d) return;
+      
+      const year = parseInt(y, 10);
+      const targetDate = new Date(year, parseInt(m, 10) - 1, parseInt(d, 10));
+      const startOfYear = new Date(year, 0, 0);
+      const diff = targetDate - startOfYear;
+      const oneDay = 1000 * 60 * 60 * 24;
+      const dayOfYear = Math.floor(diff / oneDay);
+
+      if (anioActual.value !== year) {
+        anioActual.value = year;
+        await cargarDatos();
+      }
+
+      setTimeout(() => {
+        const wrapper = document.querySelector('.cuadro-wrapper');
+        const targetCell = document.getElementById(`day-hdr-${dayOfYear}`);
+        if (targetCell && wrapper) {
+          const stickyWidth = 160;
+          wrapper.scrollTo({
+            left: Math.max(0, targetCell.offsetLeft - stickyWidth - 10),
+            behavior: 'smooth'
+          });
+        } else if (!targetCell && wrapper) {
+          const colW = colWidth.value;
+          wrapper.scrollTo({
+            left: Math.max(0, ((dayOfYear - 1) * colW)),
+            behavior: 'smooth'
+          });
+        }
+      }, 150);
     };
 
     const getDiaSemana = (dia) => {
@@ -763,12 +800,12 @@ createApp({
       loading, loadingPago,
       habitaciones, diasEnAnio, resumen, ingresos,
       mesActual, anioActual, hoyDia, mesHoy, anioHoy,
-      filtroPiso, filtroPago,
+      filtroPiso, filtroPago, fechaBuscador,
       staySeleccionado, pagoRapido,
       pisos, formatDiaHdr,
       habitacionesFiltradas, staysHoyMovil,
       // methods
-      cargarDatos, cambiarAnio, irHoy,
+      cargarDatos, cambiarAnio, irHoy, irAFecha,
       getCeldaStay, getTodosCeldaStays, getStayStyle, getPaxTotalDia, esInicioStay, esDiaEstadoEspecial, calcCols,
       getDiaSemana, onCeldaClick, abrirDetalle,
       openContextMenu, handleCtxAction, ctxMenu,

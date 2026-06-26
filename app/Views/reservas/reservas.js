@@ -14,7 +14,7 @@ createApp({
     const loading       = ref(true);
     const loadingPago   = ref(false);
     const habitaciones  = ref([]);
-    const diasEnMes     = ref(30);
+    const diasEnAnio    = ref(365);
     const resumen       = ref({
       ocupadas: 0, total: 0, pax_total: 0,
       ingresos_hoy: 0, pendientes: 0,
@@ -55,10 +55,12 @@ createApp({
 
     const pagoRapido = reactive({ monto: 0, moneda: 'PEN', metodo: 'efectivo' });
 
-    const meses = [
-      'Enero','Febrero','Marzo','Abril','Mayo','Junio',
-      'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'
-    ];
+    const formatDiaHdr = (diaOfYear) => {
+      const d = new Date(anioActual.value, 0, diaOfYear);
+      const day = d.getDate();
+      const monthStr = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'][d.getMonth()];
+      return `${day} ${monthStr}`;
+    };
 
     let pollingTimer  = null;
 
@@ -96,10 +98,10 @@ createApp({
     );
 
     const staysHoyMovil = computed(() => {
-      const hoy = `${anioActual.value}-${String(mesActual.value).padStart(2,'0')}-${String(hoyDia.value).padStart(2,'0')}`;
+      const hoyStr = `${anioHoy.value}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
       return habitaciones.value.flatMap(h =>
         h.stays
-          .filter(s => s.fecha_inicio <= hoy && s.fecha_fin > hoy)
+          .filter(s => s.fecha_inicio <= hoyStr && s.fecha_fin > hoyStr)
           .map(s => ({ ...s, hab_numero: h.numero }))
       );
     });
@@ -116,7 +118,7 @@ createApp({
         if (res.data.ok) {
           const d = res.data.data;
           habitaciones.value = d.habitaciones;
-          diasEnMes.value    = d.dias_en_mes;
+          diasEnAnio.value   = d.dias_en_anio;
           resumen.value      = d.resumen;
           hoyDia.value       = d.hoy;
         }
@@ -175,7 +177,7 @@ createApp({
     };
 
     const esDiaEstadoEspecial = (hab, dia) => {
-      const esHoy = dia === hoyDia.value && mesActual.value === mesHoy.value && anioActual.value === anioHoy.value;
+      const esHoy = dia === hoyDia.value && anioActual.value === anioHoy.value;
       return esHoy && ['limpieza', 'sucio', 'bloqueado', 'mantenimiento', 'late_checkout'].includes(hab.estado);
     };
 
@@ -190,9 +192,8 @@ createApp({
       return 'cat-generic';
     };
 
-    // Cuántas columnas abarca el stay (clamp al fin del mes)
     const calcCols = (stay) => {
-      const fin = Math.min(stay.dia_fin, diasEnMes.value + 1);
+      const fin = Math.min(stay.dia_fin, diasEnAnio.value + 1);
       return Math.max(1, fin - stay.dia_inicio);
     };
 
@@ -217,14 +218,8 @@ createApp({
       }, 100);
     };
 
-    // ─── Navigation ───────────────────────────────────────────────────
-    const cambiarMes = (delta) => {
-      let m = mesActual.value + delta;
-      let a = anioActual.value;
-      if (m > 12) { m = 1; a++; }
-      if (m < 1)  { m = 12; a--; }
-      mesActual.value  = m;
-      anioActual.value = a;
+    const cambiarAnio = (delta) => {
+      anioActual.value += delta;
       cargarDatos();
     };
 
@@ -235,9 +230,8 @@ createApp({
       scrollToToday();
     };
 
-    // ─── Date helpers ─────────────────────────────────────────────────
     const getDiaSemana = (dia) => {
-      const d = new Date(anioActual.value, mesActual.value - 1, dia);
+      const d = new Date(anioActual.value, 0, dia);
       return ['D','L','M','X','J','V','S'][d.getDay()];
     };
 
@@ -279,7 +273,7 @@ createApp({
             <div class="text-center mb-4 mt-2">
               <div class="text-muted text-uppercase mb-1" style="font-size: 10px; letter-spacing: 1px; font-weight: 600;">Opciones de celda</div>
               <h4 class="fw-bolder mb-1" style="color: #111827; font-size: 24px; letter-spacing: -0.5px;">Habitación #${hab.numero}</h4>
-              <div class="text-secondary" style="font-size: 14px;">Día ${dia} / ${mesActual.value}</div>
+              <div class="text-secondary" style="font-size: 14px;">Día ${formatDiaHdr(dia)} ${anioActual.value}</div>
             </div>
 
             <div class="d-flex flex-column text-start px-2 gap-2">
@@ -361,7 +355,8 @@ createApp({
       formQuick.id      = null;
       formQuick.editando = false;
       formQuick.hab     = hab;
-      formQuick.fecha   = `${anioActual.value}-${String(mesActual.value).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
+      const d = new Date(anioActual.value, 0, dia);
+      formQuick.fecha   = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
       
       if (activeQuickGuest.value) {
         formQuick.titular = activeQuickGuest.value.nombre;
@@ -766,14 +761,14 @@ createApp({
     return {
       activeQuickGuest,
       loading, loadingPago,
-      habitaciones, diasEnMes, resumen, ingresos,
+      habitaciones, diasEnAnio, resumen, ingresos,
       mesActual, anioActual, hoyDia, mesHoy, anioHoy,
       filtroPiso, filtroPago,
       staySeleccionado, pagoRapido,
-      meses, pisos,
+      pisos, formatDiaHdr,
       habitacionesFiltradas, staysHoyMovil,
       // methods
-      cargarDatos, cambiarMes, irHoy,
+      cargarDatos, cambiarAnio, irHoy,
       getCeldaStay, getTodosCeldaStays, getStayStyle, getPaxTotalDia, esInicioStay, esDiaEstadoEspecial, calcCols,
       getDiaSemana, onCeldaClick, abrirDetalle,
       openContextMenu, handleCtxAction, ctxMenu,

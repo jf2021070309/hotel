@@ -13,13 +13,13 @@ class ReservasModel {
      * Returns all rooms with their stays for the given month.
      * Single optimized JOIN — no N+1 queries.
      */
-    public function getDatosMes(int $mes, int $anio): array {
+    public function getDatosAnio(int $anio): array {
         // Auto-cancelar reservas vencidas (donde hoy es posterior a la fecha de checkout y siguen como 'reservado')
         $this->pdo->query("UPDATE rooming_stays SET estado = 'cancelado' WHERE estado = 'reservado' AND fecha_checkout < CURRENT_DATE");
 
-        $primerDia  = sprintf('%04d-%02d-01', $anio, $mes);
-        $ultimoDia  = date('Y-m-t', strtotime($primerDia));
-        $diasEnMes  = (int)date('t', strtotime($primerDia));
+        $primerDia  = sprintf('%04d-01-01', $anio);
+        $ultimoDia  = sprintf('%04d-12-31', $anio);
+        $diasEnAnio = (int)date('z', strtotime($ultimoDia)) + 1;
 
         // 1. All rooms
         $stmtHab = $this->pdo->query(
@@ -30,7 +30,7 @@ class ReservasModel {
         );
         $habitacionesRaw = $stmtHab->fetchAll(PDO::FETCH_ASSOC);
 
-        // 2. All stays overlapping the month (single query)
+        // 2. All stays overlapping the year (single query)
         $stmt = $this->pdo->prepare(
             "SELECT
                  s.id,
@@ -61,15 +61,15 @@ class ReservasModel {
         // 3. Index by room id
         $staysByRoom = [];
         foreach ($staysRaw as $s) {
-            $diaIni  = (int)date('j', strtotime(max($s['fecha_registro'], $primerDia)));
+            $diaIni  = (int)date('z', strtotime(max($s['fecha_registro'], $primerDia))) + 1;
             
             $dtFin   = strtotime($s['fecha_checkout']);
             $dtLimit = strtotime($ultimoDia);
 
             if ($dtFin > $dtLimit) {
-                $diaFin = $diasEnMes + 1;
+                $diaFin = $diasEnAnio + 1;
             } else {
-                $diaFin = (int)date('j', $dtFin);
+                $diaFin = (int)date('z', $dtFin) + 1;
             }
 
             $cols = max(1, $diaFin - $diaIni);
@@ -108,7 +108,7 @@ class ReservasModel {
             ];
         }
 
-        return ['habitaciones' => $habitaciones, 'dias_en_mes' => $diasEnMes];
+        return ['habitaciones' => $habitaciones, 'dias_en_anio' => $diasEnAnio];
     }
 
     /**

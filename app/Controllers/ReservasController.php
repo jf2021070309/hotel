@@ -21,15 +21,15 @@ class ReservasController {
         $anio = max(2020, min(2100, (int)($_GET['anio'] ?? date('Y'))));
         $hoy  = date('Y-m-d');
 
-        $grid    = $this->model->getDatosMes($mes, $anio);
+        $grid    = $this->model->getDatosAnio($anio);
         $resumen = $this->model->getResumenDia($hoy);
 
         return [
             'habitaciones' => $grid['habitaciones'],
-            'dias_en_mes'  => $grid['dias_en_mes'],
+            'dias_en_anio' => $grid['dias_en_anio'],
             'mes'          => $mes,
             'anio'         => $anio,
-            'hoy'          => (int)date('j'),
+            'hoy'          => (int)date('z') + 1,
             'resumen'      => $resumen,
         ];
     }

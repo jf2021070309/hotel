@@ -522,7 +522,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
           </div>
           <div>
             <h4 class="fw-bold mb-0 text-white" style="font-size:18px;letter-spacing:-0.5px;">Cuadro de Reservas</h4>
-            <div class="text-white-50" style="font-size:11px;">Vista mensual &mdash; Tiempo real</div>
+            <div class="text-white-50" style="font-size:11px;">Vista anual &mdash; Tiempo real</div>
           </div>
         </div>
       </div>
@@ -557,13 +557,10 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
 
     <!-- CONTROLS -->
     <div class="controls-bar">
-      <!-- Navegación mes -->
-      <button class="btn btn-sm btn-outline-secondary" @click="cambiarMes(-1)"><i class="bi bi-chevron-left"></i></button>
-      <select class="form-select form-select-sm" v-model="mesActual" @change="cargarDatos" style="width:120px;">
-        <option v-for="(m,i) in meses" :key="i" :value="i+1">{{ m }}</option>
-      </select>
-      <input type="number" class="form-control form-control-sm" v-model.number="anioActual" @change="cargarDatos" style="width:80px;" min="2020" max="2100">
-      <button class="btn btn-sm btn-outline-secondary" @click="cambiarMes(1)"><i class="bi bi-chevron-right"></i></button>
+      <!-- Navegación año -->
+      <button class="btn btn-sm btn-outline-secondary" @click="cambiarAnio(-1)"><i class="bi bi-chevron-left"></i></button>
+      <input type="number" class="form-control form-control-sm text-center fw-bold" v-model.number="anioActual" @change="cargarDatos" style="width:80px;" min="2020" max="2100">
+      <button class="btn btn-sm btn-outline-secondary" @click="cambiarAnio(1)"><i class="bi bi-chevron-right"></i></button>
       <button class="btn btn-sm btn-warning fw-bold" @click="irHoy">Hoy</button>
 
       <div class="divider"></div>
@@ -613,17 +610,17 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
         <table v-else class="cuadro-table w-100" :class="'vm-' + viewMode">
           <colgroup>
             <col style="width:160px; min-width:160px;">
-            <col v-for="d in diasEnMes" :key="d" :style="{ width: colWidth + 'px', minWidth: colWidth + 'px' }">
+            <col v-for="d in diasEnAnio" :key="d" :style="{ width: colWidth + 'px', minWidth: colWidth + 'px' }">
           </colgroup>
           <thead>
             <tr>
               <th class="col-hab" style="padding:6px 10px;">
-                {{ meses[mesActual-1] }} {{ anioActual }}
+                Año {{ anioActual }}
               </th>
-              <th v-for="d in diasEnMes" :key="d"
+              <th v-for="d in diasEnAnio" :key="d"
                   class="col-day"
-                  :class="{ 'today-hdr': d === hoyDia && mesActual === mesHoy && anioActual === anioHoy }">
-                <div style="font-size:11px; font-weight:800;">{{ d }}</div>
+                  :class="{ 'today-hdr': d === hoyDia && anioActual === anioHoy }">
+                <div style="font-size:11px; font-weight:800;">{{ formatDiaHdr(d) }}</div>
                 <div style="font-size:8px; opacity:.7;">{{ getDiaSemana(d) }}</div>
               </th>
             </tr>
@@ -634,9 +631,9 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
                 <div class="hab-num">#{{ hab.numero }}</div>
                 <div class="hab-tipo text-muted mini">{{ hab.tipo }}</div>
               </td>
-              <td v-for="d in diasEnMes" :key="d"
+              <td v-for="d in diasEnAnio" :key="d"
                   class="col-day"
-                  :class="{ 'today-col': d === hoyDia && mesActual === mesHoy && anioActual === anioHoy }"
+                  :class="{ 'today-col': d === hoyDia && anioActual === anioHoy }"
                   :style="{ width: colWidth + 'px', height: rowHeight + 'px' }"
                   @click="onCeldaClick(hab, d)">
 
@@ -679,7 +676,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
               </td>
             </tr>
             <tr v-if="habitacionesFiltradas.length === 0">
-              <td :colspan="diasEnMes + 1" class="text-center py-4 text-muted">
+              <td :colspan="diasEnAnio + 1" class="text-center py-4 text-muted">
                 Sin habitaciones con los filtros aplicados.
               </td>
             </tr>
@@ -689,9 +686,9 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
               <td class="col-hab fw-bold bg-dark text-warning" style="position: sticky; left: 0; z-index: 35; padding: 6px 10px; font-size: 11px;">
                 <i class="bi bi-people-fill me-2" style="color: #d4af37;"></i>TOTAL PAX
               </td>
-              <td v-for="d in diasEnMes" :key="d" 
+              <td v-for="d in diasEnAnio" :key="d" 
                   class="col-day text-center fw-bold bg-dark text-white" 
-                  :class="{ 'today-col-tot': d === hoyDia && mesActual === mesHoy && anioActual === anioHoy }"
+                  :class="{ 'today-col-tot': d === hoyDia && anioActual === anioHoy }"
                   style="vertical-align: middle; padding: 0; font-size: 11px;">
                 <span v-if="getPaxTotalDia(d) > 0" class="badge bg-warning text-dark px-2 py-1" style="font-size: 10px;">
                   {{ getPaxTotalDia(d) }}

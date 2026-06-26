@@ -4,7 +4,7 @@
  */
 const { createApp, ref, reactive, onMounted } = Vue;
 
-createApp({
+const app = createApp({
   setup() {
     const loading = ref(false);
     const meses = [

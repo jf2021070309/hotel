@@ -549,10 +549,10 @@ createApp({
         fecha_checkout: '',
         pago_total: '',
         late_checkout: 'NO',
-        medio_pago: fila.periodos_list[0]?.medio_pago || '',
+        medio_pago: (fila.periodos_list[0] && fila.periodos_list[0].medio_pago) || '',
         comprobante_pago: '',
         numero_comprobante: '',
-        quien_cobro: fila.periodos_list[0]?.quien_cobro || ''
+        quien_cobro: (fila.periodos_list[0] && fila.periodos_list[0].quien_cobro) || ''
       });
     },
 
@@ -759,13 +759,16 @@ createApp({
             medio_reserva: 'DIRECTO',
             hora_checkin: new Date().toTimeString().slice(0, 5),
             fecha_checkin: hoyStr,
-            checkout_list: [{ fecha: mananaStr }],
-            pago_total: '',
-            late_checkout: '',
-            medio_pago: '',
-            comprobante_pago: '',
-            numero_comprobante: '',
-            quien_cobro: window.SERVER_DATA.operadorDefault || '',
+            periodos_list: [{
+              fecha_checkin: hoyStr,
+              fecha_checkout: mananaStr,
+              pago_total: '',
+              late_checkout: 'NO',
+              medio_pago: '',
+              comprobante_pago: '',
+              numero_comprobante: '',
+              quien_cobro: window.SERVER_DATA.operadorDefault || ''
+            }],
             carro: '',
             observaciones: '',
             modificado: true

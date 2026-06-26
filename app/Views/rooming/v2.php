@@ -344,6 +344,10 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                     <div v-for="(p, pIdx) in f.periodos_list" :key="'co'+pIdx" class="pax-input-container w-100 d-flex align-items-center"
                          :class="{ 'checkout-atrasado': pIdx===f.periodos_list.length-1 && estadoCheckout(f)==='atrasado', 'checkout-hoy': pIdx===f.periodos_list.length-1 && estadoCheckout(f)==='hoy' }"
                          :style="{ borderBottom: pIdx===f.periodos_list.length-1 ? 'none':'1px dashed #a7f3d0', padding:'2px 4px', backgroundColor:'#f0fff4' }">
+                      <button v-if="pIdx===f.periodos_list.length-1 && f.periodos_list.length > 1"
+                              class="btn btn-sm btn-link text-danger p-0 me-1 flex-shrink-0"
+                              @click="quitarExtension(f)" title="Quitar Extensión"
+                              style="font-size:18px;line-height:1;font-weight:700;">-</button>
                       <input type="date" v-model="p.fecha_checkout"
                              class="table-editable-input text-center text-danger fw-bold w-100 border-0 bg-transparent px-1"
                              @change="marcarModificado(f)" style="height:30px;font-size:11px;">
@@ -351,10 +355,6 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                               class="btn btn-sm btn-link text-success p-0 ms-1 flex-shrink-0"
                               @click="agregarExtension(f)" title="Agregar Extensión"
                               style="font-size:18px;line-height:1;font-weight:700;">+</button>
-                      <button v-if="pIdx===f.periodos_list.length-1 && f.periodos_list.length > 1"
-                              class="btn btn-sm btn-link text-danger p-0 ms-1 flex-shrink-0"
-                              @click="quitarExtension(f)" title="Quitar Extensión"
-                              style="font-size:18px;line-height:1;font-weight:700;">-</button>
                     </div>
                   </div>
                 </td>

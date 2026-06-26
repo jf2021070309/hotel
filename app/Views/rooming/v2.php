@@ -386,6 +386,8 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                         <option value="POS SOLES">POS SOLES</option>
                         <option value="DOLARES EFECTIVO">DOLARES EFECTIVO</option>
                         <option value="POS DOLARES">POS DOLARES</option>
+                        <option value="PESOS EFECTIVO">PESOS EFECTIVO</option>
+                        <option value="POS PESOS">POS PESOS</option>
                         <option value="YAPE O PLIN">YAPE O PLIN</option>
                         <option value="DEPOSITOS">DEPOSITOS</option>
                       </select>

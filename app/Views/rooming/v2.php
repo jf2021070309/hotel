@@ -761,6 +761,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
     vertical-align: middle;
     border: 1px solid #000;
     background-color: #ffffff;
+    font-weight: bold !important;
   }
 
   .table-mensual tbody tr:hover td {
@@ -788,7 +789,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
     padding: 4px 6px;
     border-radius: 4px;
     font-size: 11px;
-    font-weight: inherit;
+    font-weight: bold !important;
     color: inherit;
     text-align: inherit;
     transition: all 0.15s ease;
@@ -810,7 +811,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
     background: transparent;
     padding: 2px 4px;
     font-size: 11px;
-    font-weight: inherit;
+    font-weight: bold !important;
     color: inherit;
     height: 26px;
     cursor: pointer;
@@ -833,6 +834,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
     background: transparent;
     padding: 3px 5px;
     font-size: 11px;
+    font-weight: bold !important;
     resize: none;
     transition: all 0.15s ease;
   }

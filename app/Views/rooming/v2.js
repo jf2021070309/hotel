@@ -14,7 +14,8 @@ createApp({
       filtro: {
         mes: String(hoy.getMonth() + 1),
         anio: String(hoy.getFullYear()),
-        anios: [2024, 2025, 2026, 2027, 2028]
+        anios: [2024, 2025, 2026, 2027, 2028],
+        vista: 'principales'
       },
       habitaciones: window.SERVER_DATA.habitaciones || [],
       sugerencias: {},
@@ -60,11 +61,18 @@ createApp({
 
   computed: {
     filasFiltradas() {
+      let filtradas = this.filas;
+      if (this.filtro.vista === 'no_registrados') {
+        filtradas = filtradas.filter(f => f.no_registrado == 1);
+      } else {
+        filtradas = filtradas.filter(f => f.no_registrado != 1);
+      }
+
       if (!this.busqueda.trim()) {
-        return this.filas;
+        return filtradas;
       }
       const q = this.busqueda.toLowerCase().trim();
-      return this.filas.filter(f => {
+      return filtradas.filter(f => {
         return (
           (f.nombre_apellido && f.nombre_apellido.toLowerCase().includes(q)) ||
           (f.hab && f.hab.toLowerCase().includes(q)) ||

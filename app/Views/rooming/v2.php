@@ -131,6 +131,14 @@ include $_projectRoot . '/app/Views/layouts/head.php';
               <span class="badge bg-primary align-self-center px-3 py-2 fs-7 shadow-sm" v-if="!loading">
                 <i class="bi bi-people-fill me-1"></i>{{ filasFiltradas.length }} registros
               </span>
+
+              <div class="btn-group shadow-sm">
+                <input type="radio" class="btn-check" name="btnradio_vista" id="btn-principales" autocomplete="off" checked @click="filtro.vista = 'principales'">
+                <label class="btn btn-sm btn-outline-primary fw-bold px-3" for="btn-principales">Principales</label>
+
+                <input type="radio" class="btn-check" name="btnradio_vista" id="btn-noreg" autocomplete="off" @click="filtro.vista = 'no_registrados'">
+                <label class="btn btn-sm btn-outline-danger fw-bold px-3" for="btn-noreg">No registrados</label>
+              </div>
               
               <button class="btn btn-sm btn-outline-primary fw-bold px-3 shadow-sm" @click="agregarFila">
                 <i class="bi bi-plus-lg me-1"></i>Añadir Fila
@@ -155,7 +163,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
           <table class="table table-bordered table-hover mb-0 align-middle table-mensual">
             <thead>
               <tr class="table-dark text-white text-uppercase" style="font-size: 10px; letter-spacing: 0.5px;">
-                <th class="sticky-col text-center" style="width: 75px; z-index:12 !important;"><i class="bi bi-gear"></i></th>
+                <th class="sticky-col text-center" style="width: 95px; z-index:12 !important;"><i class="bi bi-gear"></i></th>
                 <th class="text-center" style="width: 100px;">OPERADOR</th>
                 <th style="width: 110px;">FECHA</th>
                 <th style="width: 110px;">HAB</th>
@@ -213,6 +221,9 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                     </span>
                     <button class="btn btn-sm btn-link text-success p-0" @click="f.marcado = !f.marcado; marcarModificado(f)" title="Marcar/Desmarcar fila" style="opacity: 0.8;">
                       <i class="bi" :class="f.marcado ? 'bi-check-square-fill' : 'bi-square'"></i>
+                    </button>
+                    <button class="btn btn-sm btn-link text-danger p-0 ms-1" @click="f.no_registrado = f.no_registrado ? 0 : 1; marcarModificado(f)" title="Marcar como No Registrado" style="opacity: 0.8;">
+                      <i class="bi" :class="f.no_registrado ? 'bi-x-square-fill' : 'bi-x-square'"></i>
                     </button>
                     <button class="btn btn-sm btn-link text-secondary p-0" @click="eliminarFila(f, idx)" title="Eliminar registro">
                       <i class="bi bi-trash-fill fs-6"></i>

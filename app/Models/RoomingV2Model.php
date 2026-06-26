@@ -18,9 +18,14 @@ class RoomingV2Model {
      * Obtiene los registros del mes/año indicados cruzando las tablas existentes.
      */
     public function getReporte(int $mes, int $anio): array {
+        try {
+            $this->pdo->query("ALTER TABLE rooming_stays ADD COLUMN no_registrado TINYINT(1) DEFAULT 0");
+        } catch (Exception $e) {}
+
         $sql = "
             SELECT
                 s.id            AS stay_id,
+                s.no_registrado,
                 GROUP_CONCAT(c.id ORDER BY p.es_titular_acompanante DESC, c.id ASC SEPARATOR ',') AS pax_ids,
                 s.operador,
                 s.fecha_registro AS fecha,
@@ -97,7 +102,8 @@ class RoomingV2Model {
                     cobrador = :cobrador,
                     carro = :carro,
                     observaciones = :observaciones,
-                    marcado = :marcado
+                    marcado = :marcado,
+                    no_registrado = :no_registrado
                 WHERE id = :stay_id
             ");
 
@@ -119,13 +125,13 @@ class RoomingV2Model {
                     habitacion_id, tipo_hab_declarado, pax_total, medio_reserva,
                     total_pago, moneda_pago, monto_original, estado, metodo_pago,
                     tipo_comprobante, num_comprobante, cobrador, carro, observaciones,
-                    checkin_realizado, estado_pago, usuario_id, cliente_titular_id, marcado
+                    checkin_realizado, estado_pago, usuario_id, cliente_titular_id, marcado, no_registrado
                 ) VALUES (
                     :operador, :fecha_registro, :fecha_checkout, :fecha_checkin_real,
                     :habitacion_id, :tipo_hab_declarado, :pax_total, :medio_reserva,
                     :total_pago, :moneda_pago, :monto_original, :estado, :metodo_pago,
                     :tipo_comprobante, :num_comprobante, :cobrador, :carro, :observaciones,
-                    1, 'pagado', :usuario_id, :cliente_titular_id, :marcado
+                    1, 'pagado', :usuario_id, :cliente_titular_id, :marcado, :no_registrado
                 )
             ");
 
@@ -322,6 +328,7 @@ class RoomingV2Model {
                         'carro'          => $row['carro'] ?? 'NO',
                         'observaciones'  => $row['observaciones'] ?? '',
                         'marcado'        => !empty($row['marcado']) ? 1 : 0,
+                        'no_registrado'  => !empty($row['no_registrado']) ? 1 : 0,
                         'stay_id'        => $stayId
                     ]);
 
@@ -452,7 +459,8 @@ class RoomingV2Model {
                         'observaciones'      => $row['observaciones'] ?? '',
                         'usuario_id'         => $_SESSION['auth_id'] ?? 1,
                         'cliente_titular_id' => $titularId,
-                        'marcado'            => !empty($row['marcado']) ? 1 : 0
+                        'marcado'            => !empty($row['marcado']) ? 1 : 0,
+                        'no_registrado'      => !empty($row['no_registrado']) ? 1 : 0
                     ]);
 
                     $newStayId = (int)$this->pdo->lastInsertId();

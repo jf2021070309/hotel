@@ -38,6 +38,11 @@ include $_projectRoot . '/app/Views/layouts/head.php';
     70% { box-shadow: 0 0 0 4px rgba(220, 38, 38, 0); }
     100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
   }
+  
+  /* Fila Marcada */
+  .row-marcado > td {
+    background-color: #d1e7dd !important; /* Verde success de Bootstrap */
+  }
 </style>
 
 <div id="app-rooming-v2" style="display:contents" v-cloak>
@@ -184,7 +189,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
               
               <!-- Filas de datos -->
               <tr v-else v-for="(f, idx) in filasFiltradas" :key="f.stay_id || f.temp_id" 
-                  :class="{'unsaved-row': f.modificado || !f.stay_id, 'bg-success bg-opacity-10': f.marcado}">
+                  :class="{'unsaved-row': f.modificado || !f.stay_id, 'row-marcado': f.marcado}">
                 <!-- Botones de Acción (Sticky 1) -->
                 <td class="sticky-col text-center px-1">
                   <div class="d-flex align-items-center justify-content-center gap-2">

@@ -346,8 +346,12 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                              @change="marcarModificado(f)" style="height:30px;font-size:11px;">
                       <button v-if="pIdx===f.periodos_list.length-1 && p.fecha_checkout"
                               class="btn btn-sm btn-link text-success p-0 ms-1 flex-shrink-0"
-                              @click="agregarExtension(f)" title="Agregar Late Checkout"
+                              @click="agregarExtension(f)" title="Agregar Extensión"
                               style="font-size:18px;line-height:1;font-weight:700;">+</button>
+                      <button v-if="pIdx===f.periodos_list.length-1 && f.periodos_list.length > 1"
+                              class="btn btn-sm btn-link text-danger p-0 ms-1 flex-shrink-0"
+                              @click="quitarExtension(f)" title="Quitar Extensión"
+                              style="font-size:18px;line-height:1;font-weight:700;">-</button>
                     </div>
                   </div>
                 </td>

@@ -575,6 +575,17 @@ createApp({
       });
     },
 
+    quitarExtension(fila) {
+      if (fila.periodos_list.length > 1) {
+        fila.periodos_list.pop();
+        fila.modificado = true;
+        // El último elemento ahora debería perder el flag de late_checkout forzado si se desea, 
+        // pero lo dejamos como NO por seguridad (o como estaba)
+        const last = fila.periodos_list[fila.periodos_list.length - 1];
+        last.late_checkout = 'NO';
+      }
+    },
+
     // Exportar tabla visible a Excel usando XLSX
     exportarExcel() {
       try {

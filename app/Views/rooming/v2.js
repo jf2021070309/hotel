@@ -168,7 +168,7 @@ createApp({
               pax_list,
               periodos_list,
               modificado: false,
-              marcado: false
+              marcado: f.marcado == 1 || f.marcado == true
             };
           });
         } else {

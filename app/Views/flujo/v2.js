@@ -382,14 +382,14 @@ const app = createApp({
       }
     };
 
-    // LOGICA DE CONSUMO RAPIDO Y TOOLTIP
-    const getTooltipDetails = (movs) => {
+    // LOGICA DE CONSUMO RAPIDO Y TOOLTIP FLOTANTE
+    const getTooltipHtml = (movs) => {
       if (!movs || movs.length === 0) return '';
-      let res = 'Mi Equipo:\n';
+      let res = `<strong style="color: #0288D1; display: block; margin-bottom: 3px; font-size: 12px;">Desglose de Ingresos</strong>`;
       movs.forEach(m => {
         let label = m.observacion || m.categoria_nombre || 'Venta';
         let pre = m.moneda === 'USD' ? '$' : (m.moneda === 'CLP' ? '₱' : 'S/');
-        res += `${label}: ${pre} ${formatearNumero(m.monto)}\n`;
+        res += `<div>${label}: <span class="fw-bold">${pre} ${formatearNumero(m.monto)}</span></div>`;
       });
       return res;
     };
@@ -481,7 +481,7 @@ const app = createApp({
       generarCalendario,
       obtenerFechaHoy,
       SERVER_ROUTES: window.SERVER_ROUTES,
-      getTooltipDetails,
+      getTooltipHtml,
       abrirMenuHabitaciones,
       formConsumo,
       staysActivos,

@@ -115,13 +115,14 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
                 <td class="sticky-col-2 text-center" style="left: 100px;">{{ d.fecha_formateada }}</td>
                 
                 <!-- Ingresos MAÑANA -->
-                <td class="num-cell" :class="{'zero-val': d.manana.depo === 0, 'has-details': d.manana.detalles.depo.length > 0}" :title="getTooltipDetails(d.manana.detalles.depo)" @click="abrirMenuHabitaciones(d.manana, 'MAÑANA', 'depo')">{{ d.manana.depo ? 'S/ ' + formatearNumero(d.manana.depo) : '-' }}</td>
-                <td class="num-cell" :class="{'zero-val': d.manana.yape === 0, 'has-details': d.manana.detalles.yape.length > 0}" :title="getTooltipDetails(d.manana.detalles.yape)" @click="abrirMenuHabitaciones(d.manana, 'MAÑANA', 'yape')">{{ d.manana.yape ? 'S/ ' + formatearNumero(d.manana.yape) : '-' }}</td>
-                <td class="num-cell" :class="{'zero-val': d.manana.pos_usd === 0, 'has-details': d.manana.detalles.pos_usd.length > 0}" :title="getTooltipDetails(d.manana.detalles.pos_usd)" @click="abrirMenuHabitaciones(d.manana, 'MAÑANA', 'pos_usd')">{{ d.manana.pos_usd ? '$ ' + formatearNumero(d.manana.pos_usd) : '-' }}</td>
-                <td class="num-cell" :class="{'zero-val': d.manana.pos_pen === 0, 'has-details': d.manana.detalles.pos_pen.length > 0}" :title="getTooltipDetails(d.manana.detalles.pos_pen)" @click="abrirMenuHabitaciones(d.manana, 'MAÑANA', 'pos_pen')">{{ d.manana.pos_pen ? 'S/ ' + formatearNumero(d.manana.pos_pen) : '-' }}</td>
-                <td class="num-cell" :class="{'zero-val': d.manana.pesos === 0, 'has-details': d.manana.detalles.pesos.length > 0}" :title="getTooltipDetails(d.manana.detalles.pesos)" @click="abrirMenuHabitaciones(d.manana, 'MAÑANA', 'pesos')">{{ d.manana.pesos ? '₱ ' + formatearNumero(d.manana.pesos) : '-' }}</td>
-                <td class="num-cell" :class="{'zero-val': d.manana.usd_ef === 0, 'has-details': d.manana.detalles.usd_ef.length > 0}" :title="getTooltipDetails(d.manana.detalles.usd_ef)" @click="abrirMenuHabitaciones(d.manana, 'MAÑANA', 'usd_ef')">{{ d.manana.usd_ef ? '$ ' + formatearNumero(d.manana.usd_ef) : '-' }}</td>
-                <td class="num-cell fw-bold text-success" :class="{'zero-val': d.manana.pen_ef === 0, 'has-details': d.manana.detalles.pen_ef.length > 0}" :title="getTooltipDetails(d.manana.detalles.pen_ef)" @click="abrirMenuHabitaciones(d.manana, 'MAÑANA', 'pen_ef')">{{ d.manana.pen_ef ? 'S/ ' + formatearNumero(d.manana.pen_ef) : '-' }}</td>
+                <td v-for="(campo, idx) in ['depo', 'yape', 'pos_usd', 'pos_pen', 'pesos', 'usd_ef', 'pen_ef']"
+                    :key="'in_m_'+campo"
+                    class="num-cell position-relative" 
+                    :class="{'zero-val': d.manana[campo] === 0, 'has-details': d.manana.detalles[campo].length > 0, 'fw-bold text-success': campo === 'pen_ef'}" 
+                    @click="abrirMenuHabitaciones(d.manana, 'MAÑANA', campo)">
+                  {{ d.manana[campo] ? (campo === 'pos_usd' || campo === 'usd_ef' ? '$ ' : (campo === 'pesos' ? '₱ ' : 'S/ ')) + formatearNumero(d.manana[campo]) : '-' }}
+                  <div v-if="d.manana.detalles[campo].length > 0" class="flujo-tooltip text-dark" v-html="getTooltipHtml(d.manana.detalles[campo])"></div>
+                </td>
                 
                 <!-- Egresos MAÑANA -->
                 <td v-for="campo in ['mercado', 'movilidad', 'cafeteria', 'lavanderia', 'utiles', 'recepcion', 'repuestos', 'personal', 'otros_eg']" 
@@ -173,13 +174,14 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
                 <td class="sticky-col-2 text-center" style="left: 100px;">{{ d.fecha_formateada }}</td>
                 
                 <!-- Ingresos TARDE -->
-                <td class="num-cell" :class="{'zero-val': d.tarde.depo === 0, 'has-details': d.tarde.detalles.depo.length > 0}" :title="getTooltipDetails(d.tarde.detalles.depo)" @click="abrirMenuHabitaciones(d.tarde, 'TARDE', 'depo')">{{ d.tarde.depo ? 'S/ ' + formatearNumero(d.tarde.depo) : '-' }}</td>
-                <td class="num-cell" :class="{'zero-val': d.tarde.yape === 0, 'has-details': d.tarde.detalles.yape.length > 0}" :title="getTooltipDetails(d.tarde.detalles.yape)" @click="abrirMenuHabitaciones(d.tarde, 'TARDE', 'yape')">{{ d.tarde.yape ? 'S/ ' + formatearNumero(d.tarde.yape) : '-' }}</td>
-                <td class="num-cell" :class="{'zero-val': d.tarde.pos_usd === 0, 'has-details': d.tarde.detalles.pos_usd.length > 0}" :title="getTooltipDetails(d.tarde.detalles.pos_usd)" @click="abrirMenuHabitaciones(d.tarde, 'TARDE', 'pos_usd')">{{ d.tarde.pos_usd ? '$ ' + formatearNumero(d.tarde.pos_usd) : '-' }}</td>
-                <td class="num-cell" :class="{'zero-val': d.tarde.pos_pen === 0, 'has-details': d.tarde.detalles.pos_pen.length > 0}" :title="getTooltipDetails(d.tarde.detalles.pos_pen)" @click="abrirMenuHabitaciones(d.tarde, 'TARDE', 'pos_pen')">{{ d.tarde.pos_pen ? 'S/ ' + formatearNumero(d.tarde.pos_pen) : '-' }}</td>
-                <td class="num-cell" :class="{'zero-val': d.tarde.pesos === 0, 'has-details': d.tarde.detalles.pesos.length > 0}" :title="getTooltipDetails(d.tarde.detalles.pesos)" @click="abrirMenuHabitaciones(d.tarde, 'TARDE', 'pesos')">{{ d.tarde.pesos ? '₱ ' + formatearNumero(d.tarde.pesos) : '-' }}</td>
-                <td class="num-cell" :class="{'zero-val': d.tarde.usd_ef === 0, 'has-details': d.tarde.detalles.usd_ef.length > 0}" :title="getTooltipDetails(d.tarde.detalles.usd_ef)" @click="abrirMenuHabitaciones(d.tarde, 'TARDE', 'usd_ef')">{{ d.tarde.usd_ef ? '$ ' + formatearNumero(d.tarde.usd_ef) : '-' }}</td>
-                <td class="num-cell fw-bold text-success" :class="{'zero-val': d.tarde.pen_ef === 0, 'has-details': d.tarde.detalles.pen_ef.length > 0}" :title="getTooltipDetails(d.tarde.detalles.pen_ef)" @click="abrirMenuHabitaciones(d.tarde, 'TARDE', 'pen_ef')">{{ d.tarde.pen_ef ? 'S/ ' + formatearNumero(d.tarde.pen_ef) : '-' }}</td>
+                <td v-for="(campo, idx) in ['depo', 'yape', 'pos_usd', 'pos_pen', 'pesos', 'usd_ef', 'pen_ef']"
+                    :key="'in_t_'+campo"
+                    class="num-cell position-relative" 
+                    :class="{'zero-val': d.tarde[campo] === 0, 'has-details': d.tarde.detalles[campo].length > 0, 'fw-bold text-success': campo === 'pen_ef'}" 
+                    @click="abrirMenuHabitaciones(d.tarde, 'TARDE', campo)">
+                  {{ d.tarde[campo] ? (campo === 'pos_usd' || campo === 'usd_ef' ? '$ ' : (campo === 'pesos' ? '₱ ' : 'S/ ')) + formatearNumero(d.tarde[campo]) : '-' }}
+                  <div v-if="d.tarde.detalles[campo].length > 0" class="flujo-tooltip text-dark" v-html="getTooltipHtml(d.tarde.detalles[campo])"></div>
+                </td>
                 
                 <!-- Egresos TARDE -->
                 <td v-for="campo in ['mercado', 'movilidad', 'cafeteria', 'lavanderia', 'utiles', 'recepcion', 'repuestos', 'personal', 'otros_eg']" 
@@ -525,6 +527,58 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Tooltip Flotante para Detalles de Ingresos */
+  .flujo-tooltip {
+    visibility: hidden;
+    opacity: 0;
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(5px);
+    background: #fff;
+    color: #333;
+    text-align: left;
+    padding: 8px 12px;
+    border-radius: 6px;
+    z-index: 9999;
+    font-size: 11.5px;
+    font-weight: 500;
+    white-space: pre-wrap;
+    width: max-content;
+    max-width: 250px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    border: 1px solid #ddd;
+    transition: opacity 0.15s, transform 0.15s;
+    pointer-events: none;
+    line-height: 1.4;
+  }
+  .flujo-tooltip::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 6px;
+    border-style: solid;
+    border-color: #fff transparent transparent transparent;
+  }
+  .flujo-tooltip::before {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 7px;
+    border-style: solid;
+    border-color: #ddd transparent transparent transparent;
+    z-index: -1;
+  }
+  .num-cell:hover .flujo-tooltip {
+    visibility: visible;
+    opacity: 1;
+    transform: translateX(-50%) translateY(-5px);
   }
 </style>
 

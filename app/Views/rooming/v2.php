@@ -213,12 +213,6 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 <!-- Botones de Acción (Sticky 1) -->
                 <td class="sticky-col text-center px-1">
                   <div class="d-flex align-items-center justify-content-center gap-2">
-                    <span v-if="f.stay_id && f.estado_stay !== 'finalizado'" class="text-primary p-0 d-inline-flex align-items-center" title="Huésped alojado">
-                      <i class="bi bi-person-workspace fs-6"></i>
-                    </span>
-                    <span v-else-if="f.stay_id && f.estado_stay === 'finalizado'" class="text-success p-0 d-inline-flex align-items-center" title="Checkout ya realizado">
-                      <i class="bi bi-check-circle-fill fs-6"></i>
-                    </span>
                     <button class="btn btn-sm btn-link text-success p-0" @click="f.marcado = !f.marcado; marcarModificado(f)" title="Marcar/Desmarcar fila" style="opacity: 0.8;">
                       <i class="bi" :class="f.marcado ? 'bi-check-square-fill' : 'bi-square'"></i>
                     </button>

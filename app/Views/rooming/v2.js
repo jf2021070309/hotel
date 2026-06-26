@@ -170,7 +170,6 @@ createApp({
               modificado: false,
               marcado: f.marcado == 1 || f.marcado == true
             };
-            };
           });
           
           // Lógica de Highlight

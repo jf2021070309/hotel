@@ -176,8 +176,8 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 <th style="width: 120px;">DOCUMENTO NÚMERO</th>
                 <th style="width: 110px;">NACIONALIDAD</th>
                 <th style="width: 100px;">CIUDAD</th>
-                <th style="width: 110px; background-color:#8ce125 !important; color:#000 !important;">CHECK IN FECHA</th>
-                <th style="width: 110px; background-color:#8ce125 !important; color:#000 !important;">CHECK OUT FECHA</th>
+                <th style="width: 110px; background-color:#31bb0e !important; color:#fff !important;">CHECK IN FECHA</th>
+                <th style="width: 110px; background-color:#31bb0e !important; color:#fff !important;">CHECK OUT FECHA</th>
                 <th style="width: 110px;">PAGO TOTAL</th>
                 <th style="width: 90px;">LATE CHECKOUT</th>
                 <th style="width: 130px;">MEDIO DE PAGO</th>
@@ -341,10 +341,10 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 </td>
                 
                 <!-- CHECK IN FECHA -->
-                <td class="p-0" style="vertical-align:stretch; background-color:#eaffd0;">
+                <td class="p-0" style="vertical-align:stretch; background-color:#31bb0e;">
                   <div class="d-flex flex-column h-100">
                     <div v-for="(p, pIdx) in f.periodos_list" :key="'ci'+pIdx" class="pax-input-container w-100"
-                         :style="{ borderBottom: pIdx === f.periodos_list.length-1 ? 'none' : '1px dashed #cbfb88', padding: '2px 4px', backgroundColor: '#eaffd0' }">
+                         :style="{ borderBottom: pIdx === f.periodos_list.length-1 ? 'none' : '1px dashed #1a8c04', padding: '2px 4px', backgroundColor: '#31bb0e' }">
                       <input type="date" v-model="p.fecha_checkin"
                              class="table-editable-input text-center text-success fw-bold w-100 border-0 bg-transparent px-1"
                              @change="marcarModificado(f)" style="height:30px;font-size:11px;">
@@ -353,11 +353,11 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 </td>
                 
                 <!-- CHECK OUT FECHA -->
-                <td class="p-0" style="vertical-align:stretch; background-color:#eaffd0;">
+                <td class="p-0" style="vertical-align:stretch; background-color:#31bb0e;">
                   <div class="d-flex flex-column h-100">
                     <div v-for="(p, pIdx) in f.periodos_list" :key="'co'+pIdx" class="pax-input-container w-100 d-flex align-items-center"
                          :class="{ 'checkout-atrasado': pIdx===f.periodos_list.length-1 && estadoCheckout(f)==='atrasado', 'checkout-hoy': pIdx===f.periodos_list.length-1 && estadoCheckout(f)==='hoy' }"
-                         :style="{ borderBottom: pIdx===f.periodos_list.length-1 ? 'none':'1px dashed #cbfb88', padding:'2px 4px', backgroundColor:'#eaffd0' }">
+                         :style="{ borderBottom: pIdx===f.periodos_list.length-1 ? 'none':'1px dashed #1a8c04', padding:'2px 4px', backgroundColor:'#31bb0e' }">
                       <button v-if="pIdx===f.periodos_list.length-1 && f.periodos_list.length > 1"
                               class="btn btn-sm btn-link text-danger p-0 me-1 flex-shrink-0"
                               @click="quitarExtension(f)" title="Quitar Extensión"

@@ -343,4 +343,135 @@ class FlujoController {
         
         return $this->model->getFlujoMesGrid($mes, $anio);
     }
+
+    /**
+     * Obtiene datos para el modal de consumo rápido
+     */
+    public function datosConsumoRapido(): array {
+        $stmtStays = $this->pdo->query("SELECT id, hab_numero, huesped_principal FROM rooming_stays WHERE estado = 'alojado' ORDER BY hab_numero ASC");
+        $stays = $stmtStays->fetchAll(PDO::FETCH_ASSOC);
+
+        $stmtProds = $this->pdo->query("SELECT id, nombre, precio_venta FROM inventario_productos WHERE activo = 1 ORDER BY nombre ASC");
+        $prods = $stmtProds->fetchAll(PDO::FETCH_ASSOC);
+
+        return ['ok' => true, 'data' => ['stays' => $stays, 'productos' => $prods]];
+    }
+
+    /**
+     * Guarda el consumo rápido desde el Flujo de Caja
+     */
+    public function guardarConsumoRapido(array $input): array {
+        $flujoId = (int)($input['flujo_id'] ?? 0);
+        $stayId = (int)($input['stay_id'] ?? 0);
+        $precio = (float)($input['precio'] ?? 0);
+        $tipo = $input['tipo'] ?? ''; // BEBIDA o DESAYUNO
+        $columna = $input['columna'] ?? 'pen_ef'; 
+
+        if ($flujoId <= 0 || $stayId <= 0 || $precio <= 0) {
+            return ['ok' => false, 'msg' => 'Datos incompletos'];
+        }
+
+        // Obtener hab de stay
+        $stmtS = $this->pdo->prepare("SELECT hab_numero FROM rooming_stays WHERE id = ?");
+        $stmtS->execute([$stayId]);
+        $hab = $stmtS->fetchColumn();
+
+        // Determinar Medio de Pago y Moneda
+        $moneda = 'PEN';
+        $medioPago = 'EFECTIVO';
+        if ($columna === 'depo') { $medioPago = 'TRANSFERENCIA'; }
+        if ($columna === 'yape') { $medioPago = 'YAPE'; }
+        if ($columna === 'pos_usd') { $medioPago = 'POS'; $moneda = 'USD'; }
+        if ($columna === 'pos_pen') { $medioPago = 'POS'; }
+        if ($columna === 'pesos') { $moneda = 'CLP'; }
+        if ($columna === 'usd_ef') { $moneda = 'USD'; }
+
+        $this->pdo->beginTransaction();
+        try {
+            $obs = ($tipo === 'DESAYUNO') ? 'Desayuno Buffet' : 'Bebida Refri';
+            $prodId = ($tipo === 'BEBIDA') ? (int)$input['producto_id'] : null;
+            
+            $stmtC = $this->pdo->prepare("INSERT INTO rooming_consumos (stay_id, producto_id, cantidad, precio_unitario, total, metodo_pago, pagado, usuario_id) VALUES (?, ?, 1, ?, ?, ?, 1, ?)");
+            $stmtC->execute([$stayId, $prodId, $precio, $precio, $medioPago, $_SESSION['auth_id'] ?? 1]);
+
+            if ($tipo === 'BEBIDA' && $prodId) {
+                $stmtP = $this->pdo->prepare("SELECT nombre FROM inventario_productos WHERE id = ?");
+                $stmtP->execute([$prodId]);
+                $obs = $stmtP->fetchColumn() ?: 'Bebida';
+                
+                $stmtInv = $this->pdo->prepare("UPDATE inventario_productos SET stock_actual = stock_actual - 1 WHERE id = ?");
+                $stmtInv->execute([$prodId]);
+            }
+
+            $stmtCat = $this->pdo->prepare("SELECT id FROM finanzas_categorias WHERE nombre LIKE '%VENTAS%' AND modulo = 'Flujo' LIMIT 1");
+            $stmtCat->execute();
+            $catId = $stmtCat->fetchColumn() ?: null;
+
+            $obsFlujo = "HAB $hab: $obs";
+
+            $stmtF = $this->pdo->prepare("INSERT INTO flujo_caja_movimientos (flujo_id, categoria_id, tipo, moneda, monto, medio_pago, observacion) VALUES (?, ?, 'Ingreso', ?, ?, ?, ?)");
+            $stmtF->execute([$flujoId, $catId, $moneda, $precio, $medioPago, $obsFlujo]);
+
+            $this->pdo->commit();
+            return ['ok' => true, 'msg' => 'Consumo guardado y sumado a caja'];
+        } catch (Exception $e) {
+            $this->pdo->rollBack();
+            return ['ok' => false, 'msg' => 'Error: ' . $e->getMessage()];
+        }
+    }
+
+    /**
+     * Guarda cambios en egresos en lote desde la grid V2
+     */
+    public function guardarEgresosLote(array $input): array {
+        $turnos = $input['turnos'] ?? [];
+        if (empty($turnos)) return ['ok' => true];
+
+        $stmtCats = $this->pdo->query("SELECT id, nombre FROM finanzas_categorias WHERE modulo='Flujo' AND tipo='Egreso'");
+        $dbCats = $stmtCats->fetchAll(PDO::FETCH_ASSOC);
+        
+        $catIds = [];
+        foreach($dbCats as $c) {
+            $n = strtoupper($c['nombre']);
+            if (strpos($n, 'MERCADO') !== false || $c['id'] == 9) $catIds['mercado'] = $c['id'];
+            else if (strpos($n, 'MOVIL') !== false || $c['id'] == 10) $catIds['movilidad'] = $c['id'];
+            else if (strpos($n, 'CAFE') !== false || strpos($n, 'VEA') !== false || strpos($n, 'GENOV') !== false || $c['id'] == 11) $catIds['cafeteria'] = $c['id'];
+            else if (strpos($n, 'LAVAN') !== false || $c['id'] == 12) $catIds['lavanderia'] = $c['id'];
+            else if (strpos($n, 'ESCRIT') !== false || strpos($n, 'UTIL') !== false || $c['id'] == 13) $catIds['utiles'] = $c['id'];
+            else if (strpos($n, 'RECEP') !== false || strpos($n, 'CHICA') !== false || $c['id'] == 14) $catIds['recepcion'] = $c['id'];
+            else if (strpos($n, 'REPUEST') !== false || strpos($n, 'SERV') !== false || $c['id'] == 15) $catIds['repuestos'] = $c['id'];
+            else if (strpos($n, 'PERSO') !== false || strpos($n, 'PAGO') !== false || $c['id'] == 16) $catIds['personal'] = $c['id'];
+            else $catIds['otros_eg'] = $c['id'];
+        }
+
+        $this->pdo->beginTransaction();
+        try {
+            $stmtDel = $this->pdo->prepare("DELETE FROM flujo_caja_movimientos WHERE flujo_id = ? AND tipo = 'Egreso'");
+            $stmtIns = $this->pdo->prepare("INSERT INTO flujo_caja_movimientos (flujo_id, categoria_id, tipo, moneda, monto, medio_pago, observacion) VALUES (?, ?, 'Egreso', 'PEN', ?, 'EFECTIVO', 'Actualización Rápida Grid')");
+
+            foreach ($turnos as $t) {
+                $flujoId = (int)($t['flujo_id'] ?? 0);
+                if ($flujoId <= 0) continue;
+                
+                // Borrar egresos previos
+                $stmtDel->execute([$flujoId]);
+
+                // Insertar los nuevos (consolidando por columna)
+                $campos = ['mercado', 'movilidad', 'cafeteria', 'lavanderia', 'utiles', 'recepcion', 'repuestos', 'personal', 'otros_eg'];
+                foreach ($campos as $campo) {
+                    $monto = (float)($t[$campo] ?? 0);
+                    if ($monto > 0) {
+                        $cId = $catIds[$campo] ?? null;
+                        $stmtIns->execute([$flujoId, $cId, $monto]);
+                    }
+                }
+            }
+
+            $this->pdo->commit();
+            return ['ok' => true];
+        } catch (Exception $e) {
+            $this->pdo->rollBack();
+            return ['ok' => false, 'msg' => 'Error: ' . $e->getMessage()];
+        }
+    }
 }

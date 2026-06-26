@@ -95,6 +95,24 @@ switch ($action) {
         json_response(true, $controller->flujoMesGrid($_GET));
         break;
 
+    case 'datos_consumo_rapido':
+        if ($method !== 'GET') json_response(false, null, 405, 'Método no permitido');
+        $res = $controller->datosConsumoRapido();
+        json_response($res['ok'], $res['data'], 200);
+        break;
+
+    case 'guardar_consumo_rapido':
+        if ($method !== 'POST') json_response(false, null, 405, 'Método no permitido');
+        $res = $controller->guardarConsumoRapido($input);
+        json_response($res['ok'], null, $res['ok'] ? 200 : 422, $res['msg'] ?? '');
+        break;
+
+    case 'guardar_egresos_lote':
+        if ($method !== 'POST') json_response(false, null, 405, 'Método no permitido');
+        $res = $controller->guardarEgresosLote($input);
+        json_response($res['ok'], null, $res['ok'] ? 200 : 422, $res['msg'] ?? '');
+        break;
+
     case 'verificar_apertura':
         if ($method !== 'GET') json_response(false, null, 405, 'Método no permitido');
         $res = $controller->verificarApertura();

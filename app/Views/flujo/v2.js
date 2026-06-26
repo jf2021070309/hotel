@@ -106,7 +106,10 @@ createApp({
       personal: 0,
       otros_eg: 0,
       total_egreso: 0,
-      total_entregar: 0
+      total_entregar: 0,
+      detalles: {
+        depo: [], yape: [], pos_usd: [], pos_pen: [], pesos: [], usd_ef: [], pen_ef: []
+      }
     });
 
     /**
@@ -189,7 +192,12 @@ createApp({
           const movs = movements[f.id] || [];
           movs.forEach(m => {
             const mapRes = mapearColumna(m);
-            manana[mapRes.field] += mapRes.val;
+            if (mapRes && mapRes.field) {
+               manana[mapRes.field] += mapRes.val;
+               if (manana.detalles[mapRes.field]) {
+                 manana.detalles[mapRes.field].push(m);
+               }
+            }
           });
 
           // Calcular egreso y entregar
@@ -209,7 +217,12 @@ createApp({
           const movs = movements[f.id] || [];
           movs.forEach(m => {
             const mapRes = mapearColumna(m);
-            tarde[mapRes.field] += mapRes.val;
+            if (mapRes && mapRes.field) {
+               tarde[mapRes.field] += mapRes.val;
+               if (tarde.detalles[mapRes.field]) {
+                 tarde.detalles[mapRes.field].push(m);
+               }
+            }
           });
 
           // Calcular egreso y entregar
@@ -272,7 +285,188 @@ createApp({
       cargarDatos();
     };
 
+    // LOGICA DE EDICIÓN DE EGRESOS INLINE
+    const edicionActiva = ref(null);
+    const turnosModificados = ref(new Set());
+
+    const iniciarEdicion = (turnoObj, campo) => {
+      if (!turnoObj.flujo_id) {
+        Swal.fire('Atención', 'Este turno no tiene un registro de caja abierto. Ábralo o créelo primero para agregar gastos.', 'warning');
+        return;
+      }
+      edicionActiva.value = turnoObj.flujo_id + '_' + campo;
+    };
+
+    const finalizarEdicion = (diaObj, turnoNombre) => {
+      edicionActiva.value = null;
+      recalcularFila(diaObj, turnoNombre);
+    };
+
+    const recalcularFila = (diaObj, turnoNombre) => {
+      const t = diaObj[turnoNombre];
+      t.total_egreso = (t.mercado||0) + (t.movilidad||0) + (t.cafeteria||0) + (t.lavanderia||0) + 
+                       (t.utiles||0) + (t.recepcion||0) + (t.repuestos||0) + (t.personal||0) + (t.otros_eg||0);
+      
+      t.total_entregar = (t.pen_ef||0) - t.total_egreso;
+
+      diaObj.total.mercado = (diaObj.manana.mercado||0) + (diaObj.tarde.mercado||0);
+      diaObj.total.movilidad = (diaObj.manana.movilidad||0) + (diaObj.tarde.movilidad||0);
+      diaObj.total.cafeteria = (diaObj.manana.cafeteria||0) + (diaObj.tarde.cafeteria||0);
+      diaObj.total.lavanderia = (diaObj.manana.lavanderia||0) + (diaObj.tarde.lavanderia||0);
+      diaObj.total.utiles = (diaObj.manana.utiles||0) + (diaObj.tarde.utiles||0);
+      diaObj.total.recepcion = (diaObj.manana.recepcion||0) + (diaObj.tarde.recepcion||0);
+      diaObj.total.repuestos = (diaObj.manana.repuestos||0) + (diaObj.tarde.repuestos||0);
+      diaObj.total.personal = (diaObj.manana.personal||0) + (diaObj.tarde.personal||0);
+      diaObj.total.otros_eg = (diaObj.manana.otros_eg||0) + (diaObj.tarde.otros_eg||0);
+      
+      diaObj.total.total_egreso = (diaObj.manana.total_egreso||0) + (diaObj.tarde.total_egreso||0);
+      diaObj.total.total_entregar = (diaObj.manana.total_entregar||0) + (diaObj.tarde.total_entregar||0);
+
+      recalcularTotalesGenerales();
+      turnosModificados.value.add(t.flujo_id);
+    };
+
+    const recalcularTotalesGenerales = () => {
+      const g = {
+        mercado: 0, movilidad: 0, cafeteria: 0, lavanderia: 0, utiles: 0, 
+        recepcion: 0, repuestos: 0, personal: 0, otros_eg: 0, total_egreso: 0, total_entregar: 0
+      };
+      diasGrid.value.forEach(d => {
+        g.mercado += d.total.mercado; g.movilidad += d.total.movilidad;
+        g.cafeteria += d.total.cafeteria; g.lavanderia += d.total.lavanderia;
+        g.utiles += d.total.utiles; g.recepcion += d.total.recepcion;
+        g.repuestos += d.total.repuestos; g.personal += d.total.personal;
+        g.otros_eg += d.total.otros_eg; g.total_egreso += d.total.total_egreso;
+        g.total_entregar += d.total.total_entregar;
+      });
+      totalesGenerales.value.mercado = g.mercado;
+      totalesGenerales.value.movilidad = g.movilidad;
+      totalesGenerales.value.cafeteria = g.cafeteria;
+      totalesGenerales.value.lavanderia = g.lavanderia;
+      totalesGenerales.value.utiles = g.utiles;
+      totalesGenerales.value.recepcion = g.recepcion;
+      totalesGenerales.value.repuestos = g.repuestos;
+      totalesGenerales.value.personal = g.personal;
+      totalesGenerales.value.otros_eg = g.otros_eg;
+      totalesGenerales.value.total_egreso = g.total_egreso;
+      totalesGenerales.value.egresos_soles = g.total_egreso;
+      totalesGenerales.value.soles_entregar = totalesGenerales.value.pen_ef - g.total_egreso;
+    };
+
+    const guardarCambiosEgresos = async () => {
+      if (turnosModificados.value.size === 0) return;
+      
+      const turnosData = [];
+      diasGrid.value.forEach(d => {
+        if (d.manana.flujo_id && turnosModificados.value.has(d.manana.flujo_id)) {
+           turnosData.push({ flujo_id: d.manana.flujo_id, mercado: d.manana.mercado, movilidad: d.manana.movilidad, cafeteria: d.manana.cafeteria, lavanderia: d.manana.lavanderia, utiles: d.manana.utiles, recepcion: d.manana.recepcion, repuestos: d.manana.repuestos, personal: d.manana.personal, otros_eg: d.manana.otros_eg });
+        }
+        if (d.tarde.flujo_id && turnosModificados.value.has(d.tarde.flujo_id)) {
+           turnosData.push({ flujo_id: d.tarde.flujo_id, mercado: d.tarde.mercado, movilidad: d.tarde.movilidad, cafeteria: d.tarde.cafeteria, lavanderia: d.tarde.lavanderia, utiles: d.tarde.utiles, recepcion: d.tarde.recepcion, repuestos: d.tarde.repuestos, personal: d.tarde.personal, otros_eg: d.tarde.otros_eg });
+        }
+      });
+
+      try {
+        const payload = { turnos: turnosData };
+        const res = await axios.post(window.SERVER_ROUTES.apiMensual.replace('action=mensual_grid', 'action=guardar_egresos_lote'), payload);
+        if (res.data.ok) {
+          Swal.fire({ icon: 'success', title: 'Egresos guardados', timer: 1500, showConfirmButton: false });
+          turnosModificados.value.clear();
+          cargarDatos();
+        } else {
+          Swal.fire('Error', res.data.msg || 'No se pudo guardar', 'error');
+        }
+      } catch (err) {
+        console.error(err);
+        Swal.fire('Error', 'No se pudieron guardar los egresos', 'error');
+      }
+    };
+
+    // LOGICA DE CONSUMO RAPIDO Y TOOLTIP
+    const getTooltipDetails = (movs) => {
+      if (!movs || movs.length === 0) return '';
+      let res = 'Mi Equipo:\n';
+      movs.forEach(m => {
+        let label = m.observacion || m.categoria_nombre || 'Venta';
+        let pre = m.moneda === 'USD' ? '$' : (m.moneda === 'CLP' ? '₱' : 'S/');
+        res += `${label}: ${pre} ${formatearNumero(m.monto)}\n`;
+      });
+      return res;
+    };
+
+    const staysActivos = ref([]);
+    const productosRefri = ref([]);
+    const modalConsumoObj = ref(null);
+
+    const formConsumo = reactive({
+      flujo_id: null,
+      columna: '',
+      turnoName: '',
+      stay_id: '',
+      tipo: 'BEBIDA',
+      producto_id: '',
+      precio: 0
+    });
+
+    const cargarOpcionesConsumo = async () => {
+      try {
+        const response = await axios.get(window.SERVER_ROUTES.apiMensual.replace('action=mensual_grid', 'action=datos_consumo_rapido'));
+        if (response.data && response.data.ok) {
+          staysActivos.value = response.data.data.stays || [];
+          productosRefri.value = response.data.data.productos || [];
+        }
+      } catch(e) { console.error(e); }
+    };
+
+    const abrirMenuHabitaciones = (turnoObj, turnoLabel, columna) => {
+      if (!turnoObj.flujo_id) {
+        Swal.fire('Atención', 'Este turno no está abierto o no tiene Flujo ID.', 'warning');
+        return;
+      }
+      formConsumo.flujo_id = turnoObj.flujo_id;
+      formConsumo.columna = columna;
+      formConsumo.turnoName = turnoLabel;
+      formConsumo.stay_id = '';
+      formConsumo.tipo = 'BEBIDA';
+      formConsumo.producto_id = '';
+      formConsumo.precio = 0;
+
+      if (!modalConsumoObj.value) {
+        modalConsumoObj.value = new bootstrap.Modal(document.getElementById('modalAddConsumoFlujo'));
+      }
+      modalConsumoObj.value.show();
+    };
+
+    const onProductoChange = () => {
+      if (formConsumo.tipo === 'BEBIDA' && formConsumo.producto_id) {
+        const p = productosRefri.value.find(x => x.id == formConsumo.producto_id);
+        if (p) formConsumo.precio = parseFloat(p.precio_venta);
+      }
+    };
+
+    const guardarConsumoFlujo = async () => {
+      if (!formConsumo.stay_id) { Swal.fire('Error', 'Seleccione una habitación', 'error'); return; }
+      if (formConsumo.tipo === 'BEBIDA' && !formConsumo.producto_id) { Swal.fire('Error', 'Seleccione una bebida', 'error'); return; }
+      if (formConsumo.precio <= 0) { Swal.fire('Error', 'El precio debe ser mayor a 0', 'error'); return; }
+
+      const payload = { ...formConsumo };
+      try {
+        const res = await axios.post(window.SERVER_ROUTES.apiMensual.replace('action=mensual_grid', 'action=guardar_consumo_rapido'), payload);
+        if (res.data.ok) {
+          modalConsumoObj.value.hide();
+          Swal.fire({ icon: 'success', title: 'Agregado correctamente', timer: 1500, showConfirmButton: false });
+          cargarDatos();
+        } else {
+          Swal.fire('Error', res.data.msg, 'error');
+        }
+      } catch (err) {
+        console.error(err);
+        Swal.fire('Error', 'No se pudo guardar el consumo', 'error');
+      }
+    };
+
     onMounted(() => {
+      cargarOpcionesConsumo();
       cargarDatos();
     });
 
@@ -286,7 +480,28 @@ createApp({
       cargarDatos,
       generarCalendario,
       obtenerFechaHoy,
-      SERVER_ROUTES: window.SERVER_ROUTES
+      SERVER_ROUTES: window.SERVER_ROUTES,
+      getTooltipDetails,
+      abrirMenuHabitaciones,
+      formConsumo,
+      staysActivos,
+      productosRefri,
+      onProductoChange,
+      guardarConsumoFlujo,
+      edicionActiva,
+      turnosModificados,
+      iniciarEdicion,
+      finalizarEdicion,
+      guardarCambiosEgresos
     };
   }
-}).mount('#app-flujo-v2');
+});
+
+app.directive('focus', {
+  mounted(el) {
+    el.focus();
+    el.select();
+  }
+});
+
+app.mount('#app-flujo-v2');

@@ -115,24 +115,34 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
                 <td class="sticky-col-2 text-center" style="left: 100px;">{{ d.fecha_formateada }}</td>
                 
                 <!-- Ingresos MAÑANA -->
-                <td class="num-cell" :class="{'zero-val': d.manana.depo === 0}">{{ d.manana.depo ? 'S/ ' + formatearNumero(d.manana.depo) : '-' }}</td>
-                <td class="num-cell" :class="{'zero-val': d.manana.yape === 0}">{{ d.manana.yape ? 'S/ ' + formatearNumero(d.manana.yape) : '-' }}</td>
-                <td class="num-cell" :class="{'zero-val': d.manana.pos_usd === 0}">{{ d.manana.pos_usd ? '$ ' + formatearNumero(d.manana.pos_usd) : '-' }}</td>
-                <td class="num-cell" :class="{'zero-val': d.manana.pos_pen === 0}">{{ d.manana.pos_pen ? 'S/ ' + formatearNumero(d.manana.pos_pen) : '-' }}</td>
-                <td class="num-cell" :class="{'zero-val': d.manana.pesos === 0}">{{ d.manana.pesos ? '₱ ' + formatearNumero(d.manana.pesos) : '-' }}</td>
-                <td class="num-cell" :class="{'zero-val': d.manana.usd_ef === 0}">{{ d.manana.usd_ef ? '$ ' + formatearNumero(d.manana.usd_ef) : '-' }}</td>
-                <td class="num-cell fw-bold text-success" :class="{'zero-val': d.manana.pen_ef === 0}">{{ d.manana.pen_ef ? 'S/ ' + formatearNumero(d.manana.pen_ef) : '-' }}</td>
+                <td class="num-cell" :class="{'zero-val': d.manana.depo === 0, 'has-details': d.manana.detalles.depo.length > 0}" :title="getTooltipDetails(d.manana.detalles.depo)" @click="abrirMenuHabitaciones(d.manana, 'MAÑANA', 'depo')">{{ d.manana.depo ? 'S/ ' + formatearNumero(d.manana.depo) : '-' }}</td>
+                <td class="num-cell" :class="{'zero-val': d.manana.yape === 0, 'has-details': d.manana.detalles.yape.length > 0}" :title="getTooltipDetails(d.manana.detalles.yape)" @click="abrirMenuHabitaciones(d.manana, 'MAÑANA', 'yape')">{{ d.manana.yape ? 'S/ ' + formatearNumero(d.manana.yape) : '-' }}</td>
+                <td class="num-cell" :class="{'zero-val': d.manana.pos_usd === 0, 'has-details': d.manana.detalles.pos_usd.length > 0}" :title="getTooltipDetails(d.manana.detalles.pos_usd)" @click="abrirMenuHabitaciones(d.manana, 'MAÑANA', 'pos_usd')">{{ d.manana.pos_usd ? '$ ' + formatearNumero(d.manana.pos_usd) : '-' }}</td>
+                <td class="num-cell" :class="{'zero-val': d.manana.pos_pen === 0, 'has-details': d.manana.detalles.pos_pen.length > 0}" :title="getTooltipDetails(d.manana.detalles.pos_pen)" @click="abrirMenuHabitaciones(d.manana, 'MAÑANA', 'pos_pen')">{{ d.manana.pos_pen ? 'S/ ' + formatearNumero(d.manana.pos_pen) : '-' }}</td>
+                <td class="num-cell" :class="{'zero-val': d.manana.pesos === 0, 'has-details': d.manana.detalles.pesos.length > 0}" :title="getTooltipDetails(d.manana.detalles.pesos)" @click="abrirMenuHabitaciones(d.manana, 'MAÑANA', 'pesos')">{{ d.manana.pesos ? '₱ ' + formatearNumero(d.manana.pesos) : '-' }}</td>
+                <td class="num-cell" :class="{'zero-val': d.manana.usd_ef === 0, 'has-details': d.manana.detalles.usd_ef.length > 0}" :title="getTooltipDetails(d.manana.detalles.usd_ef)" @click="abrirMenuHabitaciones(d.manana, 'MAÑANA', 'usd_ef')">{{ d.manana.usd_ef ? '$ ' + formatearNumero(d.manana.usd_ef) : '-' }}</td>
+                <td class="num-cell fw-bold text-success" :class="{'zero-val': d.manana.pen_ef === 0, 'has-details': d.manana.detalles.pen_ef.length > 0}" :title="getTooltipDetails(d.manana.detalles.pen_ef)" @click="abrirMenuHabitaciones(d.manana, 'MAÑANA', 'pen_ef')">{{ d.manana.pen_ef ? 'S/ ' + formatearNumero(d.manana.pen_ef) : '-' }}</td>
                 
                 <!-- Egresos MAÑANA -->
-                <td class="num-cell text-danger separator-col" :class="{'zero-val': d.manana.mercado === 0}">{{ d.manana.mercado ? 'S/ ' + formatearNumero(d.manana.mercado) : '-' }}</td>
-                <td class="num-cell text-danger" :class="{'zero-val': d.manana.movilidad === 0}">{{ d.manana.movilidad ? 'S/ ' + formatearNumero(d.manana.movilidad) : '-' }}</td>
-                <td class="num-cell text-danger" :class="{'zero-val': d.manana.cafeteria === 0}">{{ d.manana.cafeteria ? 'S/ ' + formatearNumero(d.manana.cafeteria) : '-' }}</td>
-                <td class="num-cell text-danger" :class="{'zero-val': d.manana.lavanderia === 0}">{{ d.manana.lavanderia ? 'S/ ' + formatearNumero(d.manana.lavanderia) : '-' }}</td>
-                <td class="num-cell text-danger" :class="{'zero-val': d.manana.utiles === 0}">{{ d.manana.utiles ? 'S/ ' + formatearNumero(d.manana.utiles) : '-' }}</td>
-                <td class="num-cell text-danger" :class="{'zero-val': d.manana.recepcion === 0}">{{ d.manana.recepcion ? 'S/ ' + formatearNumero(d.manana.recepcion) : '-' }}</td>
-                <td class="num-cell text-danger" :class="{'zero-val': d.manana.repuestos === 0}">{{ d.manana.repuestos ? 'S/ ' + formatearNumero(d.manana.repuestos) : '-' }}</td>
-                <td class="num-cell text-danger" :class="{'zero-val': d.manana.personal === 0}">{{ d.manana.personal ? 'S/ ' + formatearNumero(d.manana.personal) : '-' }}</td>
-                <td class="num-cell text-danger" :class="{'zero-val': d.manana.otros_eg === 0}">{{ d.manana.otros_eg ? 'S/ ' + formatearNumero(d.manana.otros_eg) : '-' }}</td>
+                <td v-for="campo in ['mercado', 'movilidad', 'cafeteria', 'lavanderia', 'utiles', 'recepcion', 'repuestos', 'personal', 'otros_eg']" 
+                    :key="'m_'+campo" 
+                    class="num-cell text-danger p-0 align-middle" 
+                    :class="{'zero-val': d.manana[campo] === 0, 'separator-col': campo === 'mercado'}">
+                  
+                  <div v-if="edicionActiva !== d.manana.flujo_id + '_' + campo" 
+                       class="w-100 h-100 px-2 py-2" 
+                       style="min-height: 28px;"
+                       @click="iniciarEdicion(d.manana, campo)">
+                    {{ d.manana[campo] ? 'S/ ' + formatearNumero(d.manana[campo]) : '-' }}
+                  </div>
+                  
+                  <input v-else type="number" step="0.01"
+                         class="form-control border-0 text-end text-danger fw-bold shadow-none p-1 m-0 h-100 w-100" 
+                         v-model.number="d.manana[campo]" 
+                         @blur="finalizarEdicion(d, 'manana')" 
+                         @keyup.enter="finalizarEdicion(d, 'manana')" 
+                         v-focus>
+                </td>
                 
                 <!-- Totales MAÑANA -->
                 <td class="num-cell fw-bold text-danger">{{ d.manana.total_egreso ? 'S/ ' + formatearNumero(d.manana.total_egreso) : '-' }}</td>
@@ -163,24 +173,34 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
                 <td class="sticky-col-2 text-center" style="left: 100px;">{{ d.fecha_formateada }}</td>
                 
                 <!-- Ingresos TARDE -->
-                <td class="num-cell" :class="{'zero-val': d.tarde.depo === 0}">{{ d.tarde.depo ? 'S/ ' + formatearNumero(d.tarde.depo) : '-' }}</td>
-                <td class="num-cell" :class="{'zero-val': d.tarde.yape === 0}">{{ d.tarde.yape ? 'S/ ' + formatearNumero(d.tarde.yape) : '-' }}</td>
-                <td class="num-cell" :class="{'zero-val': d.tarde.pos_usd === 0}">{{ d.tarde.pos_usd ? '$ ' + formatearNumero(d.tarde.pos_usd) : '-' }}</td>
-                <td class="num-cell" :class="{'zero-val': d.tarde.pos_pen === 0}">{{ d.tarde.pos_pen ? 'S/ ' + formatearNumero(d.tarde.pos_pen) : '-' }}</td>
-                <td class="num-cell" :class="{'zero-val': d.tarde.pesos === 0}">{{ d.tarde.pesos ? '₱ ' + formatearNumero(d.tarde.pesos) : '-' }}</td>
-                <td class="num-cell" :class="{'zero-val': d.tarde.usd_ef === 0}">{{ d.tarde.usd_ef ? '$ ' + formatearNumero(d.tarde.usd_ef) : '-' }}</td>
-                <td class="num-cell fw-bold text-success" :class="{'zero-val': d.tarde.pen_ef === 0}">{{ d.tarde.pen_ef ? 'S/ ' + formatearNumero(d.tarde.pen_ef) : '-' }}</td>
+                <td class="num-cell" :class="{'zero-val': d.tarde.depo === 0, 'has-details': d.tarde.detalles.depo.length > 0}" :title="getTooltipDetails(d.tarde.detalles.depo)" @click="abrirMenuHabitaciones(d.tarde, 'TARDE', 'depo')">{{ d.tarde.depo ? 'S/ ' + formatearNumero(d.tarde.depo) : '-' }}</td>
+                <td class="num-cell" :class="{'zero-val': d.tarde.yape === 0, 'has-details': d.tarde.detalles.yape.length > 0}" :title="getTooltipDetails(d.tarde.detalles.yape)" @click="abrirMenuHabitaciones(d.tarde, 'TARDE', 'yape')">{{ d.tarde.yape ? 'S/ ' + formatearNumero(d.tarde.yape) : '-' }}</td>
+                <td class="num-cell" :class="{'zero-val': d.tarde.pos_usd === 0, 'has-details': d.tarde.detalles.pos_usd.length > 0}" :title="getTooltipDetails(d.tarde.detalles.pos_usd)" @click="abrirMenuHabitaciones(d.tarde, 'TARDE', 'pos_usd')">{{ d.tarde.pos_usd ? '$ ' + formatearNumero(d.tarde.pos_usd) : '-' }}</td>
+                <td class="num-cell" :class="{'zero-val': d.tarde.pos_pen === 0, 'has-details': d.tarde.detalles.pos_pen.length > 0}" :title="getTooltipDetails(d.tarde.detalles.pos_pen)" @click="abrirMenuHabitaciones(d.tarde, 'TARDE', 'pos_pen')">{{ d.tarde.pos_pen ? 'S/ ' + formatearNumero(d.tarde.pos_pen) : '-' }}</td>
+                <td class="num-cell" :class="{'zero-val': d.tarde.pesos === 0, 'has-details': d.tarde.detalles.pesos.length > 0}" :title="getTooltipDetails(d.tarde.detalles.pesos)" @click="abrirMenuHabitaciones(d.tarde, 'TARDE', 'pesos')">{{ d.tarde.pesos ? '₱ ' + formatearNumero(d.tarde.pesos) : '-' }}</td>
+                <td class="num-cell" :class="{'zero-val': d.tarde.usd_ef === 0, 'has-details': d.tarde.detalles.usd_ef.length > 0}" :title="getTooltipDetails(d.tarde.detalles.usd_ef)" @click="abrirMenuHabitaciones(d.tarde, 'TARDE', 'usd_ef')">{{ d.tarde.usd_ef ? '$ ' + formatearNumero(d.tarde.usd_ef) : '-' }}</td>
+                <td class="num-cell fw-bold text-success" :class="{'zero-val': d.tarde.pen_ef === 0, 'has-details': d.tarde.detalles.pen_ef.length > 0}" :title="getTooltipDetails(d.tarde.detalles.pen_ef)" @click="abrirMenuHabitaciones(d.tarde, 'TARDE', 'pen_ef')">{{ d.tarde.pen_ef ? 'S/ ' + formatearNumero(d.tarde.pen_ef) : '-' }}</td>
                 
                 <!-- Egresos TARDE -->
-                <td class="num-cell text-danger separator-col" :class="{'zero-val': d.tarde.mercado === 0}">{{ d.tarde.mercado ? 'S/ ' + formatearNumero(d.tarde.mercado) : '-' }}</td>
-                <td class="num-cell text-danger" :class="{'zero-val': d.tarde.movilidad === 0}">{{ d.tarde.movilidad ? 'S/ ' + formatearNumero(d.tarde.movilidad) : '-' }}</td>
-                <td class="num-cell text-danger" :class="{'zero-val': d.tarde.cafeteria === 0}">{{ d.tarde.cafeteria ? 'S/ ' + formatearNumero(d.tarde.cafeteria) : '-' }}</td>
-                <td class="num-cell text-danger" :class="{'zero-val': d.tarde.lavanderia === 0}">{{ d.tarde.lavanderia ? 'S/ ' + formatearNumero(d.tarde.lavanderia) : '-' }}</td>
-                <td class="num-cell text-danger" :class="{'zero-val': d.tarde.utiles === 0}">{{ d.tarde.utiles ? 'S/ ' + formatearNumero(d.tarde.utiles) : '-' }}</td>
-                <td class="num-cell text-danger" :class="{'zero-val': d.tarde.recepcion === 0}">{{ d.tarde.recepcion ? 'S/ ' + formatearNumero(d.tarde.recepcion) : '-' }}</td>
-                <td class="num-cell text-danger" :class="{'zero-val': d.tarde.repuestos === 0}">{{ d.tarde.repuestos ? 'S/ ' + formatearNumero(d.tarde.repuestos) : '-' }}</td>
-                <td class="num-cell text-danger" :class="{'zero-val': d.tarde.personal === 0}">{{ d.tarde.personal ? 'S/ ' + formatearNumero(d.tarde.personal) : '-' }}</td>
-                <td class="num-cell text-danger" :class="{'zero-val': d.tarde.otros_eg === 0}">{{ d.tarde.otros_eg ? 'S/ ' + formatearNumero(d.tarde.otros_eg) : '-' }}</td>
+                <td v-for="campo in ['mercado', 'movilidad', 'cafeteria', 'lavanderia', 'utiles', 'recepcion', 'repuestos', 'personal', 'otros_eg']" 
+                    :key="'t_'+campo" 
+                    class="num-cell text-danger p-0 align-middle" 
+                    :class="{'zero-val': d.tarde[campo] === 0, 'separator-col': campo === 'mercado'}">
+                  
+                  <div v-if="edicionActiva !== d.tarde.flujo_id + '_' + campo" 
+                       class="w-100 h-100 px-2 py-2" 
+                       style="min-height: 28px;"
+                       @click="iniciarEdicion(d.tarde, campo)">
+                    {{ d.tarde[campo] ? 'S/ ' + formatearNumero(d.tarde[campo]) : '-' }}
+                  </div>
+                  
+                  <input v-else type="number" step="0.01"
+                         class="form-control border-0 text-end text-danger fw-bold shadow-none p-1 m-0 h-100 w-100" 
+                         v-model.number="d.tarde[campo]" 
+                         @blur="finalizarEdicion(d, 'tarde')" 
+                         @keyup.enter="finalizarEdicion(d, 'tarde')" 
+                         v-focus>
+                </td>
                 
                 <!-- Totales TARDE -->
                 <td class="num-cell fw-bold text-danger">{{ d.tarde.total_egreso ? 'S/ ' + formatearNumero(d.tarde.total_egreso) : '-' }}</td>
@@ -271,6 +291,61 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
         </table>
       </div>
     </div>
+  </div>
+
+  <!-- MODAL AÑADIR CONSUMO RAPIDO -->
+  <!-- ... (omitido para brevedad visual si no hay cambios aquí, pero no toco el modal) ... -->
+  <div class="modal fade" id="modalAddConsumoFlujo" tabindex="-1">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg">
+        <div class="modal-header bg-dark text-white border-0 py-2">
+          <h6 class="modal-title fw-bold">Añadir Consumo - {{ formConsumo.turnoName }}</h6>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-3">
+           <div class="mb-3">
+             <label class="form-label fw-bold text-secondary" style="font-size:12px;">Seleccionar Habitación</label>
+             <select class="form-select form-select-sm fw-bold" v-model="formConsumo.stay_id">
+               <option value="">- Seleccione -</option>
+               <option v-for="h in staysActivos" :key="h.id" :value="h.id">HAB {{ h.hab_numero }} - {{ h.huesped_principal }}</option>
+             </select>
+           </div>
+           <div class="mb-3">
+             <label class="form-label fw-bold text-secondary" style="font-size:12px;">Tipo de Consumo</label>
+             <select class="form-select form-select-sm fw-bold" v-model="formConsumo.tipo">
+               <option value="BEBIDA">Bebida (Frigobar)</option>
+               <option value="DESAYUNO">Desayuno Buffet</option>
+             </select>
+           </div>
+           
+           <div v-if="formConsumo.tipo === 'BEBIDA'" class="mb-3">
+             <label class="form-label fw-bold text-secondary" style="font-size:12px;">Producto</label>
+             <select class="form-select form-select-sm fw-bold" v-model="formConsumo.producto_id" @change="onProductoChange">
+               <option value="">- Seleccione Bebida -</option>
+               <option v-for="p in productosRefri" :key="p.id" :value="p.id">{{ p.nombre }} - S/ {{ p.precio_venta }}</option>
+             </select>
+           </div>
+           
+           <div class="mb-3">
+             <label class="form-label fw-bold text-secondary" style="font-size:12px;">Precio Cargado</label>
+             <div class="input-group input-group-sm">
+               <span class="input-group-text bg-light fw-bold">S/</span>
+               <input type="number" step="0.01" class="form-control fw-bold" v-model="formConsumo.precio" :readonly="formConsumo.tipo === 'BEBIDA'">
+             </div>
+           </div>
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button class="btn btn-sm btn-primary w-100 fw-bold" @click="guardarConsumoFlujo">Sumar a {{ formConsumo.columna.toUpperCase() }}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTÓN FLOTANTE PARA GUARDAR EGRESOS -->
+  <div v-if="turnosModificados.size > 0" class="position-fixed bottom-0 end-0 p-4" style="z-index: 1050; animation: fadeUp 0.3s ease-out;">
+    <button class="btn btn-success shadow-lg fw-bold rounded-pill px-4 py-3" @click="guardarCambiosEgresos">
+      <i class="bi bi-save me-2"></i> Guardar Cambios ({{ turnosModificados.size }} turnos)
+    </button>
   </div>
 </div>
 
@@ -415,16 +490,41 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
     color: #ffffff !important;
   }
 
-  /* Celdas numéricas */
   .table-mensual td.num-cell {
     text-align: right;
     font-family: 'Courier New', Courier, monospace;
     font-weight: 600;
     color: #1e293b;
+    cursor: pointer;
+    transition: background-color 0.1s ease;
+  }
+  .table-mensual td.num-cell:hover {
+    background-color: rgba(0, 0, 0, 0.05) !important;
   }
   .table-mensual td.num-cell.zero-val {
     color: #94a3b8;
     font-weight: 400;
+  }
+  
+  /* Triángulo rojo indicando que hay desglose */
+  .has-details {
+    position: relative;
+  }
+  .has-details::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-top: 8px solid #ef4444; /* Rojo */
+    pointer-events: none;
+  }
+  
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 </style>
 

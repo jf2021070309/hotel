@@ -119,7 +119,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
                     :key="'in_m_'+campo"
                     class="num-cell position-relative" 
                     :class="{'zero-val': d.manana[campo] === 0, 'has-details': d.manana.detalles[campo].length > 0, 'fw-bold text-success': campo === 'pen_ef'}" 
-                    @click="abrirMenuHabitaciones(d.manana, 'MAÑANA', campo)">
+                    @click="abrirMenuHabitaciones(d, d.manana, 'MAÑANA', campo)">
                   {{ d.manana[campo] ? (campo === 'pos_usd' || campo === 'usd_ef' ? '$ ' : (campo === 'pesos' ? '₱ ' : 'S/ ')) + formatearNumero(d.manana[campo]) : '-' }}
                   <div v-if="d.manana.detalles[campo].length > 0" class="flujo-tooltip text-dark" v-html="getTooltipHtml(d.manana.detalles[campo])"></div>
                 </td>
@@ -178,7 +178,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
                     :key="'in_t_'+campo"
                     class="num-cell position-relative" 
                     :class="{'zero-val': d.tarde[campo] === 0, 'has-details': d.tarde.detalles[campo].length > 0, 'fw-bold text-success': campo === 'pen_ef'}" 
-                    @click="abrirMenuHabitaciones(d.tarde, 'TARDE', campo)">
+                    @click="abrirMenuHabitaciones(d, d.tarde, 'TARDE', campo)">
                   {{ d.tarde[campo] ? (campo === 'pos_usd' || campo === 'usd_ef' ? '$ ' : (campo === 'pesos' ? '₱ ' : 'S/ ')) + formatearNumero(d.tarde[campo]) : '-' }}
                   <div v-if="d.tarde.detalles[campo].length > 0" class="flujo-tooltip text-dark" v-html="getTooltipHtml(d.tarde.detalles[campo])"></div>
                 </td>

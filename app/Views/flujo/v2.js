@@ -408,9 +408,9 @@ const app = createApp({
       precio: 0
     });
 
-    const cargarOpcionesConsumo = async () => {
+    const cargarOpcionesConsumo = async (fecha) => {
       try {
-        const response = await axios.get(window.SERVER_ROUTES.apiMensual.replace('action=mensual_grid', 'action=datos_consumo_rapido'));
+        const response = await axios.get(window.SERVER_ROUTES.apiMensual.replace('action=mensual_grid', 'action=datos_consumo_rapido') + '&fecha=' + fecha);
         if (response.data && response.data.ok) {
           staysActivos.value = response.data.data.stays || [];
           productosRefri.value = response.data.data.productos || [];
@@ -418,7 +418,7 @@ const app = createApp({
       } catch(e) { console.error(e); }
     };
 
-    const abrirMenuHabitaciones = async (turnoObj, turnoLabel, columna) => {
+    const abrirMenuHabitaciones = async (diaObj, turnoObj, turnoLabel, columna) => {
       if (!turnoObj.flujo_id) {
         Swal.fire('Atención', 'Este turno no está abierto o no tiene Flujo ID.', 'warning');
         return;
@@ -431,7 +431,7 @@ const app = createApp({
       formConsumo.producto_id = '';
       formConsumo.precio = 0;
 
-      await cargarOpcionesConsumo();
+      await cargarOpcionesConsumo(diaObj.fecha);
 
       if (!modalConsumoObj.value) {
         modalConsumoObj.value = new bootstrap.Modal(document.getElementById('modalAddConsumoFlujo'));

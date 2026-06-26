@@ -305,13 +305,18 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body p-3">
-           <div class="mb-3">
-             <label class="form-label fw-bold text-secondary" style="font-size:12px;">Seleccionar Habitación</label>
-             <select class="form-select form-select-sm fw-bold" v-model="formConsumo.stay_id">
-               <option value="">- Seleccione -</option>
-               <option v-for="h in staysActivos" :key="h.id" :value="h.id">HAB {{ h.hab_numero }} - {{ h.huesped_principal }}</option>
-             </select>
-           </div>
+              <div class="mb-3">
+                <label class="form-label text-muted small fw-bold mb-1">Seleccionar Habitación</label>
+                <select class="form-select form-select-sm fw-bold" v-model="formConsumo.stay_id">
+                  <option value="">- Seleccione -</option>
+                  <optgroup v-if="staysEnCelda.length > 0" label="En este pago">
+                    <option v-for="h in staysEnCelda" :key="'celda_'+h.id" :value="h.id">HAB {{ h.hab_numero }} - {{ h.huesped_principal }}</option>
+                  </optgroup>
+                  <optgroup :label="staysEnCelda.length > 0 ? 'Otras habitaciones' : 'Habitaciones activas'">
+                    <option v-for="h in staysOtros" :key="'otros_'+h.id" :value="h.id">HAB {{ h.hab_numero }} - {{ h.huesped_principal }}</option>
+                  </optgroup>
+                </select>
+              </div>
            <div class="mb-3">
              <label class="form-label fw-bold text-secondary" style="font-size:12px;">Tipo de Consumo</label>
              <select class="form-select form-select-sm fw-bold" v-model="formConsumo.tipo">

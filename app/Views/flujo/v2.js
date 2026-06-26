@@ -430,6 +430,15 @@ const app = createApp({
       formConsumo.tipo = 'BEBIDA';
       formConsumo.producto_id = '';
       formConsumo.precio = 0;
+      
+      formConsumo.stay_ids_celda = [];
+      let detallesCelda = turnoObj.detalles[columna] || [];
+      detallesCelda.forEach(m => {
+        let match = (m.observacion || '').match(/Registro #(\d+)/);
+        if (match) {
+          formConsumo.stay_ids_celda.push(parseInt(match[1]));
+        }
+      });
 
       await cargarOpcionesConsumo(diaObj.fecha);
 
@@ -472,6 +481,14 @@ const app = createApp({
       cargarDatos();
     });
 
+    const staysEnCelda = Vue.computed(() => {
+      return staysActivos.value.filter(s => formConsumo.stay_ids_celda && formConsumo.stay_ids_celda.includes(s.id));
+    });
+
+    const staysOtros = Vue.computed(() => {
+      return staysActivos.value.filter(s => !formConsumo.stay_ids_celda || !formConsumo.stay_ids_celda.includes(s.id));
+    });
+
     return {
       loading,
       meses,
@@ -494,7 +511,10 @@ const app = createApp({
       turnosModificados,
       iniciarEdicion,
       finalizarEdicion,
-      guardarCambiosEgresos
+      guardarCambiosEgresos,
+      staysEnCelda,
+      staysOtros,
+      modalConsumoObj
     };
   }
 });

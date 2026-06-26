@@ -181,8 +181,8 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 <th style="width: 110px;">PAGO TOTAL</th>
                 <th style="width: 90px;">LATE CHECKOUT</th>
                 <th style="width: 130px;">MEDIO DE PAGO</th>
-                <th style="width: 140px;">COMPROBANTE PAGO</th>
-                <th style="width: 130px;">NUM. COMPROBANTE</th>
+                <th style="width: 140px;" v-show="filtro.vista !== 'no_registrados'">COMPROBANTE PAGO</th>
+                <th style="width: 130px;" v-show="filtro.vista !== 'no_registrados'">NUM. COMPROBANTE</th>
                 <th style="width: 110px;">QUIEN COBRÓ</th>
                 <th style="width: 70px;">CARRO</th>
                 <th style="width: 200px;">OBSERVACIONES</th>
@@ -428,7 +428,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 </td>
                 
                 <!-- COMPROBANTE DE PAGO -->
-                <td class="p-0" style="vertical-align:stretch;">
+                <td class="p-0" style="vertical-align:stretch;" v-show="filtro.vista !== 'no_registrados'">
                   <div class="d-flex flex-column h-100">
                     <div v-for="(p, pIdx) in f.periodos_list" :key="'cp'+pIdx" class="pax-input-container w-100"
                          :style="{ borderBottom: pIdx===f.periodos_list.length-1?'none':'1px dashed #cbd5e1', padding:'2px 4px' }">
@@ -445,7 +445,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 </td>
                 
                 <!-- NUMERO DE COMPROBANTE -->
-                <td class="p-0" style="vertical-align:stretch;">
+                <td class="p-0" style="vertical-align:stretch;" v-show="filtro.vista !== 'no_registrados'">
                   <div class="d-flex flex-column h-100">
                     <div v-for="(p, pIdx) in f.periodos_list" :key="'nc'+pIdx" class="pax-input-container w-100"
                          :style="{ borderBottom: pIdx===f.periodos_list.length-1?'none':'1px dashed #cbd5e1', padding:'2px 4px' }">

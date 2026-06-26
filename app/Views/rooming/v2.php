@@ -449,7 +449,6 @@ include $_projectRoot . '/app/Views/layouts/head.php';
       </div>
     </div>
   </div>
-</div>
 
   <!-- ╔══════════════════════════════════════════════════════╗ -->
   <!-- ║          MODAL REGISTRO PAX (Reporte Mensual)       ║ -->
@@ -625,6 +624,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
       </div>
     </div>
   </div>
+</div>
 
 <style>
   [v-cloak] { display: none !important; }

@@ -123,43 +123,43 @@ include $_projectRoot . '/app/Views/layouts/head.php';
     <!-- BODY -->
     <div class="page-body pt-3">
       <!-- CONTROL BAR & ACCIONES -->
-      <div class="card border-0 shadow-sm mb-3" style="border-radius: 12px;">
+      <div class="card border-0 shadow mb-3" style="border-radius: 12px; background-color: #1e293b; border: 1px solid #334155 !important;">
         <div class="card-body p-3">
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between">
             <!-- Buscador local -->
             <div style="min-width: 280px; max-width: 320px;">
               <div class="input-group input-group-sm rounded shadow-sm">
-                <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
-                <input type="text" class="form-control border-start-0 bg-white fw-bold text-secondary" 
-                       style="font-size: 12px;" v-model="busqueda" placeholder="Buscar por huésped, hab, obs...">
+                <span class="input-group-text border-end-0" style="background-color: #0f172a; border-color: #334155;"><i class="bi bi-search text-white-50"></i></span>
+                <input type="text" class="form-control border-start-0 fw-bold text-white shadow-none" 
+                       style="font-size: 12px; background-color: #0f172a; border-color: #334155;" v-model="busqueda" placeholder="Buscar por huésped, hab, obs...">
               </div>
             </div>
             
             <!-- Acciones de edición masiva -->
             <div class="d-flex gap-2">
-              <span class="badge bg-primary align-self-center px-3 py-2 fs-7 shadow-sm" v-if="!loading">
-                <i class="bi bi-people-fill me-1"></i>{{ filasFiltradas.length }} registros
+              <span class="badge align-self-center px-3 py-2 fs-7 shadow-sm border" v-if="!loading" style="background-color: #0f172a; border-color: #334155 !important; color: #cbd5e1;">
+                <i class="bi bi-people-fill me-1 text-warning"></i>{{ filasFiltradas.length }} registros
               </span>
 
               <div class="btn-group shadow-sm">
                 <input type="radio" class="btn-check" name="btnradio_vista" id="btn-principales" autocomplete="off" checked @click="filtro.vista = 'principales'">
-                <label class="btn btn-sm btn-outline-primary fw-bold px-3" for="btn-principales">Principales</label>
+                <label class="btn btn-sm btn-outline-light fw-bold px-3" for="btn-principales" style="border-color: #334155;">Principales</label>
 
                 <input type="radio" class="btn-check" name="btnradio_vista" id="btn-noreg" autocomplete="off" @click="filtro.vista = 'no_registrados'">
-                <label class="btn btn-sm btn-outline-danger fw-bold px-3" for="btn-noreg">No registrados</label>
+                <label class="btn btn-sm btn-outline-warning fw-bold px-3" for="btn-noreg" style="border-color: #334155;">No registrados</label>
               </div>
               
-              <button class="btn btn-sm btn-outline-primary fw-bold px-3 shadow-sm" @click="agregarFila">
-                <i class="bi bi-plus-lg me-1"></i>Añadir Fila
+              <button class="btn btn-sm fw-bold px-3 shadow-sm" @click="agregarFila" style="background-color: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2);">
+                <i class="bi bi-plus-lg me-1 text-info"></i>Añadir Fila
               </button>
               
-              <button class="btn btn-sm btn-primary fw-bold px-3 shadow-sm border border-dark" @click="guardarCambios" :disabled="loading || filas.length === 0">
+              <button class="btn btn-sm fw-bold px-3 shadow-sm" @click="guardarCambios" :disabled="loading || filas.length === 0" style="background-color: #d4af37; color: #0f172a; border: 1px solid #d4af37;">
                 <i class="bi bi-save me-1"></i>Guardar Cambios
-                <span v-if="cambiosCount > 0" class="badge bg-warning text-dark ms-1">{{ cambiosCount }}</span>
+                <span v-if="cambiosCount > 0" class="badge bg-danger text-white ms-1 border border-white">{{ cambiosCount }}</span>
               </button>
               
-              <button class="btn btn-sm btn-success fw-bold px-3 shadow-sm" @click="exportarExcel" :disabled="loading || filas.length === 0">
-                <i class="bi bi-file-earmark-excel me-1"></i>Exportar Excel
+              <button class="btn btn-sm fw-bold px-3 shadow-sm" @click="exportarExcel" :disabled="loading || filas.length === 0" style="background-color: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.5);">
+                <i class="bi bi-file-earmark-excel me-1"></i>Exportar
               </button>
             </div>
           </div>

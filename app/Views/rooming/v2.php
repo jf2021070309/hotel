@@ -367,7 +367,6 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 <td class="p-0" style="vertical-align:stretch; background-color:#70ad47;">
                   <div class="d-flex flex-column h-100">
                     <div v-for="(p, pIdx) in f.periodos_list" :key="'co'+pIdx" class="pax-input-container w-100 d-flex align-items-center"
-                         :class="{ 'checkout-atrasado': pIdx===f.periodos_list.length-1 && estadoCheckout(f)==='atrasado', 'checkout-hoy': pIdx===f.periodos_list.length-1 && estadoCheckout(f)==='hoy' }"
                          :style="{ borderBottom: pIdx===f.periodos_list.length-1 ? 'none':'1px dashed #000', padding:'2px 4px', backgroundColor:'#70ad47' }">
                       <button v-if="pIdx===f.periodos_list.length-1 && f.periodos_list.length > 1"
                               class="btn btn-sm btn-link text-dark p-0 me-1 flex-shrink-0"

@@ -612,31 +612,117 @@ createApp({
       }
     },
 
-    // Exportar tabla visible a Excel usando XLSX
-    exportarExcel() {
+    // Exportar tabla visible a Excel usando ExcelJS
+    async exportarExcel() {
+      if (!this.filasFiltradas || this.filasFiltradas.length === 0) {
+        Swal.fire({ icon: 'warning', title: 'Atención', text: 'No hay datos para exportar.' });
+        return;
+      }
+
+      this.loading = true;
       try {
-        const table = document.querySelector('.table-mensual');
-        if (!table) return;
+        const workbook = new ExcelJS.Workbook();
+        const ws = workbook.addWorksheet('Rooming V2');
 
-        // Clonar la tabla para remover inputs y exportar texto limpio
-        const clone = table.cloneNode(true);
+        const isNoReg = this.filtro.vista === 'no_registrados';
         
-        // Eliminar primera columna de acciones (tacho)
-        clone.querySelectorAll('tr').forEach(tr => {
-          if (tr.cells.length > 0) {
-            tr.deleteCell(0);
+        const headers = [
+          'OPERADOR', 'FECHA', 'HAB', 'TIPO DE HAB', 'PAX', 'MEDIO RESERVA', 'HORA CHECK IN',
+          'NOMBRE Y APELLIDO', 'DOC. TIPO', 'DOCUMENTO NÚMERO', 'NACIONALIDAD', 'CIUDAD',
+          'CHECK IN FECHA', 'CHECK OUT FECHA', 'PAGO TOTAL', 'LATE CHECKOUT', 'MEDIO DE PAGO'
+        ];
+        if (!isNoReg) {
+          headers.push('COMPROBANTE PAGO', 'NUM. COMPROBANTE');
+        }
+        headers.push('QUIEN COBRÓ', 'CARRO', 'OBSERVACIONES');
+
+        // Fila de encabezados
+        const headerRow = ws.addRow(headers);
+        headerRow.eachCell((cell, colNumber) => {
+          cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+          
+          // Color de fondo (verde para fechas, oscuro para el resto)
+          let bgColor = 'FF1E293B'; // Azul oscuro por defecto
+          const headerText = headers[colNumber - 1];
+          if (headerText === 'CHECK IN FECHA' || headerText === 'CHECK OUT FECHA') {
+            bgColor = 'FF70AD47'; // Verde
+            cell.font = { bold: true, color: { argb: 'FF000000' } }; // Texto negro en el verde
           }
+          
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgColor } };
+          cell.border = { top: { style: 'thin', color: { argb: 'FF000000' } }, left: { style: 'thin', color: { argb: 'FF000000' } }, bottom: { style: 'thin', color: { argb: 'FF000000' } }, right: { style: 'thin', color: { argb: 'FF000000' } } };
+          cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+        });
+        headerRow.height = 40;
+
+        // Datos
+        this.filasFiltradas.forEach(f => {
+          const rowData = [
+            f.operador || '',
+            f.fecha || '',
+            f.hab || '',
+            f.tipo_hab || '',
+            f.pax || '',
+            f.medio_reserva || '',
+            f.hora_checkin || '',
+            f.pax_list.map(p => p.nombre_apellido || '').join('\n'),
+            f.pax_list.map(p => p.documento_tipo || '').join('\n'),
+            f.pax_list.map(p => p.documento_num || '').join('\n'),
+            f.pax_list.map(p => p.nacionalidad || '').join('\n'),
+            f.pax_list.map(p => p.ciudad || '').join('\n'),
+            f.periodos_list.map(p => p.fecha_checkin || '').join('\n'),
+            f.periodos_list.map(p => p.fecha_checkout || '').join('\n'),
+            f.periodos_list.map(p => p.pago_total ? ('S/ ' + p.pago_total) : '').join('\n'),
+            f.periodos_list.map(p => p.late_checkout || 'NO').join('\n'),
+            f.periodos_list.map(p => p.medio_pago || '').join('\n')
+          ];
+          
+          if (!isNoReg) {
+            rowData.push(f.periodos_list.map(p => p.comprobante_pago || '').join('\n'));
+            rowData.push(f.periodos_list.map(p => p.numero_comprobante || '').join('\n'));
+          }
+          
+          rowData.push(
+            f.periodos_list.map(p => p.quien_cobro || '').join('\n'),
+            f.carro || '',
+            f.observaciones || ''
+          );
+
+          const row = ws.addRow(rowData);
+          const isMarked = f.marcado == 1 || f.marcado === true;
+
+          row.eachCell((cell, colNumber) => {
+            const headerText = headers[colNumber - 1];
+            const isDateCol = headerText === 'CHECK IN FECHA' || headerText === 'CHECK OUT FECHA';
+            
+            // Bordes negros sólidos
+            cell.border = { top: { style: 'thin', color: { argb: 'FF000000' } }, left: { style: 'thin', color: { argb: 'FF000000' } }, bottom: { style: 'thin', color: { argb: 'FF000000' } }, right: { style: 'thin', color: { argb: 'FF000000' } } };
+            cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+            cell.font = { bold: true, color: { argb: 'FF000000' } }; // Todo en negrita
+
+            // Color de fondo
+            if (isMarked || isDateCol) {
+              cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF70AD47' } };
+            } else {
+              cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } };
+            }
+          });
         });
 
-        // Reemplazar inputs/selects por sus valores de texto correspondientes
-        clone.querySelectorAll('input, select, textarea').forEach(el => {
-          const td = el.parentNode;
-          td.textContent = el.value || '';
+        // Ajustar ancho de columnas
+        ws.columns.forEach((col, i) => { 
+          col.width = Math.max(headers[i].length + 4, 15); 
         });
 
-        const wb = XLSX.utils.table_to_book(clone, { sheet: "Rooming V2" });
-        const nombreArchivo = `Rooming_V2_${this.filtro.mes}_${this.filtro.anio}.xlsx`;
-        XLSX.writeFile(wb, nombreArchivo);
+        const buf = await workbook.xlsx.writeBuffer();
+        const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const vistaTexto = isNoReg ? 'No_Registrados' : 'Principales';
+        a.download = `Rooming_V2_${vistaTexto}_${this.filtro.mes}_${this.filtro.anio}.xlsx`;
+        a.click();
+        URL.revokeObjectURL(url);
       } catch (err) {
         console.error(err);
         Swal.fire({
@@ -644,6 +730,8 @@ createApp({
           title: 'Error de exportación',
           text: 'No se pudo generar el archivo Excel.'
         });
+      } finally {
+        this.loading = false;
       }
     },
 

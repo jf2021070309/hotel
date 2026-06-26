@@ -21,8 +21,40 @@ createApp({
       lookupLoading: {},
       lookupOk: {},
       searchDebounce: null,
-      lookupDebounce: null
-    };
+      lookupDebounce: null,
+
+      // ── REPORTE PAX ────────────────────────────────────────────
+      reportePax: {
+        cargando: false,
+        mes: String(new Date().getMonth() + 1),
+        anio: String(new Date().getFullYear()),
+        anios: [2024, 2025, 2026, 2027, 2028],
+        filas: []
+      },
+      selColumnas: [
+        { label: 'OPERADOR',          checked: true },
+        { label: 'FECHA REGISTRO',    checked: true },
+        { label: 'HAB',               checked: true },
+        { label: 'TIPO DE HAB',       checked: true },
+        { label: 'PAX',               checked: true },
+        { label: 'MEDIO DE RESERVA',  checked: true },
+        { label: 'HORA DE CHECK IN',  checked: true },
+        { label: 'NOMBRE Y APELLIDO', checked: true },
+        { label: 'TIPO DOC',          checked: true },
+        { label: 'NÚMERO',            checked: true },
+        { label: 'NACIONALIDAD',      checked: true },
+        { label: 'CIUDAD',            checked: true },
+        { label: 'ENTRADA',           checked: true },
+        { label: 'SALIDA',            checked: true },
+        { label: 'PAGO TOTAL',        checked: true },
+        { label: 'LATE',              checked: true },
+        { label: 'METODO',            checked: true },
+        { label: 'COMPROBANTE',       checked: true },
+        { label: 'Nº COMPROBANTE',    checked: true },
+        { label: 'QUIEN COBRO',       checked: true },
+        { label: 'CARRO',             checked: true },
+        { label: 'OBS',              checked: true },
+      ]
   },
 
   computed: {
@@ -85,17 +117,47 @@ createApp({
               });
             }
 
-            const pastDates = (f.fechas_checkout_historial || '').split('\n').filter(d => d);
-            const checkout_list = [];
-            pastDates.forEach(d => {
-              checkout_list.push({ fecha: d });
-            });
-            checkout_list.push({ fecha: f.fecha_checkout || '' });
+            const periodos_list = [];
+            // Build periodos from historial + current checkout
+            const histDates = (f.fechas_checkout_historial || '').split('\n').filter(d => d);
+            const allCheckouts = [...histDates, f.fecha_checkout || ''].filter(d => d);
+            let prevCheckin = f.fecha_checkin || f.fecha_registro || '';
+
+            if (allCheckouts.length > 0) {
+              allCheckouts.forEach((checkout, i) => {
+                periodos_list.push({
+                  fecha_checkin: prevCheckin,
+                  fecha_checkout: checkout,
+                  pago_total: i === 0 ? (parseFloat(f.pago_total) || '') : '',
+                  late_checkout: i < allCheckouts.length - 1 ? 'SI' : (f.late_checkout || 'NO'),
+                  medio_pago: i === 0 ? (f.medio_pago || '') : '',
+                  comprobante_pago: i === 0 ? (f.comprobante_pago || '') : '',
+                  numero_comprobante: i === 0 ? (f.numero_comprobante || '') : '',
+                  quien_cobro: i === 0 ? (f.quien_cobro || '') : ''
+                });
+                if (checkout) {
+                  const d = new Date(checkout + 'T12:00:00');
+                  d.setDate(d.getDate() + 1);
+                  prevCheckin = d.toISOString().split('T')[0];
+                }
+              });
+            } else {
+              periodos_list.push({
+                fecha_checkin: f.fecha_checkin || '',
+                fecha_checkout: '',
+                pago_total: parseFloat(f.pago_total) || '',
+                late_checkout: f.late_checkout || 'NO',
+                medio_pago: f.medio_pago || '',
+                comprobante_pago: f.comprobante_pago || '',
+                numero_comprobante: f.numero_comprobante || '',
+                quien_cobro: f.quien_cobro || ''
+              });
+            }
 
             return {
               ...f,
               pax_list,
-              checkout_list,
+              periodos_list,
               modificado: false
             };
           });
@@ -141,13 +203,16 @@ createApp({
         medio_reserva: '',
         hora_checkin: '',
         fecha_checkin: hoyStr,
-        checkout_list: [{ fecha: mananaStr }],
-        pago_total: '',
-        late_checkout: '',
-        medio_pago: '',
-        comprobante_pago: '',
-        numero_comprobante: '',
-        quien_cobro: window.SERVER_DATA.operadorDefault || '',
+        periodos_list: [{
+          fecha_checkin: hoyStr,
+          fecha_checkout: mananaStr,
+          pago_total: '',
+          late_checkout: 'NO',
+          medio_pago: '',
+          comprobante_pago: '',
+          numero_comprobante: '',
+          quien_cobro: window.SERVER_DATA.operadorDefault || ''
+        }],
         carro: '',
         observaciones: '',
         modificado: true
@@ -309,18 +374,12 @@ createApp({
       const aGuardar = this.filas.filter(f => f.modificado && (f.pax_list.some(p => p.nombre_apellido) || f.hab));
       
       if (aGuardar.length === 0) {
-        Swal.fire({
-          icon: 'info',
-          title: 'Sin cambios',
-          text: 'No hay filas modificadas con datos válidos para guardar.',
-          timer: 2000,
-          showConfirmButton: false
-        });
+        Swal.fire({ icon: 'info', title: 'Sin cambios', text: 'No hay filas modificadas con datos válidos para guardar.', timer: 2000, showConfirmButton: false });
         return;
       }
 
-      // Convertir el arreglo de pasajeros de vuelta a cadenas multilínea para el backend
       const payload = aGuardar.map(f => {
+        const p0 = f.periodos_list[0] || {};
         return {
           ...f,
           nombre_apellido: f.pax_list.map(p => p.nombre_apellido || '').join('\n'),
@@ -328,7 +387,14 @@ createApp({
           documento_num: f.pax_list.map(p => p.documento_num || '').join('\n'),
           nacionalidad: f.pax_list.map(p => p.nacionalidad || '').join('\n'),
           ciudad: f.pax_list.map(p => p.ciudad || '').join('\n'),
-          fechas_checkout_all: (f.checkout_list || []).map(c => c.fecha).filter(c => c).join('\n')
+          fecha_checkin: p0.fecha_checkin || f.fecha_checkin || '',
+          pago_total: p0.pago_total || '',
+          late_checkout: f.periodos_list.some(p => p.late_checkout === 'SI') ? 'SI' : 'NO',
+          medio_pago: p0.medio_pago || '',
+          comprobante_pago: p0.comprobante_pago || '',
+          numero_comprobante: p0.numero_comprobante || '',
+          quien_cobro: p0.quien_cobro || '',
+          fechas_checkout_all: f.periodos_list.map(p => p.fecha_checkout).filter(d => d).join('\n')
         };
       });
 
@@ -456,14 +522,38 @@ createApp({
 
     estadoCheckout(f) {
       if (!f.stay_id || f.estado_stay === 'finalizado') return '';
-      const dates = f.checkout_list.map(c => c.fecha).filter(Boolean);
-      if (!dates.length) return '';
-      const lastCheckout = dates[dates.length - 1];
+      const periodos = f.periodos_list || [];
+      if (!periodos.length) return '';
+      const lastCheckout = periodos[periodos.length - 1].fecha_checkout;
+      if (!lastCheckout) return '';
       const today = new Date().toISOString().split('T')[0];
-      
       if (lastCheckout < today) return 'atrasado';
       if (lastCheckout === today) return 'hoy';
       return '';
+    },
+
+    agregarExtension(fila) {
+      fila.modificado = true;
+      const last = fila.periodos_list[fila.periodos_list.length - 1];
+      // Marcar el período anterior como late_checkout = SI
+      last.late_checkout = 'SI';
+      // Calcular nuevo checkin = día siguiente al último checkout
+      let newCheckin = '';
+      if (last.fecha_checkout) {
+        const d = new Date(last.fecha_checkout + 'T12:00:00');
+        d.setDate(d.getDate() + 1);
+        newCheckin = d.toISOString().split('T')[0];
+      }
+      fila.periodos_list.push({
+        fecha_checkin: newCheckin,
+        fecha_checkout: '',
+        pago_total: '',
+        late_checkout: 'NO',
+        medio_pago: fila.periodos_list[0]?.medio_pago || '',
+        comprobante_pago: '',
+        numero_comprobante: '',
+        quien_cobro: fila.periodos_list[0]?.quien_cobro || ''
+      });
     },
 
     // Exportar tabla visible a Excel usando XLSX
@@ -499,6 +589,138 @@ createApp({
           text: 'No se pudo generar el archivo Excel.'
         });
       }
+    },
+
+    // ── REPORTE PAX ────────────────────────────────────────────
+    abrirReportePax() {
+      new bootstrap.Modal(document.getElementById('modalReportePaxV2')).show();
+      this.reportePax.mes = this.filtro.mes;
+      this.reportePax.anio = this.filtro.anio;
+      this.cargarReportePax();
+    },
+
+    async cargarReportePax() {
+      this.reportePax.cargando = true;
+      this.reportePax.filas = [];
+      try {
+        const base = window.SERVER_DATA.apiEndpoint.replace('rooming_v2.php', 'rooming.php');
+        const resp = await fetch(`${base}?action=reporte_pax&mes=${this.reportePax.mes}&anio=${this.reportePax.anio}`);
+        const json = await resp.json();
+        const rawFilas = json.data || [];
+        this.reportePax.filas = rawFilas.map(f => ({ ...f, excluir: false }));
+
+        setTimeout(() => {
+          const container = document.getElementById('containerReportePaxV2');
+          if (!container) return;
+          let isDown = false, startX, scrollLeft;
+          container.addEventListener('mousedown', (e) => { isDown = true; container.style.cursor = 'grabbing'; startX = e.pageX - container.offsetLeft; scrollLeft = container.scrollLeft; });
+          container.addEventListener('mouseleave', () => { isDown = false; container.style.cursor = 'grab'; });
+          container.addEventListener('mouseup', () => { isDown = false; container.style.cursor = 'grab'; });
+          container.addEventListener('mousemove', (e) => { if (!isDown) return; e.preventDefault(); container.scrollLeft = scrollLeft - (e.pageX - container.offsetLeft - startX) * 2; });
+        }, 300);
+      } catch (e) {
+        console.error('Error al cargar reporte PAX', e);
+        Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo cargar el reporte PAX.' });
+      } finally {
+        this.reportePax.cargando = false;
+      }
+    },
+
+    abrirConfigExportarV2() {
+      bootstrap.Modal.getOrCreateInstance(document.getElementById('modalExportConfigV2')).show();
+    },
+
+    confirmarExportacionV2() {
+      const m = bootstrap.Modal.getInstance(document.getElementById('modalExportConfigV2'));
+      if (m) m.hide();
+      this.exportarReportePaxV2();
+    },
+
+    async exportarReportePaxV2() {
+      if (!this.reportePax.filas || this.reportePax.filas.length === 0) return;
+
+      const meses = ['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+      const nombreMes = meses[parseInt(this.reportePax.mes)] || 'Reporte';
+      const titulo = `REPORTE ROOMING ${nombreMes.toUpperCase()} ${this.reportePax.anio}`;
+
+      const workbook = new ExcelJS.Workbook();
+      const ws = workbook.addWorksheet('Registro PAX');
+
+      const colSpecs = this.selColumnas.filter(c => c.checked);
+      if (colSpecs.length === 0) {
+        Swal.fire({ icon: 'warning', title: 'Atención', text: 'Debe seleccionar al menos una columna.' });
+        return;
+      }
+      const labels = colSpecs.map(c => c.label);
+
+      // Fila de título
+      const titleRow = ws.addRow([titulo]);
+      ws.mergeCells(1, 1, 1, labels.length);
+      const tc = ws.getCell(1, 1);
+      tc.font = { name: 'Arial', size: 16, bold: true };
+      tc.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFADD8E6' } };
+      tc.alignment = { horizontal: 'center', vertical: 'middle' };
+      titleRow.height = 40;
+      ws.addRow([]);
+
+      // Encabezados
+      const headerRow = ws.addRow(labels);
+      headerRow.eachCell(cell => {
+        cell.font = { bold: true };
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFF00' } };
+        cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+        cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+      });
+      headerRow.height = 30;
+
+      // Datos (excluir filas marcadas)
+      this.reportePax.filas.filter(f => !f.excluir).forEach(f => {
+        const fecha_checkout = f.fecha_checkout || (f.checkout_list && f.checkout_list.length ? f.checkout_list[f.checkout_list.length - 1].fecha : '');
+        const fullData = [
+          f.operador || '',
+          f.fecha || f.fecha_registro || '',
+          f.hab ? '#' + f.hab : (f.hab_numero ? '#' + f.hab_numero : ''),
+          f.tipo_hab || f.tipo_hab_declarado || '',
+          f.pax || f.pax_total || '',
+          f.medio_reserva || '',
+          f.hora_checkin || '',
+          f.nombre_apellido || f.nombre_completo || '',
+          f.documento_tipo || '',
+          f.documento_num || '',
+          f.nacionalidad || '',
+          f.ciudad || '',
+          f.fecha_checkin || f.fecha_registro || '',
+          fecha_checkout,
+          'S/ ' + parseFloat(f.pago_total || f.total_pago || 0).toFixed(2),
+          (f.late_checkout === 'SI' || f.estado === 'late_checkout') ? 'SI' : 'NO',
+          f.medio_pago || f.metodo_pago || '',
+          f.comprobante_pago || f.tipo_comprobante || '',
+          f.numero_comprobante || f.num_comprobante || '',
+          f.quien_cobro || f.cobrador || f.operador || '',
+          f.carro || '',
+          f.observaciones || ''
+        ];
+        const filtered = this.selColumnas.reduce((acc, col, idx) => {
+          if (col.checked) acc.push(fullData[idx]);
+          return acc;
+        }, []);
+        const row = ws.addRow(filtered);
+        row.eachCell(cell => {
+          cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+          cell.alignment = { vertical: 'middle' };
+        });
+      });
+
+      ws.columns.forEach((col, i) => { col.width = Math.max(labels[i] ? labels[i].length + 4 : 12, 14); });
+
+      const buf = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `RegistroPAX_${nombreMes}_${this.reportePax.anio}.xlsx`;
+      a.click();
+      URL.revokeObjectURL(url);
     }
   },
 

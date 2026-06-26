@@ -86,6 +86,11 @@ include $_projectRoot . '/app/Views/layouts/head.php';
             <i class="bi bi-arrow-clockwise"></i>
             <span class="d-none d-md-inline">Actualizar</span>
           </button>
+          <button class="btn btn-sm d-flex align-items-center gap-2" @click="abrirReportePax"
+            style="font-size:12px;padding:4px 12px;background:rgba(212,175,55,0.15);border:1px solid rgba(212,175,55,0.5);color:#f0c040;font-weight:700;">
+            <i class="bi bi-file-earmark-person"></i>
+            <span class="d-none d-md-inline">REGISTRO PAX</span>
+          </button>
         </div>
       </div>
     </div>
@@ -147,8 +152,8 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 <th style="width: 120px;">DOCUMENTO NÚMERO</th>
                 <th style="width: 110px;">NACIONALIDAD</th>
                 <th style="width: 100px;">CIUDAD</th>
-                <th style="width: 110px;">CHECK IN FECHA</th>
-                <th style="width: 110px;">CHECK OUT FECHA</th>
+                <th style="width: 110px; background-color:#065f46 !important;">CHECK IN FECHA</th>
+                <th style="width: 110px; background-color:#065f46 !important;">CHECK OUT FECHA</th>
                 <th style="width: 110px;">PAGO TOTAL</th>
                 <th style="width: 90px;">LATE CHECKOUT</th>
                 <th style="width: 130px;">MEDIO DE PAGO</th>
@@ -208,9 +213,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 <td class="px-1">
                   <select v-model="f.hab" class="form-select form-select-sm table-editable-select fw-bold text-center" @change="onHabChange(f)" style="width: 100%;">
                     <option value="">-</option>
-                    <option v-for="h in habitaciones" :key="h.numero" :value="h.numero">
-                      {{ h.numero }} - {{ (h.estado || 'LIBRE').toUpperCase() }}
-                    </option>
+                    <option v-for="h in habitaciones" :key="h.numero" :value="h.numero">{{ h.numero }}</option>
                   </select>
                 </td>
                 
@@ -312,70 +315,119 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 </td>
                 
                 <!-- CHECK IN FECHA -->
-                <td class="px-1">
-                  <input type="date" v-model="f.fecha_checkin" class="table-editable-input text-center text-success fw-bold" @change="marcarModificado(f)" style="width: 100%;">
+                <td class="p-0" style="vertical-align:stretch; background-color:#f0fff4;">
+                  <div class="d-flex flex-column h-100">
+                    <div v-for="(p, pIdx) in f.periodos_list" :key="'ci'+pIdx" class="pax-input-container w-100"
+                         :style="{ borderBottom: pIdx === f.periodos_list.length-1 ? 'none' : '1px dashed #a7f3d0', padding: '2px 4px', backgroundColor: '#f0fff4' }">
+                      <input type="date" v-model="p.fecha_checkin"
+                             class="table-editable-input text-center text-success fw-bold w-100 border-0 bg-transparent px-1"
+                             @change="marcarModificado(f)" style="height:30px;font-size:11px;">
+                    </div>
+                  </div>
                 </td>
                 
                 <!-- CHECK OUT FECHA -->
-                <td class="p-0 position-relative" style="vertical-align: stretch;">
-                  <div class="d-flex flex-column h-100 justify-content-start align-items-stretch">
-                    <div v-for="(c, cIdx) in f.checkout_list" :key="cIdx" class="pax-input-container w-100" 
-                         :class="{
-                           'checkout-atrasado': estadoCheckout(f) === 'atrasado',
-                           'checkout-hoy': estadoCheckout(f) === 'hoy'
-                         }"
-                         :style="{ borderBottom: cIdx === f.checkout_list.length - 1 ? 'none' : '1px dashed #cbd5e1', padding: '2px 4px' }">
-                      <input type="date" v-model="c.fecha" class="table-editable-input text-center text-danger fw-bold w-100 border-0 bg-transparent px-1" @change="marcarModificado(f)" @keydown.enter.prevent="onCheckoutEnter(f)" style="height: 30px; font-size: 11px;">
+                <td class="p-0" style="vertical-align:stretch; background-color:#f0fff4;">
+                  <div class="d-flex flex-column h-100">
+                    <div v-for="(p, pIdx) in f.periodos_list" :key="'co'+pIdx" class="pax-input-container w-100 d-flex align-items-center"
+                         :class="{ 'checkout-atrasado': pIdx===f.periodos_list.length-1 && estadoCheckout(f)==='atrasado', 'checkout-hoy': pIdx===f.periodos_list.length-1 && estadoCheckout(f)==='hoy' }"
+                         :style="{ borderBottom: pIdx===f.periodos_list.length-1 ? 'none':'1px dashed #a7f3d0', padding:'2px 4px', backgroundColor:'#f0fff4' }">
+                      <input type="date" v-model="p.fecha_checkout"
+                             class="table-editable-input text-center text-danger fw-bold w-100 border-0 bg-transparent px-1"
+                             @change="marcarModificado(f)" style="height:30px;font-size:11px;">
+                      <button v-if="pIdx===f.periodos_list.length-1 && p.fecha_checkout"
+                              class="btn btn-sm btn-link text-success p-0 ms-1 flex-shrink-0"
+                              @click="agregarExtension(f)" title="Agregar Late Checkout"
+                              style="font-size:18px;line-height:1;font-weight:700;">+</button>
                     </div>
                   </div>
                 </td>
                 
                 <!-- PAGO TOTAL -->
-                <td class="px-1">
-                  <div class="d-flex align-items-center justify-content-end px-2">
-                    <span class="fw-bold small text-muted me-1">S/</span>
-                    <input type="number" step="0.50" v-model.number="f.pago_total" class="table-editable-input text-end fw-bold text-dark" @input="marcarModificado(f)" style="width: 80px;">
+                <td class="p-0" style="vertical-align:stretch;">
+                  <div class="d-flex flex-column h-100">
+                    <div v-for="(p, pIdx) in f.periodos_list" :key="'pt'+pIdx" class="pax-input-container w-100 d-flex align-items-center justify-content-end pe-2"
+                         :style="{ borderBottom: pIdx===f.periodos_list.length-1?'none':'1px dashed #cbd5e1', padding:'2px 4px' }">
+                      <span class="fw-bold small text-muted me-1">S/</span>
+                      <input type="number" step="0.50" v-model.number="p.pago_total"
+                             class="table-editable-input text-end fw-bold text-dark border-0 bg-transparent"
+                             @input="marcarModificado(f)" style="width:70px;height:28px;font-size:11px;">
+                    </div>
                   </div>
                 </td>
                 
                 <!-- LATE CHECK OUT -->
-                <td class="px-1">
-                  <select v-model="f.late_checkout" class="form-select form-select-sm table-editable-select text-center" @change="marcarModificado(f)">
-                    <option value="NO">NO</option>
-                    <option value="SI">SI</option>
-                  </select>
+                <td class="p-0" style="vertical-align:stretch;">
+                  <div class="d-flex flex-column h-100">
+                    <div v-for="(p, pIdx) in f.periodos_list" :key="'lc'+pIdx" class="pax-input-container w-100"
+                         :style="{ borderBottom: pIdx===f.periodos_list.length-1?'none':'1px dashed #cbd5e1', padding:'2px 4px' }">
+                      <select v-model="p.late_checkout" class="form-select form-select-sm table-editable-select text-center border-0 bg-transparent w-100"
+                              @change="marcarModificado(f)" style="height:28px;font-size:11px;">
+                        <option value="NO">NO</option>
+                        <option value="SI">SI</option>
+                      </select>
+                    </div>
+                  </div>
                 </td>
                 
                 <!-- MEDIO DE PAGO -->
-                <td class="px-1">
-                  <select v-model="f.medio_pago" class="form-select form-select-sm table-editable-select text-center fw-semibold" @change="marcarModificado(f)">
-                    <option value="SOLES EFECTIVO">SOLES EFECTIVO</option>
-                    <option value="POS SOLES">POS SOLES</option>
-                    <option value="DOLARES EFECTIVO">DOLARES EFECTIVO</option>
-                    <option value="POS DOLARES">POS DOLARES</option>
-                    <option value="YAPE O PLIN">YAPE O PLIN</option>
-                    <option value="DEPOSITOS">DEPOSITOS</option>
-                  </select>
+                <td class="p-0" style="vertical-align:stretch;">
+                  <div class="d-flex flex-column h-100">
+                    <div v-for="(p, pIdx) in f.periodos_list" :key="'mp'+pIdx" class="pax-input-container w-100"
+                         :style="{ borderBottom: pIdx===f.periodos_list.length-1?'none':'1px dashed #cbd5e1', padding:'2px 4px' }">
+                      <select v-model="p.medio_pago" class="form-select form-select-sm table-editable-select text-center fw-semibold border-0 bg-transparent w-100"
+                              @change="marcarModificado(f)" style="height:28px;font-size:11px;">
+                        <option value="">-</option>
+                        <option value="SOLES EFECTIVO">SOLES EFECTIVO</option>
+                        <option value="POS SOLES">POS SOLES</option>
+                        <option value="DOLARES EFECTIVO">DOLARES EFECTIVO</option>
+                        <option value="POS DOLARES">POS DOLARES</option>
+                        <option value="YAPE O PLIN">YAPE O PLIN</option>
+                        <option value="DEPOSITOS">DEPOSITOS</option>
+                      </select>
+                    </div>
+                  </div>
                 </td>
                 
                 <!-- COMPROBANTE DE PAGO -->
-                <td class="px-1">
-                  <select v-model="f.comprobante_pago" class="form-select form-select-sm table-editable-select text-center fw-semibold" @change="marcarModificado(f)">
-                    <option value="NINGUNO">NINGUNO</option>
-                    <option value="BOLETA">BOLETA</option>
-                    <option value="FACTURA">FACTURA</option>
-                    <option value="TICKET">TICKET</option>
-                  </select>
+                <td class="p-0" style="vertical-align:stretch;">
+                  <div class="d-flex flex-column h-100">
+                    <div v-for="(p, pIdx) in f.periodos_list" :key="'cp'+pIdx" class="pax-input-container w-100"
+                         :style="{ borderBottom: pIdx===f.periodos_list.length-1?'none':'1px dashed #cbd5e1', padding:'2px 4px' }">
+                      <select v-model="p.comprobante_pago" class="form-select form-select-sm table-editable-select text-center fw-semibold border-0 bg-transparent w-100"
+                              @change="marcarModificado(f)" style="height:28px;font-size:11px;">
+                        <option value="">-</option>
+                        <option value="NINGUNO">NINGUNO</option>
+                        <option value="BOLETA">BOLETA</option>
+                        <option value="FACTURA">FACTURA</option>
+                        <option value="TICKET">TICKET</option>
+                      </select>
+                    </div>
+                  </div>
                 </td>
                 
                 <!-- NUMERO DE COMPROBANTE -->
-                <td class="px-1">
-                  <input type="text" v-model="f.numero_comprobante" class="table-editable-input text-center" @input="marcarModificado(f)" placeholder="Ej: 001-452" style="width: 100%;">
+                <td class="p-0" style="vertical-align:stretch;">
+                  <div class="d-flex flex-column h-100">
+                    <div v-for="(p, pIdx) in f.periodos_list" :key="'nc'+pIdx" class="pax-input-container w-100"
+                         :style="{ borderBottom: pIdx===f.periodos_list.length-1?'none':'1px dashed #cbd5e1', padding:'2px 4px' }">
+                      <input type="text" v-model="p.numero_comprobante"
+                             class="table-editable-input text-center w-100 border-0 bg-transparent px-1"
+                             @input="marcarModificado(f)" placeholder="001-452" style="height:28px;font-size:11px;">
+                    </div>
+                  </div>
                 </td>
                 
                 <!-- QUIEN COBRO -->
-                <td class="px-1">
-                  <input type="text" v-model="f.quien_cobro" class="table-editable-input text-center fw-semibold text-warning-emphasis" @input="marcarModificado(f)" style="width: 100%;">
+                <td class="p-0" style="vertical-align:stretch;">
+                  <div class="d-flex flex-column h-100">
+                    <div v-for="(p, pIdx) in f.periodos_list" :key="'qc'+pIdx" class="pax-input-container w-100"
+                         :style="{ borderBottom: pIdx===f.periodos_list.length-1?'none':'1px dashed #cbd5e1', padding:'2px 4px' }">
+                      <input type="text" v-model="p.quien_cobro"
+                             class="table-editable-input text-center fw-semibold text-warning-emphasis w-100 border-0 bg-transparent px-1"
+                             @input="marcarModificado(f)" style="height:28px;font-size:11px;">
+                    </div>
+                  </div>
                 </td>
                 
                 <!-- CARRO -->
@@ -398,6 +450,181 @@ include $_projectRoot . '/app/Views/layouts/head.php';
     </div>
   </div>
 </div>
+
+  <!-- ╔══════════════════════════════════════════════════════╗ -->
+  <!-- ║          MODAL REGISTRO PAX (Reporte Mensual)       ║ -->
+  <!-- ╚══════════════════════════════════════════════════════╝ -->
+  <div class="modal fade" id="modalReportePaxV2" tabindex="-1" aria-labelledby="modalReportePaxV2Label" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen modal-dialog-scrollable">
+      <div class="modal-content border-0" style="background:#f4f6fb;">
+        <!-- Header -->
+        <div class="modal-header border-0 py-3 px-4"
+          style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 60%,#0f3460 100%);">
+          <div class="d-flex align-items-center gap-3">
+            <div class="rounded-circle d-flex align-items-center justify-content-center"
+              style="width:40px;height:40px;background:rgba(255,255,255,0.12);">
+              <i class="bi bi-file-earmark-person text-white fs-5"></i>
+            </div>
+            <div>
+              <h5 class="modal-title fw-bold text-white mb-0" id="modalReportePaxV2Label">Registro PAX — Reporte Mensual</h5>
+              <small class="text-white opacity-60">Listado de check-ins por mes para control de huéspedes</small>
+            </div>
+          </div>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+
+        <!-- Filtros -->
+        <div class="px-4 pt-3 pb-2" style="background:white; border-bottom:1px solid #e9ecef;">
+          <div class="d-flex flex-wrap gap-3 align-items-end">
+            <div>
+              <label class="form-label small fw-bold text-muted text-uppercase mb-1" style="font-size:10px;letter-spacing:.5px;">Mes</label>
+              <select v-model="reportePax.mes" class="form-select form-select-sm fw-bold" style="width:140px;" @change="cargarReportePax">
+                <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
+                <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
+                <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
+                <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label small fw-bold text-muted text-uppercase mb-1" style="font-size:10px;letter-spacing:.5px;">Año</label>
+              <select v-model="reportePax.anio" class="form-select form-select-sm fw-bold" style="width:100px;" @change="cargarReportePax">
+                <option v-for="y in reportePax.anios" :key="y" :value="y">{{ y }}</option>
+              </select>
+            </div>
+            <div class="ms-auto d-flex gap-2">
+              <span class="badge bg-primary align-self-center px-3 py-2" style="font-size:11px;" v-if="!reportePax.cargando">
+                <i class="bi bi-people-fill me-1"></i>{{ reportePax.filas.length }} registros
+              </span>
+              <button class="btn btn-sm btn-success fw-bold px-3 shadow-sm" @click="abrirConfigExportarV2"
+                :disabled="reportePax.filas.length === 0">
+                <i class="bi bi-file-earmark-excel me-1"></i>Exportar Excel
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cuerpo -->
+        <div class="modal-body p-0">
+          <div v-if="reportePax.cargando" class="d-flex justify-content-center align-items-center py-5">
+            <div class="spinner-border text-primary me-3"></div>
+            <span class="text-muted fw-semibold">Cargando reporte...</span>
+          </div>
+          <div v-else-if="reportePax.filas.length === 0" class="text-center py-5 text-muted">
+            <i class="bi bi-inbox fs-1 opacity-25 d-block mb-2"></i>
+            <span class="fw-semibold">No se encontraron check-ins para este período.</span>
+          </div>
+          <div v-else id="containerReportePaxV2" class="table-responsive" style="overflow-x:auto; cursor: grab;">
+            <table id="tablaPaxReporteV2" class="table table-bordered table-hover mb-0 align-middle"
+              style="font-size:11px; white-space:nowrap; min-width:2400px;">
+              <thead style="background:#1a1a2e; color:white; position:sticky; top:0; z-index:10;">
+                <tr>
+                  <th class="px-2 py-2 text-center" style="width:40px;"><i class="bi bi-eye-slash"></i></th>
+                  <th class="px-3 py-2 text-center" style="min-width:80px;">OPERADOR</th>
+                  <th class="px-3 py-2 text-center" style="min-width:90px;">FECHA<br>REGISTRO</th>
+                  <th class="px-3 py-2 text-center" style="min-width:60px;">HAB</th>
+                  <th class="px-3 py-2 text-center" style="min-width:130px;">TIPO DE HAB</th>
+                  <th class="px-3 py-2 text-center" style="min-width:45px;">PAX</th>
+                  <th class="px-3 py-2 text-center" style="min-width:110px;">MEDIO DE<br>RESERVA</th>
+                  <th class="px-3 py-2 text-center" style="min-width:90px;">HORA DE<br>CHECK IN</th>
+                  <th class="px-3 py-2 text-center" style="min-width:200px;">NOMBRE Y APELLIDO</th>
+                  <th class="px-3 py-2 text-center" style="min-width:130px;">DOCUMENTO<br>DE IDENTIDAD</th>
+                  <th class="px-3 py-2 text-center" style="min-width:110px;">NÚMERO</th>
+                  <th class="px-3 py-2 text-center" style="min-width:100px;">NACIONALIDAD</th>
+                  <th class="px-3 py-2 text-center" style="min-width:90px;">CIUDAD</th>
+                  <th class="px-3 py-2 text-center" style="min-width:100px;">CHECK IN<br>FECHA</th>
+                  <th class="px-3 py-2 text-center" style="min-width:100px;">CHECK OUT<br>FECHA</th>
+                  <th class="px-3 py-2 text-center" style="min-width:100px;">PAGO TOTAL</th>
+                  <th class="px-3 py-2 text-center" style="min-width:90px;">LATE<br>CHECK OUT</th>
+                  <th class="px-3 py-2 text-center" style="min-width:120px;">MEDIO DE<br>PAGO</th>
+                  <th class="px-3 py-2 text-center" style="min-width:130px;">COMPROBANTE<br>DE PAGO</th>
+                  <th class="px-3 py-2 text-center" style="min-width:110px;">NÚMERO DE<br>COMPROBANTE</th>
+                  <th class="px-3 py-2 text-center" style="min-width:90px;">QUIEN COBRO</th>
+                  <th class="px-3 py-2 text-center" style="min-width:65px;">CARRO</th>
+                  <th class="px-3 py-2 text-center" style="min-width:180px;">OBSERVACIONES</th>
+                </tr>
+              </thead>
+              <tbody>
+                <template v-for="(fila, idx) in reportePax.filas" :key="idx">
+                  <tr :class="[fila.excluir ? 'opacity-50 bg-light-subtle' : '']">
+                    <!-- EXCLUIR -->
+                    <td class="text-center px-1">
+                      <input type="checkbox" v-model="fila.excluir" class="form-check-input" title="Ocultar en Excel"
+                        style="cursor:pointer; width:16px; height:16px;">
+                    </td>
+                    <td class="px-2 text-center"><span class="fw-bold text-primary small">{{ fila.operador || '—' }}</span></td>
+                    <td class="px-2 text-center"><span class="fw-bold small">{{ fila.fecha || fila.fecha_registro || '—' }}</span></td>
+                    <td class="px-2 text-center fw-bold" style="color:#1a1a2e;">#{{ fila.hab || fila.hab_numero || '—' }}</td>
+                    <td class="px-2"><span class="text-uppercase fw-semibold small">{{ fila.tipo_hab || fila.tipo_hab_declarado || '—' }}</span></td>
+                    <td class="px-2 text-center fw-bold">{{ fila.pax || fila.pax_total || '—' }}</td>
+                    <td class="px-2 text-center"><span class="text-success fw-bold small">{{ fila.medio_reserva || '—' }}</span></td>
+                    <td class="px-2 text-center fw-bold">{{ fila.hora_checkin || '—' }}</td>
+                    <td class="px-2 fw-bold" style="color:#0f3460;">{{ fila.nombre_apellido || fila.nombre_completo || '—' }}</td>
+                    <td class="px-2 text-center"><span class="badge bg-light text-dark border" style="font-size:9px;">{{ fila.documento_tipo || 'DNI' }}</span></td>
+                    <td class="px-2 text-center fw-bold">{{ fila.documento_num || '—' }}</td>
+                    <td class="px-2 text-center small">{{ fila.nacionalidad || '—' }}</td>
+                    <td class="px-2 text-center small">{{ fila.ciudad || '—' }}</td>
+                    <td class="px-2 text-center"><span class="text-success fw-bold small">{{ fila.fecha_checkin || fila.fecha_registro || '—' }}</span></td>
+                    <td class="px-2 text-center"><span class="text-danger fw-bold small">{{ fila.fecha_checkout || (fila.checkout_list && fila.checkout_list[fila.checkout_list.length-1] ? fila.checkout_list[fila.checkout_list.length-1].fecha : '—') }}</span></td>
+                    <td class="px-2 text-end fw-bold">S/ {{ parseFloat(fila.pago_total || fila.total_pago || 0).toFixed(2) }}</td>
+                    <td class="px-2 text-center"><span :class="fila.late_checkout === 'SI' || fila.estado === 'late_checkout' ? 'badge bg-warning text-dark' : 'text-muted small'">{{ fila.late_checkout === 'SI' || fila.estado === 'late_checkout' ? 'SI' : 'NO' }}</span></td>
+                    <td class="px-2 text-center small fw-bold">{{ fila.medio_pago || fila.metodo_pago || '—' }}</td>
+                    <td class="px-2 text-center small">{{ fila.comprobante_pago || fila.tipo_comprobante || '—' }}</td>
+                    <td class="px-2 text-center fw-bold">{{ fila.numero_comprobante || fila.num_comprobante || '—' }}</td>
+                    <td class="px-2 text-center"><span class="fw-bold text-warning-emphasis small">{{ fila.quien_cobro || fila.cobrador || fila.operador || '—' }}</span></td>
+                    <td class="px-2 text-center">{{ fila.carro || '—' }}</td>
+                    <td class="px-2" style="max-width:180px; white-space:normal;"><span class="small">{{ fila.observaciones || '—' }}</span></td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="modal-footer border-0 bg-white py-2 px-4">
+          <small class="text-muted me-auto">
+            <i class="bi bi-info-circle me-1"></i>
+            Usa los checkboxes para excluir filas del Excel. Datos en tiempo real del mes seleccionado.
+          </small>
+          <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Selector de Columnas para Excel -->
+  <div class="modal fade" id="modalExportConfigV2" tabindex="-1" style="z-index: 1060;">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg" style="border-radius:16px;">
+        <div class="modal-header border-0 bg-success text-white py-3 px-4" style="border-radius: 16px 16px 0 0;">
+          <h5 class="modal-title fw-bold"><i class="bi bi-gear-fill me-2"></i>Configurar Exportación</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <p class="text-muted small mb-4">Selecciona las columnas que deseas incluir en tu reporte Excel:</p>
+          <div class="row g-2">
+            <div v-for="(col, idx) in selColumnas" :key="idx" class="col-6">
+              <div class="form-check p-2 border rounded" style="cursor:pointer;" @click="col.checked = !col.checked">
+                <input class="form-check-input ms-0 me-2" type="checkbox" v-model="col.checked" @click.stop>
+                <label class="form-check-label small fw-bold text-secondary" style="cursor:pointer;">{{ col.label }}</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer border-0 p-4 pt-0">
+          <div class="w-100 d-flex justify-content-between">
+            <button class="btn btn-light btn-sm fw-bold" @click="selColumnas.forEach(c => c.checked = true)">Todos</button>
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancelar</button>
+              <button type="button" class="btn btn-success px-5 fw-bold shadow" @click="confirmarExportacionV2">
+                <i class="bi bi-download me-1"></i> Descargar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
 <style>
   [v-cloak] { display: none !important; }
@@ -598,6 +825,8 @@ include $_projectRoot . '/app/Views/layouts/head.php';
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <!-- SheetJS para exportar a Excel -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<!-- ExcelJS para Reporte PAX con formato avanzado -->
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.3.0/dist/exceljs.min.js"></script>
 <!-- Vue 3 -->
 <script src="https://cdn.jsdelivr.net/npm/vue@3.3.4/dist/vue.global.prod.js"></script>
 

@@ -607,6 +607,7 @@ createApp({
         const base = window.SERVER_DATA.apiEndpoint.replace('rooming_v2.php', 'rooming.php');
         const resp = await fetch(`${base}?action=reporte_pax&mes=${this.reportePax.mes}&anio=${this.reportePax.anio}`);
         const json = await resp.json();
+        if (!json.ok) throw new Error(json.msg || 'Error del servidor al obtener reporte');
         const rawFilas = json.data || [];
         this.reportePax.filas = rawFilas.map(f => ({ ...f, excluir: false }));
 
@@ -621,7 +622,7 @@ createApp({
         }, 300);
       } catch (e) {
         console.error('Error al cargar reporte PAX', e);
-        Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo cargar el reporte PAX.' });
+        Swal.fire({ icon: 'error', title: 'Error', text: e.message || 'No se pudo cargar el reporte PAX.' });
       } finally {
         this.reportePax.cargando = false;
       }

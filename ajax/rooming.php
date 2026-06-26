@@ -39,9 +39,13 @@ switch ($action) {
         json_response_obj($controller->lateCheckout($input));
         break;
     case 'reporte_pax':
-        $mes  = (int)($_GET['mes']  ?? date('n'));
-        $anio = (int)($_GET['anio'] ?? date('Y'));
-        json_response(true, $controller->reportePax($mes, $anio));
+        try {
+            $mes  = (int)($_GET['mes']  ?? date('n'));
+            $anio = (int)($_GET['anio'] ?? date('Y'));
+            json_response(true, $controller->reportePax($mes, $anio));
+        } catch (Throwable $e) {
+            json_response(false, null, 500, "Error: " . $e->getMessage() . " en " . $e->getFile() . ":" . $e->getLine());
+        }
         break;
     case 'guardar_reporte_pax':
         json_response(true, $controller->guardarReportePax($input['rows'] ?? []));

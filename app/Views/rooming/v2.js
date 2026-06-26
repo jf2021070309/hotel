@@ -170,7 +170,26 @@ createApp({
               modificado: false,
               marcado: f.marcado == 1 || f.marcado == true
             };
+            };
           });
+          
+          // Lógica de Highlight
+          const urlParams = new URLSearchParams(window.location.search);
+          const highlightId = urlParams.get('highlight_stay');
+          if (highlightId && this.filas.some(f => f.stay_id == highlightId)) {
+            setTimeout(() => {
+              const el = document.getElementById('row-stay-' + highlightId);
+              if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                el.classList.add('flash-row');
+                setTimeout(() => el.classList.remove('flash-row'), 4000);
+                // Remove parameter from url without reloading
+                const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+                window.history.replaceState({path: newUrl}, '', newUrl);
+              }
+            }, 500);
+          }
+          
         } else {
           Swal.fire({
             icon: 'error',

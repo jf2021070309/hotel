@@ -563,8 +563,10 @@ createApp({
         if (res.data.ok) {
           bootstrap.Modal.getInstance(document.getElementById('modalDetalleReservas'))?.hide();
           Swal.fire({ icon: 'success', title: '¡Check-in realizado!', timer: 2000, showConfirmButton: false });
-          await cargarDatos(false, true);
-          scrollToToday();
+          // Redirigir a la vista plana v2 y resaltar la fila
+          setTimeout(() => {
+            window.location.href = `../rooming/v2.php?highlight_stay=${stay.id}`;
+          }, 600);
         } else {
           Swal.fire('Error', res.data.msg, 'error');
         }
@@ -593,10 +595,11 @@ createApp({
         const res = await axios.post(`${BASE}checkin`, { id: stay.id });
         if (res.data.ok) {
           cerrarDetalle();
-          await cargarDatos(false, true);
-          habitaciones.value = enrichHabs(habitaciones.value);
-          scrollToToday();
           Swal.fire({ icon: 'success', title: 'Reserva confirmada', timer: 1800, showConfirmButton: false });
+          // Redirigir a la vista plana v2 y resaltar la fila
+          setTimeout(() => {
+            window.location.href = `../rooming/v2.php?highlight_stay=${stay.id}`;
+          }, 600);
         } else {
           Swal.fire('Error', res.data.msg, 'error');
         }

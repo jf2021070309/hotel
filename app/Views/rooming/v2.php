@@ -46,6 +46,14 @@ include $_projectRoot . '/app/Views/layouts/head.php';
   .row-marcado > td select {
     background-color: #d1e7dd !important; /* Verde success de Bootstrap */
   }
+  
+  @keyframes flashBg {
+    0% { background-color: #fef08a !important; }
+    100% { background-color: transparent; }
+  }
+  .flash-row > td {
+    animation: flashBg 3s ease-out forwards;
+  }
 </style>
 
 <div id="app-rooming-v2" style="display:contents" v-cloak>
@@ -192,6 +200,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
               
               <!-- Filas de datos -->
               <tr v-else v-for="(f, idx) in filasFiltradas" :key="f.stay_id || f.temp_id" 
+                  :id="'row-stay-' + (f.stay_id || f.temp_id)"
                   :class="{'unsaved-row': f.modificado || !f.stay_id, 'row-marcado': f.marcado}">
                 <!-- Botones de Acción (Sticky 1) -->
                 <td class="sticky-col text-center px-1">

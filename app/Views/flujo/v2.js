@@ -418,7 +418,7 @@ const app = createApp({
       } catch(e) { console.error(e); }
     };
 
-    const abrirMenuHabitaciones = (turnoObj, turnoLabel, columna) => {
+    const abrirMenuHabitaciones = async (turnoObj, turnoLabel, columna) => {
       if (!turnoObj.flujo_id) {
         Swal.fire('Atención', 'Este turno no está abierto o no tiene Flujo ID.', 'warning');
         return;
@@ -430,6 +430,8 @@ const app = createApp({
       formConsumo.tipo = 'BEBIDA';
       formConsumo.producto_id = '';
       formConsumo.precio = 0;
+
+      await cargarOpcionesConsumo();
 
       if (!modalConsumoObj.value) {
         modalConsumoObj.value = new bootstrap.Modal(document.getElementById('modalAddConsumoFlujo'));

@@ -348,7 +348,13 @@ class FlujoController {
      * Obtiene datos para el modal de consumo rápido
      */
     public function datosConsumoRapido(): array {
-        $stmtStays = $this->pdo->query("SELECT id, hab_numero, huesped_principal FROM rooming_stays WHERE estado = 'alojado' ORDER BY hab_numero ASC");
+        $sql = "SELECT s.id, h.numero as hab_numero, 
+                COALESCE((SELECT c.nombre_razon_social FROM rooming_pax rp JOIN clientes c ON rp.cliente_id = c.id WHERE rp.stay_id = s.id AND rp.es_titular_acompanante = 1 LIMIT 1), 'Sin Titular') as huesped_principal
+                FROM rooming_stays s 
+                JOIN habitaciones h ON s.habitacion_id = h.id
+                WHERE s.estado IN ('activo', 'late_checkout') 
+                ORDER BY h.numero ASC";
+        $stmtStays = $this->pdo->query($sql);
         $stays = $stmtStays->fetchAll(PDO::FETCH_ASSOC);
 
         $stmtProds = $this->pdo->query("SELECT id, nombre, precio_venta FROM inventario_productos WHERE activo = 1 ORDER BY nombre ASC");

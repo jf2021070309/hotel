@@ -160,7 +160,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 <span v-if="cambiosCount > 0" class="badge ms-2" style="background-color: #ffffff; color: #2563eb;">{{ cambiosCount }}</span>
               </button>
               
-              <button class="btn btn-sm fw-bold px-3 d-flex align-items-center" @click="exportarExcel" :disabled="loading || filas.length === 0" style="background-color: #10b981; color: #ffffff; border: none; border-radius: 6px; box-shadow: 0 4px 6px -1px rgba(16,185,129,0.2); transition: all 0.2s;">
+              <button class="btn btn-sm fw-bold px-3 d-flex align-items-center" @click="abrirConfigExportarMain" :disabled="loading || filas.length === 0" style="background-color: #10b981; color: #ffffff; border: none; border-radius: 6px; box-shadow: 0 4px 6px -1px rgba(16,185,129,0.2); transition: all 0.2s;">
                 <i class="bi bi-file-earmark-excel me-2"></i>Exportar
               </button>
             </div>
@@ -174,7 +174,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
           <table class="table table-bordered table-hover mb-0 align-middle table-mensual">
             <thead>
               <tr class="table-dark text-white text-uppercase" style="font-size: 10px; letter-spacing: 0.5px;">
-                <th class="sticky-col text-center" style="width: 95px; z-index:12 !important;"><i class="bi bi-gear"></i></th>
+                <th class="sticky-col text-center" style="width: 130px; z-index:12 !important;"><i class="bi bi-gear"></i></th>
                 <th class="text-center" style="width: 100px;">OPERADOR</th>
                 <th style="width: 110px;">FECHA</th>
                 <th style="width: 110px;">HAB</th>
@@ -223,11 +223,12 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                   :class="{'unsaved-row': f.modificado || !f.stay_id, 'row-marcado': f.marcado}">
                 <!-- Botones de Acción (Sticky 1) -->
                 <td class="sticky-col text-center px-1">
-                  <div class="d-flex align-items-center justify-content-center gap-2">
+                  <div class="d-flex align-items-center justify-content-center gap-1">
+                    <input type="checkbox" v-model="f.excluir" class="form-check-input flex-shrink-0" title="Ocultar en Excel" style="cursor:pointer; width:16px; height:16px; margin:0;">
                     <button class="btn btn-sm btn-link text-success p-0" @click="f.marcado = !f.marcado; marcarModificado(f)" title="Marcar/Desmarcar fila" style="opacity: 0.8;">
                       <i class="bi" :class="f.marcado ? 'bi-check-square-fill' : 'bi-square'"></i>
                     </button>
-                    <button class="btn btn-sm btn-link text-danger p-0 ms-1" @click="f.no_registrado = f.no_registrado ? 0 : 1; marcarModificado(f)" title="Marcar como No Registrado" style="opacity: 0.8;">
+                    <button class="btn btn-sm btn-link text-danger p-0" @click="f.no_registrado = f.no_registrado ? 0 : 1; marcarModificado(f)" title="Marcar como No Registrado" style="opacity: 0.8;">
                       <i class="bi" :class="f.no_registrado ? 'bi-x-square-fill' : 'bi-x-square'"></i>
                     </button>
                     <button class="btn btn-sm btn-link text-secondary p-0" @click="eliminarFila(f, idx)" title="Eliminar registro">
@@ -658,6 +659,40 @@ include $_projectRoot . '/app/Views/layouts/head.php';
             <div class="d-flex gap-2">
               <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancelar</button>
               <button type="button" class="btn btn-success px-5 fw-bold shadow" @click="confirmarExportacionV2">
+                <i class="bi bi-download me-1"></i> Descargar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Selector de Columnas para Excel MAIN -->
+  <div class="modal fade" id="modalExportConfigMain" tabindex="-1" style="z-index: 1060;">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg" style="border-radius:16px;">
+        <div class="modal-header border-0 bg-success text-white py-3 px-4" style="border-radius: 16px 16px 0 0;">
+          <h5 class="modal-title fw-bold"><i class="bi bi-gear-fill me-2"></i>Configurar Exportación</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <p class="text-muted small mb-4">Selecciona las columnas que deseas incluir en tu reporte Excel:</p>
+          <div class="row g-2">
+            <div v-for="(col, idx) in selColumnasMain" :key="idx" class="col-6">
+              <div class="form-check p-2 border rounded" style="cursor:pointer;" @click="col.checked = !col.checked">
+                <input class="form-check-input ms-0 me-2" type="checkbox" v-model="col.checked" @click.stop>
+                <label class="form-check-label small fw-bold text-secondary" style="cursor:pointer;">{{ col.label }}</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer border-0 p-4 pt-0">
+          <div class="w-100 d-flex justify-content-between">
+            <button class="btn btn-light btn-sm fw-bold" @click="selColumnasMain.forEach(c => c.checked = true)">Todos</button>
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancelar</button>
+              <button type="button" class="btn btn-success px-5 fw-bold shadow" @click="confirmarExportacionMain">
                 <i class="bi bi-download me-1"></i> Descargar
               </button>
             </div>

@@ -55,6 +55,30 @@ createApp({
         { label: 'QUIEN COBRO',       checked: true },
         { label: 'CARRO',             checked: true },
         { label: 'OBS',              checked: true },
+      ],
+      selColumnasMain: [
+        { label: 'OPERADOR',          checked: true },
+        { label: 'FECHA',             checked: true },
+        { label: 'HAB',               checked: true },
+        { label: 'TIPO DE HAB',       checked: true },
+        { label: 'PAX',               checked: true },
+        { label: 'MEDIO RESERVA',     checked: true },
+        { label: 'HORA CHECK IN',     checked: true },
+        { label: 'NOMBRE Y APELLIDO', checked: true },
+        { label: 'DOC. TIPO',         checked: true },
+        { label: 'DOCUMENTO NÚMERO',  checked: true },
+        { label: 'NACIONALIDAD',      checked: true },
+        { label: 'CIUDAD',            checked: true },
+        { label: 'CHECK IN FECHA',    checked: true },
+        { label: 'CHECK OUT FECHA',   checked: true },
+        { label: 'PAGO TOTAL',        checked: true },
+        { label: 'LATE CHECKOUT',     checked: true },
+        { label: 'MEDIO DE PAGO',     checked: true },
+        { label: 'COMPROBANTE PAGO',  checked: true },
+        { label: 'NUM. COMPROBANTE',  checked: true },
+        { label: 'QUIEN COBRÓ',       checked: true },
+        { label: 'CARRO',             checked: true },
+        { label: 'OBSERVACIONES',     checked: true }
       ]
     };
   },
@@ -176,7 +200,8 @@ createApp({
               pax_list,
               periodos_list,
               modificado: false,
-              marcado: f.marcado == 1 || f.marcado == true
+              marcado: f.marcado == 1 || f.marcado == true,
+              excluir: false
             };
           });
           
@@ -252,7 +277,8 @@ createApp({
         carro: '',
         observaciones: '',
         modificado: true,
-        marcado: false
+        marcado: false,
+        excluir: false
       });
 
       // Hacer scroll al fondo de la tabla de forma suave
@@ -612,6 +638,16 @@ createApp({
       }
     },
 
+    abrirConfigExportarMain() {
+      bootstrap.Modal.getOrCreateInstance(document.getElementById('modalExportConfigMain')).show();
+    },
+
+    confirmarExportacionMain() {
+      const m = bootstrap.Modal.getInstance(document.getElementById('modalExportConfigMain'));
+      if (m) m.hide();
+      this.exportarExcel();
+    },
+
     // Exportar tabla visible a Excel usando ExcelJS
     async exportarExcel() {
       if (!this.filasFiltradas || this.filasFiltradas.length === 0) {
@@ -619,22 +655,26 @@ createApp({
         return;
       }
 
+      const isNoReg = this.filtro.vista === 'no_registrados';
+      
+      const colSpecs = this.selColumnasMain.filter(c => {
+        if (isNoReg && (c.label === 'COMPROBANTE PAGO' || c.label === 'NUM. COMPROBANTE')) {
+          return false;
+        }
+        return c.checked;
+      });
+      
+      if (colSpecs.length === 0) {
+        Swal.fire({ icon: 'warning', title: 'Atención', text: 'Debe seleccionar al menos una columna.' });
+        return;
+      }
+
+      const headers = colSpecs.map(c => c.label);
+
       this.loading = true;
       try {
         const workbook = new ExcelJS.Workbook();
         const ws = workbook.addWorksheet('Rooming V2');
-
-        const isNoReg = this.filtro.vista === 'no_registrados';
-        
-        const headers = [
-          'OPERADOR', 'FECHA', 'HAB', 'TIPO DE HAB', 'PAX', 'MEDIO RESERVA', 'HORA CHECK IN',
-          'NOMBRE Y APELLIDO', 'DOC. TIPO', 'DOCUMENTO NÚMERO', 'NACIONALIDAD', 'CIUDAD',
-          'CHECK IN FECHA', 'CHECK OUT FECHA', 'PAGO TOTAL', 'LATE CHECKOUT', 'MEDIO DE PAGO'
-        ];
-        if (!isNoReg) {
-          headers.push('COMPROBANTE PAGO', 'NUM. COMPROBANTE');
-        }
-        headers.push('QUIEN COBRÓ', 'CARRO', 'OBSERVACIONES');
 
         // Fila de encabezados
         const headerRow = ws.addRow(headers);
@@ -656,8 +696,8 @@ createApp({
         headerRow.height = 40;
 
         // Datos
-        this.filasFiltradas.forEach(f => {
-          const rowData = [
+        this.filasFiltradas.filter(f => !f.excluir).forEach(f => {
+          const fullData = [
             f.operador || '',
             f.fecha || '',
             f.hab || '',
@@ -674,21 +714,23 @@ createApp({
             f.periodos_list.map(p => p.fecha_checkout || '').join('\n'),
             f.periodos_list.map(p => p.pago_total ? ('S/ ' + p.pago_total) : '').join('\n'),
             f.periodos_list.map(p => p.late_checkout || 'NO').join('\n'),
-            f.periodos_list.map(p => p.medio_pago || '').join('\n')
-          ];
-          
-          if (!isNoReg) {
-            rowData.push(f.periodos_list.map(p => p.comprobante_pago || '').join('\n'));
-            rowData.push(f.periodos_list.map(p => p.numero_comprobante || '').join('\n'));
-          }
-          
-          rowData.push(
+            f.periodos_list.map(p => p.medio_pago || '').join('\n'),
+            f.periodos_list.map(p => p.comprobante_pago || '').join('\n'),
+            f.periodos_list.map(p => p.numero_comprobante || '').join('\n'),
             f.periodos_list.map(p => p.quien_cobro || '').join('\n'),
             f.carro || '',
             f.observaciones || ''
-          );
+          ];
+          
+          const filtered = this.selColumnasMain.reduce((acc, col, idx) => {
+            if (isNoReg && (col.label === 'COMPROBANTE PAGO' || col.label === 'NUM. COMPROBANTE')) {
+              return acc;
+            }
+            if (col.checked) acc.push(fullData[idx]);
+            return acc;
+          }, []);
 
-          const row = ws.addRow(rowData);
+          const row = ws.addRow(filtered);
           const isMarked = f.marcado == 1 || f.marcado === true;
 
           row.eachCell((cell, colNumber) => {
@@ -917,7 +959,8 @@ createApp({
             carro: '',
             observaciones: '',
             modificado: true,
-            marcado: false
+            marcado: false,
+            excluir: false
           };
 
           this.filas.push(nuevaFila);

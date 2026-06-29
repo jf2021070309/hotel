@@ -83,36 +83,13 @@ createApp({
           </div>
           
           <div class="text-start mt-3">
-            <div class="card bg-light border-0 shadow-sm">
-              <div class="card-body p-3">
-                <label class="form-label fw-bold small mb-2 text-primary d-block">
-                  <i class="bi bi-envelope-paper me-1"></i>Sobre de Origen (S/ 100):
-                </label>
-                
-                <div class="form-check mb-2">
-                  <input class="form-check-input" type="radio" name="swal-sobre" id="s-hoy-m" value="hoy|MAÑANA" checked>
-                  <label class="form-check-label small" for="s-hoy-m">Sobre HOY (Mañana)</label>
-                </div>
-                <div class="form-check mb-2">
-                  <input class="form-check-input" type="radio" name="swal-sobre" id="s-hoy-t" value="hoy|TARDE">
-                  <label class="form-check-label small" for="s-hoy-t">Sobre HOY (Tarde)</label>
-                </div>
-                <div class="form-check mb-2">
-                  <input class="form-check-input" type="radio" name="swal-sobre" id="s-ayer-p" value="ayer|TARDE">
-                  <label class="form-check-label small" for="s-ayer-p">Sobre AYER (Tarde)</label>
-                </div>
-                <div class="form-check">
-                  <input class="form-check-input" type="radio" name="swal-sobre" id="s-ayer-m" value="ayer|MAÑANA">
-                  <label class="form-check-label small" for="s-ayer-m">Sobre AYER (Mañana)</label>
-                </div>
-              </div>
-            </div>
+            <p class="small text-center"><i class="bi bi-info-circle me-1"></i>Al abrir el ciclo, se descontará el monto inicial del total general de sobres.</p>
           </div>
         `,
         focusConfirm: false,
         showCancelButton: true,
         confirmButtonColor: '#198754',
-        confirmButtonText: 'Abrir y Descontar del Sobre',
+        confirmButtonText: 'Abrir y Descontar',
         preConfirm: () => {
           const nombre = document.getElementById('swal-name').value.trim();
           const saldo = document.getElementById('swal-monto').value;
@@ -126,28 +103,16 @@ createApp({
             return false;
           }
 
-          const selected = document.querySelector('input[name="swal-sobre"]:checked').value;
-          const [day, turn] = selected.split('|');
-          
-          let date = new Date().toISOString().split('T')[0];
-          if (day === 'ayer') {
-            const d = new Date();
-            d.setDate(d.getDate() - 1);
-            date = d.toISOString().split('T')[0];
-          }
-
-          return { nombre, saldo, sobre_fecha: date, sobre_turno: turn };
+          return { nombre, saldo };
         }
       });
 
       if (formValues) {
-        const { nombre, saldo, sobre_fecha, sobre_turno } = formValues;
+        const { nombre, saldo } = formValues;
         try {
           const res = await axios.post(`${BASE}abrir`, {
             nombre,
-            saldo_inicial: saldo,
-            sobre_fecha,
-            sobre_turno
+            saldo_inicial: saldo
           });
 
           if (res.data.ok) {

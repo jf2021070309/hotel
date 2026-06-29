@@ -43,10 +43,7 @@ class CajaChicaController {
 
         try {
             return $this->model->ejecutarTransaccionCierreRepocision(function($pdo) use ($nombre, $saldo, $input) {
-                $id = $this->model->abrirCiclo($nombre, $saldo, $_SESSION['auth_id'], [
-                    'sobre_fecha' => $input['sobre_fecha'] ?? null,
-                    'sobre_turno' => $input['sobre_turno'] ?? null
-                ]);
+                $id = $this->model->abrirCiclo($nombre, $saldo, $_SESSION['auth_id'], []);
                 $this->audit->registrar($_SESSION['auth_id'], 'CAJA_CHICA_ABIERTA', 'FINANZAS', "Ciclo de C.Chica abierto: $nombre con S/$saldo.");
                 return ['ok' => true, 'msg' => 'Ciclo abierto correctamente', 'data' => ['id' => $id]];
             });
@@ -144,13 +141,8 @@ class CajaChicaController {
                     $montoARetirarDelSobre = 100.00;
                     $saldoAcumuladoNuevoCiclo = $montoARetirarDelSobre + $ciclo['saldo_actual'];
 
-                    $sFecha = !empty($input['sobre_fecha']) ? $input['sobre_fecha'] : date('Y-m-d');
-                    $sTurno = !empty($input['sobre_turno']) ? $input['sobre_turno'] : 'MAÑANA';
-
                     $nuevoNombre = !empty($input['nombre_reposicion']) ? mb_strtoupper(trim($input['nombre_reposicion'])) : ("FONDO FIJO S/ 100 - " . date('d/m/Y'));
                     $this->model->abrirCiclo($nuevoNombre, $saldoAcumuladoNuevoCiclo, $_SESSION['auth_id'], [
-                        'sobre_fecha' => $sFecha,
-                        'sobre_turno' => $sTurno,
                         'monto_flujo_egreso' => $montoARetirarDelSobre
                     ]);
                 }

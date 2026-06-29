@@ -59,6 +59,16 @@ $fecha = date('Y-m-d');
         </div>
       </div>
       <div class="d-flex align-items-center gap-2">
+        <!-- Filtro Mes -->
+        <select v-model="mesFiltro" @change="consultar" class="form-select form-select-sm border-0" style="background: rgba(255,255,255,0.1); color: white; width: 110px; font-size: 12px; cursor:pointer;">
+            <option v-for="(m, i) in meses" :key="i" :value="i+1" style="color: black;">{{ m }}</option>
+        </select>
+        
+        <!-- Filtro Año -->
+        <select v-model="anioFiltro" @change="consultar" class="form-select form-select-sm border-0" style="background: rgba(255,255,255,0.1); color: white; width: 80px; font-size: 12px; cursor:pointer;">
+            <option v-for="a in anios" :key="a" :value="a" style="color: black;">{{ a }}</option>
+        </select>
+
         <button class="btn btn-sm btn-outline-light d-flex align-items-center gap-2" @click="consultar" style="font-size:12px;padding:4px 12px;border-color:rgba(255,255,255,0.2);">
           <i class="bi bi-arrow-clockwise"></i>
           <span class="d-none d-md-inline">Actualizar</span>

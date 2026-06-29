@@ -68,8 +68,8 @@ createApp({
     // ─── Computed ──────────────────────────────────────────────────────
     const colWidth = computed(() => {
       if (viewMode.value === 'compacto') return 60;
-      if (viewMode.value === 'ampliado') return 250;
-      return 180; // normal
+      if (viewMode.value === 'ampliado') return 350;
+      return 250; // normal
     });
 
     const rowHeight = computed(() => {

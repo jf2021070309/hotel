@@ -65,15 +65,17 @@ class CajaChicaModel {
         if ($registrarFlujo) {
             $montoEgreso = $extra['monto_flujo_egreso'] ?? $saldoInicial;
             $okFlujo = $this->finanzas->registrarMovimientoAutomatico([
-            'usuario_id'  => $usuarioId,
-            'categoria'   => 'RECEPCIÓN C.CH.',
-            'tipo'        => 'Egreso',
-            'monto'       => $montoEgreso,
-            'moneda'      => 'PEN',
-            'medio_pago'  => 'EFECTIVO',
-            'observacion' => "Apertura Ciclo #$id: $nombre",
-            'sobre_fecha' => $extra['sobre_fecha'] ?? null,
-            'sobre_turno' => $extra['sobre_turno'] ?? null
+                'usuario_id'  => $usuarioId,
+                'categoria'   => 'RECEPCIÓN C.CH.',
+                'tipo'        => 'Egreso',
+                'monto'       => $montoEgreso,
+                'moneda'      => 'PEN',
+                'medio_pago'  => 'EFECTIVO',
+                'observacion' => "Apertura Ciclo #$id: $nombre",
+                'fecha'       => date('Y-m-d'),
+                'turno'       => FinanzasHelper::getTurnoActual(),
+                'sobre_fecha' => $extra['sobre_fecha'] ?? null,
+                'sobre_turno' => $extra['sobre_turno'] ?? null
             ]);
 
             if (!$okFlujo) {

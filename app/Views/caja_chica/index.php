@@ -100,7 +100,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
                 <span v-else>No se encontraron ciclos de caja chica.</span>
               </td>
             </tr>
-            <tr v-for="c in ciclosFiltrados" :key="c.id" @click="window.location.href = 'detalle.php?id=' + c.id" style="cursor: pointer;" class="hover-row">
+            <tr v-for="c in ciclosFiltrados" :key="c.id" @click="irDetalle(c.id)" style="cursor: pointer;" class="hover-row">
               <td class="fw-bold text-dark px-3">{{ c.nombre }}</td>
               <td class="px-3">
                 <div class="fw-bold text-dark">{{ c.fecha_apertura.split(' ')[0] }}</div>

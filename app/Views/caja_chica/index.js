@@ -57,9 +57,16 @@ createApp({
     };
 
     const abrirNuevoCiclo = async () => {
-      // Si ya hay un ciclo activo, redirigir directamente al detalle
+      // Si ya hay un ciclo activo, notificar antes de redirigir
       if (hayCicloActivo.value) {
-        window.location.href = 'detalle.php';
+        Swal.fire({
+          icon: 'info',
+          title: 'Ya hay una caja chica abierta...',
+          text: 'Serás redirigido al detalle de la caja chica actual.',
+          confirmButtonText: 'Ir al detalle'
+        }).then(() => {
+          window.location.href = 'detalle.php';
+        });
         return;
       }
 
@@ -165,9 +172,13 @@ createApp({
       if (pollingTimer) clearInterval(pollingTimer);
     });
 
+    const irDetalle = (id) => {
+      window.location.href = 'detalle.php?id=' + id;
+    };
+
     return {
       loading, ciclos, ciclosFiltrados, filtros, limpiarFiltros, hayCicloActivo,
-      listar, abrirNuevoCiclo
+      listar, abrirNuevoCiclo, irDetalle
     };
   }
 }).mount('#app-cchica-index');

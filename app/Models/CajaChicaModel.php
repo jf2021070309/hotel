@@ -63,11 +63,12 @@ class CajaChicaModel {
         // SINCRONIZACIÓN: La apertura de caja chica es un EGRESO del flujo principal
         $registrarFlujo = $extra['registrar_flujo'] ?? true;
         if ($registrarFlujo) {
+            $montoEgreso = $extra['monto_flujo_egreso'] ?? $saldoInicial;
             $okFlujo = $this->finanzas->registrarMovimientoAutomatico([
             'usuario_id'  => $usuarioId,
             'categoria'   => 'RECEPCIÓN C.CH.',
             'tipo'        => 'Egreso',
-            'monto'       => $saldoInicial,
+            'monto'       => $montoEgreso,
             'moneda'      => 'PEN',
             'medio_pago'  => 'EFECTIVO',
             'observacion' => "Apertura Ciclo #$id: $nombre",

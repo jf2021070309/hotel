@@ -213,7 +213,7 @@ createApp({
           const stickyWidth = 160; // Ancho de la primera columna fija
           wrapper.scrollTo({
             left: Math.max(0, todayCell.offsetLeft - stickyWidth - 10),
-            behavior: 'smooth'
+            behavior: 'auto' // Salto instantáneo en lugar de smooth
           });
         }
       }, 100);
@@ -255,13 +255,13 @@ createApp({
           const stickyWidth = 160;
           wrapper.scrollTo({
             left: Math.max(0, targetCell.offsetLeft - stickyWidth - 10),
-            behavior: 'smooth'
+            behavior: 'auto'
           });
         } else if (!targetCell && wrapper) {
           const colW = colWidth.value;
           wrapper.scrollTo({
             left: Math.max(0, ((dayOfYear - 1) * colW)),
-            behavior: 'smooth'
+            behavior: 'auto'
           });
         }
       }, 150);

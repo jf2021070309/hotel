@@ -139,7 +139,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
     background-color: rgba(212, 175, 55, 0.2) !important;
     outline: 1.5px solid #d4af37;
     outline-offset: -1.5px;
-    z-index: 20;
+    z-index: 999 !important;
     cursor: cell;
   }
   .cuadro-table td.col-day.today-col:hover {

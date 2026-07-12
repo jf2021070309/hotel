@@ -741,6 +741,11 @@ createApp({
 
     const getStayColorClass = (stay) => {
       if (!stay) return '';
+
+      // Bloqueos especiales
+      if (stay.titular === '[MANTENIMIENTO]') return 'est-mantenimiento text-white';
+      if (stay.titular === '[SUCIO]') return 'est-sucio text-white';
+
       if (stay.estado === 'finalizado') return 'res-finalizado';
 
       // Prioridad 1: Si ya está en el hotel (In-house / Activo)

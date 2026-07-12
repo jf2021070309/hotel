@@ -665,13 +665,15 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
                       {{ stay.observaciones }}
                     </div>
                     
-                    <span class="titular">{{ stay.titular }}</span>
-                    <span v-if="viewMode !== 'compacto'" class="badge-pax">
+                    <span class="titular" :style="stay.titular.startsWith('[') ? 'font-size: 9px; letter-spacing: 0.5px; padding-top: 2px;' : ''">
+                      {{ stay.titular.startsWith('[') ? stay.titular.replace(/\[|\]/g, '') : stay.titular }}
+                    </span>
+                    <span v-if="viewMode !== 'compacto' && !stay.titular.startsWith('[')" class="badge-pax">
                       <i class="bi bi-people-fill"></i> {{ stay.pax }} PAX
                     </span>
 
                     <!-- Micro-barra de pago -->
-                    <div class="stay-progress-container">
+                    <div v-if="!stay.titular.startsWith('[')" class="stay-progress-container">
                       <div class="stay-progress-bar" 
                            :style="{ width: porcentajePago(stay) + '%', backgroundColor: getColorPago(stay) }"></div>
                     </div>

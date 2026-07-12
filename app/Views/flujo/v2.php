@@ -10,7 +10,7 @@ require_once $_projectRoot . '/app/Helpers/url.php';
 protegerPorRol('cajera', 'flujo');
 require_once $_projectRoot . '/config/db.php'; // Asegurar PDO
 
-$page_title = 'Flujo de Caja V2 — Hotel Manager';
+$page_title = 'Flujo de Caja  — Hotel Manager';
 include $_projectRoot . '/app/Views/layouts/head.php';
 include $_projectRoot . '/app/Views/layouts/sidebar.php';
 ?>
@@ -28,8 +28,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
             <i class="bi bi-table text-dark fs-5"></i>
           </div>
           <div>
-            <h4 class="fw-bold mb-0 text-white" style="font-size:18px;letter-spacing:-0.5px;">Flujo de Caja Mensual V2</h4>
-            <div class="text-white-50" style="font-size:11px;">Mapeo completo del mes en vista cuadrícula estilo Excel</div>
+            <h4 class="fw-bold mb-0 text-white" style="font-size:18px;letter-spacing:-0.5px;">Flujo de Caja </h4>
           </div>
         </div>
       </div>
@@ -57,7 +56,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
       <!-- Cargando Spinner -->
       <div v-if="loading" class="text-center py-5">
         <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;"></div>
-        <div class="mt-3 fw-bold text-secondary">Generando y consultando grilla mensual v2...</div>
+        <div class="mt-3 fw-bold text-secondary">Generando y consultando grilla mensual ...</div>
         <p class="text-muted small">Por favor espere mientras procesamos las transacciones del mes.</p>
       </div>
 

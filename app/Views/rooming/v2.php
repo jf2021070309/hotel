@@ -81,8 +81,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
               <i class="bi bi-table text-dark fs-5"></i>
             </div>
             <div>
-              <h4 class="fw-bold mb-0 text-white" style="font-size:18px;letter-spacing:-0.5px;">Rooming V2 &mdash; Planilla Plana</h4>
-              <div class="text-white-50" style="font-size:11px;">Edición directa de todos los check-ins estilo Excel</div>
+              <h4 class="fw-bold mb-0 text-white" style="font-size:18px;letter-spacing:-0.5px;">Rooming</h4>
             </div>
           </div>
         </div>

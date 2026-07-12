@@ -633,7 +633,15 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
           <tbody>
             <tr v-for="hab in habitacionesFiltradas" :key="hab.id" :style="{ height: rowHeight + 'px' }">
               <td class="col-hab fw-bold" :class="getTipoClass(hab.tipo)">
-                <div class="hab-num">#{{ hab.numero }}</div>
+                <div class="hab-num d-flex justify-content-between align-items-center">
+                  <span>#{{ hab.numero }}</span>
+                  <span v-if="['mantenimiento', 'sucio', 'limpieza', 'bloqueado'].includes(hab.estado)" 
+                        class="badge p-1" 
+                        :class="'est-' + hab.estado" 
+                        style="font-size: 8px; line-height: 1;">
+                    {{ hab.estado.toUpperCase() }}
+                  </span>
+                </div>
                 <div class="hab-tipo text-muted mini">{{ hab.tipo }}</div>
               </td>
               <td v-for="d in diasEnAnio" :key="d"
@@ -669,13 +677,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
                     </div>
                   </div>
 
-                  <!-- Estado especial sin huésped (Solo hoy) -->
-                  <div v-if="getTodosCeldaStays(hab, d).length === 0 && esDiaEstadoEspecial(hab, d)"
-                       class="stay-block"
-                       :class="'est-' + hab.estado"
-                       :style="{ width: (colWidth - 3) + 'px' }">
-                    <span class="titular" style="font-size:8px; text-transform:uppercase;">{{ hab.estado }}</span>
-                  </div>
+                  <!-- (El estado especial flotante fue removido a pedido del usuario) -->
                 </div>
 
               </td>

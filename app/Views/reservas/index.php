@@ -660,7 +660,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
                     <span class="titular" :style="esBloqueoEspecial(stay) ? 'font-size: 9px; letter-spacing: 0.5px; padding-top: 2px;' : ''">
                       {{ esBloqueoEspecial(stay) ? stay.titular.replace(/\[|\]/g, '') : stay.titular }}
                     </span>
-                    <span v-if="viewMode !== 'compacto' && !esBloqueoEspecial(stay)" class="badge-pax">
+                    <span v-if="viewMode !== 'compacto'" class="badge-pax">
                       <i class="bi bi-people-fill"></i> {{ stay.pax }} PAX
                     </span>
 

@@ -755,8 +755,11 @@ createApp({
       const canal = (stay.canal || '').toLowerCase();
       if (canal.includes('booking')) return 'res-booking';
       
-      // Por defecto (Llamada, WhatsApp, Directo)
       return 'res-directo';
+    };
+
+    const esBloqueoEspecial = (stay) => {
+      return stay && (stay.titular === '[MANTENIMIENTO]' || stay.titular === '[SUCIO]');
     };
 
     // ─── Drag to scroll ───────────────────────────────────────────────
@@ -861,7 +864,7 @@ createApp({
       badgeClass, barClass, porcentajePago,
       viewMode, colWidth, rowHeight, formatNumber,
       irARooming, getStayColorClass, getColorPago,
-      confirmarReserva, rechazarReserva
+      confirmarReserva, rechazarReserva, esBloqueoEspecial
     };
   }
 }).mount('#app-reservas');

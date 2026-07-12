@@ -633,15 +633,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
           <tbody>
             <tr v-for="hab in habitacionesFiltradas" :key="hab.id" :style="{ height: rowHeight + 'px' }">
               <td class="col-hab fw-bold" :class="getTipoClass(hab.tipo)">
-                <div class="hab-num d-flex justify-content-between align-items-center">
-                  <span>#{{ hab.numero }}</span>
-                  <span v-if="['mantenimiento', 'sucio', 'limpieza', 'bloqueado'].includes(hab.estado)" 
-                        class="badge p-1" 
-                        :class="'est-' + hab.estado" 
-                        style="font-size: 8px; line-height: 1;">
-                    {{ hab.estado.toUpperCase() }}
-                  </span>
-                </div>
+                <div class="hab-num">#{{ hab.numero }}</div>
                 <div class="hab-tipo text-muted mini">{{ hab.tipo }}</div>
               </td>
               <td v-for="d in diasEnAnio" :key="d"
@@ -665,15 +657,15 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
                       {{ stay.observaciones }}
                     </div>
                     
-                    <span class="titular" :style="stay.titular.startsWith('[') ? 'font-size: 9px; letter-spacing: 0.5px; padding-top: 2px;' : ''">
-                      {{ stay.titular.startsWith('[') ? stay.titular.replace(/\[|\]/g, '') : stay.titular }}
+                    <span class="titular" :style="esBloqueoEspecial(stay) ? 'font-size: 9px; letter-spacing: 0.5px; padding-top: 2px;' : ''">
+                      {{ esBloqueoEspecial(stay) ? stay.titular.replace(/\[|\]/g, '') : stay.titular }}
                     </span>
-                    <span v-if="viewMode !== 'compacto' && !stay.titular.startsWith('[')" class="badge-pax">
+                    <span v-if="viewMode !== 'compacto' && !esBloqueoEspecial(stay)" class="badge-pax">
                       <i class="bi bi-people-fill"></i> {{ stay.pax }} PAX
                     </span>
 
                     <!-- Micro-barra de pago -->
-                    <div v-if="!stay.titular.startsWith('[')" class="stay-progress-container">
+                    <div v-if="!esBloqueoEspecial(stay)" class="stay-progress-container">
                       <div class="stay-progress-bar" 
                            :style="{ width: porcentajePago(stay) + '%', backgroundColor: getColorPago(stay) }"></div>
                     </div>

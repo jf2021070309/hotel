@@ -149,7 +149,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
   /* ── Stay block ────────────────────────────────────────── */
   .stay-block {
     border-radius: 4px;
-    padding: 4px 6px 8px 6px;
+    padding: 4px 6px;
     cursor: pointer;
     position: absolute;
     top: 1px;
@@ -157,9 +157,9 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
     height: calc(100% - 2px);
     box-sizing: border-box;
     display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: flex-start;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
     gap: 3px;
     transition: filter .15s, box-shadow .15s;
     border: 1px solid rgba(0,0,0,.08);
@@ -657,11 +657,11 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
                       {{ stay.observaciones }}
                     </div>
                     
-                    <span class="titular" :style="esBloqueoEspecial(stay) ? 'font-size: 9.5px; letter-spacing: 0.3px; line-height: 1.2; display: block;' : ''">
-                      {{ esBloqueoEspecial(stay) ? stay.titular.replace(/\[|\]/g, '') : stay.titular }}
-                    </span>
-                    <span v-if="viewMode !== 'compacto'" class="badge-pax">
+                    <span v-if="viewMode !== 'compacto'" class="badge-pax" style="flex-shrink: 0;">
                       <i class="bi bi-people-fill"></i> {{ stay.pax }} PAX
+                    </span>
+                    <span class="titular" :style="esBloqueoEspecial(stay) ? 'font-size: 9.5px; letter-spacing: 0.3px; line-height: 1.2;' : ''">
+                      {{ esBloqueoEspecial(stay) ? stay.titular.replace(/\[|\]/g, '') : stay.titular }}
                     </span>
 
                     <!-- Micro-barra de pago -->

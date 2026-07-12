@@ -657,7 +657,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
                       {{ stay.observaciones }}
                     </div>
                     
-                    <span class="titular" :style="esBloqueoEspecial(stay) ? 'font-size: 9px; letter-spacing: 0.5px; padding-top: 2px;' : ''">
+                    <span class="titular" :style="esBloqueoEspecial(stay) ? 'font-size: 9.5px; letter-spacing: 0.3px; line-height: 1.2; display: block;' : ''">
                       {{ esBloqueoEspecial(stay) ? stay.titular.replace(/\[|\]/g, '') : stay.titular }}
                     </span>
                     <span v-if="viewMode !== 'compacto'" class="badge-pax">

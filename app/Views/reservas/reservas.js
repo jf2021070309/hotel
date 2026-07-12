@@ -374,11 +374,29 @@ createApp({
             };
             popup.querySelector('#btn-opt-sucio').onclick = () => {
               Swal.close();
-              cambiarEstadoHabitacion(hab.id, 'sucio');
+              const d = new Date(anioActual.value, 0, dia);
+              crearBloqueoRapido({
+                id: null,
+                hab_id: hab.id,
+                fecha: `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`,
+                titular: '[SUCIO]',
+                noches: 1,
+                observaciones: 'Bloqueo de limpieza',
+                canal: 'DIRECTO'
+              });
             };
             popup.querySelector('#btn-opt-mant').onclick = () => {
               Swal.close();
-              cambiarEstadoHabitacion(hab.id, 'mantenimiento');
+              const d = new Date(anioActual.value, 0, dia);
+              crearBloqueoRapido({
+                id: null,
+                hab_id: hab.id,
+                fecha: `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`,
+                titular: '[MANTENIMIENTO]',
+                noches: 1,
+                observaciones: 'Bloqueo por mantenimiento',
+                canal: 'DIRECTO'
+              });
             };
             popup.querySelector('#btn-opt-libre').onclick = () => {
               Swal.close();
@@ -425,6 +443,29 @@ createApp({
       formQuick.observaciones = stay.observaciones || '';
       formQuick.canal = stay.canal || 'DIRECTO';
       bootstrap.Modal.getOrCreateInstance(document.getElementById('modalQuickReserva')).show();
+    };
+
+    const crearBloqueoRapido = async (payload) => {
+      loading.value = true;
+      try {
+        const res = await axios.post(`${BASE}quick_reserva`, payload);
+        if (res.data.ok) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Bloqueo registrado',
+            timer: 1500,
+            showConfirmButton: false
+          });
+          await cargarDatos(false, true);
+          habitaciones.value = enrichHabs(habitaciones.value);
+        } else {
+          Swal.fire('Error', res.data.msg, 'error');
+        }
+      } catch (e) {
+        Swal.fire('Error', 'No se pudo registrar el bloqueo', 'error');
+      } finally {
+        loading.value = false;
+      }
     };
 
     const guardarQuickReserva = async () => {

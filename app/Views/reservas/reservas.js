@@ -508,6 +508,12 @@ createApp({
     };
 
     const abrirDetalle = (stay, habNum = '') => {
+      if (stay.titular === '[SUCIO]' || stay.titular === '[MANTENIMIENTO]' || stay.estado === 'sucio' || stay.estado === 'mantenimiento' || stay.estado === 'limpieza') {
+        const habStr = habNum || stay.hab_numero;
+        const hab = habitacionesFiltradas.value.find(h => h.numero == habStr) || { id: stay.habitacion_id || stay.hab_id, numero: habStr };
+        onCeldaClick(hab, stay.dia_inicio);
+        return;
+      }
       staySeleccionado.value = { ...stay, hab_numero: habNum || stay.hab_numero };
       pagoRapido.monto  = 0;
       pagoRapido.moneda = stay.moneda_pago || 'PEN';
@@ -747,7 +753,7 @@ createApp({
       if (stay.titular === '[SUCIO]') return 'est-sucio text-white';
 
       // Prioridad 1: Si ya está en el hotel (In-house / Activo)
-      if (stay.estado === 'activo' || stay.estado === 'inhouse' || stay.checkin_realizado || stay.estado === 'finalizado') return 'res-inhouse';
+      if (stay.estado === 'activo' || stay.estado === 'inhouse' || stay.checkin_realizado) return 'res-inhouse';
       
       // Prioridad 2: Canal de reserva (para ingresos pendientes)
       const canal = (stay.canal || '').toLowerCase();

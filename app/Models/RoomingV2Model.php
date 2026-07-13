@@ -45,7 +45,7 @@ class RoomingV2Model {
                  WHERE hf.stay_id = s.id) AS fechas_checkout_historial,
                 (SELECT GROUP_CONCAT(a.monto ORDER BY a.id ASC SEPARATOR '\n')
                  FROM anticipos a WHERE a.stay_id = s.id) AS pagos_historial,
-                (SELECT GROUP_CONCAT(a.tipo ORDER BY a.id ASC SEPARATOR '\n')
+                (SELECT GROUP_CONCAT(a.tipo_pago ORDER BY a.id ASC SEPARATOR '\n')
                  FROM anticipos a WHERE a.stay_id = s.id) AS medios_historial,
                 s.fecha_checkout,
                 s.total_pago    AS pago_total,

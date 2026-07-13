@@ -1,0 +1,74 @@
+{
+  "meta": {
+    "ticket_id": "HP-10",
+    "titulo": "Remover Precio Base en Habitaciones",
+    "proyecto": "Hotel Platinium",
+    "sprint": "Actual",
+    "responsable": "Roy",
+    "equipo": ["Desarrollo"],
+    "fecha": "2026-07-13"
+  },
+  "historia_usuario": {
+    "como": "cajero/recepcionista",
+    "quiero": "que el precio de la habitación se ingrese directamente en el módulo de Rooming sin depender de un precio predefinido en la configuración de la habitación",
+    "para": "tener flexibilidad total en el cobro y evitar errores de validación de precios al momento de crear habitaciones."
+  },
+  "criterios_aceptacion": [
+    "La columna 'Precio Base' debe desaparecer del listado de habitaciones.",
+    "El campo 'Precio Base' debe eliminarse del modal de creación y edición.",
+    "El backend debe permitir crear y editar habitaciones sin enviar el precio base.",
+    "El módulo de Rooming debe asumir por defecto S/ 0 para el precio, permitiendo su ingreso manual."
+  ],
+  "propuesta_tecnica": {
+    "frontend": {
+      "titulo": "Frontend",
+      "items": [
+        "Eliminar columna en index.php",
+        "Remover campo del modal Vue",
+        "Ajustar exportación PDF/Excel",
+        "Ajustar lógica de Vue data"
+      ]
+    },
+    "api": {
+      "titulo": "API / Backend",
+      "items": [
+        "Quitar validación $precio_base <= 0",
+        "Remover precio de los logs de auditoría",
+        "Insertar precio_base = 0 por defecto"
+      ]
+    },
+    "base_datos": {
+      "titulo": "Base de Datos",
+      "items": [
+        "Mantener columna precio_base por compatibilidad",
+        "El valor por defecto será 0",
+        "No se requiere migración estructural"
+      ]
+    }
+  },
+  "evidencia_tecnica": {
+    "maqueta": {
+      "descripcion": "UI de Habitaciones sin columna de Precio Base"
+    },
+    "diagrama": {
+      "descripcion": "Flujo de actualización de Rooming"
+    },
+    "base_datos": {
+      "descripcion": "Consultas ignorando precio_base"
+    }
+  },
+  "riesgos": [
+    { "texto": "Posibles dependencias ocultas en reportes de ingresos", "nivel": "bajo" },
+    { "texto": "Falta de validación del precio en Rooming si se ingresa 0 accidentalmente", "nivel": "medio" }
+  ],
+  "dependencias": [
+    "Módulo de Rooming"
+  ],
+  "definition_of_done": [
+    "Código frontend actualizado y probado.",
+    "Código backend actualizado y sin validación estricta de precio.",
+    "Pruebas de Cypress para el cuadro de reservas funcionando (HP-8).",
+    "Sin errores de consola en la vista de Habitaciones.",
+    "Creación de habitaciones validada exitosamente."
+  ]
+}

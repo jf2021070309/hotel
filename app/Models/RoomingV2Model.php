@@ -43,6 +43,10 @@ class RoomingV2Model {
                 (SELECT GROUP_CONCAT(hf.fecha_checkout_pasada ORDER BY hf.id ASC SEPARATOR '\n')
                  FROM rooming_stays_historial_fechas hf
                  WHERE hf.stay_id = s.id) AS fechas_checkout_historial,
+                (SELECT GROUP_CONCAT(a.monto ORDER BY a.id ASC SEPARATOR '\n')
+                 FROM anticipos a WHERE a.stay_id = s.id) AS pagos_historial,
+                (SELECT GROUP_CONCAT(a.tipo ORDER BY a.id ASC SEPARATOR '\n')
+                 FROM anticipos a WHERE a.stay_id = s.id) AS medios_historial,
                 s.fecha_checkout,
                 s.total_pago    AS pago_total,
                 IF(s.estado = 'late_checkout', 'SI', 'NO') AS late_checkout,
@@ -53,7 +57,8 @@ class RoomingV2Model {
                 s.carro,
                 s.estado        AS estado_stay,
                 s.marcado,
-                s.observaciones
+                s.observaciones,
+                s.pagos_json
             FROM rooming_stays s
             LEFT JOIN habitaciones h  ON h.id = s.habitacion_id
             JOIN rooming_pax p        ON p.stay_id = s.id
@@ -102,6 +107,7 @@ class RoomingV2Model {
                     cobrador = :cobrador,
                     carro = :carro,
                     observaciones = :observaciones,
+                    pagos_json = :pagos_json,
                     marcado = :marcado,
                     no_registrado = :no_registrado
                 WHERE id = :stay_id
@@ -124,13 +130,13 @@ class RoomingV2Model {
                     operador, fecha_registro, fecha_checkout, fecha_checkin_real,
                     habitacion_id, tipo_hab_declarado, pax_total, medio_reserva,
                     total_pago, moneda_pago, monto_original, estado, metodo_pago,
-                    tipo_comprobante, num_comprobante, cobrador, carro, observaciones,
+                    tipo_comprobante, num_comprobante, cobrador, carro, observaciones, pagos_json,
                     checkin_realizado, estado_pago, usuario_id, cliente_titular_id, marcado, no_registrado
                 ) VALUES (
                     :operador, :fecha_registro, :fecha_checkout, :fecha_checkin_real,
                     :habitacion_id, :tipo_hab_declarado, :pax_total, :medio_reserva,
                     :total_pago, :moneda_pago, :monto_original, :estado, :metodo_pago,
-                    :tipo_comprobante, :num_comprobante, :cobrador, :carro, :observaciones,
+                    :tipo_comprobante, :num_comprobante, :cobrador, :carro, :observaciones, :pagos_json,
                     1, 'pagado', :usuario_id, :cliente_titular_id, :marcado, :no_registrado
                 )
             ");
@@ -327,6 +333,7 @@ class RoomingV2Model {
                         'cobrador'       => $row['quien_cobro'] ?? '',
                         'carro'          => $row['carro'] ?? 'NO',
                         'observaciones'  => $row['observaciones'] ?? '',
+                        'pagos_json'     => isset($row['periodos_raw']) ? json_encode($row['periodos_raw']) : null,
                         'marcado'        => !empty($row['marcado']) ? 1 : 0,
                         'no_registrado'  => !empty($row['no_registrado']) ? 1 : 0,
                         'stay_id'        => $stayId
@@ -342,24 +349,35 @@ class RoomingV2Model {
                     }
 
                     // --- SINCRONIZACIÓN DE PAGOS/FINANZAS PARA EDICIONES ---
-                    $stmtSumAnticipos->execute([$stayId]);
-                    $sumaActual = (float)$stmtSumAnticipos->fetchColumn();
-                    $nuevoMonto = (float)($row['pago_total'] ?? 0.00);
+                    // Siempre recreamos los anticipos y flujos según los periodos actuales
+                    $stmtDelAnticipos->execute([$stayId]);
+                    $stmtDelFlujoMovs->execute([$stayId]);
 
-                    // Si se modificó el monto total de pago
-                    if (abs($nuevoMonto - $sumaActual) > 0.01) {
-                        // Limpiar registros antiguos para evitar duplicados/descalces
-                        $stmtDelAnticipos->execute([$stayId]);
-                        $stmtDelFlujoMovs->execute([$stayId]);
+                    $periodos = isset($row['periodos_raw']) && is_array($row['periodos_raw']) ? $row['periodos_raw'] : [];
+                    if (empty($periodos)) {
+                        $periodos[] = [
+                            'pago_total' => $row['pago_total'] ?? 0,
+                            'medio_pago' => $row['medio_pago'] ?? 'SOLES EFECTIVO'
+                        ];
+                    }
 
-                        if ($nuevoMonto > 0) {
+                    foreach ($periodos as $pIdx => $per) {
+                        $montoPer = (float)($per['pago_total'] ?? 0.00);
+                        if ($montoPer > 0) {
+                            $medioPer = $per['medio_pago'] ?? 'SOLES EFECTIVO';
+                            if (trim($medioPer) === '' || trim($medioPer) === '-') {
+                                $medioPer = 'SOLES EFECTIVO';
+                            }
+                            
+                            $monedaPer = (strpos(strtoupper($medioPer), 'DOLAR') !== false) ? 'USD' : ((strpos(strtoupper($medioPer), 'PESO') !== false) ? 'CLP' : 'PEN');
+
                             // Insertar anticipo nuevo
                             $stmtInsertAnticipo->execute([
                                 'stay_id'   => $stayId,
-                                'monto'     => $nuevoMonto,
-                                'moneda'    => $monedaDeducida,
-                                'monto_pen' => $nuevoMonto,
-                                'tipo'      => $row['medio_pago'] ?? 'SOLES EFECTIVO',
+                                'monto'     => $montoPer,
+                                'moneda'    => $monedaPer,
+                                'monto_pen' => $montoPer,
+                                'tipo'      => $medioPer,
                                 'fecha'     => $fechaReg,
                                 'uid'       => $_SESSION['auth_id'] ?? 1
                             ]);
@@ -372,10 +390,10 @@ class RoomingV2Model {
                                 'usuario_id'  => $_SESSION['auth_id'] ?? 1,
                                 'stay_id'     => $stayId,
                                 'categoria'   => 'Alojamiento', 
-                                'monto'       => $nuevoMonto, 
-                                'moneda'      => $monedaDeducida,
-                                'medio_pago'  => $row['medio_pago'] ?? 'EFECTIVO',
-                                'observacion' => "HOSPEDAJE: " . (explode("\n", $row['nombre_apellido'])[0] ?? 'Huésped') . " (Modificado en grilla V2) - Registro #$stayId (Hab #" . ($row['hab'] ?? 'N/A') . ")",
+                                'monto'       => $montoPer, 
+                                'moneda'      => $monedaPer,
+                                'medio_pago'  => $medioPer,
+                                'observacion' => "HOSPEDAJE: " . (explode("\n", $row['nombre_apellido'])[0] ?? 'Huésped') . " (Modificado en grilla V2) - Registro #$stayId (Hab #" . ($row['hab'] ?? 'N/A') . ")" . ($pIdx > 0 ? " [Extensión]" : ""),
                                 'fecha'       => $fechaReg,
                                 'turno'       => $turnoRegVal
                             ]);
@@ -457,6 +475,7 @@ class RoomingV2Model {
                         'cobrador'           => $row['quien_cobro'] ?? '',
                         'carro'              => $row['carro'] ?? 'NO',
                         'observaciones'      => $row['observaciones'] ?? '',
+                        'pagos_json'         => isset($row['periodos_raw']) ? json_encode($row['periodos_raw']) : null,
                         'usuario_id'         => $_SESSION['auth_id'] ?? 1,
                         'cliente_titular_id' => $titularId,
                         'marcado'            => !empty($row['marcado']) ? 1 : 0,
@@ -476,33 +495,50 @@ class RoomingV2Model {
                     }
 
                     // 4. Registrar anticipo y flujo automático
-                    $nuevoMonto = (float)($row['pago_total'] ?? 0.00);
-                    if ($nuevoMonto > 0) {
-                        $stmtInsertAnticipo->execute([
-                            'stay_id'   => $newStayId,
-                            'monto'     => $nuevoMonto,
-                            'moneda'    => $monedaDeducida,
-                            'monto_pen' => $nuevoMonto,
-                            'tipo'      => $row['medio_pago'] ?? 'SOLES EFECTIVO',
-                            'fecha'     => $fechaReg,
-                            'uid'       => $_SESSION['auth_id'] ?? 1
-                        ]);
+                    $periodosNew = isset($row['periodos_raw']) && is_array($row['periodos_raw']) ? $row['periodos_raw'] : [];
+                    if (empty($periodosNew)) {
+                        $periodosNew[] = [
+                            'pago_total' => $row['pago_total'] ?? 0,
+                            'medio_pago' => $row['medio_pago'] ?? 'SOLES EFECTIVO'
+                        ];
+                    }
 
-                        // Registrar en flujo_caja_movimientos
-                        $horaCheckinVal = !empty($row['hora_checkin']) ? (int)explode(':', $row['hora_checkin'])[0] : (int)date('H');
-                        $turnoRegVal = FinanzasHelper::getTurnoActual($horaCheckinVal);
-                        
-                        $this->finanzas->registrarMovimientoAutomatico([
-                            'usuario_id'  => $_SESSION['auth_id'] ?? 1,
-                            'stay_id'     => $newStayId,
-                            'categoria'   => 'Alojamiento', 
-                            'monto'       => $nuevoMonto, 
-                            'moneda'      => $monedaDeducida,
-                            'medio_pago'  => $row['medio_pago'] ?? 'EFECTIVO',
-                            'observacion' => "HOSPEDAJE: " . (explode("\n", $row['nombre_apellido'])[0] ?? 'Huésped') . " - Registro #$newStayId (Hab #" . ($row['hab'] ?? 'N/A') . ")",
-                            'fecha'       => $fechaReg,
-                            'turno'       => $turnoRegVal
-                        ]);
+                    foreach ($periodosNew as $pIdx => $per) {
+                        $montoPer = (float)($per['pago_total'] ?? 0.00);
+                        if ($montoPer > 0) {
+                            $medioPer = $per['medio_pago'] ?? 'SOLES EFECTIVO';
+                            if (trim($medioPer) === '' || trim($medioPer) === '-') {
+                                $medioPer = 'SOLES EFECTIVO';
+                            }
+                            
+                            $monedaPer = (strpos(strtoupper($medioPer), 'DOLAR') !== false) ? 'USD' : ((strpos(strtoupper($medioPer), 'PESO') !== false) ? 'CLP' : 'PEN');
+
+                            $stmtInsertAnticipo->execute([
+                                'stay_id'   => $newStayId,
+                                'monto'     => $montoPer,
+                                'moneda'    => $monedaPer,
+                                'monto_pen' => $montoPer,
+                                'tipo'      => $medioPer,
+                                'fecha'     => $fechaReg,
+                                'uid'       => $_SESSION['auth_id'] ?? 1
+                            ]);
+
+                            // Registrar en flujo_caja_movimientos
+                            $horaCheckinVal = !empty($row['hora_checkin']) ? (int)explode(':', $row['hora_checkin'])[0] : (int)date('H');
+                            $turnoRegVal = FinanzasHelper::getTurnoActual($horaCheckinVal);
+                            
+                            $this->finanzas->registrarMovimientoAutomatico([
+                                'usuario_id'  => $_SESSION['auth_id'] ?? 1,
+                                'stay_id'     => $newStayId,
+                                'categoria'   => 'Alojamiento', 
+                                'monto'       => $montoPer, 
+                                'moneda'      => $monedaPer,
+                                'medio_pago'  => $medioPer,
+                                'observacion' => "HOSPEDAJE: " . (explode("\n", $row['nombre_apellido'])[0] ?? 'Huésped') . " - Registro #$newStayId (Hab #" . ($row['hab'] ?? 'N/A') . ")" . ($pIdx > 0 ? " [Extensión]" : ""),
+                                'fecha'       => $fechaReg,
+                                'turno'       => $turnoRegVal
+                            ]);
+                        }
                     }
 
                     $this->actualizarResumenPagos($newStayId);

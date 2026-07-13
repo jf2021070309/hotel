@@ -150,31 +150,40 @@ createApp({
               });
             }
 
-            const periodos_list = [];
-            // Build periodos from historial + current checkout
-            const histDates = (f.fechas_checkout_historial || '').split('\n').filter(d => d);
-            const allCheckouts = [...histDates, f.fecha_checkout || ''].filter(d => d);
-            let prevCheckin = f.fecha_checkin || f.fecha_registro || '';
+            let periodos_list = [];
+            if (f.pagos_json) {
+              try {
+                periodos_list = JSON.parse(f.pagos_json);
+              } catch (e) {
+                console.error("Error parsing pagos_json", e);
+              }
+            }
+            
+            if (periodos_list.length === 0) {
+              // Fallback to legacy parsing if pagos_json is not available
+              const histDates = (f.fechas_checkout_historial || '').split('\n').filter(d => d);
+              const allCheckouts = [...histDates, f.fecha_checkout || ''].filter(d => d);
+              let prevCheckin = f.fecha_checkin || f.fecha_registro || '';
 
-            if (allCheckouts.length > 0) {
-              allCheckouts.forEach((checkout, i) => {
-                periodos_list.push({
-                  fecha_checkin: prevCheckin,
-                  fecha_checkout: checkout,
-                  pago_total: i === 0 ? (parseFloat(f.pago_total) || '') : '',
-                  late_checkout: i < allCheckouts.length - 1 ? 'SI' : (f.late_checkout || 'NO'),
-                  medio_pago: i === 0 ? (f.medio_pago || '') : '',
-                  comprobante_pago: i === 0 ? ((f.comprobante_pago === 'TICKET' ? 'F.X.' : f.comprobante_pago) || '') : '',
-                  numero_comprobante: i === 0 ? (f.numero_comprobante || '') : '',
-                  quien_cobro: i === 0 ? (f.quien_cobro || '') : ''
+              if (allCheckouts.length > 0) {
+                allCheckouts.forEach((checkout, i) => {
+                  periodos_list.push({
+                    fecha_checkin: prevCheckin,
+                    fecha_checkout: checkout,
+                    pago_total: i === 0 ? (parseFloat(f.pago_total) || '') : '',
+                    late_checkout: i < allCheckouts.length - 1 ? 'SI' : (f.late_checkout || 'NO'),
+                    medio_pago: i === 0 ? (f.medio_pago || '') : '',
+                    comprobante_pago: i === 0 ? ((f.comprobante_pago === 'TICKET' ? 'F.X.' : f.comprobante_pago) || '') : '',
+                    numero_comprobante: i === 0 ? (f.numero_comprobante || '') : '',
+                    quien_cobro: i === 0 ? (f.quien_cobro || '') : ''
+                  });
+                  if (checkout) {
+                    const d = new Date(checkout + 'T12:00:00');
+                    d.setDate(d.getDate() + 1);
+                    prevCheckin = d.toISOString().split('T')[0];
+                  }
                 });
-                if (checkout) {
-                  const d = new Date(checkout + 'T12:00:00');
-                  d.setDate(d.getDate() + 1);
-                  prevCheckin = d.toISOString().split('T')[0];
-                }
-              });
-            } else {
+              } else {
               periodos_list.push({
                 fecha_checkin: f.fecha_checkin || '',
                 fecha_checkout: '',
@@ -185,6 +194,7 @@ createApp({
                 numero_comprobante: f.numero_comprobante || '',
                 quien_cobro: f.quien_cobro || ''
               });
+            }
             }
 
             let tHab = f.tipo_hab;
@@ -459,13 +469,14 @@ createApp({
           nacionalidad: f.pax_list.map(p => p.nacionalidad || '').join('\n'),
           ciudad: f.pax_list.map(p => p.ciudad || '').join('\n'),
           fecha_checkin: p0.fecha_checkin || f.fecha_checkin || '',
-          pago_total: p0.pago_total || '',
+          pago_total: f.periodos_list.reduce((sum, p) => sum + (parseFloat(p.pago_total) || 0), 0),
           late_checkout: f.periodos_list.some(p => p.late_checkout === 'SI') ? 'SI' : 'NO',
           medio_pago: p0.medio_pago || '',
           comprobante_pago: p0.comprobante_pago || '',
           numero_comprobante: p0.numero_comprobante || '',
           quien_cobro: p0.quien_cobro || '',
-          fechas_checkout_all: f.periodos_list.map(p => p.fecha_checkout).filter(d => d).join('\n')
+          fechas_checkout_all: f.periodos_list.map(p => p.fecha_checkout).filter(d => d).join('\n'),
+          periodos_raw: f.periodos_list // Enviar lista completa de pagos
         };
       });
 

@@ -746,10 +746,8 @@ createApp({
       if (stay.titular === '[MANTENIMIENTO]') return 'est-mantenimiento text-white';
       if (stay.titular === '[SUCIO]') return 'est-sucio text-white';
 
-      if (stay.estado === 'finalizado') return 'res-finalizado';
-
       // Prioridad 1: Si ya está en el hotel (In-house / Activo)
-      if (stay.estado === 'activo' || stay.estado === 'inhouse' || stay.checkin_realizado) return 'res-inhouse';
+      if (stay.estado === 'activo' || stay.estado === 'inhouse' || stay.checkin_realizado || stay.estado === 'finalizado') return 'res-inhouse';
       
       // Prioridad 2: Canal de reserva (para ingresos pendientes)
       const canal = (stay.canal || '').toLowerCase();

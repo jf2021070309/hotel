@@ -274,7 +274,7 @@ class ReservasModel {
         try {
             // 1. Update stay status + mark as checked-in
             $stmt = $this->pdo->prepare(
-                "UPDATE rooming_stays SET estado = 'activo', checkin_realizado = 1 WHERE id = ?"
+                "UPDATE rooming_stays SET estado = 'activo', checkin_realizado = 1, fecha_checkin_real = NOW() WHERE id = ?"
             );
             $stmt->execute([$id]);
 

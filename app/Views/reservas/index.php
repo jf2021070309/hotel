@@ -879,7 +879,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
           </div>
 
           <!-- Acciones -->
-          <div class="reserva-actions-grid mt-4" v-if="staySeleccionado.estado === 'reservado'">
+          <div class="reserva-actions-grid mt-4" v-if="staySeleccionado.estado === 'reservado' && !esBloqueoEspecial(staySeleccionado)">
              <button class="btn reserva-action-btn text-white shadow-sm" style="background: #64748b;" @click="editarQuickReserva(staySeleccionado)">
                <i class="bi bi-pen-fill"></i>
                <span style="letter-spacing: 0.3px;">Editar</span>
@@ -893,8 +893,15 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
                <span style="letter-spacing: 0.3px;">Cancelar</span>
              </button>
           </div>
+          
+          <div class="reserva-actions-grid mt-4" v-if="esBloqueoEspecial(staySeleccionado)">
+             <button class="btn reserva-action-btn text-white shadow-sm w-100" style="background: #10b981;" @click="rechazarReserva(staySeleccionado)">
+               <i class="bi bi-check2-circle fs-5"></i>
+               <span style="letter-spacing: 0.3px;">Marcar como Libre</span>
+             </button>
+          </div>
 
-          <div class="mt-4" v-if="staySeleccionado.estado_pago !== 'pagado' && staySeleccionado.estado !== 'reservado'">
+          <div class="mt-4" v-if="staySeleccionado.estado_pago !== 'pagado' && staySeleccionado.estado !== 'reservado' && !esBloqueoEspecial(staySeleccionado)">
              <button class="btn btn-dark w-100 py-2 fw-medium" @click="irARooming(staySeleccionado)">
                <i class="bi bi-receipt me-2"></i> Gestionar Cuenta en Rooming
              </button>
@@ -904,7 +911,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
 
         <div class="modal-footer bg-light border-top px-4 py-3 d-flex justify-content-between">
            <div>
-             <button v-if="staySeleccionado.estado === 'activo' || staySeleccionado.estado === 'late_checkout'" 
+             <button v-if="!esBloqueoEspecial(staySeleccionado) && (staySeleccionado.estado === 'activo' || staySeleccionado.estado === 'late_checkout')" 
                      class="btn btn-outline-danger fw-medium" 
                      @click="checkout(staySeleccionado)">
                <i class="bi bi-door-open me-2"></i> Registrar Salida
@@ -920,8 +927,9 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
   <!-- ─── CONTEXT MENU ────────────────────────────────────── -->
   <div v-if="ctxMenu.visible" class="context-menu" :style="{ top: ctxMenu.y + 'px', left: ctxMenu.x + 'px' }">
     <div class="cm-item" @click="handleCtxAction('detalle')"><i class="bi bi-info-circle text-primary"></i>Ver Detalles</div>
-    <div class="cm-item" @click="handleCtxAction('cobrar')"><i class="bi bi-cash-coin text-success"></i>Cobrar / Pagos</div>
-    <div class="cm-item" @click="handleCtxAction('checkout')"><i class="bi bi-door-open text-danger"></i>Hacer Check Out</div>
+    <div class="cm-item" v-if="!esBloqueoEspecial(ctxMenu.stay)" @click="handleCtxAction('cobrar')"><i class="bi bi-cash-coin text-success"></i>Cobrar / Pagos</div>
+    <div class="cm-item" v-if="!esBloqueoEspecial(ctxMenu.stay) && (ctxMenu.stay.estado === 'activo' || ctxMenu.stay.estado === 'late_checkout')" @click="handleCtxAction('checkout')"><i class="bi bi-door-open text-danger"></i>Hacer Check Out</div>
+    <div class="cm-item" v-if="esBloqueoEspecial(ctxMenu.stay)" @click="rechazarReserva(ctxMenu.stay)"><i class="bi bi-check2-circle text-success"></i>Marcar Libre</div>
   </div>
 
 </div><!-- /#app-reservas -->

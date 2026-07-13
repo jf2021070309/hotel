@@ -163,7 +163,7 @@ createApp({
               // Fallback to legacy parsing if pagos_json is not available
               const histDates = (f.fechas_checkout_historial || '').split('\n').filter(d => d);
               const allCheckouts = [...histDates, f.fecha_checkout || ''].filter(d => d);
-              let prevCheckin = f.fecha_checkin || f.fecha_registro || '';
+              let prevCheckin = f.fecha_registro || f.fecha_checkin || '';
 
               if (allCheckouts.length > 0) {
                 allCheckouts.forEach((checkout, i) => {
@@ -185,7 +185,7 @@ createApp({
                 });
               } else {
               periodos_list.push({
-                fecha_checkin: f.fecha_checkin || '',
+                fecha_checkin: f.fecha_registro || f.fecha_checkin || '',
                 fecha_checkout: '',
                 pago_total: parseFloat(f.pago_total) || '',
                 late_checkout: f.late_checkout || 'NO',
@@ -646,6 +646,9 @@ createApp({
         // pero lo dejamos como NO por seguridad (o como estaba)
         const last = fila.periodos_list[fila.periodos_list.length - 1];
         last.late_checkout = 'NO';
+      } else {
+        fila.periodos_list[0].late_checkout = 'NO';
+        fila.modificado = true;
       }
     },
 

@@ -262,12 +262,9 @@ class RoomingController {
             return ['ok' => false, 'msg' => "No se puede realizar el checkout. La habitación tiene un saldo pendiente de: S/ " . number_format($saldoPendiente, 2)];
         }
 
-        // Determinar fecha de checkout
+        // Determinar fecha de checkout (Se mantiene la fecha original de la reserva para que el bloque no desaparezca del cuadro)
         $fechaOutReal = $stay['fecha_checkout'];
-        // Si están haciendo checkout anticipado (la fecha programada es en el futuro), usar la fecha de hoy
-        if (strtotime($fechaOutReal) > strtotime(date('Y-m-d'))) {
-            $fechaOutReal = date('Y-m-d');
-        }
+
 
         if ($this->model->finalizarStay($id, $fechaOutReal, $pago)) {
             $numHab = $stay['nro_habitacion'] ?? $stay['habitacion_id'];

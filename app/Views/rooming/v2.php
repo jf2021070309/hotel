@@ -375,7 +375,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                       <input type="date" v-model="p.fecha_checkout"
                              class="table-editable-input text-center text-dark fw-bold w-100 border-0 bg-transparent px-1"
                              @change="marcarModificado(f)" style="height:30px;font-size:11px;">
-                      <button v-if="pIdx===f.periodos_list.length-1 && p.fecha_checkout"
+                      <button v-if="pIdx===f.periodos_list.length-1 && p.late_checkout === 'SI'"
                               class="btn btn-sm btn-link text-dark p-0 ms-1 flex-shrink-0"
                               @click="agregarExtension(f)" title="Agregar Extensión"
                               style="font-size:18px;line-height:1;font-weight:700;">+</button>
@@ -425,7 +425,6 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                         <option value="PESOS EFECTIVO">PESOS EFECTIVO</option>
                         <option value="POS PESOS">POS PESOS</option>
                         <option value="YAPE O PLIN">YAPE O PLIN</option>
-                        <option value="DEPOSITOS">DEPOSITOS</option>
                       </select>
                     </div>
                   </div>

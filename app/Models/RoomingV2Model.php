@@ -21,6 +21,10 @@ class RoomingV2Model {
         try {
             $this->pdo->query("ALTER TABLE rooming_stays ADD COLUMN no_registrado TINYINT(1) DEFAULT 0");
         } catch (Exception $e) {}
+        
+        try {
+            $this->pdo->query("ALTER TABLE rooming_stays ADD COLUMN pagos_json TEXT DEFAULT NULL");
+        } catch (Exception $e) {}
 
         $sql = "
             SELECT

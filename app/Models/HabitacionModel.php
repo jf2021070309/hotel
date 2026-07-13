@@ -70,7 +70,7 @@ class HabitacionModel {
         $sql = "INSERT INTO habitaciones (numero, tipo, piso, precio_base, estado, activa) VALUES (?, ?, ?, ?, ?, 1)";
         $stmt = $this->pdo->prepare($sql);
         return $stmt->execute([
-            $data['numero'], $data['tipo'], $data['piso'], $data['precio_base'], $data['estado'] ?? 'libre'
+            $data['numero'], $data['tipo'], $data['piso'], $data['precio_base'] ?? 0, $data['estado'] ?? 'libre'
         ]);
     }
 
@@ -78,7 +78,7 @@ class HabitacionModel {
         $sql = "UPDATE habitaciones SET numero = ?, tipo = ?, piso = ?, precio_base = ?, estado = ? WHERE id = ?";
         $stmt = $this->pdo->prepare($sql);
         $res = $stmt->execute([
-            $data['numero'], $data['tipo'], $data['piso'], $data['precio_base'], $data['estado'], $id
+            $data['numero'], $data['tipo'], $data['piso'], $data['precio_base'] ?? 0, $data['estado'], $id
         ]);
         if ($res && $data['estado'] === 'libre') {
             $this->sincronizarLimpieza($id);

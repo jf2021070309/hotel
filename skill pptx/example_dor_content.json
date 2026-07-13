@@ -1,0 +1,81 @@
+{
+  "meta": {
+    "ticket_id": "HP-8",
+    "titulo": "Carga instantánea de Cuadro de Reservas",
+    "proyecto": "Sistema de Reservas Hoteleras",
+    "sprint": "Sprint 4",
+    "responsable": "Elvis Leyva",
+    "equipo": ["Elvis Leyva", "Jaime Flores"],
+    "fecha": "Tacna - Perú, Julio 2026"
+  },
+  "historia_usuario": {
+    "como": "Recepcionista del hotel",
+    "quiero": "Que el cuadro de reservas cargue en menos de 2 segundos al abrir el módulo",
+    "para": "Poder atender al huésped en el mostrador sin tiempos de espera perceptibles"
+  },
+  "criterios_aceptacion": [
+    "El cuadro de reservas carga en menos de 2 segundos con 500 reservas activas",
+    "Se muestra un indicador de carga (skeleton) mientras se obtienen los datos",
+    "Las reservas se ordenan por fecha de check-in ascendente por defecto",
+    "El sistema muestra un mensaje claro si la carga falla, con opción de reintentar",
+    "La paginación no bloquea la interacción con el resto de la pantalla"
+  ],
+  "propuesta_tecnica": {
+    "frontend": {
+      "titulo": "Frontend",
+      "items": [
+        "Vue.js 3 + Composition API",
+        "Virtualización de tabla (vue-virtual-scroller)",
+        "Estado global con Pinia para cache de reservas",
+        "Skeleton loader durante el fetch inicial"
+      ]
+    },
+    "api": {
+      "titulo": "API / Backend",
+      "items": [
+        "Endpoint GET /reservas/cuadro con paginación cursor-based",
+        "Cache en Redis con TTL de 30s por rango de fechas",
+        "Respuesta comprimida (gzip) y payload reducido (DTO específico)",
+        "Rate limiting por sesión para evitar sobrecarga"
+      ]
+    },
+    "base_datos": {
+      "titulo": "Base de Datos",
+      "items": [
+        "Índice compuesto (fecha_checkin, estado_habitacion)",
+        "Vista materializada para el rango de los próximos 30 días",
+        "Particionamiento de la tabla reservas por mes",
+        "Job nocturno de refresco de la vista materializada"
+      ]
+    }
+  },
+  "evidencia_tecnica": {
+    "maqueta": {
+      "descripcion": "Wireframe de alta fidelidad del cuadro de reservas con skeleton loader y filtros superiores."
+    },
+    "diagrama": {
+      "descripcion": "Diagrama de secuencia: Frontend → API Gateway → Cache Redis → Vista materializada → Respuesta."
+    },
+    "base_datos": {
+      "descripcion": "Modelo entidad-relación de la tabla reservas particionada y su vista materializada asociada."
+    }
+  },
+  "riesgos": [
+    { "texto": "La vista materializada puede quedar desactualizada si el job nocturno falla", "nivel": "alto" },
+    { "texto": "Redis como punto único de cache puede saturarse en temporada alta", "nivel": "medio" },
+    { "texto": "Migración del índice compuesto requiere ventana de mantenimiento", "nivel": "bajo" }
+  ],
+  "dependencias": [
+    "Aprobación de infraestructura para habilitar Redis en producción",
+    "Ticket HP-5 (autenticación de sesión) debe estar desplegado antes",
+    "Acceso de solo lectura a la base de datos de producción para pruebas de carga"
+  ],
+  "definition_of_done": [
+    "Código revisado y aprobado en al menos 1 pull request",
+    "Pruebas unitarias e de integración con cobertura ≥ 80%",
+    "Prueba de carga confirma tiempo de respuesta < 2s con 500 reservas",
+    "Documentación técnica actualizada en el repositorio",
+    "Desplegado y validado en ambiente de staging",
+    "Aceptado por el Product Owner en la demo de sprint"
+  ]
+}

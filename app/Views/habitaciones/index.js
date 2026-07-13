@@ -12,7 +12,7 @@ const __appHabs = Vue.createApp({
             msg: { text: '', ok: true },
             modal: {
                 visible: false, guardando: false, error: '',
-                id: null, numero: '', tipo: 'Simple', piso: 1, precio_base: ''
+                id: null, numero: '', tipo: 'Simple', piso: 1
             }
         };
     },
@@ -73,11 +73,11 @@ const __appHabs = Vue.createApp({
             if (hab) {
                 Object.assign(this.modal, {
                     id: hab.id, numero: hab.numero, tipo: hab.tipo,
-                    piso: parseInt(hab.piso), precio_base: hab.precio_base,
+                    piso: parseInt(hab.piso),
                     estado: hab.estado
                 });
             } else {
-                Object.assign(this.modal, { id: null, numero: '', tipo: 'SIMPLE', piso: 1, precio_base: '', estado: 'libre' });
+                Object.assign(this.modal, { id: null, numero: '', tipo: 'SIMPLE', piso: 1, estado: 'libre' });
             }
             this.modal.visible = true;
         },
@@ -89,7 +89,6 @@ const __appHabs = Vue.createApp({
         async guardar() {
             this.modal.error = '';
             if (!this.modal.numero.trim()) { this.modal.error = 'El número es obligatorio'; return; }
-            if (parseFloat(this.modal.precio_base) <= 0) { this.modal.error = 'El precio debe ser > 0'; return; }
 
             this.modal.guardando = true;
             const esEditar = !!this.modal.id;
@@ -101,7 +100,7 @@ const __appHabs = Vue.createApp({
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         numero: this.modal.numero, tipo: this.modal.tipo,
-                        piso: this.modal.piso, precio_base: parseFloat(this.modal.precio_base),
+                        piso: this.modal.piso,
                         estado: this.modal.estado
                     })
                 });
@@ -124,12 +123,10 @@ const __appHabs = Vue.createApp({
                 { header: 'NÚMERO', key: 'numero', width: 20 },
                 { header: 'TIPO', key: 'tipo', width: 30 },
                 { header: 'PISO', key: 'piso', align: 'center', width: 15 },
-                { header: 'PRECIO BASE', key: 'precio_base', align: 'right', width: 25 },
                 { header: 'ESTADO', key: 'estado', align: 'center', width: 20 }
             ];
             const filas = this.habitacionesFiltradas.map(h => ({
                 ...h,
-                precio_base: 'S/ ' + parseFloat(h.precio_base).toFixed(2),
                 estado: h.estado.toUpperCase()
             }));
             window.exportarPDF('Listado de Habitaciones', 'Total: ' + this.habitaciones.length + ' habitaciones', cols, filas, 'habitaciones_hotel');
@@ -140,12 +137,10 @@ const __appHabs = Vue.createApp({
                 { header: 'NÚMERO', key: 'numero' },
                 { header: 'TIPO', key: 'tipo' },
                 { header: 'PISO', key: 'piso' },
-                { header: 'PRECIO BASE', key: 'precio_base' },
                 { header: 'ESTADO', key: 'estado' }
             ];
             const filas = this.habitacionesFiltradas.map(h => ({
                 ...h,
-                precio_base: parseFloat(h.precio_base),
                 estado: h.estado.toUpperCase()
             }));
             window.exportarExcel('Habitaciones', cols, filas, 'habitaciones_hotel');

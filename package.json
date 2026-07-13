@@ -1,0 +1,31 @@
+{
+  "name": "hotel",
+  "version": "1.0.0",
+  "description": "Sistema de gestion hotelera orientado a la operacion diaria de recepcion, control financiero y seguimiento operativo del hotel. El proyecto centraliza procesos de check-in, check-out, reservas, flujo de caja, inventario, limpieza, reportes y administracion interna desde una sola aplicacion web.",
+  "main": "index.js",
+  "scripts": {
+    "test": "cypress run --spec 'cypress/e2e/features/**/*.feature'",
+    "cy:open": "cypress open",
+    "cy:run": "cypress run --spec 'cypress/e2e/features/**/*.feature'"
+  },
+  "cypress-cucumber-preprocessor": {
+    "stepDefinitions": "cypress/step_definitions/**/*.steps.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jf2021070309/hotel.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/jf2021070309/hotel/issues"
+  },
+  "homepage": "https://github.com/jf2021070309/hotel#readme",
+  "devDependencies": {
+    "@badeball/cypress-cucumber-preprocessor": "^26.0.0",
+    "@bahmutov/cypress-esbuild-preprocessor": "^2.2.8",
+    "cypress": "^15.18.1"
+  }
+}

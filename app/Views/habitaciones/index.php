@@ -99,7 +99,6 @@ include __DIR__ . '/../layouts/sidebar.php';
             <th style="padding: 12px 16px;">TIPO</th>
             <th style="padding: 12px 16px;">PISO</th>
             <th style="padding: 12px 16px;">ESTADO</th>
-            <th style="padding: 12px 16px;">PRECIO BASE</th>
             <th style="padding: 12px 16px;">ACCIONES</th>
           </tr>
         </thead>
@@ -127,7 +126,6 @@ include __DIR__ . '/../layouts/sidebar.php';
                 {{ h.estado.charAt(0).toUpperCase() + h.estado.slice(1) }}
               </span>
             </td>
-            <td class="text-center fw-bold text-success">S/ {{ parseFloat(h.precio_base).toFixed(2) }}</td>
             <td class="text-center">
               <button @click="abrirModal(h)" class="btn btn-sm btn-outline-primary shadow-sm" style="font-size: 11.5px; font-weight: 600;">
                 <i class="bi bi-pencil-square"></i> Editar
@@ -135,7 +133,7 @@ include __DIR__ . '/../layouts/sidebar.php';
             </td>
           </tr>
           <tr v-if="habitacionesFiltradas.length === 0">
-            <td colspan="7" class="text-center py-4 text-muted">
+            <td colspan="6" class="text-center py-4 text-muted">
               <i class="bi bi-info-circle me-1"></i> No se encontraron habitaciones con esos criterios.
             </td>
           </tr>
@@ -181,10 +179,6 @@ include __DIR__ . '/../layouts/sidebar.php';
                 <option>PLATINIUM SUITE</option>
               </optgroup>
             </select>
-          </div>
-          <div class="col-md-6">
-            <label class="form-label">Precio Base (S/)</label>
-            <input v-model="modal.precio_base" type="number" step="0.01" class="form-control" placeholder="0.00">
           </div>
           <!-- NUEVO: Cambio de Estado Manual -->
           <div class="col-md-12" v-if="modal.id">

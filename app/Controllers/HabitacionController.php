@@ -37,10 +37,9 @@ class HabitacionController {
         $numero      = trim($body['numero'] ?? '');
         $tipo        = $body['tipo']        ?? 'Simple';
         $piso        = (int)($body['piso']  ?? 1);
-        $precio_base = (float)($body['precio_base'] ?? 0);
+        $precio_base = 0;
 
         if ($numero === '')   json_response(false, null, 422, 'El número es obligatorio');
-        if ($precio_base <= 0) json_response(false, null, 422, 'El precio debe ser mayor a 0');
         if (!in_array($tipo, ['Simple','Doble','Suite']))
             json_response(false, null, 422, 'Tipo inválido');
 
@@ -50,8 +49,7 @@ class HabitacionController {
                 'mensaje' => "Registró nueva habitación #$numero",
                 'cambios' => [
                     'N°'     => ['antes' => '-', 'despues' => $numero],
-                    'Tipo'   => ['antes' => '-', 'despues' => $tipo],
-                    'Precio' => ['antes' => 'S/ 0.00', 'despues' => 'S/ ' . number_format($precio_base, 2)]
+                    'Tipo'   => ['antes' => '-', 'despues' => $tipo]
                 ]
             ], JSON_UNESCAPED_UNICODE);
 
@@ -68,7 +66,7 @@ class HabitacionController {
         $numero      = trim($body['numero'] ?? '');
         $tipo        = $body['tipo']        ?? 'Simple';
         $piso        = (int)($body['piso']  ?? 1);
-        $precio_base = (float)($body['precio_base'] ?? 0);
+        $precio_base = 0;
 
         if ($numero === '') json_response(false, null, 422, 'El número es obligatorio');
 
@@ -77,8 +75,8 @@ class HabitacionController {
         
         if ($ok) {
             $cambios = [];
-            $labels = ['numero' => 'N°', 'tipo' => 'Tipo', 'piso' => 'Piso', 'precio_base' => 'Precio'];
-            foreach (['numero', 'tipo', 'piso', 'precio_base'] as $key) {
+            $labels = ['numero' => 'N°', 'tipo' => 'Tipo', 'piso' => 'Piso'];
+            foreach (['numero', 'tipo', 'piso'] as $key) {
                 if ($original[$key] != $body[$key]) {
                     $cambios[$labels[$key]] = ['antes' => $original[$key], 'despues' => $body[$key]];
                 }

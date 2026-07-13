@@ -56,7 +56,6 @@ class RoomingV2Model {
                 s.cobrador      AS quien_cobro,
                 s.carro,
                 s.estado        AS estado_stay,
-                s.marcado,
                 s.observaciones,
                 s.pagos_json
             FROM rooming_stays s

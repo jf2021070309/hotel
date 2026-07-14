@@ -841,38 +841,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
              </span>
           </div>
 
-          <!-- Finanzas -->
-          <div class="bg-light rounded-3 p-3 mb-3 border">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-               <span class="fw-bold text-dark" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Estado de Cuenta</span>
-               <span class="fw-bold" :class="staySeleccionado.estado_pago === 'pagado' ? 'text-success' : 'text-warning'" style="font-size: 0.85rem; text-transform: uppercase;">
-                 {{ staySeleccionado.estado_pago }}
-               </span>
-            </div>
-            
-            <div class="row text-center mb-3 g-0">
-              <div class="col-4">
-                <div class="text-muted mb-1" style="font-size: 0.75rem;">Total</div>
-                <div class="fw-bold text-dark">{{ staySeleccionado.moneda_pago }} {{ formatNumber(staySeleccionado.total_pago) }}</div>
-              </div>
-              <div class="col-4 border-start border-end">
-                <div class="text-muted mb-1" style="font-size: 0.75rem;">Pagado</div>
-                <div class="fw-bold text-dark">{{ staySeleccionado.moneda_pago }} {{ formatNumber(staySeleccionado.total_cobrado) }}</div>
-              </div>
-              <div class="col-4">
-                <div class="text-muted mb-1" style="font-size: 0.75rem;">Saldo</div>
-                <div class="fw-bold" :class="(staySeleccionado.total_pago - staySeleccionado.total_cobrado) > 0 ? 'text-danger' : 'text-dark'">
-                  {{ staySeleccionado.moneda_pago }} {{ formatNumber(staySeleccionado.total_pago - staySeleccionado.total_cobrado) }}
-                </div>
-              </div>
-            </div>
 
-            <div class="progress rounded-pill" style="height: 4px; background: #e2e8f0;">
-              <div class="progress-bar" 
-                   :class="staySeleccionado.estado_pago === 'pagado' ? 'bg-success' : 'bg-dark'"
-                   :style="{ width: porcentajePago(staySeleccionado) + '%' }"></div>
-            </div>
-          </div>
 
           <!-- Acciones -->
           <div class="reserva-actions-grid mt-4" v-if="staySeleccionado.estado === 'reservado' && !esBloqueoEspecial(staySeleccionado)">

@@ -7,6 +7,9 @@ class DocumentLookupService
 
     public function consultarDni(string $dni): ?array
     {
+        // Scraping de DNI desactivado a petición del usuario
+        return null;
+
         if (!preg_match('/^\d{8}$/', $dni)) {
             return null;
         }

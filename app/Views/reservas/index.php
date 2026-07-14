@@ -182,7 +182,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
   .stay-block:hover {
     filter: brightness(.88);
     box-shadow: 0 2px 8px rgba(0,0,0,.18);
-    z-index: 15;
+    z-index: 50;
   }
   .stay-block .titular {
     font-weight: 700;

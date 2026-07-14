@@ -898,21 +898,12 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
              </button>
           </div>
 
-          <div class="mt-4" v-if="staySeleccionado.estado_pago !== 'pagado' && staySeleccionado.estado !== 'reservado' && !esBloqueoEspecial(staySeleccionado)">
-             <button class="btn btn-dark w-100 py-2 fw-medium" @click="irARooming(staySeleccionado)">
-               <i class="bi bi-receipt me-2"></i> Gestionar Cuenta en Rooming
-             </button>
-          </div>
+
 
         </div>
 
         <div class="modal-footer bg-light border-top px-4 py-3 d-flex justify-content-between">
            <div>
-             <button v-if="!esBloqueoEspecial(staySeleccionado) && (staySeleccionado.estado === 'activo' || staySeleccionado.estado === 'late_checkout')" 
-                     class="btn btn-outline-danger fw-medium" 
-                     @click="checkout(staySeleccionado)">
-               <i class="bi bi-door-open me-2"></i> Registrar Salida
-             </button>
            </div>
            <button class="btn btn-secondary fw-medium px-4" data-bs-dismiss="modal">Cerrar</button>
         </div>

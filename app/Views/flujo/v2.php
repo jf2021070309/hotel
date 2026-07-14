@@ -290,9 +290,6 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
                   <optgroup v-if="staysEnCelda.length > 0" label="En este pago">
                     <option v-for="h in staysEnCelda" :key="'celda_'+h.id" :value="h.id">HAB {{ h.hab_numero }} - {{ h.huesped_principal }}</option>
                   </optgroup>
-                  <optgroup :label="staysEnCelda.length > 0 ? 'Otras habitaciones' : 'Habitaciones activas'">
-                    <option v-for="h in staysOtros" :key="'otros_'+h.id" :value="h.id">HAB {{ h.hab_numero }} - {{ h.huesped_principal }}</option>
-                  </optgroup>
                 </select>
               </div>
            <div class="mb-3">

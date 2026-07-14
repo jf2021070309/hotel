@@ -171,7 +171,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
     width: 100%;
     height: 4px;
     background: rgba(0,0,0,0.15);
-    z-index: 10;
+    z-index: 2;
     border-radius: 0 0 4px 4px;
   }
   .stay-progress-bar {
@@ -213,7 +213,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
     height: 0;
     border-top: 10px solid #dc3545;
     border-left: 10px solid transparent;
-    z-index: 15;
+    z-index: 3;
   }
 
   .stay-tooltip {

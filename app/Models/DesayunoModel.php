@@ -53,7 +53,7 @@ class DesayunoModel {
                 FROM rooming_stays s
                 JOIN habitaciones h ON s.habitacion_id = h.id
                 WHERE s.estado IN ('activo', 'late_checkout', 'finalizado')
-                  AND DATE(s.fecha_registro) <= :f1
+                  AND DATE(s.fecha_registro) < :f1
                   AND DATE(s.fecha_checkout) >= :f2";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([':f1' => $fecha, ':f2' => $fecha]);

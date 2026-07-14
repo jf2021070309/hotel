@@ -279,7 +279,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
 <script>
   window.SERVER_DATA = {
     apiBase: <?= json_encode(project_base_url() . 'ajax/desayunos.php') ?>,
-    hoy:     <?= json_encode(date('Y-m-d')) ?>
+    hoy:     <?= json_encode((int)date('H') >= 12 ? date('Y-m-d', strtotime('+1 day')) : date('Y-m-d')) ?>
   };
 </script>
 

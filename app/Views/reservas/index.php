@@ -129,6 +129,10 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
   }
 
   /* ── Hover Highlighting ─────────────────────────────────── */
+  .cuadro-table tbody tr:hover {
+    position: relative;
+    z-index: 9999;
+  }
   .cuadro-table tbody tr:hover td.col-hab {
     background-color: #f0f0f0 !important;
   }

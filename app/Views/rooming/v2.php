@@ -272,7 +272,6 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                     <option value="WHATSAPP">WHATSAPP</option>
                     <option value="LLAMADA">LLAMADA</option>
                     <option value="BOOKING">BOOKING</option>
-                    <option value="CORREO">CORREO</option>
                   </select>
                 </td>
                 

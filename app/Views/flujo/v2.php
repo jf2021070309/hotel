@@ -330,7 +330,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
                <span class="input-group-text bg-light fw-bold">
                  {{ ['pos_usd', 'usd_ef'].includes(formConsumo.columna) ? '$' : (formConsumo.columna === 'pesos' ? '₱' : 'S/') }}
                </span>
-               <input type="number" step="0.01" class="form-control fw-bold" v-model="formConsumo.precio" :readonly="formConsumo.tipo === 'BEBIDA'">
+               <input type="number" step="0.01" class="form-control fw-bold" v-model="formConsumo.precio">
              </div>
            </div>
         </div>

@@ -141,6 +141,8 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
     outline-offset: -1.5px;
     z-index: 999 !important;
     cursor: cell;
+    position: sticky;
+    left: auto;
   }
   .cuadro-table td.col-day.today-col:hover {
     background-color: #FFF9C4 !important;
@@ -183,6 +185,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
     filter: brightness(.88);
     box-shadow: 0 2px 8px rgba(0,0,0,.18);
     z-index: 50;
+    transform: translateZ(10px);
   }
   .stay-block .titular {
     font-weight: 700;
@@ -265,7 +268,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
   .stay-block:hover .stay-tooltip {
     visibility: visible;
     opacity: 1;
-    transform: translateY(-5px);
+    transform: translateZ(10px) translateY(-5px);
   }
 
   /* ── View-mode row heights ─────────────────────────────── */

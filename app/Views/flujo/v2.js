@@ -61,6 +61,17 @@ const app = createApp({
       const monto = parseFloat(m.monto || 0);
 
       if (m.tipo === 'Ingreso') {
+        const mp = (m.medio_pago || '').toUpperCase();
+        const moneda = (m.moneda || '').toUpperCase();
+        
+        if (mp === 'TRANSFERENCIA') return { field: 'depo', val: monto };
+        if (mp === 'YAPE' || mp === 'PLIN') return { field: 'yape', val: monto };
+        if (mp === 'POS' && moneda === 'USD') return { field: 'pos_usd', val: monto };
+        if (mp === 'POS' && moneda === 'PEN') return { field: 'pos_pen', val: monto };
+        if (mp === 'EFECTIVO' && (moneda === 'CLP' || moneda === 'PESOS')) return { field: 'pesos', val: monto };
+        if (mp === 'EFECTIVO' && moneda === 'USD') return { field: 'usd_ef', val: monto };
+        if (mp === 'EFECTIVO' && moneda === 'PEN') return { field: 'pen_ef', val: monto };
+
         if (name.includes('DEPOS') || name.includes('TRAN') || id === 1) return { field: 'depo', val: monto };
         if (name.includes('YAPE') || name.includes('PLIN') || id === 2 || id === 8) return { field: 'yape', val: monto };
         if ((name.includes('POS') && name.includes('DOLAR')) || id === 3) return { field: 'pos_usd', val: monto };

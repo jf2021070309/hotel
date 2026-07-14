@@ -1,10 +1,10 @@
 <?php
 require 'config/db.php';
-require 'app/Models/RoomingV2Model.php';
-$m = new RoomingV2Model($pdo);
 try {
-    $res = $m->getReporte(7, 2026);
-    echo "OK: " . count($res) . " registros\n";
+    $pdo->exec("ALTER TABLE flujo_caja ADD COLUMN declarado_pen DECIMAL(10,2) DEFAULT NULL");
+    $pdo->exec("ALTER TABLE flujo_caja ADD COLUMN declarado_usd DECIMAL(10,2) DEFAULT NULL");
+    $pdo->exec("ALTER TABLE flujo_caja ADD COLUMN declarado_clp DECIMAL(10,2) DEFAULT NULL");
+    echo "OK";
 } catch (Exception $e) {
-    echo "ERROR: " . $e->getMessage() . "\n";
+    echo $e->getMessage();
 }

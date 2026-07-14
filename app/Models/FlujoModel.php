@@ -414,7 +414,19 @@ class FlujoModel {
             $t = $row['turno'];
             if (isset($reporte[$f][$t])) {
                 $reporte[$f][$t]['flujo_id'] = (int)$row['id'];
-                $reporte[$f][$t]['nota_entrega'] = $row['nota_entrega'] ?? '';
+                
+                $nota = $row['nota_entrega'] ?? '';
+                $decoded = json_decode($nota, true);
+                
+                if (is_array($decoded) && isset($decoded['nota'])) {
+                    $notaFinal = $decoded['nota'];
+                    $reporte[$f][$t]['nota_entrega'] = (strpos($notaFinal, 'APERTURA AUTOMÁTICA DESDE ROOMING V2') !== false) ? '' : $notaFinal;
+                    $reporte[$f][$t]['manual_pen'] = $decoded['pen'] ?? null;
+                    $reporte[$f][$t]['manual_usd'] = $decoded['usd'] ?? null;
+                    $reporte[$f][$t]['manual_clp'] = $decoded['clp'] ?? null;
+                } else {
+                    $reporte[$f][$t]['nota_entrega'] = (strpos($nota, 'APERTURA AUTOMÁTICA DESDE ROOMING V2') !== false) ? '' : $nota;
+                }
             }
         }
 
@@ -494,8 +506,8 @@ class FlujoModel {
 
     private function initDiaAlex(): array {
         return [
-            'MAÑANA' => ['PEN' => 0, 'USD' => 0, 'CLP' => 0, 'egresos_detalle' => '', 'nota_entrega' => '', 'flujo_id' => 0],
-            'TARDE'  => ['PEN' => 0, 'USD' => 0, 'CLP' => 0, 'egresos_detalle' => '', 'nota_entrega' => '', 'flujo_id' => 0],
+            'MAÑANA' => ['PEN' => 0, 'USD' => 0, 'CLP' => 0, 'egresos_detalle' => '', 'nota_entrega' => '', 'flujo_id' => 0, 'manual_pen' => null, 'manual_usd' => null, 'manual_clp' => null],
+            'TARDE'  => ['PEN' => 0, 'USD' => 0, 'CLP' => 0, 'egresos_detalle' => '', 'nota_entrega' => '', 'flujo_id' => 0, 'manual_pen' => null, 'manual_usd' => null, 'manual_clp' => null],
             'TOTAL'  => ['PEN' => 0, 'USD' => 0, 'CLP' => 0]
         ];
     }
@@ -555,9 +567,17 @@ class FlujoModel {
             $stmt = $this->pdo->prepare("UPDATE flujo_caja SET nota_entrega = ? WHERE id = ?");
             foreach ($turnos as $t) {
                 $flujoId = (int)($t['flujo_id'] ?? 0);
-                $nota = $t['nota_entrega'] ?? '';
+                
+                $jsonObj = [
+                    'nota' => $t['nota_entrega'] ?? '',
+                    'pen' => $t['manual_pen'] ?? null,
+                    'usd' => $t['manual_usd'] ?? null,
+                    'clp' => $t['manual_clp'] ?? null
+                ];
+                $jsonStr = json_encode($jsonObj, JSON_UNESCAPED_UNICODE);
+                
                 if ($flujoId > 0) {
-                    $stmt->execute([$nota, $flujoId]);
+                    $stmt->execute([$jsonStr, $flujoId]);
                 }
             }
             $this->pdo->commit();

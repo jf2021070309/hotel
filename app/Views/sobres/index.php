@@ -93,7 +93,7 @@ $fecha = date('Y-m-d');
             <tr>
               <th class="border border-slate-400 p-2 text-center text-white font-bold" colspan="2" style="background-color: #557934;">{{ meses[mesFiltro - 1] }}-{{ String(anioFiltro).slice(-2) }}</th>
               <th class="border border-slate-400 p-2 text-center font-bold" style="background-color: #E2EFE2;">PESOS EFECTIVO</th>
-              <th class="border border-slate-400 p-2 text-center font-bold" style="background-color: #E2EFE2;">DOLARES</th>
+              <th class="border border-slate-400 p-2 text-center font-bold" style="background-color: #E2EFE2;">DOLARES EFECTIVO</th>
               <th class="border border-slate-400 p-2 text-center font-bold" style="background-color: #E2EFE2;">SOLES EFECTIVO</th>
               <th class="border border-slate-400 p-2 text-left font-bold bg-white min-w-[250px]">NOTA</th>
             </tr>
@@ -104,9 +104,15 @@ $fecha = date('Y-m-d');
               <tr class="bg-white hover:bg-slate-50 transition-colors">
                 <td class="border border-slate-400 px-3 py-1.5 font-bold text-black text-[13px] uppercase w-24">MAÑANA</td>
                 <td class="border border-slate-400 px-3 py-1.5 text-center text-black text-[13px] w-28">{{ formatDateNumeric(dia.fecha) }}</td>
-                <td class="border border-slate-400 px-3 py-1.5 text-right text-black text-[13px]">{{ dia.MAÑANA.CLP > 0 ? formatMoney(dia.MAÑANA.CLP, 0) : '' }}</td>
-                <td class="border border-slate-400 px-3 py-1.5 text-right text-black text-[13px]">{{ dia.MAÑANA.USD > 0 ? formatMoney(dia.MAÑANA.USD) : '' }}</td>
-                <td class="border border-slate-400 px-3 py-1.5 text-right text-black text-[13px]">{{ dia.MAÑANA.PEN > 0 ? 'S/ ' + formatMoney(dia.MAÑANA.PEN) : '' }}</td>
+                <td class="border border-slate-400 p-0 relative">
+                  <input type="text" v-model="dia.MAÑANA.manual_clp" :disabled="dia.MAÑANA.flujo_id === 0" class="w-full h-full min-h-[30px] bg-transparent border-0 outline-none focus:ring-2 focus:ring-inset focus:ring-[#557934] px-2 text-black text-[13px] text-right placeholder-slate-300 disabled:opacity-50" :placeholder="dia.MAÑANA.CLP > 0 ? formatMoney(dia.MAÑANA.CLP, 0) : ''">
+                </td>
+                <td class="border border-slate-400 p-0 relative">
+                  <input type="text" v-model="dia.MAÑANA.manual_usd" :disabled="dia.MAÑANA.flujo_id === 0" class="w-full h-full min-h-[30px] bg-transparent border-0 outline-none focus:ring-2 focus:ring-inset focus:ring-[#557934] px-2 text-black text-[13px] text-right placeholder-slate-300 disabled:opacity-50" :placeholder="dia.MAÑANA.USD > 0 ? formatMoney(dia.MAÑANA.USD) : ''">
+                </td>
+                <td class="border border-slate-400 p-0 relative">
+                  <input type="text" v-model="dia.MAÑANA.manual_pen" :disabled="dia.MAÑANA.flujo_id === 0" class="w-full h-full min-h-[30px] bg-transparent border-0 outline-none focus:ring-2 focus:ring-inset focus:ring-[#557934] px-2 text-black text-[13px] text-right placeholder-slate-300 disabled:opacity-50" :placeholder="dia.MAÑANA.PEN > 0 ? 'S/ ' + formatMoney(dia.MAÑANA.PEN) : ''">
+                </td>
                 <td class="border border-slate-400 p-0 relative">
                   <input type="text" v-model="dia.MAÑANA.nota_entrega" :disabled="dia.MAÑANA.flujo_id === 0" class="w-full h-full min-h-[30px] bg-transparent border-0 outline-none focus:ring-2 focus:ring-inset focus:ring-[#557934] px-3 text-black text-[11px] uppercase placeholder-slate-300 disabled:opacity-50" placeholder="...">
                 </td>
@@ -115,9 +121,15 @@ $fecha = date('Y-m-d');
               <tr class="bg-white hover:bg-slate-50 transition-colors">
                 <td class="border border-slate-400 px-3 py-1.5 font-bold text-black text-[13px] uppercase">TARDE</td>
                 <td class="border border-slate-400 px-3 py-1.5 text-center text-black text-[13px]">{{ formatDateNumeric(dia.fecha) }}</td>
-                <td class="border border-slate-400 px-3 py-1.5 text-right text-black text-[13px]">{{ dia.TARDE.CLP > 0 ? formatMoney(dia.TARDE.CLP, 0) : '' }}</td>
-                <td class="border border-slate-400 px-3 py-1.5 text-right text-black text-[13px]">{{ dia.TARDE.USD > 0 ? formatMoney(dia.TARDE.USD) : '' }}</td>
-                <td class="border border-slate-400 px-3 py-1.5 text-right text-black text-[13px]">{{ dia.TARDE.PEN > 0 ? 'S/ ' + formatMoney(dia.TARDE.PEN) : '' }}</td>
+                <td class="border border-slate-400 p-0 relative">
+                  <input type="text" v-model="dia.TARDE.manual_clp" :disabled="dia.TARDE.flujo_id === 0" class="w-full h-full min-h-[30px] bg-transparent border-0 outline-none focus:ring-2 focus:ring-inset focus:ring-[#557934] px-2 text-black text-[13px] text-right placeholder-slate-300 disabled:opacity-50" :placeholder="dia.TARDE.CLP > 0 ? formatMoney(dia.TARDE.CLP, 0) : ''">
+                </td>
+                <td class="border border-slate-400 p-0 relative">
+                  <input type="text" v-model="dia.TARDE.manual_usd" :disabled="dia.TARDE.flujo_id === 0" class="w-full h-full min-h-[30px] bg-transparent border-0 outline-none focus:ring-2 focus:ring-inset focus:ring-[#557934] px-2 text-black text-[13px] text-right placeholder-slate-300 disabled:opacity-50" :placeholder="dia.TARDE.USD > 0 ? formatMoney(dia.TARDE.USD) : ''">
+                </td>
+                <td class="border border-slate-400 p-0 relative">
+                  <input type="text" v-model="dia.TARDE.manual_pen" :disabled="dia.TARDE.flujo_id === 0" class="w-full h-full min-h-[30px] bg-transparent border-0 outline-none focus:ring-2 focus:ring-inset focus:ring-[#557934] px-2 text-black text-[13px] text-right placeholder-slate-300 disabled:opacity-50" :placeholder="dia.TARDE.PEN > 0 ? 'S/ ' + formatMoney(dia.TARDE.PEN) : ''">
+                </td>
                 <td class="border border-slate-400 p-0 relative">
                   <input type="text" v-model="dia.TARDE.nota_entrega" :disabled="dia.TARDE.flujo_id === 0" class="w-full h-full min-h-[30px] bg-transparent border-0 outline-none focus:ring-2 focus:ring-inset focus:ring-[#557934] px-3 text-black text-[11px] uppercase placeholder-slate-300 disabled:opacity-50" placeholder="...">
                 </td>

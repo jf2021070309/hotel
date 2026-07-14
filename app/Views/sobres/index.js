@@ -99,6 +99,9 @@ createApp({
                 CLP: toNumber(d.MAÑANA?.CLP),
                 egresos_detalle: d.MAÑANA?.egresos_detalle || '',
                 nota_entrega: d.MAÑANA?.nota_entrega || '',
+                manual_pen: d.MAÑANA?.manual_pen || null,
+                manual_usd: d.MAÑANA?.manual_usd || null,
+                manual_clp: d.MAÑANA?.manual_clp || null,
                 flujo_id: parseInt(d.MAÑANA?.flujo_id) || 0
               },
               TARDE: {
@@ -107,6 +110,9 @@ createApp({
                 CLP: toNumber(d.TARDE?.CLP),
                 egresos_detalle: d.TARDE?.egresos_detalle || '',
                 nota_entrega: d.TARDE?.nota_entrega || '',
+                manual_pen: d.TARDE?.manual_pen || null,
+                manual_usd: d.TARDE?.manual_usd || null,
+                manual_clp: d.TARDE?.manual_clp || null,
                 flujo_id: parseInt(d.TARDE?.flujo_id) || 0
               },
               TOTAL: d.TOTAL || { PEN: 0, USD: 0, CLP: 0 }
@@ -116,8 +122,8 @@ createApp({
           // Sync original notes map to detect changes
           originalNotes.value.clear();
           dias.value.forEach(d => {
-             if (d.MAÑANA.flujo_id > 0) originalNotes.value.set(d.MAÑANA.flujo_id, d.MAÑANA.nota_entrega);
-             if (d.TARDE.flujo_id > 0) originalNotes.value.set(d.TARDE.flujo_id, d.TARDE.nota_entrega);
+             if (d.MAÑANA.flujo_id > 0) originalNotes.value.set(d.MAÑANA.flujo_id, JSON.stringify({ n: d.MAÑANA.nota_entrega, p: d.MAÑANA.manual_pen, u: d.MAÑANA.manual_usd, c: d.MAÑANA.manual_clp }));
+             if (d.TARDE.flujo_id > 0) originalNotes.value.set(d.TARDE.flujo_id, JSON.stringify({ n: d.TARDE.nota_entrega, p: d.TARDE.manual_pen, u: d.TARDE.manual_usd, c: d.TARDE.manual_clp }));
           });
         }
       } catch (e) {
@@ -133,8 +139,8 @@ createApp({
     const pendingChanges = computed(() => {
         let count = 0;
         dias.value.forEach(d => {
-            if (d.MAÑANA.flujo_id > 0 && originalNotes.value.get(d.MAÑANA.flujo_id) !== d.MAÑANA.nota_entrega) count++;
-            if (d.TARDE.flujo_id > 0 && originalNotes.value.get(d.TARDE.flujo_id) !== d.TARDE.nota_entrega) count++;
+            if (d.MAÑANA.flujo_id > 0 && originalNotes.value.get(d.MAÑANA.flujo_id) !== JSON.stringify({ n: d.MAÑANA.nota_entrega, p: d.MAÑANA.manual_pen, u: d.MAÑANA.manual_usd, c: d.MAÑANA.manual_clp })) count++;
+            if (d.TARDE.flujo_id > 0 && originalNotes.value.get(d.TARDE.flujo_id) !== JSON.stringify({ n: d.TARDE.nota_entrega, p: d.TARDE.manual_pen, u: d.TARDE.manual_usd, c: d.TARDE.manual_clp })) count++;
         });
         return count;
     });
@@ -145,11 +151,11 @@ createApp({
       try {
         const turnos = [];
         dias.value.forEach(d => {
-          if (d.MAÑANA.flujo_id > 0 && originalNotes.value.get(d.MAÑANA.flujo_id) !== d.MAÑANA.nota_entrega) {
-             turnos.push({ flujo_id: d.MAÑANA.flujo_id, nota_entrega: d.MAÑANA.nota_entrega });
+          if (d.MAÑANA.flujo_id > 0 && originalNotes.value.get(d.MAÑANA.flujo_id) !== JSON.stringify({ n: d.MAÑANA.nota_entrega, p: d.MAÑANA.manual_pen, u: d.MAÑANA.manual_usd, c: d.MAÑANA.manual_clp })) {
+             turnos.push({ flujo_id: d.MAÑANA.flujo_id, nota_entrega: d.MAÑANA.nota_entrega, manual_pen: d.MAÑANA.manual_pen, manual_usd: d.MAÑANA.manual_usd, manual_clp: d.MAÑANA.manual_clp });
           }
-          if (d.TARDE.flujo_id > 0 && originalNotes.value.get(d.TARDE.flujo_id) !== d.TARDE.nota_entrega) {
-             turnos.push({ flujo_id: d.TARDE.flujo_id, nota_entrega: d.TARDE.nota_entrega });
+          if (d.TARDE.flujo_id > 0 && originalNotes.value.get(d.TARDE.flujo_id) !== JSON.stringify({ n: d.TARDE.nota_entrega, p: d.TARDE.manual_pen, u: d.TARDE.manual_usd, c: d.TARDE.manual_clp })) {
+             turnos.push({ flujo_id: d.TARDE.flujo_id, nota_entrega: d.TARDE.nota_entrega, manual_pen: d.TARDE.manual_pen, manual_usd: d.TARDE.manual_usd, manual_clp: d.TARDE.manual_clp });
           }
         });
         
@@ -157,7 +163,7 @@ createApp({
         const res = await axios.post(url, { turnos });
         if (res.data.ok) {
            // Actualizar mapeo original para resetear el botón
-           turnos.forEach(t => originalNotes.value.set(t.flujo_id, t.nota_entrega));
+           turnos.forEach(t => originalNotes.value.set(t.flujo_id, JSON.stringify({ n: t.nota_entrega, p: t.manual_pen, u: t.manual_usd, c: t.manual_clp })));
         } else {
            alert("Error al guardar: " + res.data.msg);
         }

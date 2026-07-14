@@ -65,7 +65,8 @@ class RoomingV2Model {
                 s.carro,
                 s.estado        AS estado_stay,
                 s.observaciones,
-                s.pagos_json
+                s.pagos_json,
+                s.marcado
             FROM rooming_stays s
             LEFT JOIN habitaciones h  ON h.id = s.habitacion_id
             JOIN rooming_pax p        ON p.stay_id = s.id

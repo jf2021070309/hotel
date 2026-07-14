@@ -439,7 +439,7 @@ window.MENDOZA_CONFIG = {
                         <div class="p-3 d-flex flex-column align-items-end" style="border-top: 1px solid #f1f5f9; background-color: #f8fafc;">
                             <div v-for="(val, label) in info.totales" :key="label" class="total-pill">
                                 <span class="total-label">Total {{ label }}</span>
-                                <span class="total-value">{{ getPrefix(label) }} {{ formatNumber(val, (label.includes('P$') || label.includes('CLP')) ? 0 : 2) }}</span>
+                                <span class="total-value">{{ getPrefix(label) }} {{ formatNumber(val, (label.includes('CLP')) ? 0 : 2) }}</span>
                             </div>
                         </div>
                     </div>

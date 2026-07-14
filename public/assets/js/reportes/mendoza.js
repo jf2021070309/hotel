@@ -139,8 +139,8 @@ createApp({
         };
 
         const getPrefix = (label) => {
+            if (label.includes('CLP')) return 'CLP';
             if (label.includes('$') || label.includes('USD')) return 'USD';
-            if (label.includes('P$') || label.includes('CLP')) return 'CLP';
             return 'S/';
         };
 

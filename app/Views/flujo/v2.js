@@ -406,7 +406,7 @@ const app = createApp({
           label = matchHab[1];
         }
         
-        let pre = m.moneda === 'USD' ? '$' : (m.moneda === 'CLP' ? '₱' : 'S/');
+        let pre = m.moneda === 'USD' ? '$' : (m.moneda === 'CLP' ? 'CLP' : 'S/');
         res += `<div>${label}: <span class="fw-bold">${pre} ${formatearNumero(m.monto)}</span></div>`;
       });
       return res;

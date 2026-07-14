@@ -118,7 +118,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
                     class="num-cell position-relative" 
                     :class="{'zero-val': d.manana[campo] === 0, 'has-details': d.manana.detalles[campo].length > 0, 'fw-bold text-success': campo === 'pen_ef'}" 
                     @click="abrirMenuHabitaciones(d, d.manana, 'MAÑANA', campo)">
-                  {{ d.manana[campo] ? (campo === 'pos_usd' || campo === 'usd_ef' ? '$ ' : (campo === 'pesos' ? '₱ ' : 'S/ ')) + formatearNumero(d.manana[campo]) : '-' }}
+                  {{ d.manana[campo] ? (campo === 'pos_usd' || campo === 'usd_ef' ? '$ ' : (campo === 'pesos' ? 'CLP ' : 'S/ ')) + formatearNumero(d.manana[campo]) : '-' }}
                   <div v-if="d.manana.detalles[campo].length > 0" class="flujo-tooltip text-dark" v-html="getTooltipHtml(d.manana.detalles[campo])"></div>
                 </td>
                 
@@ -168,7 +168,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
                     class="num-cell position-relative" 
                     :class="{'zero-val': d.tarde[campo] === 0, 'has-details': d.tarde.detalles[campo].length > 0, 'fw-bold text-success': campo === 'pen_ef'}" 
                     @click="abrirMenuHabitaciones(d, d.tarde, 'TARDE', campo)">
-                  {{ d.tarde[campo] ? (campo === 'pos_usd' || campo === 'usd_ef' ? '$ ' : (campo === 'pesos' ? '₱ ' : 'S/ ')) + formatearNumero(d.tarde[campo]) : '-' }}
+                  {{ d.tarde[campo] ? (campo === 'pos_usd' || campo === 'usd_ef' ? '$ ' : (campo === 'pesos' ? 'CLP ' : 'S/ ')) + formatearNumero(d.tarde[campo]) : '-' }}
                   <div v-if="d.tarde.detalles[campo].length > 0" class="flujo-tooltip text-dark" v-html="getTooltipHtml(d.tarde.detalles[campo])"></div>
                 </td>
                 
@@ -215,7 +215,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
                 <td class="num-cell">{{ d.total.yape ? 'S/ ' + formatearNumero(d.total.yape) : '-' }}</td>
                 <td class="num-cell">{{ d.total.pos_usd ? '$ ' + formatearNumero(d.total.pos_usd) : '-' }}</td>
                 <td class="num-cell">{{ d.total.pos_pen ? 'S/ ' + formatearNumero(d.total.pos_pen) : '-' }}</td>
-                <td class="num-cell">{{ d.total.pesos ? '₱ ' + formatearNumero(d.total.pesos) : '-' }}</td>
+                <td class="num-cell">{{ d.total.pesos ? 'CLP ' + formatearNumero(d.total.pesos) : '-' }}</td>
                 <td class="num-cell">{{ d.total.usd_ef ? '$ ' + formatearNumero(d.total.usd_ef) : '-' }}</td>
                 <td class="num-cell fw-bold text-success">{{ d.total.pen_ef ? 'S/ ' + formatearNumero(d.total.pen_ef) : '-' }}</td>
                 
@@ -247,7 +247,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
               <td class="num-cell">{{ totalesGenerales.yape ? 'S/ ' + formatearNumero(totalesGenerales.yape) : '-' }}</td>
               <td class="num-cell">{{ totalesGenerales.pos_usd ? '$ ' + formatearNumero(totalesGenerales.pos_usd) : '-' }}</td>
               <td class="num-cell">{{ totalesGenerales.pos_pen ? 'S/ ' + formatearNumero(totalesGenerales.pos_pen) : '-' }}</td>
-              <td class="num-cell">{{ totalesGenerales.pesos ? '₱ ' + formatearNumero(totalesGenerales.pesos) : '-' }}</td>
+              <td class="num-cell">{{ totalesGenerales.pesos ? 'CLP ' + formatearNumero(totalesGenerales.pesos) : '-' }}</td>
               <td class="num-cell">{{ totalesGenerales.usd_ef ? '$ ' + formatearNumero(totalesGenerales.usd_ef) : '-' }}</td>
               <td class="num-cell fw-bold text-white">{{ totalesGenerales.pen_ef ? 'S/ ' + formatearNumero(totalesGenerales.pen_ef) : '-' }}</td>
               
@@ -325,7 +325,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
              <label class="form-label fw-bold text-secondary" style="font-size:12px;">Precio Cargado</label>
              <div class="input-group input-group-sm">
                <span class="input-group-text bg-light fw-bold">
-                 {{ ['pos_usd', 'usd_ef'].includes(formConsumo.columna) ? '$' : (formConsumo.columna === 'pesos' ? '₱' : 'S/') }}
+                 {{ ['pos_usd', 'usd_ef'].includes(formConsumo.columna) ? '$' : (formConsumo.columna === 'pesos' ? 'CLP' : 'S/') }}
                </span>
                <input type="number" step="0.01" class="form-control fw-bold" v-model="formConsumo.precio">
              </div>

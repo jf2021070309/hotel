@@ -166,7 +166,9 @@ createApp({
       for (const hab of habitacionesFiltradas.value) {
         const stays = getTodosCeldaStays(hab, dia);
         for (const stay of stays) {
-          total += Number(stay.pax) || 0;
+          if (!esBloqueoEspecial(stay)) {
+            total += Number(stay.pax) || 0;
+          }
         }
       }
       return total;

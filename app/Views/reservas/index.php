@@ -654,7 +654,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
                       {{ stay.observaciones }}
                     </div>
                     
-                    <span v-if="viewMode !== 'compacto'" class="badge-pax" style="flex-shrink: 0;">
+                    <span v-if="viewMode !== 'compacto' && !esBloqueoEspecial(stay)" class="badge-pax" style="flex-shrink: 0;">
                       <i class="bi bi-people-fill"></i> {{ stay.pax }} PAX
                     </span>
                     <span class="titular" :style="esBloqueoEspecial(stay) ? 'font-size: 9.5px; letter-spacing: 0.3px; line-height: 1.2;' : ''">
@@ -787,102 +787,91 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
   </div>
 
   <!-- ─── MODAL DETALLE PREMIUM ────────────────────────────── -->
-  <div class="modal fade" id="modalDetalleReservas" tabindex="-1" style="backdrop-filter: blur(8px); background-color: rgba(0,0,0,0.4);">
-    <div class="modal-dialog modal-dialog-centered" style="max-width: 500px;">
-      <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden; background: #ffffff;" v-if="staySeleccionado">
+  <div class="modal fade" id="modalDetalleReservas" tabindex="-1" style="backdrop-filter: blur(4px); background-color: rgba(15, 23, 42, 0.4);">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 460px;">
+      <div class="modal-content border-0 shadow-lg" style="border-radius: 24px; overflow: hidden; background: #ffffff;" v-if="staySeleccionado">
         
-        <div class="modal-header border-0 px-4 py-4" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); position: relative;">
-          <!-- Subtle background pattern or shine can go here if needed -->
-          <div class="position-absolute top-0 start-0 w-100 h-100 opacity-25" style="background: radial-gradient(circle at top right, rgba(255,255,255,0.2) 0%, transparent 60%); pointer-events: none;"></div>
-          
-          <div class="d-flex flex-column w-100" style="z-index: 1;">
-            <div class="d-flex justify-content-between align-items-start mb-2">
-              <h5 class="modal-title fw-bold text-white mb-0" style="font-size: 1.4rem; letter-spacing: -0.5px;">
-                Estadía #{{ staySeleccionado.id }}
-              </h5>
-              <button type="button" class="btn-close btn-close-white opacity-75 mt-1" data-bs-dismiss="modal" style="font-size: 0.8rem;"></button>
+        <!-- Header Minimalista -->
+        <div class="modal-header border-0 px-4 pt-4 pb-0">
+          <div class="w-100">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="text-muted fw-bold text-uppercase" style="font-size: 0.7rem; letter-spacing: 1.5px; color: #64748b;">
+                Reserva #{{ staySeleccionado.id }}
+              </span>
+              <button type="button" class="btn-close opacity-50" data-bs-dismiss="modal" style="font-size: 0.75rem;"></button>
             </div>
-            <span class="text-white-50 fw-medium" style="font-size: 0.95rem;">
+            <h4 class="fw-bolder text-dark mb-0 text-truncate" style="font-size: 1.7rem; letter-spacing: -0.5px; color: #0f172a;">
               {{ staySeleccionado.titular }}
-            </span>
+            </h4>
           </div>
         </div>
 
-        <div class="modal-body px-4 py-4" style="background-color: #f8fafc;">
+        <div class="modal-body px-4 py-4">
           
-          <!-- Metadatos (PAX, Canal) in Glassmorphic / clean pills -->
-          <div class="d-flex align-items-center flex-wrap gap-2 mb-4">
-            <div class="d-flex align-items-center gap-2 px-3 py-2 bg-white rounded-pill shadow-sm border border-light" style="font-size: 0.85rem;">
-              <i class="bi bi-people-fill text-primary"></i>
-              <span class="fw-bold text-dark">{{ staySeleccionado.pax }} <span class="text-muted fw-medium">Pax</span></span>
-            </div>
-            <div class="d-flex align-items-center gap-2 px-3 py-2 bg-white rounded-pill shadow-sm border border-light" style="font-size: 0.85rem;">
-              <i class="bi bi-tag-fill text-success"></i>
-              <span class="fw-bold text-dark">{{ staySeleccionado.canal || 'DIRECTO' }}</span>
-            </div>
-            <div class="ms-auto">
-               <span class="badge rounded-pill shadow-sm px-3 py-2" :class="staySeleccionado.estado === 'activo' ? 'bg-success text-white' : (staySeleccionado.estado === 'reservado' ? 'bg-warning text-dark' : 'bg-secondary text-white')" style="font-size: 0.75rem; font-weight: 800; letter-spacing: 0.5px;">
+          <!-- Etiquetas Limpias -->
+          <div class="d-flex align-items-center gap-2 mb-4 pb-2 border-bottom border-light">
+             <span class="d-inline-flex align-items-center gap-1 text-secondary fw-semibold" style="font-size: 0.85rem;">
+               <i class="bi bi-people text-muted"></i> {{ staySeleccionado.pax }} Pax
+             </span>
+             <span class="text-muted opacity-25">|</span>
+             <span class="d-inline-flex align-items-center gap-1 text-secondary fw-semibold text-uppercase" style="font-size: 0.85rem;">
+               <i class="bi bi-bookmark text-muted"></i> {{ staySeleccionado.canal || 'DIRECTO' }}
+             </span>
+             <div class="ms-auto">
+               <span class="badge px-3 py-2 rounded-pill" 
+                     :class="staySeleccionado.estado === 'activo' ? 'bg-dark text-white' : (staySeleccionado.estado === 'reservado' ? 'bg-light border text-dark' : 'bg-light border text-muted')" 
+                     style="font-size: 0.7rem; font-weight: 700; letter-spacing: 0.5px;">
                  {{ staySeleccionado.estado.toUpperCase() }}
                </span>
-            </div>
+             </div>
           </div>
 
-          <!-- Fechas con estilo de timeline / billete -->
-          <div class="bg-white rounded-4 p-4 shadow-sm border border-light mb-4 position-relative">
-            <div class="row align-items-center position-relative z-1">
-              <div class="col-5 text-center">
-                <div class="text-muted fw-bold mb-1" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px;">Check-in</div>
-                <div class="fw-bold text-dark" style="font-size: 1.1rem;">{{ staySeleccionado.fecha_inicio }}</div>
-              </div>
-              <div class="col-2 d-flex flex-column align-items-center justify-content-center px-0">
-                 <div style="height: 1px; width: 100%; background: #e2e8f0; position: absolute; top: 50%; z-index: -1;"></div>
-                 <div class="bg-light rounded-circle d-flex align-items-center justify-content-center border shadow-sm" style="width: 32px; height: 32px;">
-                   <i class="bi bi-arrow-right text-primary"></i>
-                 </div>
-              </div>
-              <div class="col-5 text-center">
-                <div class="text-muted fw-bold mb-1" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px;">Check-out</div>
-                <div class="fw-bold text-dark" style="font-size: 1.1rem;">{{ staySeleccionado.fecha_fin }}</div>
+          <!-- Fechas Minimalistas -->
+          <div class="d-flex justify-content-between align-items-center p-4 bg-light mb-4" style="border-radius: 20px; border: 1px solid #f1f5f9;">
+            <div>
+              <div class="text-muted fw-bold text-uppercase mb-1" style="font-size: 0.65rem; letter-spacing: 1px;">Check-in</div>
+              <div class="fw-bolder" style="font-size: 1.3rem; letter-spacing: -0.5px; color: #0f172a;">
+                {{ staySeleccionado.fecha_inicio.split('-').reverse().join('/') }}
               </div>
             </div>
             
-            <div class="text-center mt-3 pt-3 border-top border-light">
-               <span class="d-inline-flex align-items-center text-secondary fw-medium" style="font-size: 0.85rem;">
-                 <i class="bi bi-moon-stars-fill text-warning me-2"></i> 
-                 {{ staySeleccionado.noches }} Noches
-               </span>
+            <div class="d-flex flex-column align-items-center px-3">
+              <i class="bi bi-arrow-right text-muted opacity-50 fs-4 mb-1"></i>
+              <div class="fw-bold" style="font-size: 0.75rem; color: #d4af37;">
+                <i class="bi bi-moon-stars-fill me-1"></i>{{ staySeleccionado.noches }}
+              </div>
+            </div>
+
+            <div class="text-end">
+              <div class="text-muted fw-bold text-uppercase mb-1" style="font-size: 0.65rem; letter-spacing: 1px;">Check-out</div>
+              <div class="fw-bolder" style="font-size: 1.3rem; letter-spacing: -0.5px; color: #0f172a;">
+                {{ staySeleccionado.fecha_fin.split('-').reverse().join('/') }}
+              </div>
             </div>
           </div>
 
           <!-- Acciones -->
-          <div class="reserva-actions-grid gap-2" v-if="staySeleccionado.estado === 'reservado' && !esBloqueoEspecial(staySeleccionado)">
-             <button class="btn reserva-action-btn shadow-sm flex-grow-1" style="background: #ffffff; color: #334155; border: 1px solid #cbd5e1; border-radius: 12px; font-weight: 700;" @click="editarQuickReserva(staySeleccionado)">
-               <i class="bi bi-pen-fill text-secondary"></i>
-               <span>Editar</span>
+          <div class="d-flex flex-column gap-2" v-if="staySeleccionado.estado === 'reservado' && !esBloqueoEspecial(staySeleccionado)">
+             <button class="btn btn-dark w-100 py-3 fw-bold shadow-sm d-flex justify-content-center align-items-center gap-2" style="border-radius: 14px; font-size: 0.95rem;" @click="confirmarReserva(staySeleccionado)">
+               <i class="bi bi-box-arrow-in-right fs-5"></i> Registrar Check-in
              </button>
-             <button class="btn reserva-action-btn text-white shadow-sm flex-grow-1" style="background: linear-gradient(135deg, #0288d1 0%, #01579b 100%); border: none; border-radius: 12px; font-weight: 700;" @click="confirmarReserva(staySeleccionado)">
-               <i class="bi bi-box-arrow-in-right"></i>
-               <span>Check-in</span>
-             </button>
-             <button class="btn reserva-action-btn text-white shadow-sm flex-grow-1" style="background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); border: none; border-radius: 12px; font-weight: 700;" @click="rechazarReserva(staySeleccionado)">
-               <i class="bi bi-trash-fill"></i>
-               <span>Cancelar</span>
-             </button>
+             <div class="d-flex gap-2">
+               <button class="btn btn-light border w-100 py-2 fw-semibold text-secondary d-flex justify-content-center align-items-center gap-2" style="border-radius: 14px; font-size: 0.9rem;" @click="editarQuickReserva(staySeleccionado)">
+                 <i class="bi bi-pen"></i> Editar
+               </button>
+               <button class="btn btn-light border w-100 py-2 fw-semibold text-danger d-flex justify-content-center align-items-center gap-2" style="border-radius: 14px; font-size: 0.9rem;" @click="rechazarReserva(staySeleccionado)">
+                 <i class="bi bi-trash"></i> Cancelar
+               </button>
+             </div>
           </div>
           
-          <div class="mt-3" v-if="esBloqueoEspecial(staySeleccionado)">
-             <button class="btn btn-success text-white shadow-sm w-100 py-3" style="border-radius: 12px; font-weight: 700; font-size: 1rem; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none;" @click="rechazarReserva(staySeleccionado)">
-               <i class="bi bi-check2-circle me-2"></i>
-               Marcar como Libre
+          <div v-if="esBloqueoEspecial(staySeleccionado)">
+             <button class="btn btn-dark w-100 py-3 fw-bold shadow-sm d-flex justify-content-center align-items-center gap-2" style="border-radius: 14px; font-size: 0.95rem;" @click="rechazarReserva(staySeleccionado)">
+               <i class="bi bi-check2-circle fs-5"></i> Marcar como Libre
              </button>
           </div>
 
         </div>
-
-        <div class="modal-footer bg-white border-top-0 px-4 py-3 d-flex justify-content-center">
-           <button class="btn btn-light fw-bold px-5 py-2 shadow-sm" style="border-radius: 12px; color: #475569;" data-bs-dismiss="modal">Cerrar</button>
-        </div>
-
       </div>
     </div>
   </div>

@@ -84,72 +84,7 @@ $fecha = date('Y-m-d');
     </div>
 
     <div v-else class="space-y-8">
-      <!-- LAS 3 GRANDES TARJETAS RESUMEN DEL MES -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <!-- Ingresos -->
-        <div class="bg-white border border-slate-200/60 rounded-3xl p-6 shadow-xl shadow-slate-100 relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
-          <div class="absolute -right-6 -top-6 w-24 h-24 bg-blue-500/10 rounded-full blur-xl pointer-events-none"></div>
-          <div class="flex items-center justify-between mb-4">
-            <span class="bg-blue-50 text-blue-600 border border-blue-200/60 px-3 py-1 rounded-full text-xs font-extrabold tracking-wider uppercase flex items-center gap-1.5">
-              <i class="bi bi-arrow-down-left-circle-fill"></i> Ingresos Efectivo
-            </span>
-            <div class="w-10 h-10 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600">
-              <i class="bi bi-cash-stack text-lg"></i>
-            </div>
-          </div>
-          <div class="text-3xl font-black text-slate-900 tracking-tight">
-            S/ {{ formatMoney(totalesMes.ingresos.PEN) }}
-          </div>
-          <div class="mt-3 flex items-center gap-3 text-xs font-bold text-slate-500 bg-slate-50/80 p-2.5 rounded-xl border border-slate-100">
-            <span class="flex items-center gap-1"><span class="text-sm">🇺🇸</span> $ {{ formatMoney(totalesMes.ingresos.USD) }} USD</span>
-            <span class="text-slate-300">|</span>
-            <span class="flex items-center gap-1"><span class="text-sm">🇨🇱</span> $ {{ formatMoney(totalesMes.ingresos.CLP, 0) }} CLP</span>
-          </div>
-        </div>
 
-        <!-- Extracciones -->
-        <div class="bg-white border border-slate-200/60 rounded-3xl p-6 shadow-xl shadow-slate-100 relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
-          <div class="absolute -right-6 -top-6 w-24 h-24 bg-rose-500/10 rounded-full blur-xl pointer-events-none"></div>
-          <div class="flex items-center justify-between mb-4">
-            <span class="bg-rose-50 text-rose-600 border border-rose-200/60 px-3 py-1 rounded-full text-xs font-extrabold tracking-wider uppercase flex items-center gap-1.5">
-              <i class="bi bi-arrow-up-right-circle-fill"></i> Retiros y Egresos
-            </span>
-            <div class="w-10 h-10 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600">
-              <i class="bi bi-wallet2 text-lg"></i>
-            </div>
-          </div>
-          <div class="text-3xl font-black text-rose-600 tracking-tight">
-            - S/ {{ formatMoney(totalesMes.egresos.PEN) }}
-          </div>
-          <div class="mt-3 flex items-center gap-3 text-xs font-bold text-slate-500 bg-rose-50/50 p-2.5 rounded-xl border border-rose-100/50">
-            <span class="flex items-center gap-1"><span class="text-sm">🇺🇸</span> - $ {{ formatMoney(totalesMes.egresos.USD) }} USD</span>
-            <span class="text-rose-200">|</span>
-            <span class="flex items-center gap-1"><span class="text-sm">🇨🇱</span> - $ {{ formatMoney(totalesMes.egresos.CLP, 0) }} CLP</span>
-          </div>
-        </div>
-
-        <!-- Fondo Neto Acumulado -->
-        <div class="bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900 text-white rounded-3xl p-7 shadow-2xl shadow-emerald-900/30 relative overflow-hidden transition-all duration-300 hover:scale-[1.02]">
-          <div class="absolute right-0 top-0 w-64 h-64 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none"></div>
-          <div class="absolute -left-10 -bottom-10 w-48 h-48 bg-teal-500/20 rounded-full blur-2xl pointer-events-none"></div>
-          <div class="flex items-center justify-between mb-4 relative z-10">
-            <span class="bg-white/10 backdrop-blur-md text-emerald-200 border border-white/20 px-3.5 py-1 rounded-full text-xs font-extrabold tracking-wider uppercase flex items-center gap-2">
-              <i class="bi bi-shield-check text-emerald-400"></i> Fondo Neto en Caja
-            </span>
-            <div class="w-10 h-10 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 flex items-center justify-center text-emerald-300">
-              <i class="bi bi-safe2 text-xl"></i>
-            </div>
-          </div>
-          <div class="text-4xl font-black text-white tracking-tight relative z-10 flex items-baseline gap-2">
-            <span class="text-emerald-400 font-bold text-2xl">S/</span> {{ formatMoney(totalesMes.neto.PEN) }}
-          </div>
-          <div class="mt-4 flex items-center gap-3 text-xs font-bold text-emerald-100/80 bg-white/10 backdrop-blur-md p-3 rounded-2xl border border-white/10 relative z-10">
-            <span class="flex items-center gap-1.5"><span class="text-sm">🇺🇸</span> $ {{ formatMoney(totalesMes.neto.USD) }} USD</span>
-            <span class="text-emerald-500/60">|</span>
-            <span class="flex items-center gap-1.5"><span class="text-sm">🇨🇱</span> $ {{ formatMoney(totalesMes.neto.CLP, 0) }} CLP</span>
-          </div>
-        </div>
-      </div>
 
       <!-- TABLA TIPO EXCEL -->
       <div class="overflow-x-auto bg-white border border-slate-300 shadow-sm mt-6 mb-8">

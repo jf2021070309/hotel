@@ -480,4 +480,13 @@ class FlujoController {
             return ['ok' => false, 'msg' => 'Error: ' . $e->getMessage()];
         }
     }
+
+    /**
+     * Guarda las notas de entrega editadas en la vista de sobres.
+     */
+    public function guardarNotasSobres(array $input): array {
+        $turnos = $input['turnos'] ?? [];
+        return $this->model->guardarNotasSobres($turnos);
+    }
 }
+

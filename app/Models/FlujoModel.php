@@ -406,6 +406,18 @@ class FlujoModel {
             $reporte[$f] = $this->initDiaAlex();
         }
 
+        // Obtener ids y notas_entrega de todos los flujos del mes
+        $stmtFlujos = $this->pdo->prepare("SELECT id, fecha, turno, nota_entrega FROM flujo_caja WHERE MONTH(fecha) = ? AND YEAR(fecha) = ?");
+        $stmtFlujos->execute([$mes, $anio]);
+        while ($row = $stmtFlujos->fetch(PDO::FETCH_ASSOC)) {
+            $f = $row['fecha'];
+            $t = $row['turno'];
+            if (isset($reporte[$f][$t])) {
+                $reporte[$f][$t]['flujo_id'] = (int)$row['id'];
+                $reporte[$f][$t]['nota_entrega'] = $row['nota_entrega'] ?? '';
+            }
+        }
+
         $totIngresos = ['PEN' => 0, 'USD' => 0, 'CLP' => 0];
         $totEgresos  = ['PEN' => 0, 'USD' => 0, 'CLP' => 0];
 
@@ -482,8 +494,8 @@ class FlujoModel {
 
     private function initDiaAlex(): array {
         return [
-            'MAÑANA' => ['PEN' => 0, 'USD' => 0, 'CLP' => 0, 'egresos_detalle' => ''],
-            'TARDE'  => ['PEN' => 0, 'USD' => 0, 'CLP' => 0, 'egresos_detalle' => ''],
+            'MAÑANA' => ['PEN' => 0, 'USD' => 0, 'CLP' => 0, 'egresos_detalle' => '', 'nota_entrega' => '', 'flujo_id' => 0],
+            'TARDE'  => ['PEN' => 0, 'USD' => 0, 'CLP' => 0, 'egresos_detalle' => '', 'nota_entrega' => '', 'flujo_id' => 0],
             'TOTAL'  => ['PEN' => 0, 'USD' => 0, 'CLP' => 0]
         ];
     }
@@ -527,5 +539,32 @@ class FlujoModel {
             'flows' => $flowsMap,
             'movements' => $movsMap
         ];
+    }
+
+    /**
+     * Guarda las notas de entrega editadas en la vista de sobres.
+     * 
+     * @param array $turnos Array de ['flujo_id' => X, 'nota_entrega' => 'Y']
+     * @return array
+     */
+    public function guardarNotasSobres(array $turnos): array {
+        if (empty($turnos)) return ['ok' => true];
+        
+        $this->pdo->beginTransaction();
+        try {
+            $stmt = $this->pdo->prepare("UPDATE flujo_caja SET nota_entrega = ? WHERE id = ?");
+            foreach ($turnos as $t) {
+                $flujoId = (int)($t['flujo_id'] ?? 0);
+                $nota = $t['nota_entrega'] ?? '';
+                if ($flujoId > 0) {
+                    $stmt->execute([$nota, $flujoId]);
+                }
+            }
+            $this->pdo->commit();
+            return ['ok' => true, 'msg' => 'Notas guardadas correctamente'];
+        } catch (Exception $e) {
+            $this->pdo->rollBack();
+            return ['ok' => false, 'msg' => 'Error al guardar notas: ' . $e->getMessage()];
+        }
     }
 }

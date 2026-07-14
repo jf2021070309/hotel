@@ -49,6 +49,15 @@ createApp({
       return `${diasSemana[dt.getDay()]} ${dt.getDate()} ${mesesCortos[dt.getMonth()]}`;
     };
 
+    const formatDateNumeric = (iso) => {
+      if (!iso) return '';
+      const parts = iso.split('-');
+      if (parts.length === 3) {
+          return `${parseInt(parts[2], 10)}/${parseInt(parts[1], 10)}/${parts[0]}`;
+      }
+      return iso;
+    };
+
     const getDetalleExtractions = (dia) => {
       const parts = [];
       if (dia?.MAÑANA?.egresos_detalle) parts.push(`M: ${dia.MAÑANA.egresos_detalle}`);
@@ -88,22 +97,75 @@ createApp({
                 PEN: toNumber(d.MAÑANA?.PEN),
                 USD: toNumber(d.MAÑANA?.USD),
                 CLP: toNumber(d.MAÑANA?.CLP),
-                egresos_detalle: d.MAÑANA?.egresos_detalle || ''
+                egresos_detalle: d.MAÑANA?.egresos_detalle || '',
+                nota_entrega: d.MAÑANA?.nota_entrega || '',
+                flujo_id: parseInt(d.MAÑANA?.flujo_id) || 0
               },
               TARDE: {
                 PEN: toNumber(d.TARDE?.PEN),
                 USD: toNumber(d.TARDE?.USD),
                 CLP: toNumber(d.TARDE?.CLP),
-                egresos_detalle: d.TARDE?.egresos_detalle || ''
+                egresos_detalle: d.TARDE?.egresos_detalle || '',
+                nota_entrega: d.TARDE?.nota_entrega || '',
+                flujo_id: parseInt(d.TARDE?.flujo_id) || 0
               },
               TOTAL: d.TOTAL || { PEN: 0, USD: 0, CLP: 0 }
             };
+          });
+
+          // Sync original notes map to detect changes
+          originalNotes.value.clear();
+          dias.value.forEach(d => {
+             if (d.MAÑANA.flujo_id > 0) originalNotes.value.set(d.MAÑANA.flujo_id, d.MAÑANA.nota_entrega);
+             if (d.TARDE.flujo_id > 0) originalNotes.value.set(d.TARDE.flujo_id, d.TARDE.nota_entrega);
           });
         }
       } catch (e) {
         console.error("Error al consultar reporte alex mensual", e);
       } finally {
         loading.value = false;
+      }
+    };
+
+    const originalNotes = ref(new Map());
+    const guardandoNotas = ref(false);
+
+    const pendingChanges = computed(() => {
+        let count = 0;
+        dias.value.forEach(d => {
+            if (d.MAÑANA.flujo_id > 0 && originalNotes.value.get(d.MAÑANA.flujo_id) !== d.MAÑANA.nota_entrega) count++;
+            if (d.TARDE.flujo_id > 0 && originalNotes.value.get(d.TARDE.flujo_id) !== d.TARDE.nota_entrega) count++;
+        });
+        return count;
+    });
+
+    const guardarNotas = async () => {
+      if (pendingChanges.value === 0) return;
+      guardandoNotas.value = true;
+      try {
+        const turnos = [];
+        dias.value.forEach(d => {
+          if (d.MAÑANA.flujo_id > 0 && originalNotes.value.get(d.MAÑANA.flujo_id) !== d.MAÑANA.nota_entrega) {
+             turnos.push({ flujo_id: d.MAÑANA.flujo_id, nota_entrega: d.MAÑANA.nota_entrega });
+          }
+          if (d.TARDE.flujo_id > 0 && originalNotes.value.get(d.TARDE.flujo_id) !== d.TARDE.nota_entrega) {
+             turnos.push({ flujo_id: d.TARDE.flujo_id, nota_entrega: d.TARDE.nota_entrega });
+          }
+        });
+        
+        const url = `${window.SOBRES_CONFIG.apiEndpoint}?action=guardar_notas_sobres`;
+        const res = await axios.post(url, { turnos });
+        if (res.data.ok) {
+           // Actualizar mapeo original para resetear el botón
+           turnos.forEach(t => originalNotes.value.set(t.flujo_id, t.nota_entrega));
+        } else {
+           alert("Error al guardar: " + res.data.msg);
+        }
+      } catch (e) {
+        console.error(e);
+        alert("Ocurrió un error al guardar las notas");
+      } finally {
+        guardandoNotas.value = false;
       }
     };
 
@@ -137,6 +199,7 @@ createApp({
       dias,
       formatDate,
       formatDateShort,
+      formatDateNumeric,
       getDetalleExtractions,
       debug,
       lastResponse,
@@ -146,7 +209,10 @@ createApp({
       consultar,
       formatMoney,
       imprimirReporte,
-      toggleDebug
+      toggleDebug,
+      pendingChanges,
+      guardandoNotas,
+      guardarNotas
     };
   }
 }).mount('#app-sobres');

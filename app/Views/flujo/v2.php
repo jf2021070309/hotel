@@ -312,15 +312,40 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
            </div>
            
            <div class="mb-3">
+             <label class="form-label fw-bold text-secondary" style="font-size:12px;">Medio de Pago / Destino</label>
+             <select class="form-select form-select-sm fw-bold" v-model="formConsumo.columna">
+               <option value="pen_ef">Efectivo Soles</option>
+               <option value="usd_ef">Efectivo Dólares</option>
+               <option value="pesos">Efectivo Pesos</option>
+               <option value="pos_pen">POS Soles</option>
+               <option value="pos_usd">POS Dólares</option>
+               <option value="yape">Yape / Plin</option>
+               <option value="depo">Transferencia</option>
+             </select>
+           </div>
+           
+           <div class="mb-3">
              <label class="form-label fw-bold text-secondary" style="font-size:12px;">Precio Cargado</label>
              <div class="input-group input-group-sm">
-               <span class="input-group-text bg-light fw-bold">S/</span>
+               <span class="input-group-text bg-light fw-bold">
+                 {{ ['pos_usd', 'usd_ef'].includes(formConsumo.columna) ? '$' : (formConsumo.columna === 'pesos' ? '₱' : 'S/') }}
+               </span>
                <input type="number" step="0.01" class="form-control fw-bold" v-model="formConsumo.precio" :readonly="formConsumo.tipo === 'BEBIDA'">
              </div>
            </div>
         </div>
         <div class="modal-footer border-0 pt-0">
-          <button class="btn btn-sm btn-primary w-100 fw-bold" @click="guardarConsumoFlujo">Sumar a {{ formConsumo.columna.toUpperCase() }}</button>
+          <button class="btn btn-sm btn-primary w-100 fw-bold" @click="guardarConsumoFlujo">
+            Sumar a {{ 
+              formConsumo.columna === 'pen_ef' ? 'Efectivo Soles' :
+              formConsumo.columna === 'usd_ef' ? 'Efectivo Dólares' :
+              formConsumo.columna === 'pesos' ? 'Efectivo Pesos' :
+              formConsumo.columna === 'pos_pen' ? 'POS Soles' :
+              formConsumo.columna === 'pos_usd' ? 'POS Dólares' :
+              formConsumo.columna === 'yape' ? 'Yape / Plin' :
+              'Transferencia'
+            }}
+          </button>
         </div>
       </div>
     </div>

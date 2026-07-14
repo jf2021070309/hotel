@@ -151,88 +151,66 @@ $fecha = date('Y-m-d');
         </div>
       </div>
 
-      <!-- BANNER DE TÍTULO DE LA MATRIZ DE DÍAS -->
-      <div class="flex items-center justify-between pt-4 border-b border-slate-200/80 pb-3">
-        <div class="flex items-center gap-3">
-          <div class="w-3 h-8 rounded-lg bg-emerald-500"></div>
-          <h2 class="text-xl font-bold text-slate-900 tracking-tight">Desglose Diario Consolidado</h2>
-        </div>
-        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Matriz de 31 Bloques</span>
+      <!-- TABLA TIPO EXCEL -->
+      <div class="overflow-x-auto bg-white border border-slate-300 shadow-sm mt-6 mb-8">
+        <table class="w-full text-sm text-left border-collapse" style="font-family: Arial, sans-serif;">
+          <thead class="text-xs text-black uppercase border-b-2 border-slate-700">
+            <tr>
+              <th class="border border-slate-400 p-2 text-center text-white font-bold" colspan="2" style="background-color: #557934;">{{ meses[mesFiltro - 1] }}-{{ String(anioFiltro).slice(-2) }}</th>
+              <th class="border border-slate-400 p-2 text-center font-bold" style="background-color: #E2EFE2;">PESOS EFECTIVO</th>
+              <th class="border border-slate-400 p-2 text-center font-bold" style="background-color: #E2EFE2;">DOLARES</th>
+              <th class="border border-slate-400 p-2 text-center font-bold" style="background-color: #E2EFE2;">SOLES EFECTIVO</th>
+              <th class="border border-slate-400 p-2 text-left font-bold bg-white min-w-[250px]">NOTA</th>
+            </tr>
+          </thead>
+          <tbody>
+            <template v-for="dia in dias" :key="dia.fecha">
+              <!-- MAÑANA -->
+              <tr class="bg-white hover:bg-slate-50 transition-colors">
+                <td class="border border-slate-400 px-3 py-1.5 font-bold text-black text-[13px] uppercase w-24">MAÑANA</td>
+                <td class="border border-slate-400 px-3 py-1.5 text-center text-black text-[13px] w-28">{{ formatDateNumeric(dia.fecha) }}</td>
+                <td class="border border-slate-400 px-3 py-1.5 text-right text-black text-[13px]">{{ dia.MAÑANA.CLP > 0 ? formatMoney(dia.MAÑANA.CLP, 0) : '' }}</td>
+                <td class="border border-slate-400 px-3 py-1.5 text-right text-black text-[13px]">{{ dia.MAÑANA.USD > 0 ? formatMoney(dia.MAÑANA.USD) : '' }}</td>
+                <td class="border border-slate-400 px-3 py-1.5 text-right text-black text-[13px]">{{ dia.MAÑANA.PEN > 0 ? 'S/ ' + formatMoney(dia.MAÑANA.PEN) : '' }}</td>
+                <td class="border border-slate-400 p-0 relative">
+                  <input type="text" v-model="dia.MAÑANA.nota_entrega" :disabled="dia.MAÑANA.flujo_id === 0" class="w-full h-full min-h-[30px] bg-transparent border-0 outline-none focus:ring-2 focus:ring-inset focus:ring-[#557934] px-3 text-black text-[11px] uppercase placeholder-slate-300 disabled:opacity-50" placeholder="...">
+                </td>
+              </tr>
+              <!-- TARDE -->
+              <tr class="bg-white hover:bg-slate-50 transition-colors">
+                <td class="border border-slate-400 px-3 py-1.5 font-bold text-black text-[13px] uppercase">TARDE</td>
+                <td class="border border-slate-400 px-3 py-1.5 text-center text-black text-[13px]">{{ formatDateNumeric(dia.fecha) }}</td>
+                <td class="border border-slate-400 px-3 py-1.5 text-right text-black text-[13px]">{{ dia.TARDE.CLP > 0 ? formatMoney(dia.TARDE.CLP, 0) : '' }}</td>
+                <td class="border border-slate-400 px-3 py-1.5 text-right text-black text-[13px]">{{ dia.TARDE.USD > 0 ? formatMoney(dia.TARDE.USD) : '' }}</td>
+                <td class="border border-slate-400 px-3 py-1.5 text-right text-black text-[13px]">{{ dia.TARDE.PEN > 0 ? 'S/ ' + formatMoney(dia.TARDE.PEN) : '' }}</td>
+                <td class="border border-slate-400 p-0 relative">
+                  <input type="text" v-model="dia.TARDE.nota_entrega" :disabled="dia.TARDE.flujo_id === 0" class="w-full h-full min-h-[30px] bg-transparent border-0 outline-none focus:ring-2 focus:ring-inset focus:ring-[#557934] px-3 text-black text-[11px] uppercase placeholder-slate-300 disabled:opacity-50" placeholder="...">
+                </td>
+              </tr>
+              <!-- TOTAL -->
+              <tr class="hover:bg-[#d5e7d5] transition-colors" style="background-color: #C3D8C3;">
+                <td class="border border-slate-400 px-3 py-1.5 font-bold text-black text-[13px] uppercase">TOTAL</td>
+                <td class="border border-slate-400 px-3 py-1.5 text-center"></td>
+                <td class="border border-slate-400 px-3 py-1.5 text-right text-black text-[13px]">{{ dia.TOTAL.CLP > 0 ? formatMoney(dia.TOTAL.CLP, 0) : '' }}</td>
+                <td class="border border-slate-400 px-3 py-1.5 text-right text-black text-[13px]">{{ dia.TOTAL.USD > 0 ? formatMoney(dia.TOTAL.USD) : '' }}</td>
+                <td class="border border-slate-400 px-3 py-1.5 text-right text-black text-[13px]">{{ dia.TOTAL.PEN > 0 ? 'S/ ' + formatMoney(dia.TOTAL.PEN) : '' }}</td>
+                <td class="border border-slate-400 px-3 py-1.5 text-left text-black text-[11px] font-bold">
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
       </div>
 
-      <!-- MATRIZ COMPACTA DE 31 TARJETAS DIARIAS (ESTILO CALENDARIO PREMIUM) -->
-      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 gap-3.5">
-        <div v-for="dia in dias" :key="dia.fecha" 
-             class="bg-white rounded-2xl border border-slate-200/80 p-3.5 shadow-xs flex flex-col justify-between transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-emerald-500/40 group relative overflow-hidden min-w-0"
-             :class="{'ring-1 ring-emerald-500/30 bg-gradient-to-b from-emerald-50/30 via-white to-white': dia.TOTAL.PEN > 0 || dia.TOTAL.USD > 0 || dia.TOTAL.CLP > 0}">
-          
-          <div v-if="dia.TOTAL.PEN > 0 || dia.TOTAL.USD > 0 || dia.TOTAL.CLP > 0" class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-500"></div>
-          
-          <div>
-            <!-- Encabezado de la Tarjeta -->
-            <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
-              <span class="font-extrabold text-slate-900 text-xs group-hover:text-emerald-600 transition-colors whitespace-nowrap tracking-tight">
-                {{ formatDateShort(dia.fecha) }}
-              </span>
-              <span class="px-2 py-0.5 rounded-md text-[9px] font-black tracking-wider uppercase whitespace-nowrap flex items-center gap-1"
-                    :class="(dia.TOTAL.PEN > 0 || dia.TOTAL.USD > 0 || dia.TOTAL.CLP > 0) ? 'bg-emerald-100/80 text-emerald-700' : 'bg-slate-100 text-slate-400'">
-                <i class="bi" :class="(dia.TOTAL.PEN > 0 || dia.TOTAL.USD > 0 || dia.TOTAL.CLP > 0) ? 'bi-check-circle-fill text-[8px]' : 'bi-dash-circle text-[8px]'"></i>
-                {{ (dia.TOTAL.PEN > 0 || dia.TOTAL.USD > 0 || dia.TOTAL.CLP > 0) ? 'ACTIVO' : 'SIN MOVS' }}
-              </span>
-            </div>
-
-            <!-- Métricas Comprimidas -->
-            <div class="space-y-1.5 text-[11px] font-medium">
-              <!-- Soles -->
-              <div class="flex items-center justify-between p-1.5 px-2 rounded-xl bg-slate-50/90 group-hover:bg-emerald-50/60 transition-colors">
-                <span class="flex items-center gap-1 text-slate-500 font-semibold whitespace-nowrap flex-shrink-0 text-[10.5px]">
-                  <span>🇵🇪</span> Soles
-                </span>
-                <span class="font-black text-slate-900 text-[11.5px] whitespace-nowrap pl-1">
-                  S/ {{ formatMoney(dia.TOTAL.PEN) }}
-                </span>
-              </div>
-
-              <!-- Dólares -->
-              <div class="flex items-center justify-between p-1.5 px-2 rounded-xl bg-slate-50/90 group-hover:bg-emerald-50/60 transition-colors">
-                <span class="flex items-center gap-1 text-slate-500 font-semibold whitespace-nowrap flex-shrink-0 text-[10.5px]">
-                  <span>🇺🇸</span> Dólares
-                </span>
-                <span class="font-black text-blue-600 text-[11.5px] whitespace-nowrap pl-1">
-                  $ {{ formatMoney(dia.TOTAL.USD) }}
-                </span>
-              </div>
-
-              <!-- Pesos -->
-              <div class="flex items-center justify-between p-1.5 px-2 rounded-xl bg-slate-50/90 group-hover:bg-emerald-50/60 transition-colors">
-                <span class="flex items-center gap-1 text-slate-500 font-semibold whitespace-nowrap flex-shrink-0 text-[10.5px]">
-                  <span>🇨🇱</span> Pesos
-                </span>
-                <span class="font-black text-emerald-600 text-[11.5px] whitespace-nowrap pl-1">
-                  $ {{ formatMoney(dia.TOTAL.CLP, 0) }}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Retiros / Extracciones Comprimidos -->
-          <div v-if="getDetalleExtractions(dia)" class="mt-3 pt-2 border-t border-dashed border-rose-200">
-            <div class="bg-rose-50 border border-rose-100 rounded-xl p-2 text-rose-700 text-[11px] flex items-start gap-1.5 group-hover:bg-rose-100/60 transition-colors">
-              <i class="bi bi-box-arrow-up-right text-rose-500 text-xs mt-0.5 flex-shrink-0"></i>
-              <div class="font-bold tracking-tight text-ellipsis overflow-hidden">
-                <div class="text-[9px] uppercase font-black tracking-wider text-rose-500 mb-0.5 whitespace-nowrap">Retiros Registrados</div>
-                <span :title="getDetalleExtractions(dia)" class="line-clamp-2 text-[10.5px] leading-tight">
-                  {{ getDetalleExtractions(dia) }}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div v-else class="mt-3 pt-2 border-t border-slate-100 text-center">
-            <span class="text-[10px] text-slate-300 uppercase tracking-wider font-bold whitespace-nowrap">Sin retiros del sobre</span>
-          </div>
+      <!-- BOTÓN FLOTANTE GUARDAR CAMBIOS -->
+      <transition enter-active-class="transition ease-out duration-300" enter-from-class="transform opacity-0 translate-y-10" enter-to-class="transform opacity-100 translate-y-0" leave-active-class="transition ease-in duration-200" leave-from-class="transform opacity-100 translate-y-0" leave-to-class="transform opacity-0 translate-y-10">
+        <div v-if="pendingChanges > 0" class="fixed bottom-8 right-8 z-50">
+          <button @click="guardarNotas" :disabled="guardandoNotas" class="bg-[#198754] hover:bg-[#157347] text-white px-5 py-2.5 rounded-full shadow-lg font-bold flex items-center gap-2 transition-all transform hover:scale-105 active:scale-95 border border-white/20">
+            <i class="bi" :class="guardandoNotas ? 'bi-arrow-repeat animate-spin' : 'bi-download'"></i>
+            Guardar Cambios ({{ pendingChanges }} turnos)
+          </button>
         </div>
-      </div>
+      </transition>
 
       <!-- Panel Debug -->
       <div v-if="debug" class="bg-slate-900 text-slate-200 rounded-3xl p-6 shadow-2xl overflow-hidden font-mono text-xs space-y-4">

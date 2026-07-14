@@ -113,6 +113,12 @@ switch ($action) {
         json_response($res['ok'], null, $res['ok'] ? 200 : 422, $res['msg'] ?? '');
         break;
 
+    case 'guardar_notas_sobres':
+        if ($method !== 'POST') json_response(false, null, 405, 'Método no permitido');
+        $res = $controller->guardarNotasSobres($input);
+        json_response($res['ok'], null, $res['ok'] ? 200 : 422, $res['msg'] ?? '');
+        break;
+
     case 'verificar_apertura':
         if ($method !== 'GET') json_response(false, null, 405, 'Método no permitido');
         $res = $controller->verificarApertura();

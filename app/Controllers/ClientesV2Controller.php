@@ -16,6 +16,9 @@ class ClientesV2Controller {
         try {
             $this->pdo->exec("ALTER TABLE `clientes` ADD COLUMN `empresa` VARCHAR(255) DEFAULT NULL AFTER `ruc`;");
         } catch (Exception $e) {}
+        try {
+            $this->pdo->exec("ALTER TABLE `clientes` ADD COLUMN `es_frecuente` TINYINT(1) DEFAULT 0;");
+        } catch (Exception $e) {}
     }
 
     public function listar(): array {
@@ -30,6 +33,7 @@ class ClientesV2Controller {
                     ciudad,
                     email
                 FROM clientes 
+                WHERE es_frecuente = 1
                 ORDER BY id DESC";
         $stmt = $this->pdo->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -61,7 +65,8 @@ class ClientesV2Controller {
                     celular = ?,
                     nacionalidad = ?,
                     ciudad = ?,
-                    email = ?
+                    email = ?,
+                    es_frecuente = 1
                     WHERE id = ?");
                 if ($stmt->execute([$dni, $nombre, $ruc, $empresa, $celular, $nacionalidad, $ciudad, $email, $id])) {
                     $okCount++;
@@ -80,14 +85,15 @@ class ClientesV2Controller {
                         celular = ?,
                         nacionalidad = ?,
                         ciudad = ?,
-                        email = ?
+                        email = ?,
+                        es_frecuente = 1
                         WHERE id = ?");
                     if ($stmt->execute([$nombre, $ruc, $empresa, $celular, $nacionalidad, $ciudad, $email, $existing['id']])) {
                         $okCount++;
                     }
                 } else {
                     // INSERT
-                    $stmt = $this->pdo->prepare("INSERT INTO clientes (documento_tipo, documento_num, nombre_razon_social, ruc, empresa, celular, nacionalidad, ciudad, email, tipo_cliente) VALUES ('DNI', ?, ?, ?, ?, ?, ?, ?, ?, 'NATURAL')");
+                    $stmt = $this->pdo->prepare("INSERT INTO clientes (documento_tipo, documento_num, nombre_razon_social, ruc, empresa, celular, nacionalidad, ciudad, email, tipo_cliente, es_frecuente) VALUES ('DNI', ?, ?, ?, ?, ?, ?, ?, ?, 'NATURAL', 1)");
                     if ($stmt->execute([$dni, $nombre, $ruc, $empresa, $celular, $nacionalidad, $ciudad, $email])) {
                         $okCount++;
                     }

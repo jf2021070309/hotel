@@ -418,6 +418,22 @@ class ReservasModel {
     public function cambiarEstadoHabitacion(int $hab_id, string $estado): bool {
         require_once __DIR__ . '/HabitacionModel.php';
         $habModel = new HabitacionModel($this->pdo);
+
+        if ($estado === 'libre') {
+            try {
+                $stmt = $this->pdo->prepare("
+                    UPDATE rooming_stays s
+                    JOIN rooming_pax p ON p.stay_id = s.id AND p.es_titular_acompanante = 1
+                    JOIN clientes c ON c.id = p.cliente_id
+                    SET s.estado = 'cancelado'
+                    WHERE s.habitacion_id = ? 
+                      AND s.estado IN ('reservado', 'activo', 'inhouse')
+                      AND c.nombre_razon_social IN ('[SUCIO]', '[MANTENIMIENTO]')
+                ");
+                $stmt->execute([$hab_id]);
+            } catch (Exception $e) {}
+        }
+
         return $habModel->actualizarEstado($hab_id, $estado);
     }
 }

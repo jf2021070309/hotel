@@ -409,9 +409,16 @@ class FlujoController {
                 $stmtInv->execute([$prodId]);
             }
 
-            $stmtCat = $this->pdo->prepare("SELECT id FROM finanzas_categorias WHERE nombre LIKE '%VENTAS%' AND modulo = 'Flujo' LIMIT 1");
-            $stmtCat->execute();
-            $catId = $stmtCat->fetchColumn() ?: null;
+            $catIdMap = [
+                'depo' => 1,
+                'yape' => 2,
+                'pos_usd' => 3,
+                'pos_pen' => 4,
+                'pesos' => 5,
+                'usd_ef' => 6,
+                'pen_ef' => 7
+            ];
+            $catId = $catIdMap[$columna] ?? 7;
 
             $obsFlujo = "$obs - Registro #$stayId (Hab #$hab)";
 

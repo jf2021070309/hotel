@@ -490,7 +490,8 @@ const app = createApp({
         }
       } catch (err) {
         console.error(err);
-        Swal.fire('Error', 'No se pudo guardar el consumo', 'error');
+        const serverMsg = err.response?.data?.msg || err.response?.data || err.message;
+        Swal.fire('Error', 'No se pudo guardar: ' + JSON.stringify(serverMsg), 'error');
       }
     };
 

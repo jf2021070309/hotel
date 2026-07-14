@@ -26,6 +26,10 @@ class RoomingV2Model {
             $this->pdo->query("ALTER TABLE rooming_stays ADD COLUMN pagos_json TEXT DEFAULT NULL");
         } catch (Exception $e) {}
 
+        try {
+            $this->pdo->query("ALTER TABLE rooming_stays MODIFY tipo_comprobante ENUM('BOLETA','FACTURA','TICKET','F.X.','NINGUNO','-') DEFAULT 'NINGUNO'");
+        } catch (Exception $e) {}
+
         $sql = "
             SELECT
                 s.id            AS stay_id,
@@ -84,6 +88,10 @@ class RoomingV2Model {
      * Sincroniza automáticamente los pagos en la tabla `anticipos` y `flujo_caja_movimientos`.
      */
     public function guardarReporte(array $rows): array {
+        try {
+            $this->pdo->query("ALTER TABLE rooming_stays MODIFY tipo_comprobante ENUM('BOLETA','FACTURA','TICKET','F.X.','NINGUNO','-') DEFAULT 'NINGUNO'");
+        } catch (Exception $e) {}
+
         try {
             $this->pdo->beginTransaction();
 

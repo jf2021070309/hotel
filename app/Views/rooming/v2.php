@@ -436,7 +436,6 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                          :style="{ borderBottom: pIdx===f.periodos_list.length-1?'none':'1px dashed #000', padding:'2px 4px' }">
                       <select v-model="p.comprobante_pago" class="form-select form-select-sm table-editable-select text-center fw-semibold border-0 bg-transparent w-100"
                               @change="marcarModificado(f)" style="height:28px;font-size:11px;">
-                        <option value="">-</option>
                         <option value="NINGUNO">NINGUNO</option>
                         <option value="BOLETA">BOLETA</option>
                         <option value="FACTURA">FACTURA</option>

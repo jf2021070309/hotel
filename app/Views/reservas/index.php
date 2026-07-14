@@ -139,6 +139,13 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
   .cuadro-table tbody tr:hover td.col-day {
     background-color: rgba(212, 175, 55, 0.04);
   }
+  
+  /* When a stay block is hovered anywhere, lower all sticky columns below the tooltip */
+  .cuadro-table:has(.stay-block:hover) thead th.col-hab,
+  .cuadro-table:has(.stay-block:hover) td.col-hab {
+    z-index: 1 !important;
+  }
+  
   .cuadro-table td.col-day:hover {
     background-color: rgba(212, 175, 55, 0.2) !important;
     outline: 1.5px solid #d4af37;

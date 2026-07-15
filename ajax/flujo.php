@@ -95,6 +95,12 @@ switch ($action) {
         json_response(true, $controller->flujoMesGrid($_GET));
         break;
 
+    case 'guardar_nota':
+        if ($method !== 'POST') json_response(false, null, 405, 'Método no permitido');
+        $res = $controller->guardarNota();
+        json_response($res['success'], null, $res['success'] ? 200 : 400, $res['message']);
+        break;
+
     case 'datos_consumo_rapido':
         if ($method !== 'GET') json_response(false, null, 405, 'Método no permitido');
         $res = $controller->datosConsumoRapido();

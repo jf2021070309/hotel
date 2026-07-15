@@ -139,9 +139,9 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
                 <!-- Totales MAÑANA -->
                 <td class="num-cell fw-bold text-danger">{{ d.manana.total_egreso ? 'S/ ' + formatearNumero(d.manana.total_egreso) : '-' }}</td>
                 <td class="num-cell fw-bold text-dark bg-light">{{ d.manana.total_entregar ? 'S/ ' + formatearNumero(d.manana.total_entregar) : '-' }}</td>
-                <td class="text-truncate text-muted text-center" style="max-width: 140px; font-size: 11px;">
-                  <span v-if="d.manana.flujo_id" class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">
-                    {{ d.manana.nota_entrega || d.manana.operador || 'Cerrado' }}
+                <td class="text-truncate text-muted text-center cursor-pointer" style="max-width: 140px; font-size: 11px; cursor: pointer;" @click="abrirModalNota(d.manana)">
+                  <span v-if="d.manana.flujo_id" class="badge bg-secondary-subtle text-secondary border border-secondary-subtle" style="white-space: normal; text-align: left; display: inline-block; width: 100%;">
+                    {{ d.manana.nota_entrega || d.manana.operador || 'Añadir nota...' }}
                   </span>
                   <span v-else>-</span>
                 </td>
@@ -182,9 +182,9 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
                 <!-- Totales TARDE -->
                 <td class="num-cell fw-bold text-danger">{{ d.tarde.total_egreso ? 'S/ ' + formatearNumero(d.tarde.total_egreso) : '-' }}</td>
                 <td class="num-cell fw-bold text-dark bg-light">{{ d.tarde.total_entregar ? 'S/ ' + formatearNumero(d.tarde.total_entregar) : '-' }}</td>
-                <td class="text-truncate text-muted text-center" style="max-width: 140px; font-size: 11px;">
-                  <span v-if="d.tarde.flujo_id" class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">
-                    {{ d.tarde.nota_entrega || d.tarde.operador || 'Cerrado' }}
+                <td class="text-truncate text-muted text-center cursor-pointer" style="max-width: 140px; font-size: 11px; cursor: pointer;" @click="abrirModalNota(d.tarde)">
+                  <span v-if="d.tarde.flujo_id" class="badge bg-secondary-subtle text-secondary border border-secondary-subtle" style="white-space: normal; text-align: left; display: inline-block; width: 100%;">
+                    {{ d.tarde.nota_entrega || d.tarde.operador || 'Añadir nota...' }}
                   </span>
                   <span v-else>-</span>
                 </td>
@@ -398,6 +398,29 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
         <div class="modal-footer border-0 pt-0">
           <button class="btn btn-sm btn-danger w-100 fw-bold" @click="accionEgreso(formEgreso.modo)">
             {{ formEgreso.modo === 'sumar' ? 'Agregar Egreso' : 'Reemplazar Total' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL EDITAR NOTA DE ENTREGA -->
+  <div class="modal fade" id="modalNotaFlujo" tabindex="-1">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg">
+        <div class="modal-header bg-secondary text-white border-0 py-2">
+          <h6 class="modal-title fw-bold">Nota de Entrega</h6>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-3">
+           <div class="mb-3">
+             <label class="form-label fw-bold text-secondary" style="font-size:12px;">Texto / Observación</label>
+             <textarea class="form-control" v-model="notaActiva.nota" rows="4" placeholder="Ej. Entregado a Juan Pérez..."></textarea>
+           </div>
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button class="btn btn-sm btn-secondary w-100 fw-bold" @click="guardarNotaEntrega">
+            Guardar Nota
           </button>
         </div>
       </div>

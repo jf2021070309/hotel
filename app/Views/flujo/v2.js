@@ -42,6 +42,12 @@ const app = createApp({
       soles_entregar: 0
     });
 
+    // Estado del modal de nota de entrega
+    const notaActiva = reactive({
+      flujo_id: null,
+      nota: ''
+    });
+
     /**
      * Da formato a un número para visualización
      */
@@ -694,6 +700,47 @@ const app = createApp({
       }
     };
 
+    /**
+     * Muestra el modal para editar nota de entrega
+     */
+    const modalNotaObj = ref(null);
+    const abrirModalNota = (turno) => {
+      if (!turno || !turno.flujo_id) return;
+      notaActiva.flujo_id = turno.flujo_id;
+      notaActiva.nota = turno.nota_entrega || '';
+      if (!modalNotaObj.value) {
+        modalNotaObj.value = new bootstrap.Modal(document.getElementById('modalNotaFlujo'));
+      }
+      modalNotaObj.value.show();
+    };
+
+    const guardarNotaEntrega = async () => {
+      if (!notaActiva.flujo_id) return;
+      
+      try {
+        const response = await axios.post(window.SERVER_ROUTES.apiMensual.replace('mensual_grid', 'guardar_nota'), {
+          flujo_id: notaActiva.flujo_id,
+          nota_entrega: notaActiva.nota
+        });
+
+        if (response.data && response.data.ok) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Nota guardada',
+            showConfirmButton: false,
+            timer: 1000
+          });
+          modalNotaObj.value.hide();
+          cargarDatos(); // recargar
+        } else {
+          Swal.fire('Error', response.data.msg || 'No se pudo guardar la nota', 'error');
+        }
+      } catch (err) {
+        console.error(err);
+        Swal.fire('Error', 'Problema al comunicarse con el servidor', 'error');
+      }
+    };
+
     onMounted(() => {
       cargarOpcionesConsumo();
       cargarDatos();
@@ -737,7 +784,10 @@ const app = createApp({
       modalEgresoObj,
       modalEgresoOpcionesObj,
       abrirModalInput,
-      cleanObs
+      cleanObs,
+      notaActiva,
+      abrirModalNota,
+      guardarNotaEntrega
     };
   }
 });

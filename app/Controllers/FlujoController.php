@@ -247,6 +247,27 @@ class FlujoController {
     }
 
     /**
+     * Guarda la nota de entrega de manera manual desde el grid v2
+     */
+    public function guardarNota(): array {
+        $json = file_get_contents('php://input');
+        $data = json_decode($json, true);
+        
+        $flujoId = (int)($data['flujo_id'] ?? 0);
+        $nota = trim($data['nota_entrega'] ?? '');
+        
+        if ($flujoId <= 0) {
+            return ['success' => false, 'message' => 'ID inválido'];
+        }
+        
+        $stmt = $this->pdo->prepare("UPDATE flujo_caja SET nota_entrega = ? WHERE id = ?");
+        if ($stmt->execute([$nota, $flujoId])) {
+            return ['success' => true, 'message' => 'Nota guardada'];
+        }
+        return ['success' => false, 'message' => 'Error al guardar la nota'];
+    }
+
+    /**
      * Obtiene el resumen consolidado mensual específico para la liquidación de sobres de Alex.
      * 
      * @param int $mes Mes (1-12).

@@ -70,7 +70,7 @@ class FinanzasHelper {
                     // Si no existe, lo creamos automáticamente (en estado 'borrador')
                     $stmtInsert = $this->pdo->prepare("
                         INSERT INTO flujo_caja (fecha, turno, estado, usuario_id, nota_entrega)
-                        VALUES (?, ?, 'borrador', ?, 'Apertura automática desde Rooming V2')
+                        VALUES (?, ?, 'borrador', ?, '')
                     ");
                     $stmtInsert->execute([$fechaTrans, $turnoTrans, $data['usuario_id'] ?? 1]);
                     $flujoId = (int)$this->pdo->lastInsertId();
@@ -91,7 +91,7 @@ class FinanzasHelper {
                     if (!$flujoId) {
                         $stmtInsert = $this->pdo->prepare("
                             INSERT INTO flujo_caja (fecha, turno, estado, usuario_id, nota_entrega)
-                            VALUES (?, ?, 'borrador', ?, 'Apertura automática de emergencia')
+                            VALUES (?, ?, 'borrador', ?, '')
                         ");
                         $stmtInsert->execute([$fechaTrans, $turnoTrans, $data['usuario_id'] ?? 1]);
                         $flujoId = (int)$this->pdo->lastInsertId();

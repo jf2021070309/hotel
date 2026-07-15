@@ -29,7 +29,7 @@ class ReporteModel {
                 a.fecha AS pago_fecha,
                 CASE 
                     -- Sincronizado con FinanzasHelper::getTurnoActual()
-                    WHEN HOUR(a.created_at) >= 6 AND HOUR(a.created_at) < 14 THEN 'MAÑANA' 
+                    WHEN HOUR(COALESCE(s.fecha_checkin_real, a.created_at)) >= 6 AND HOUR(COALESCE(s.fecha_checkin_real, a.created_at)) < 14 THEN 'MAÑANA' 
                     ELSE 'TARDE' 
                 END AS turno,
                 a.moneda,

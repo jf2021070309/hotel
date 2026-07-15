@@ -123,18 +123,18 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
                   <td class="text-center fw-bold text-secondary">{{ formatFecha(y.fecha) }}</td>
                   
                   <!-- YAPE RECIBIDO -->
-                  <td class="text-end text-primary fw-bold position-relative" style="cursor:pointer;" @click="abrirModalCelda(y, 'YAPE_RECIBIDO')">
+                  <td class="text-end text-primary fw-bold position-relative" style="cursor:pointer;" @click="abrirModalCelda(y, 'YAPE_RECIBIDO')" :title="y.observacion ? y.observacion : ''">
                     {{ parseFloat(y.yape_recibido).toFixed(2) }}
-                    <div v-if="y.observacion" class="position-absolute top-0 end-0" style="width: 0; height: 0; border-left: 8px solid transparent; border-top: 8px solid #ef4444;" title="Tiene nota"></div>
+                    <div v-if="y.observacion" class="position-absolute top-0 end-0" style="width: 0; height: 0; border-left: 8px solid transparent; border-top: 8px solid #ef4444;"></div>
                   </td>
                   
                   <!-- CATEGORIAS -->
-                  <td class="text-end position-relative" v-for="cat in categoriasConfig" :key="cat" style="cursor:pointer;" @click="abrirModalCelda(y, cat)">
+                  <td class="text-end position-relative" v-for="cat in categoriasConfig" :key="cat" style="cursor:pointer;" @click="abrirModalCelda(y, cat)" :title="(y.detalles_info && y.detalles_info[cat] && y.detalles_info[cat].observacion) ? y.detalles_info[cat].observacion : ''">
                     <template v-if="y.detalles_montos && y.detalles_montos[cat] > 0">
                       <span>{{ parseFloat(y.detalles_montos[cat]).toFixed(2) }}</span>
                     </template>
                     <span v-else class="text-muted" style="opacity:0.3">-</span>
-                    <div v-if="y.detalles_info && y.detalles_info[cat] && y.detalles_info[cat].observacion" class="position-absolute top-0 end-0" style="width: 0; height: 0; border-left: 8px solid transparent; border-top: 8px solid #ef4444;" title="Tiene nota"></div>
+                    <div v-if="y.detalles_info && y.detalles_info[cat] && y.detalles_info[cat].observacion" class="position-absolute top-0 end-0" style="width: 0; height: 0; border-left: 8px solid transparent; border-top: 8px solid #ef4444;"></div>
                   </td>
 
                   <td class="text-end text-danger fw-bold" style="background-color: #f8fafc;">{{

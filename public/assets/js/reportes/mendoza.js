@@ -134,19 +134,36 @@ createApp({
                 }
             });
 
-            // 3. Procesar Egresos (para asegurar que el día aparezca si solo hubo egresos)
+            // 3. Procesar Egresos (para asegurar que el día aparezca si solo hubo egresos y sumar totales)
             if (egresos.value) {
                 Object.keys(egresos.value).forEach(fecha => {
                     let hasEgresos = false;
-                    ['MAÑANA', 'TARDE'].forEach(t => {
-                        if (egresos.value[fecha] && egresos.value[fecha][t]) {
-                            Object.values(egresos.value[fecha][t]).forEach(val => {
-                                if (parseFloat(val) > 0) hasEgresos = true;
-                            });
-                        }
-                    });
+                    let totalManana = 0;
+                    let totalTarde = 0;
+                    
+                    if (egresos.value[fecha] && egresos.value[fecha]['MAÑANA']) {
+                        Object.values(egresos.value[fecha]['MAÑANA']).forEach(val => {
+                            let m = parseFloat(val) || 0;
+                            if (m > 0) hasEgresos = true;
+                            totalManana += m;
+                        });
+                    }
+                    if (egresos.value[fecha] && egresos.value[fecha]['TARDE']) {
+                        Object.values(egresos.value[fecha]['TARDE']).forEach(val => {
+                            let m = parseFloat(val) || 0;
+                            if (m > 0) hasEgresos = true;
+                            totalTarde += m;
+                        });
+                    }
+                    
                     if (hasEgresos && !groups[fecha]) {
                         groups[fecha] = { hospedaje: [], consumos: [], totales: {}, totales_manana: {}, totales_tarde: {} };
+                    }
+                    
+                    if (groups[fecha]) {
+                        groups[fecha].egresos_manana = totalManana;
+                        groups[fecha].egresos_tarde = totalTarde;
+                        groups[fecha].egresos_total = totalManana + totalTarde;
                     }
                 });
             }

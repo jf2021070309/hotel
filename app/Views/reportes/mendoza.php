@@ -435,6 +435,7 @@ window.MENDOZA_CONFIG = {
                               </tbody>
                           </table>
                         </div>
+                </div>
                         
                         <!-- Totales del Día -->
                         <div class="mb-5 shadow-sm" style="border-radius: 8px; border: 1px solid #e2e8f0; overflow: hidden; background-color: #fff;">
@@ -444,10 +445,11 @@ window.MENDOZA_CONFIG = {
                                         <tr>
                                             <th class="text-start px-3 py-2 fw-bold text-uppercase" style="width: 140px; background-color: #f8fafc;">TURNO</th>
                                             <th v-for="(val, label) in info.totales" :key="'th-'+label" class="py-2 fw-bold text-uppercase" style="background-color: #f8fafc;">{{ label }}</th>
+                                            <th class="py-2 fw-bold text-uppercase" style="background-color: #fef2f2; color: #dc2626;">EGRESOS (S/)</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr v-if="Object.keys(info.totales_manana).length > 0">
+                                        <tr v-if="Object.keys(info.totales_manana).length > 0 || info.egresos_manana > 0">
                                             <td class="text-start px-3 py-2 fw-bold text-muted" style="font-size: 0.75rem;">MAÑANA</td>
                                             <td v-for="(val, label) in info.totales" :key="'td-m-'+label" class="py-2">
                                                 <span v-if="info.totales_manana[label]" class="fw-bold text-primary">
@@ -455,14 +457,20 @@ window.MENDOZA_CONFIG = {
                                                 </span>
                                                 <span v-else class="text-muted opacity-25">-</span>
                                             </td>
+                                            <td class="py-2 text-danger fw-bold" style="background-color: #fffafb;">
+                                                {{ info.egresos_manana ? 'S/ ' + formatNumber(info.egresos_manana) : '-' }}
+                                            </td>
                                         </tr>
-                                        <tr v-if="Object.keys(info.totales_tarde).length > 0">
+                                        <tr v-if="Object.keys(info.totales_tarde).length > 0 || info.egresos_tarde > 0">
                                             <td class="text-start px-3 py-2 fw-bold text-muted" style="font-size: 0.75rem;">TARDE</td>
                                             <td v-for="(val, label) in info.totales" :key="'td-t-'+label" class="py-2">
                                                 <span v-if="info.totales_tarde[label]" class="fw-bold text-primary">
                                                     {{ getPrefix(label) }} {{ formatNumber(info.totales_tarde[label], (label.includes('CLP')) ? 0 : 2) }}
                                                 </span>
                                                 <span v-else class="text-muted opacity-25">-</span>
+                                            </td>
+                                            <td class="py-2 text-danger fw-bold" style="background-color: #fffafb;">
+                                                {{ info.egresos_tarde ? 'S/ ' + formatNumber(info.egresos_tarde) : '-' }}
                                             </td>
                                         </tr>
                                     </tbody>
@@ -474,52 +482,16 @@ window.MENDOZA_CONFIG = {
                                             <td v-for="(val, label) in info.totales" :key="'tf-'+label" class="py-3 fw-bold text-success" style="font-size: 0.95rem;">
                                                 {{ getPrefix(label) }} {{ formatNumber(val, (label.includes('CLP')) ? 0 : 2) }}
                                             </td>
-                                        </tr>
-                                    </tfoot>
-                                </table>
-                        </div>
-                        
-                        <!-- Egresos del Día -->
-                        <div v-if="egresos[fecha]" class="mb-5 shadow-sm" style="border-radius: 8px; border: 1px solid #e2e8f0; overflow: hidden; background-color: #fff;">
-                            <div class="table-responsive">
-                                <table class="table table-bordered mb-0 text-center align-middle" style="font-size: 0.85rem;">
-                                    <thead class="text-white" style="font-size: 0.75rem; background-color: #581c87;">
-                                        <tr>
-                                            <th class="text-start px-3 py-2 fw-bold text-uppercase" style="width: 140px; background-color: #3b0764; color: #e9d5ff; border-color: #6b21a8;">TURNO</th>
-                                            <th v-for="cat in ['MERCADO', 'MOVILIDAD', 'CAFETERÍA', 'LAVANDERÍA', 'ÚTILES ESCR.', 'RECEPCIÓN CC', 'REPUESTOS', 'PERSONAL', 'OTROS']" :key="cat" class="py-2 fw-bold text-uppercase" style="background-color: #581c87; color: #e9d5ff; border-color: #6b21a8;">{{ cat }}</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td class="text-start px-3 py-2 fw-bold text-muted" style="font-size: 0.75rem;">MAÑANA</td>
-                                            <td v-for="cat in ['MERCADO', 'MOVILIDAD', 'CAFETERÍA', 'LAVANDERÍA', 'ÚTILES ESCR.', 'RECEPCIÓN CC', 'REPUESTOS', 'PERSONAL', 'OTROS']" :key="'em-'+cat" class="py-2 text-danger">
-                                                {{ egresos[fecha]['MAÑANA'][cat] ? 'S/ ' + formatNumber(egresos[fecha]['MAÑANA'][cat]) : '-' }}
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td class="text-start px-3 py-2 fw-bold text-muted" style="font-size: 0.75rem;">TARDE</td>
-                                            <td v-for="cat in ['MERCADO', 'MOVILIDAD', 'CAFETERÍA', 'LAVANDERÍA', 'ÚTILES ESCR.', 'RECEPCIÓN CC', 'REPUESTOS', 'PERSONAL', 'OTROS']" :key="'et-'+cat" class="py-2 text-danger">
-                                                {{ egresos[fecha]['TARDE'][cat] ? 'S/ ' + formatNumber(egresos[fecha]['TARDE'][cat]) : '-' }}
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                    <tfoot style="border-top: 2px solid #fecaca; background-color: #fef2f2;">
-                                        <tr>
-                                            <td class="text-start px-3 py-3 fw-bold text-danger" style="font-size: 0.8rem;">
-                                                <i class="bi bi-dash-circle me-1"></i> TOTAL EGRESOS
-                                            </td>
-                                            <td v-for="cat in ['MERCADO', 'MOVILIDAD', 'CAFETERÍA', 'LAVANDERÍA', 'ÚTILES ESCR.', 'RECEPCIÓN CC', 'REPUESTOS', 'PERSONAL', 'OTROS']" :key="'etot-'+cat" class="py-3 fw-bold text-danger" style="font-size: 0.95rem;">
-                                                {{ (egresos[fecha]['MAÑANA'][cat] + egresos[fecha]['TARDE'][cat]) ? 'S/ ' + formatNumber(egresos[fecha]['MAÑANA'][cat] + egresos[fecha]['TARDE'][cat]) : '-' }}
+                                            <td class="py-3 fw-bold text-danger" style="font-size: 0.95rem; background-color: #fef2f2; border-top: 2px solid #fecaca;">
+                                                {{ info.egresos_total ? 'S/ ' + formatNumber(info.egresos_total) : '-' }}
                                             </td>
                                         </tr>
                                     </tfoot>
                                 </table>
                             </div>
                         </div>
-                    </div>
                 </div>
             </div>
-        </div>
 
         <!-- Resumen Mensual -->
         <div class="container-fluid px-5">

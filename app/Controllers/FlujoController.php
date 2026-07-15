@@ -440,21 +440,26 @@ class FlujoController {
         $turnos = $input['turnos'] ?? [];
         if (empty($turnos)) return ['ok' => true];
 
-        $stmtCats = $this->pdo->query("SELECT id, nombre FROM finanzas_categorias WHERE modulo='Flujo' AND tipo='Egreso'");
-        $dbCats = $stmtCats->fetchAll(PDO::FETCH_ASSOC);
+        $catIds = [
+            'mercado' => 9, 'movilidad' => 10, 'cafeteria' => 11, 'lavanderia' => 12,
+            'utiles' => 13, 'recepcion' => 14, 'repuestos' => 15, 'personal' => 16, 'otros_eg' => 17
+        ];
         
-        $catIds = [];
-        foreach($dbCats as $c) {
-            $n = strtoupper($c['nombre']);
-            if (strpos($n, 'MERCADO') !== false || $c['id'] == 9) $catIds['mercado'] = $c['id'];
-            else if (strpos($n, 'MOVIL') !== false || $c['id'] == 10) $catIds['movilidad'] = $c['id'];
-            else if (strpos($n, 'CAFE') !== false || strpos($n, 'VEA') !== false || strpos($n, 'GENOV') !== false || $c['id'] == 11) $catIds['cafeteria'] = $c['id'];
-            else if (strpos($n, 'LAVAN') !== false || $c['id'] == 12) $catIds['lavanderia'] = $c['id'];
-            else if (strpos($n, 'ESCRIT') !== false || strpos($n, 'UTIL') !== false || $c['id'] == 13) $catIds['utiles'] = $c['id'];
-            else if (strpos($n, 'RECEP') !== false || strpos($n, 'CHICA') !== false || $c['id'] == 14) $catIds['recepcion'] = $c['id'];
-            else if (strpos($n, 'REPUEST') !== false || strpos($n, 'SERV') !== false || $c['id'] == 15) $catIds['repuestos'] = $c['id'];
-            else if (strpos($n, 'PERSO') !== false || strpos($n, 'PAGO') !== false || $c['id'] == 16) $catIds['personal'] = $c['id'];
-            else $catIds['otros_eg'] = $c['id'];
+        $stmtCats = $this->pdo->query("SELECT id, nombre FROM finanzas_categorias WHERE tipo='Egreso'");
+        if ($stmtCats) {
+            $dbCats = $stmtCats->fetchAll(PDO::FETCH_ASSOC);
+            foreach($dbCats as $c) {
+                $n = strtoupper($c['nombre']);
+                if (strpos($n, 'MERCADO') !== false) $catIds['mercado'] = $c['id'];
+                else if (strpos($n, 'MOVIL') !== false) $catIds['movilidad'] = $c['id'];
+                else if (strpos($n, 'CAFE') !== false || strpos($n, 'VEA') !== false || strpos($n, 'GENOV') !== false) $catIds['cafeteria'] = $c['id'];
+                else if (strpos($n, 'LAVAN') !== false) $catIds['lavanderia'] = $c['id'];
+                else if (strpos($n, 'ESCRIT') !== false || strpos($n, 'UTIL') !== false) $catIds['utiles'] = $c['id'];
+                else if (strpos($n, 'RECEP') !== false || strpos($n, 'CHICA') !== false) $catIds['recepcion'] = $c['id'];
+                else if (strpos($n, 'REPUEST') !== false || strpos($n, 'SERV') !== false) $catIds['repuestos'] = $c['id'];
+                else if (strpos($n, 'PERSO') !== false || strpos($n, 'PAGO') !== false) $catIds['personal'] = $c['id'];
+                else if (strpos($n, 'OTROS') !== false) $catIds['otros_eg'] = $c['id'];
+            }
         }
 
         $this->pdo->beginTransaction();

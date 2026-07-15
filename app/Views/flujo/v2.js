@@ -216,6 +216,16 @@ const app = createApp({
           manana.total_egreso = manana.mercado + manana.movilidad + manana.cafeteria + manana.lavanderia + 
                                manana.utiles + manana.recepcion + manana.repuestos + manana.personal + manana.otros_eg;
           manana.total_entregar = manana.pen_ef - manana.total_egreso;
+
+          // Reconstruir observaciones
+          Object.keys(manana.detalles).forEach(campo => {
+            let combinedObs = '';
+            manana.detalles[campo].forEach(d => {
+              let textObs = d.observacion || 'Egreso';
+              combinedObs += textObs + ' (S/ ' + formatearNumero(d.monto) + ') | ';
+            });
+            if (combinedObs.length > 0) manana[campo + '_obs'] = combinedObs.slice(0, -3);
+          });
         }
 
         // 2. Mapear Turno Tarde
@@ -241,6 +251,16 @@ const app = createApp({
           tarde.total_egreso = tarde.mercado + tarde.movilidad + tarde.cafeteria + tarde.lavanderia + 
                              tarde.utiles + tarde.recepcion + tarde.repuestos + tarde.personal + tarde.otros_eg;
           tarde.total_entregar = tarde.pen_ef - tarde.total_egreso;
+
+          // Reconstruir observaciones
+          Object.keys(tarde.detalles).forEach(campo => {
+            let combinedObs = '';
+            tarde.detalles[campo].forEach(d => {
+              let textObs = d.observacion || 'Egreso';
+              combinedObs += textObs + ' (S/ ' + formatearNumero(d.monto) + ') | ';
+            });
+            if (combinedObs.length > 0) tarde[campo + '_obs'] = combinedObs.slice(0, -3);
+          });
         }
 
         // 3. Mapear Fila TOTAL del día
@@ -369,6 +389,9 @@ const app = createApp({
          const turnoNombre = diaObj.manana.flujo_id === turnoObj.flujo_id ? 'manana' : 'tarde';
          recalcularFila(diaObj, turnoNombre);
       }
+      
+      // Auto-guardado
+      guardarCambiosEgresos();
     };
 
     const recalcularFila = (diaObj, turnoNombre) => {

@@ -352,7 +352,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
                  <span class="fw-bold text-danger">S/ {{ formatearNumero(item.monto) }}</span>
                </div>
                <div class="text-end mt-1">
-                 <button class="btn btn-sm btn-outline-danger py-0 px-1" style="font-size: 10px;" @click="limpiarEgresosCampo">
+                 <button class="btn btn-sm btn-outline-danger py-0 px-1" style="font-size: 10px;" @click="formEgreso.monto = 0; accionEgreso('reemplazar')">
                    <i class="bi bi-trash"></i> Limpiar Todos
                  </button>
                </div>
@@ -369,7 +369,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
            </div>
         </div>
         <div class="modal-footer border-0 pt-0">
-          <button class="btn btn-sm btn-danger w-100 fw-bold" @click="finalizarEdicion">
+          <button class="btn btn-sm btn-danger w-100 fw-bold" @click="accionEgreso('sumar')">
             Agregar Egreso
           </button>
         </div>

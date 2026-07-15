@@ -460,10 +460,7 @@ window.MENDOZA_CONFIG = {
                         <span class="text-muted">POS Dólares</span>
                         <span class="amount-font">USD {{ formatNumber(resumenDesglosado.POS?.USD) }}</span>
                     </div>
-                    <div class="summary-item">
-                        <span class="text-muted">POS Pesos</span>
-                        <span class="amount-font">CLP {{ formatNumber(resumenDesglosado.POS?.CLP, 0) }}</span>
-                    </div>
+
                     <div class="summary-item">
                         <span class="text-muted">Yape / Plin</span>
                         <span class="amount-font text-primary">S/ {{ formatNumber(resumenDesglosado.YAPE) }}</span>

@@ -320,6 +320,20 @@ const app = createApp({
     // LOGICA DE EDICIÓN DE EGRESOS INLINE
     const edicionActiva = ref(null);
     const turnosModificados = ref(new Set());
+    const modalEgresoOpcionesObj = ref(null);
+
+    const abrirModalInput = (modo) => {
+       if (modalEgresoOpcionesObj.value) {
+           modalEgresoOpcionesObj.value.hide();
+       }
+       formEgreso.modo = modo;
+       formEgreso.monto = '';
+       formEgreso.observacion = '';
+       if (!modalEgresoObj.value) {
+         modalEgresoObj.value = new bootstrap.Modal(document.getElementById('modalAddEgresoFlujo'));
+       }
+       modalEgresoObj.value.show();
+    };
 
     const iniciarEdicion = (turnoObj, campo) => {
       if (!turnoObj.flujo_id) {
@@ -332,11 +346,16 @@ const app = createApp({
       formEgreso.montoActual = turnoObj[campo] || 0;
       formEgreso.monto = '';
       formEgreso.observacion = '';
+      formEgreso.detalles = turnoObj.detalles[campo] || [];
       
-      if (!modalEgresoObj.value) {
-        modalEgresoObj.value = new bootstrap.Modal(document.getElementById('modalAddEgresoFlujo'));
+      if (formEgreso.montoActual > 0) {
+          if (!modalEgresoOpcionesObj.value) {
+             modalEgresoOpcionesObj.value = new bootstrap.Modal(document.getElementById('modalEgresoOpciones'));
+          }
+          modalEgresoOpcionesObj.value.show();
+      } else {
+          abrirModalInput('reemplazar');
       }
-      modalEgresoObj.value.show();
     };
 
     const accionEgreso = (tipo) => {
@@ -382,7 +401,8 @@ const app = createApp({
           }
       }
       
-      modalEgresoObj.value.hide();
+      if (modalEgresoObj.value) modalEgresoObj.value.hide();
+      if (modalEgresoOpcionesObj.value) modalEgresoOpcionesObj.value.hide();
       
       const diaObj = diasGrid.value.find(d => d.manana.flujo_id === turnoObj.flujo_id || d.tarde.flujo_id === turnoObj.flujo_id);
       if(diaObj) {
@@ -644,7 +664,9 @@ const app = createApp({
       staysOtros,
       modalConsumoObj,
       formEgreso,
-      modalEgresoObj
+      modalEgresoObj,
+      modalEgresoOpcionesObj,
+      abrirModalInput
     };
   }
 });

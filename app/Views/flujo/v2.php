@@ -334,6 +334,45 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
     </div>
   </div>
 
+  <!-- MODAL OPCIONES EGRESO (CUANDO YA HAY MONTO) -->
+  <div class="modal fade" id="modalEgresoOpciones" tabindex="-1">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg">
+        <div class="modal-header bg-primary text-white border-0 py-2">
+          <h6 class="modal-title fw-bold">Detalle - {{ formEgreso.columnaName }}</h6>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-3">
+           <div class="d-flex justify-content-between mb-2">
+              <span class="fw-bold text-secondary" style="font-size:12px;">Total Registrado:</span>
+              <span class="fw-bold text-primary">S/ {{ formatearNumero(formEgreso.montoActual) }}</span>
+           </div>
+           
+           <div v-if="formEgreso.detalles && formEgreso.detalles.length > 0" class="mb-3">
+             <div class="p-2 bg-light border rounded" style="max-height: 120px; overflow-y: auto; font-size: 11px;">
+               <div v-for="(item, index) in formEgreso.detalles" :key="index" class="d-flex justify-content-between mb-1 pb-1 border-bottom">
+                 <span class="text-truncate me-2" :title="item.observacion">{{ item.observacion || 'Egreso' }}</span>
+                 <span class="fw-bold text-danger">S/ {{ formatearNumero(item.monto) }}</span>
+               </div>
+             </div>
+           </div>
+           
+           <div class="d-flex gap-2 mt-3">
+             <button class="btn btn-sm btn-outline-danger px-2" @click="formEgreso.monto = 0; accionEgreso('reemplazar');" title="Limpiar Todos">
+               <i class="bi bi-trash"></i>
+             </button>
+             <button class="btn btn-sm btn-outline-primary flex-grow-1 fw-bold" @click="abrirModalInput('reemplazar')">
+               <i class="bi bi-pencil-square"></i> Editar
+             </button>
+             <button class="btn btn-sm btn-primary flex-grow-1 fw-bold" @click="abrirModalInput('sumar')">
+               <i class="bi bi-plus-lg"></i> Añadir
+             </button>
+           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL AÑADIR EGRESO RAPIDO -->
   <div class="modal fade" id="modalAddEgresoFlujo" tabindex="-1">
     <div class="modal-dialog modal-sm modal-dialog-centered">
@@ -343,22 +382,6 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body p-3">
-           
-           <div v-if="formEgreso.detalles && formEgreso.detalles.length > 0" class="mb-3">
-             <label class="form-label fw-bold text-secondary" style="font-size:12px;">Registrados:</label>
-             <div class="p-2 bg-light border rounded" style="max-height: 100px; overflow-y: auto; font-size: 11px;">
-               <div v-for="(item, index) in formEgreso.detalles" :key="index" class="d-flex justify-content-between mb-1 pb-1 border-bottom">
-                 <span class="text-truncate me-2" :title="item.observacion">{{ item.observacion || 'Egreso' }}</span>
-                 <span class="fw-bold text-danger">S/ {{ formatearNumero(item.monto) }}</span>
-               </div>
-               <div class="text-end mt-1">
-                 <button class="btn btn-sm btn-outline-danger py-0 px-1" style="font-size: 10px;" @click="formEgreso.monto = 0; accionEgreso('reemplazar')">
-                   <i class="bi bi-trash"></i> Limpiar Todos
-                 </button>
-               </div>
-             </div>
-           </div>
-
            <div class="mb-3">
              <label class="form-label fw-bold text-secondary" style="font-size:12px;">Nuevo Monto (S/)</label>
              <input type="number" step="0.01" class="form-control fw-bold" v-model="formEgreso.monto" v-focus>
@@ -369,8 +392,8 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
            </div>
         </div>
         <div class="modal-footer border-0 pt-0">
-          <button class="btn btn-sm btn-danger w-100 fw-bold" @click="accionEgreso('sumar')">
-            Agregar Egreso
+          <button class="btn btn-sm btn-danger w-100 fw-bold" @click="accionEgreso(formEgreso.modo)">
+            {{ formEgreso.modo === 'sumar' ? 'Agregar Egreso' : 'Reemplazar Total' }}
           </button>
         </div>
       </div>

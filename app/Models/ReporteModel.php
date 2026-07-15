@@ -158,6 +158,58 @@ class ReporteModel {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    public function getEgresosMendoza(int $mes, int $anio): array {
+        $sql = "
+            SELECT 
+                f.fecha, 
+                f.turno,
+                fc.nombre as categoria,
+                m.monto,
+                fc.id as cat_id
+            FROM flujo_caja f
+            JOIN flujo_caja_movimientos m ON f.id = m.flujo_id
+            JOIN finanzas_categorias fc ON m.categoria_id = fc.id
+            WHERE MONTH(f.fecha) = :mes AND YEAR(f.fecha) = :anio
+              AND m.tipo = 'Egreso'
+        ";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([':mes' => $mes, ':anio' => $anio]);
+        
+        $egresos = [];
+        $diasEnMes = date('t', strtotime("$anio-$mes-01"));
+        for ($d = 1; $d <= $diasEnMes; $d++) {
+            $f = sprintf("%04d-%02d-%02d", $anio, $mes, $d);
+            $egresos[$f] = [
+                'MAÑANA' => ['MERCADO'=>0, 'MOVILIDAD'=>0, 'CAFETERÍA'=>0, 'LAVANDERÍA'=>0, 'ÚTILES ESCR.'=>0, 'RECEPCIÓN CC'=>0, 'REPUESTOS'=>0, 'PERSONAL'=>0, 'OTROS'=>0],
+                'TARDE' => ['MERCADO'=>0, 'MOVILIDAD'=>0, 'CAFETERÍA'=>0, 'LAVANDERÍA'=>0, 'ÚTILES ESCR.'=>0, 'RECEPCIÓN CC'=>0, 'REPUESTOS'=>0, 'PERSONAL'=>0, 'OTROS'=>0]
+            ];
+        }
+
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $f = $row['fecha'];
+            $t = strtoupper($row['turno']);
+            $cat = strtoupper($row['categoria']);
+            $catId = $row['cat_id'];
+            $monto = (float)$row['monto'];
+            
+            if (!isset($egresos[$f][$t])) continue;
+
+            $key = 'OTROS';
+            if (strpos($cat, 'MERCADO') !== false || $catId == 9) $key = 'MERCADO';
+            else if (strpos($cat, 'MOVIL') !== false || $catId == 10) $key = 'MOVILIDAD';
+            else if (strpos($cat, 'CAFE') !== false || strpos($cat, 'VEA') !== false || strpos($cat, 'GENOV') !== false || $catId == 11) $key = 'CAFETERÍA';
+            else if (strpos($cat, 'LAVAN') !== false || $catId == 12) $key = 'LAVANDERÍA';
+            else if (strpos($cat, 'ESCRIT') !== false || strpos($cat, 'UTIL') !== false || $catId == 13) $key = 'ÚTILES ESCR.';
+            else if (strpos($cat, 'RECEP') !== false || strpos($cat, 'CHICA') !== false || $catId == 14) $key = 'RECEPCIÓN CC';
+            else if (strpos($cat, 'REPUEST') !== false || strpos($cat, 'SERV') !== false || $catId == 15) $key = 'REPUESTOS';
+            else if (strpos($cat, 'PERSO') !== false || strpos($cat, 'PAGO') !== false || $catId == 16) $key = 'PERSONAL';
+
+            $egresos[$f][$t][$key] += $monto;
+        }
+
+        return $egresos;
+    }
+
     /**
      * Resumen Mensual Consolidado (P&L)
      */

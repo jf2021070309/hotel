@@ -122,8 +122,8 @@ createApp({
           // Sync original notes map to detect changes
           originalNotes.value.clear();
           dias.value.forEach(d => {
-             if (d.MAÑANA.flujo_id > 0) originalNotes.value.set(d.MAÑANA.flujo_id, JSON.stringify({ n: d.MAÑANA.nota_entrega, p: d.MAÑANA.manual_pen, u: d.MAÑANA.manual_usd, c: d.MAÑANA.manual_clp }));
-             if (d.TARDE.flujo_id > 0) originalNotes.value.set(d.TARDE.flujo_id, JSON.stringify({ n: d.TARDE.nota_entrega, p: d.TARDE.manual_pen, u: d.TARDE.manual_usd, c: d.TARDE.manual_clp }));
+             originalNotes.value.set(`${d.fecha}_MAÑANA`, JSON.stringify({ n: d.MAÑANA.nota_entrega, p: d.MAÑANA.manual_pen, u: d.MAÑANA.manual_usd, c: d.MAÑANA.manual_clp }));
+             originalNotes.value.set(`${d.fecha}_TARDE`, JSON.stringify({ n: d.TARDE.nota_entrega, p: d.TARDE.manual_pen, u: d.TARDE.manual_usd, c: d.TARDE.manual_clp }));
           });
         }
       } catch (e) {
@@ -139,8 +139,8 @@ createApp({
     const pendingChanges = computed(() => {
         let count = 0;
         dias.value.forEach(d => {
-            if (d.MAÑANA.flujo_id > 0 && originalNotes.value.get(d.MAÑANA.flujo_id) !== JSON.stringify({ n: d.MAÑANA.nota_entrega, p: d.MAÑANA.manual_pen, u: d.MAÑANA.manual_usd, c: d.MAÑANA.manual_clp })) count++;
-            if (d.TARDE.flujo_id > 0 && originalNotes.value.get(d.TARDE.flujo_id) !== JSON.stringify({ n: d.TARDE.nota_entrega, p: d.TARDE.manual_pen, u: d.TARDE.manual_usd, c: d.TARDE.manual_clp })) count++;
+            if (originalNotes.value.get(`${d.fecha}_MAÑANA`) !== JSON.stringify({ n: d.MAÑANA.nota_entrega, p: d.MAÑANA.manual_pen, u: d.MAÑANA.manual_usd, c: d.MAÑANA.manual_clp })) count++;
+            if (originalNotes.value.get(`${d.fecha}_TARDE`) !== JSON.stringify({ n: d.TARDE.nota_entrega, p: d.TARDE.manual_pen, u: d.TARDE.manual_usd, c: d.TARDE.manual_clp })) count++;
         });
         return count;
     });
@@ -151,11 +151,11 @@ createApp({
       try {
         const turnos = [];
         dias.value.forEach(d => {
-          if (d.MAÑANA.flujo_id > 0 && originalNotes.value.get(d.MAÑANA.flujo_id) !== JSON.stringify({ n: d.MAÑANA.nota_entrega, p: d.MAÑANA.manual_pen, u: d.MAÑANA.manual_usd, c: d.MAÑANA.manual_clp })) {
-             turnos.push({ flujo_id: d.MAÑANA.flujo_id, nota_entrega: d.MAÑANA.nota_entrega, manual_pen: d.MAÑANA.manual_pen, manual_usd: d.MAÑANA.manual_usd, manual_clp: d.MAÑANA.manual_clp });
+          if (originalNotes.value.get(`${d.fecha}_MAÑANA`) !== JSON.stringify({ n: d.MAÑANA.nota_entrega, p: d.MAÑANA.manual_pen, u: d.MAÑANA.manual_usd, c: d.MAÑANA.manual_clp })) {
+             turnos.push({ fecha: d.fecha, turno: 'MAÑANA', flujo_id: d.MAÑANA.flujo_id, nota_entrega: d.MAÑANA.nota_entrega, manual_pen: d.MAÑANA.manual_pen, manual_usd: d.MAÑANA.manual_usd, manual_clp: d.MAÑANA.manual_clp });
           }
-          if (d.TARDE.flujo_id > 0 && originalNotes.value.get(d.TARDE.flujo_id) !== JSON.stringify({ n: d.TARDE.nota_entrega, p: d.TARDE.manual_pen, u: d.TARDE.manual_usd, c: d.TARDE.manual_clp })) {
-             turnos.push({ flujo_id: d.TARDE.flujo_id, nota_entrega: d.TARDE.nota_entrega, manual_pen: d.TARDE.manual_pen, manual_usd: d.TARDE.manual_usd, manual_clp: d.TARDE.manual_clp });
+          if (originalNotes.value.get(`${d.fecha}_TARDE`) !== JSON.stringify({ n: d.TARDE.nota_entrega, p: d.TARDE.manual_pen, u: d.TARDE.manual_usd, c: d.TARDE.manual_clp })) {
+             turnos.push({ fecha: d.fecha, turno: 'TARDE', flujo_id: d.TARDE.flujo_id, nota_entrega: d.TARDE.nota_entrega, manual_pen: d.TARDE.manual_pen, manual_usd: d.TARDE.manual_usd, manual_clp: d.TARDE.manual_clp });
           }
         });
         
@@ -163,7 +163,7 @@ createApp({
         const res = await axios.post(url, { turnos });
         if (res.data.ok) {
            // Actualizar mapeo original para resetear el botón
-           turnos.forEach(t => originalNotes.value.set(t.flujo_id, JSON.stringify({ n: t.nota_entrega, p: t.manual_pen, u: t.manual_usd, c: t.manual_clp })));
+           turnos.forEach(t => originalNotes.value.set(`${t.fecha}_${t.turno}`, JSON.stringify({ n: t.nota_entrega, p: t.manual_pen, u: t.manual_usd, c: t.manual_clp })));
         } else {
            alert("Error al guardar: " + res.data.msg);
         }

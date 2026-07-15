@@ -477,6 +477,43 @@ window.MENDOZA_CONFIG = {
                                         </tr>
                                     </tfoot>
                                 </table>
+                        </div>
+                        
+                        <!-- Egresos del Día -->
+                        <div v-if="egresos[fecha]" class="mb-5 shadow-sm" style="border-radius: 8px; border: 1px solid #e2e8f0; overflow: hidden; background-color: #fff;">
+                            <div class="table-responsive">
+                                <table class="table table-bordered mb-0 text-center align-middle" style="font-size: 0.85rem;">
+                                    <thead class="text-white" style="font-size: 0.75rem; background-color: #581c87;">
+                                        <tr>
+                                            <th class="text-start px-3 py-2 fw-bold text-uppercase" style="width: 140px; background-color: #3b0764; color: #e9d5ff; border-color: #6b21a8;">TURNO</th>
+                                            <th v-for="cat in ['MERCADO', 'MOVILIDAD', 'CAFETERÍA', 'LAVANDERÍA', 'ÚTILES ESCR.', 'RECEPCIÓN CC', 'REPUESTOS', 'PERSONAL', 'OTROS']" :key="cat" class="py-2 fw-bold text-uppercase" style="background-color: #581c87; color: #e9d5ff; border-color: #6b21a8;">{{ cat }}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="text-start px-3 py-2 fw-bold text-muted" style="font-size: 0.75rem;">MAÑANA</td>
+                                            <td v-for="cat in ['MERCADO', 'MOVILIDAD', 'CAFETERÍA', 'LAVANDERÍA', 'ÚTILES ESCR.', 'RECEPCIÓN CC', 'REPUESTOS', 'PERSONAL', 'OTROS']" :key="'em-'+cat" class="py-2 text-danger">
+                                                {{ egresos[fecha]['MAÑANA'][cat] ? 'S/ ' + formatNumber(egresos[fecha]['MAÑANA'][cat]) : '-' }}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-start px-3 py-2 fw-bold text-muted" style="font-size: 0.75rem;">TARDE</td>
+                                            <td v-for="cat in ['MERCADO', 'MOVILIDAD', 'CAFETERÍA', 'LAVANDERÍA', 'ÚTILES ESCR.', 'RECEPCIÓN CC', 'REPUESTOS', 'PERSONAL', 'OTROS']" :key="'et-'+cat" class="py-2 text-danger">
+                                                {{ egresos[fecha]['TARDE'][cat] ? 'S/ ' + formatNumber(egresos[fecha]['TARDE'][cat]) : '-' }}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                    <tfoot style="border-top: 2px solid #fecaca; background-color: #fef2f2;">
+                                        <tr>
+                                            <td class="text-start px-3 py-3 fw-bold text-danger" style="font-size: 0.8rem;">
+                                                <i class="bi bi-dash-circle me-1"></i> TOTAL EGRESOS
+                                            </td>
+                                            <td v-for="cat in ['MERCADO', 'MOVILIDAD', 'CAFETERÍA', 'LAVANDERÍA', 'ÚTILES ESCR.', 'RECEPCIÓN CC', 'REPUESTOS', 'PERSONAL', 'OTROS']" :key="'etot-'+cat" class="py-3 fw-bold text-danger" style="font-size: 0.95rem;">
+                                                {{ (egresos[fecha]['MAÑANA'][cat] + egresos[fecha]['TARDE'][cat]) ? 'S/ ' + formatNumber(egresos[fecha]['MAÑANA'][cat] + egresos[fecha]['TARDE'][cat]) : '-' }}
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
                             </div>
                         </div>
                     </div>

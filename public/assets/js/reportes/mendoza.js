@@ -16,6 +16,7 @@ createApp({
         const data = ref([]);
         const resumen = ref({ ingresos_hospedaje: 0, otros_ingresos: 0, egresos_operativos: 0, gastos_caja_chica: 0, gastos_yape: 0, utilidad_neta: 0 });
         const resumenDesglosado = ref({});
+        const egresos = ref({});
         const consumos = ref([]);
         const loading = ref(false);
         const colapsados = ref({});
@@ -31,6 +32,7 @@ createApp({
                     consumos.value = Array.isArray(payload.consumos) ? payload.consumos : [];
                     resumen.value = payload.resumen || {};
                     resumenDesglosado.value = payload.resumen_desglosado || {};
+                    egresos.value = payload.egresos || {};
                     
                     // Inicializar colapsados: solo si la fecha es nueva preservamos el estado actual
                     const hoy = new Date().toISOString().split('T')[0];
@@ -132,7 +134,30 @@ createApp({
                 }
             });
 
-            return groups;
+            // 3. Procesar Egresos (para asegurar que el día aparezca si solo hubo egresos)
+            if (egresos.value) {
+                Object.keys(egresos.value).forEach(fecha => {
+                    let hasEgresos = false;
+                    ['MAÑANA', 'TARDE'].forEach(t => {
+                        if (egresos.value[fecha] && egresos.value[fecha][t]) {
+                            Object.values(egresos.value[fecha][t]).forEach(val => {
+                                if (parseFloat(val) > 0) hasEgresos = true;
+                            });
+                        }
+                    });
+                    if (hasEgresos && !groups[fecha]) {
+                        groups[fecha] = { hospedaje: [], consumos: [], totales: {}, totales_manana: {}, totales_tarde: {} };
+                    }
+                });
+            }
+
+            // Ordenar por fecha descendente
+            const sortedGroups = {};
+            Object.keys(groups).sort((a, b) => new Date(b) - new Date(a)).forEach(key => {
+                sortedGroups[key] = groups[key];
+            });
+
+            return sortedGroups;
         });
 
         const toggleDia = (fecha) => {
@@ -221,7 +246,7 @@ createApp({
         });
 
         return { 
-            filtro, data, groupedData, resumen, resumenDesglosado, colapsados, loading, 
+            filtro, data, groupedData, resumen, resumenDesglosado, egresos, colapsados, loading, 
             fetchData, toggleDia, getResumenTurno, getBadgeClass, getPrefix, getMesNombre, formatCurrency, formatNumber, getSym, exportar,
             filtroAvanzado,
             verDetalle

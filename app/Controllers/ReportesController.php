@@ -90,7 +90,8 @@ class ReportesController {
             'data' => $model->getVentaHospedaje($mes, $anio),
             'consumos' => $model->getConsumosDetail($mes, $anio),
             'resumen' => $model->getResumenP_L($mes, $anio),
-            'resumen_desglosado' => $model->getResumenDesglosado($mes, $anio)
+            'resumen_desglosado' => $model->getResumenDesglosado($mes, $anio),
+            'egresos' => $model->getEgresosMendoza($mes, $anio)
         ];
     }
 }

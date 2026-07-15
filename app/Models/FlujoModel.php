@@ -398,12 +398,42 @@ class FlujoModel {
         return $reporte;
     }
 
+    private function readNotasManuales(): array {
+        $file = __DIR__ . '/../../storage/sobres_notas.json';
+        if (file_exists($file)) {
+            $data = json_decode(file_get_contents($file), true);
+            return is_array($data) ? $data : [];
+        }
+        return [];
+    }
+
+    private function writeNotasManuales(array $data): void {
+        $dir = __DIR__ . '/../../storage';
+        if (!is_dir($dir)) mkdir($dir, 0777, true);
+        file_put_contents($dir . '/sobres_notas.json', json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+    }
+
     public function getReporteAlexMensual(int $mes, int $anio): array {
         $reporte = [];
         $diasEnMes = date('t', strtotime("$anio-$mes-01"));
+        $notasManuales = $this->readNotasManuales();
+
         for ($d = 1; $d <= $diasEnMes; $d++) {
             $f = sprintf("%04d-%02d-%02d", $anio, $mes, $d);
             $reporte[$f] = $this->initDiaAlex();
+            
+            if (isset($notasManuales[$f]['MAÑANA'])) {
+                $reporte[$f]['MAÑANA']['nota_entrega'] = $notasManuales[$f]['MAÑANA']['nota'] ?? '';
+                $reporte[$f]['MAÑANA']['manual_pen'] = $notasManuales[$f]['MAÑANA']['pen'] ?? null;
+                $reporte[$f]['MAÑANA']['manual_usd'] = $notasManuales[$f]['MAÑANA']['usd'] ?? null;
+                $reporte[$f]['MAÑANA']['manual_clp'] = $notasManuales[$f]['MAÑANA']['clp'] ?? null;
+            }
+            if (isset($notasManuales[$f]['TARDE'])) {
+                $reporte[$f]['TARDE']['nota_entrega'] = $notasManuales[$f]['TARDE']['nota'] ?? '';
+                $reporte[$f]['TARDE']['manual_pen'] = $notasManuales[$f]['TARDE']['pen'] ?? null;
+                $reporte[$f]['TARDE']['manual_usd'] = $notasManuales[$f]['TARDE']['usd'] ?? null;
+                $reporte[$f]['TARDE']['manual_clp'] = $notasManuales[$f]['TARDE']['clp'] ?? null;
+            }
         }
 
         // Obtener ids y notas_entrega de todos los flujos del mes
@@ -425,7 +455,10 @@ class FlujoModel {
                     $reporte[$f][$t]['manual_usd'] = $decoded['usd'] ?? null;
                     $reporte[$f][$t]['manual_clp'] = $decoded['clp'] ?? null;
                 } else {
-                    $reporte[$f][$t]['nota_entrega'] = (strpos($nota, 'APERTURA AUTOMÁTICA DESDE ROOMING V2') !== false) ? '' : $nota;
+                    $notaDB = (strpos($nota, 'APERTURA AUTOMÁTICA DESDE ROOMING V2') !== false) ? '' : $nota;
+                    if ($notaDB !== '') {
+                        $reporte[$f][$t]['nota_entrega'] = $notaDB;
+                    }
                 }
             }
         }
@@ -562,11 +595,14 @@ class FlujoModel {
     public function guardarNotasSobres(array $turnos): array {
         if (empty($turnos)) return ['ok' => true];
         
+        $notasManuales = $this->readNotasManuales();
         $this->pdo->beginTransaction();
         try {
             $stmt = $this->pdo->prepare("UPDATE flujo_caja SET nota_entrega = ? WHERE id = ?");
             foreach ($turnos as $t) {
                 $flujoId = (int)($t['flujo_id'] ?? 0);
+                $fecha = $t['fecha'] ?? null;
+                $turno = $t['turno'] ?? null;
                 
                 $jsonObj = [
                     'nota' => $t['nota_entrega'] ?? '',
@@ -578,9 +614,13 @@ class FlujoModel {
                 
                 if ($flujoId > 0) {
                     $stmt->execute([$jsonStr, $flujoId]);
+                } else if ($fecha && $turno) {
+                    if (!isset($notasManuales[$fecha])) $notasManuales[$fecha] = [];
+                    $notasManuales[$fecha][$turno] = $jsonObj;
                 }
             }
             $this->pdo->commit();
+            $this->writeNotasManuales($notasManuales);
             return ['ok' => true, 'msg' => 'Notas guardadas correctamente'];
         } catch (Exception $e) {
             $this->pdo->rollBack();

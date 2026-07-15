@@ -438,15 +438,42 @@ window.MENDOZA_CONFIG = {
                         
                         <!-- Totales del Día -->
                         <div class="p-3 bg-white" style="border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 2rem;">
+                            
+                            <div class="row">
+                                <!-- Totales Mañana -->
+                                <div class="col-md-6 mb-3" v-if="Object.keys(info.totales_manana).length > 0">
+                                    <h6 class="fw-bold text-uppercase text-muted mb-2" style="font-size: 0.75rem;">Totales Mañana</h6>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <div v-for="(val, label) in info.totales_manana" :key="'m-'+label" class="total-pill bg-light border-0 shadow-sm" style="padding: 0.35rem 0.75rem; min-width: 100px;">
+                                            <span class="total-label text-dark" style="font-size: 0.65rem;">{{ label }}</span>
+                                            <span class="total-value text-primary" style="font-size: 0.85rem;">{{ getPrefix(label) }} {{ formatNumber(val, (label.includes('CLP')) ? 0 : 2) }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Totales Tarde -->
+                                <div class="col-md-6 mb-3" v-if="Object.keys(info.totales_tarde).length > 0">
+                                    <h6 class="fw-bold text-uppercase text-muted mb-2" style="font-size: 0.75rem;">Totales Tarde</h6>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <div v-for="(val, label) in info.totales_tarde" :key="'t-'+label" class="total-pill bg-light border-0 shadow-sm" style="padding: 0.35rem 0.75rem; min-width: 100px;">
+                                            <span class="total-label text-dark" style="font-size: 0.65rem;">{{ label }}</span>
+                                            <span class="total-value text-primary" style="font-size: 0.85rem;">{{ getPrefix(label) }} {{ formatNumber(val, (label.includes('CLP')) ? 0 : 2) }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr class="text-muted opacity-25 mt-1 mb-3">
+
                             <div class="d-flex align-items-center justify-content-between mb-2">
-                                <h6 class="fw-bold text-uppercase text-muted mb-0" style="font-size: 0.85rem; letter-spacing: 0.5px;">
-                                    <i class="bi bi-calculator me-1"></i> Totales del Día
+                                <h6 class="fw-bold text-uppercase text-dark mb-0" style="font-size: 0.85rem; letter-spacing: 0.5px;">
+                                    <i class="bi bi-calculator me-1"></i> Gran Total del Día
                                 </h6>
                             </div>
                             <div class="d-flex flex-wrap gap-2">
-                                <div v-for="(val, label) in info.totales" :key="label" class="total-pill bg-light border-0 shadow-sm">
+                                <div v-for="(val, label) in info.totales" :key="'d-'+label" class="total-pill bg-light border-0 shadow-sm" style="background-color: #f0fdf4 !important; border: 1px solid #bbf7d0 !important;">
                                     <span class="total-label text-dark">{{ label }}</span>
-                                    <span class="total-value text-primary">{{ getPrefix(label) }} {{ formatNumber(val, (label.includes('CLP')) ? 0 : 2) }}</span>
+                                    <span class="total-value text-success">{{ getPrefix(label) }} {{ formatNumber(val, (label.includes('CLP')) ? 0 : 2) }}</span>
                                 </div>
                             </div>
                         </div>

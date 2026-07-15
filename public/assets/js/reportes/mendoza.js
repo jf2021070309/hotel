@@ -80,7 +80,7 @@ createApp({
             // 1. Procesar Hospedaje (Anticipos)
             filteredHospedaje.value.forEach(item => {
                 const fecha = item.pago_fecha;
-                if (!groups[fecha]) groups[fecha] = { hospedaje: [], consumos: [], totales: {} };
+                if (!groups[fecha]) groups[fecha] = { hospedaje: [], consumos: [], totales: {}, totales_manana: {}, totales_tarde: {} };
                 
                 // Smart Merge: ¿Es un pago de consumo?
                 const match = filteredConsumos.value.find(c => 
@@ -101,6 +101,11 @@ createApp({
                 const label = item.medio_label;
                 const monto = parseFloat(item.total_fila || 0);
                 groups[fecha].totales[label] = (groups[fecha].totales[label] || 0) + monto;
+                if (item.turno === 'MAÑANA') {
+                    groups[fecha].totales_manana[label] = (groups[fecha].totales_manana[label] || 0) + monto;
+                } else if (item.turno === 'TARDE') {
+                    groups[fecha].totales_tarde[label] = (groups[fecha].totales_tarde[label] || 0) + monto;
+                }
             });
 
             // 2. Procesar Consumos (Ventas Directas o no vinculadas)
@@ -108,7 +113,7 @@ createApp({
                 if (consumosUsados.has(item.id)) return;
 
                 const fecha = item.fecha;
-                if (!groups[fecha]) groups[fecha] = { hospedaje: [], consumos: [], totales: {} };
+                if (!groups[fecha]) groups[fecha] = { hospedaje: [], consumos: [], totales: {}, totales_manana: {}, totales_tarde: {} };
                 groups[fecha].consumos.push(item);
 
                 // Mapear medio de pago de consumo a label estándar si es necesario
@@ -120,6 +125,11 @@ createApp({
 
                 const monto = parseFloat(item.total || 0);
                 groups[fecha].totales[standardLabel] = (groups[fecha].totales[standardLabel] || 0) + monto;
+                if (item.turno === 'MAÑANA') {
+                    groups[fecha].totales_manana[standardLabel] = (groups[fecha].totales_manana[standardLabel] || 0) + monto;
+                } else if (item.turno === 'TARDE') {
+                    groups[fecha].totales_tarde[standardLabel] = (groups[fecha].totales_tarde[standardLabel] || 0) + monto;
+                }
             });
 
             return groups;

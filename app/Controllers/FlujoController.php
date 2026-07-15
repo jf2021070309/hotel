@@ -460,7 +460,7 @@ class FlujoController {
         $this->pdo->beginTransaction();
         try {
             $stmtDel = $this->pdo->prepare("DELETE FROM flujo_caja_movimientos WHERE flujo_id = ? AND tipo = 'Egreso'");
-            $stmtIns = $this->pdo->prepare("INSERT INTO flujo_caja_movimientos (flujo_id, categoria_id, tipo, moneda, monto, medio_pago, observacion) VALUES (?, ?, 'Egreso', 'PEN', ?, 'EFECTIVO', 'Actualización Rápida Grid')");
+            $stmtIns = $this->pdo->prepare("INSERT INTO flujo_caja_movimientos (flujo_id, categoria_id, tipo, moneda, monto, medio_pago, observacion) VALUES (?, ?, 'Egreso', 'PEN', ?, 'EFECTIVO', ?)");
 
             foreach ($turnos as $t) {
                 $flujoId = (int)($t['flujo_id'] ?? 0);
@@ -473,9 +473,11 @@ class FlujoController {
                 $campos = ['mercado', 'movilidad', 'cafeteria', 'lavanderia', 'utiles', 'recepcion', 'repuestos', 'personal', 'otros_eg'];
                 foreach ($campos as $campo) {
                     $monto = (float)($t[$campo] ?? 0);
+                    $obs = $t[$campo . '_obs'] ?? 'Actualización Rápida Grid';
+                    if (empty(trim($obs))) $obs = 'Actualización Rápida Grid';
                     if ($monto > 0) {
                         $cId = $catIds[$campo] ?? null;
-                        $stmtIns->execute([$flujoId, $cId, $monto]);
+                        $stmtIns->execute([$flujoId, $cId, $monto, $obs]);
                     }
                 }
             }

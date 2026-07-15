@@ -125,22 +125,15 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
                 <!-- Egresos MAÑANA -->
                 <td v-for="campo in ['mercado', 'movilidad', 'cafeteria', 'lavanderia', 'utiles', 'recepcion', 'repuestos', 'personal', 'otros_eg']" 
                     :key="'m_'+campo" 
-                    class="num-cell text-danger p-0 align-middle" 
-                    :class="{'zero-val': d.manana[campo] === 0, 'separator-col': campo === 'mercado'}">
+                    class="num-cell text-danger p-0 align-middle position-relative" 
+                    :class="{'zero-val': d.manana[campo] === 0, 'has-details': d.manana.detalles && d.manana.detalles[campo] && d.manana.detalles[campo].length > 0, 'separator-col': campo === 'mercado'}">
                   
-                  <div v-if="edicionActiva !== d.manana.flujo_id + '_' + campo" 
-                       class="w-100 h-100 px-2 py-2" 
+                  <div class="w-100 h-100 px-2 py-2" 
                        style="min-height: 28px;"
                        @click="iniciarEdicion(d.manana, campo)">
                     {{ d.manana[campo] ? 'S/ ' + formatearNumero(d.manana[campo]) : '-' }}
                   </div>
-                  
-                  <input v-else type="number" step="0.01"
-                         class="form-control border-0 text-end text-danger fw-bold shadow-none p-1 m-0 h-100 w-100" 
-                         v-model.number="d.manana[campo]" 
-                         @blur="finalizarEdicion(d, 'manana')" 
-                         @keyup.enter="finalizarEdicion(d, 'manana')" 
-                         v-focus>
+                  <div v-if="d.manana.detalles && d.manana.detalles[campo] && d.manana.detalles[campo].length > 0" class="flujo-tooltip text-dark" v-html="getTooltipHtml(d.manana.detalles[campo])"></div>
                 </td>
                 
                 <!-- Totales MAÑANA -->
@@ -175,22 +168,15 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
                 <!-- Egresos TARDE -->
                 <td v-for="campo in ['mercado', 'movilidad', 'cafeteria', 'lavanderia', 'utiles', 'recepcion', 'repuestos', 'personal', 'otros_eg']" 
                     :key="'t_'+campo" 
-                    class="num-cell text-danger p-0 align-middle" 
-                    :class="{'zero-val': d.tarde[campo] === 0, 'separator-col': campo === 'mercado'}">
+                    class="num-cell text-danger p-0 align-middle position-relative" 
+                    :class="{'zero-val': d.tarde[campo] === 0, 'has-details': d.tarde.detalles && d.tarde.detalles[campo] && d.tarde.detalles[campo].length > 0, 'separator-col': campo === 'mercado'}">
                   
-                  <div v-if="edicionActiva !== d.tarde.flujo_id + '_' + campo" 
-                       class="w-100 h-100 px-2 py-2" 
+                  <div class="w-100 h-100 px-2 py-2" 
                        style="min-height: 28px;"
                        @click="iniciarEdicion(d.tarde, campo)">
                     {{ d.tarde[campo] ? 'S/ ' + formatearNumero(d.tarde[campo]) : '-' }}
                   </div>
-                  
-                  <input v-else type="number" step="0.01"
-                         class="form-control border-0 text-end text-danger fw-bold shadow-none p-1 m-0 h-100 w-100" 
-                         v-model.number="d.tarde[campo]" 
-                         @blur="finalizarEdicion(d, 'tarde')" 
-                         @keyup.enter="finalizarEdicion(d, 'tarde')" 
-                         v-focus>
+                  <div v-if="d.tarde.detalles && d.tarde.detalles[campo] && d.tarde.detalles[campo].length > 0" class="flujo-tooltip text-dark" v-html="getTooltipHtml(d.tarde.detalles[campo])"></div>
                 </td>
                 
                 <!-- Totales TARDE -->
@@ -342,6 +328,33 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
               formConsumo.columna === 'yape' ? 'Yape / Plin' :
               'Transferencia'
             }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL AÑADIR EGRESO RAPIDO -->
+  <div class="modal fade" id="modalAddEgresoFlujo" tabindex="-1">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg">
+        <div class="modal-header bg-danger text-white border-0 py-2">
+          <h6 class="modal-title fw-bold">Añadir Egreso - {{ formEgreso.columnaName }}</h6>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-3">
+           <div class="mb-3">
+             <label class="form-label fw-bold text-secondary" style="font-size:12px;">Monto (S/)</label>
+             <input type="number" step="0.01" class="form-control fw-bold" v-model="formEgreso.monto" v-focus>
+           </div>
+           <div class="mb-3">
+             <label class="form-label fw-bold text-secondary" style="font-size:12px;">Observación / Detalle</label>
+             <textarea class="form-control" v-model="formEgreso.observacion" rows="2" placeholder="Ej. Compra de pan..."></textarea>
+           </div>
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button class="btn btn-sm btn-danger w-100 fw-bold" @click="finalizarEdicion">
+            Aplicar Egreso
           </button>
         </div>
       </div>

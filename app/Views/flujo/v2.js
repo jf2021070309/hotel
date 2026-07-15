@@ -119,7 +119,8 @@ const app = createApp({
       total_egreso: 0,
       total_entregar: 0,
       detalles: {
-        depo: [], yape: [], pos_usd: [], pos_pen: [], pesos: [], usd_ef: [], pen_ef: []
+        depo: [], yape: [], pos_usd: [], pos_pen: [], pesos: [], usd_ef: [], pen_ef: [],
+        mercado: [], movilidad: [], cafeteria: [], lavanderia: [], utiles: [], recepcion: [], repuestos: [], personal: [], otros_eg: []
       }
     });
 
@@ -302,15 +303,44 @@ const app = createApp({
 
     const iniciarEdicion = (turnoObj, campo) => {
       if (!turnoObj.flujo_id) {
-        Swal.fire('Atención', 'Este turno no tiene un registro de caja abierto. Ábralo o créelo primero para agregar gastos.', 'warning');
+        Swal.fire('Atención', 'Este turno no tiene un registro de caja abierto.', 'warning');
         return;
       }
-      edicionActiva.value = turnoObj.flujo_id + '_' + campo;
+      formEgreso.turnoObj = turnoObj;
+      formEgreso.campo = campo;
+      formEgreso.columnaName = campo.toUpperCase();
+      formEgreso.monto = turnoObj[campo] || 0;
+      formEgreso.observacion = (turnoObj.detalles[campo] && turnoObj.detalles[campo].length > 0) ? turnoObj.detalles[campo][0].observacion : '';
+      
+      if (!modalEgresoObj.value) {
+        modalEgresoObj.value = new bootstrap.Modal(document.getElementById('modalAddEgresoFlujo'));
+      }
+      modalEgresoObj.value.show();
     };
 
-    const finalizarEdicion = (diaObj, turnoNombre) => {
-      edicionActiva.value = null;
-      recalcularFila(diaObj, turnoNombre);
+    const finalizarEdicion = () => {
+      const turnoObj = formEgreso.turnoObj;
+      const campo = formEgreso.campo;
+      if(!turnoObj) return;
+      
+      turnoObj[campo] = parseFloat(formEgreso.monto) || 0;
+      turnoObj[campo + '_obs'] = formEgreso.observacion;
+      
+      turnoObj.detalles[campo] = [{
+        monto: turnoObj[campo],
+        moneda: 'PEN',
+        observacion: formEgreso.observacion || 'Egreso',
+        categoria_nombre: formEgreso.columnaName
+      }];
+      
+      modalEgresoObj.value.hide();
+      
+      // Need to find the diaObj corresponding to this turnoObj
+      const diaObj = diasGrid.value.find(d => d.manana.flujo_id === turnoObj.flujo_id || d.tarde.flujo_id === turnoObj.flujo_id);
+      if(diaObj) {
+         const turnoNombre = diaObj.manana.flujo_id === turnoObj.flujo_id ? 'manana' : 'tarde';
+         recalcularFila(diaObj, turnoNombre);
+      }
     };
 
     const recalcularFila = (diaObj, turnoNombre) => {
@@ -370,10 +400,28 @@ const app = createApp({
       const turnosData = [];
       diasGrid.value.forEach(d => {
         if (d.manana.flujo_id && turnosModificados.value.has(d.manana.flujo_id)) {
-           turnosData.push({ flujo_id: d.manana.flujo_id, mercado: d.manana.mercado, movilidad: d.manana.movilidad, cafeteria: d.manana.cafeteria, lavanderia: d.manana.lavanderia, utiles: d.manana.utiles, recepcion: d.manana.recepcion, repuestos: d.manana.repuestos, personal: d.manana.personal, otros_eg: d.manana.otros_eg });
+           turnosData.push({ flujo_id: d.manana.flujo_id, 
+                             mercado: d.manana.mercado, mercado_obs: d.manana.mercado_obs, 
+                             movilidad: d.manana.movilidad, movilidad_obs: d.manana.movilidad_obs, 
+                             cafeteria: d.manana.cafeteria, cafeteria_obs: d.manana.cafeteria_obs, 
+                             lavanderia: d.manana.lavanderia, lavanderia_obs: d.manana.lavanderia_obs, 
+                             utiles: d.manana.utiles, utiles_obs: d.manana.utiles_obs, 
+                             recepcion: d.manana.recepcion, recepcion_obs: d.manana.recepcion_obs, 
+                             repuestos: d.manana.repuestos, repuestos_obs: d.manana.repuestos_obs, 
+                             personal: d.manana.personal, personal_obs: d.manana.personal_obs, 
+                             otros_eg: d.manana.otros_eg, otros_eg_obs: d.manana.otros_eg_obs });
         }
         if (d.tarde.flujo_id && turnosModificados.value.has(d.tarde.flujo_id)) {
-           turnosData.push({ flujo_id: d.tarde.flujo_id, mercado: d.tarde.mercado, movilidad: d.tarde.movilidad, cafeteria: d.tarde.cafeteria, lavanderia: d.tarde.lavanderia, utiles: d.tarde.utiles, recepcion: d.tarde.recepcion, repuestos: d.tarde.repuestos, personal: d.tarde.personal, otros_eg: d.tarde.otros_eg });
+           turnosData.push({ flujo_id: d.tarde.flujo_id, 
+                             mercado: d.tarde.mercado, mercado_obs: d.tarde.mercado_obs, 
+                             movilidad: d.tarde.movilidad, movilidad_obs: d.tarde.movilidad_obs, 
+                             cafeteria: d.tarde.cafeteria, cafeteria_obs: d.tarde.cafeteria_obs, 
+                             lavanderia: d.tarde.lavanderia, lavanderia_obs: d.tarde.lavanderia_obs, 
+                             utiles: d.tarde.utiles, utiles_obs: d.tarde.utiles_obs, 
+                             recepcion: d.tarde.recepcion, recepcion_obs: d.tarde.recepcion_obs, 
+                             repuestos: d.tarde.repuestos, repuestos_obs: d.tarde.repuestos_obs, 
+                             personal: d.tarde.personal, personal_obs: d.tarde.personal_obs, 
+                             otros_eg: d.tarde.otros_eg, otros_eg_obs: d.tarde.otros_eg_obs });
         }
       });
 
@@ -415,6 +463,15 @@ const app = createApp({
     const staysActivos = ref([]);
     const productosRefri = ref([]);
     const modalConsumoObj = ref(null);
+
+    const formEgreso = reactive({
+      turnoObj: null,
+      campo: '',
+      columnaName: '',
+      monto: 0,
+      observacion: ''
+    });
+    const modalEgresoObj = ref(null);
 
     const formConsumo = reactive({
       flujo_id: null,
@@ -533,7 +590,9 @@ const app = createApp({
       guardarCambiosEgresos,
       staysEnCelda,
       staysOtros,
-      modalConsumoObj
+      modalConsumoObj,
+      formEgreso,
+      modalEgresoObj
     };
   }
 });

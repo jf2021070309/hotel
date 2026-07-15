@@ -222,7 +222,10 @@ const app = createApp({
             let combinedObs = '';
             manana.detalles[campo].forEach(d => {
               let textObs = d.observacion || 'Egreso';
-              combinedObs += textObs + ' (S/ ' + formatearNumero(d.monto) + ') | ';
+              if (!textObs.includes('(S/')) {
+                  textObs += ' (S/ ' + formatearNumero(d.monto) + ')';
+              }
+              combinedObs += textObs + ' | ';
             });
             if (combinedObs.length > 0) manana[campo + '_obs'] = combinedObs.slice(0, -3);
           });
@@ -257,7 +260,10 @@ const app = createApp({
             let combinedObs = '';
             tarde.detalles[campo].forEach(d => {
               let textObs = d.observacion || 'Egreso';
-              combinedObs += textObs + ' (S/ ' + formatearNumero(d.monto) + ') | ';
+              if (!textObs.includes('(S/')) {
+                  textObs += ' (S/ ' + formatearNumero(d.monto) + ')';
+              }
+              combinedObs += textObs + ' | ';
             });
             if (combinedObs.length > 0) tarde[campo + '_obs'] = combinedObs.slice(0, -3);
           });
@@ -322,13 +328,23 @@ const app = createApp({
     const turnosModificados = ref(new Set());
     const modalEgresoOpcionesObj = ref(null);
 
-    const abrirModalInput = (modo) => {
+    const cleanObs = (obs) => {
+        if(!obs) return 'Egreso';
+        return obs.replace(/\s*\(S\/\s*[\d,.]+\)/g, '');
+    };
+
+    const abrirModalInput = (modo, item = null) => {
        if (modalEgresoOpcionesObj.value) {
            modalEgresoOpcionesObj.value.hide();
        }
        formEgreso.modo = modo;
-       formEgreso.monto = '';
-       formEgreso.observacion = '';
+       if (modo === 'reemplazar' && item) {
+           formEgreso.monto = item.monto;
+           formEgreso.observacion = cleanObs(item.observacion);
+       } else {
+           formEgreso.monto = '';
+           formEgreso.observacion = '';
+       }
        if (!modalEgresoObj.value) {
          modalEgresoObj.value = new bootstrap.Modal(document.getElementById('modalAddEgresoFlujo'));
        }
@@ -395,7 +411,10 @@ const app = createApp({
               let combinedObs = '';
               turnoObj.detalles[campo].forEach(d => {
                  let textObs = d.observacion || 'Egreso';
-                 combinedObs += textObs + ' (S/ ' + formatearNumero(d.monto) + ') | ';
+                 if (!textObs.includes('(S/')) {
+                     textObs += ' (S/ ' + formatearNumero(d.monto) + ')';
+                 }
+                 combinedObs += textObs + ' | ';
               });
               turnoObj[campo + '_obs'] = combinedObs.slice(0, -3);
           }
@@ -666,7 +685,8 @@ const app = createApp({
       formEgreso,
       modalEgresoObj,
       modalEgresoOpcionesObj,
-      abrirModalInput
+      abrirModalInput,
+      cleanObs
     };
   }
 });

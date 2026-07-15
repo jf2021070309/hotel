@@ -350,9 +350,16 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
            
            <div v-if="formEgreso.detalles && formEgreso.detalles.length > 0" class="mb-3">
              <div class="p-2 bg-light border rounded" style="max-height: 120px; overflow-y: auto; font-size: 11px;">
-               <div v-for="(item, index) in formEgreso.detalles" :key="index" class="d-flex justify-content-between mb-1 pb-1 border-bottom">
-                 <span class="text-truncate me-2" :title="item.observacion">{{ item.observacion || 'Egreso' }}</span>
-                 <span class="fw-bold text-danger">S/ {{ formatearNumero(item.monto) }}</span>
+               <div v-for="(item, index) in formEgreso.detalles" :key="index" class="d-flex justify-content-between align-items-center mb-1 pb-1 border-bottom">
+                 <div class="text-truncate me-2" style="max-width: 65%;" :title="item.observacion">
+                   {{ cleanObs(item.observacion) }}
+                 </div>
+                 <div class="d-flex align-items-center gap-2">
+                   <span class="fw-bold text-danger text-nowrap">S/ {{ formatearNumero(item.monto) }}</span>
+                   <button class="btn btn-sm btn-outline-primary py-0 px-1" title="Editar este registro" @click="abrirModalInput('reemplazar', item)">
+                     <i class="bi bi-pencil"></i>
+                   </button>
+                 </div>
                </div>
              </div>
            </div>
@@ -360,9 +367,6 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
            <div class="d-flex gap-2 mt-3">
              <button class="btn btn-sm btn-outline-danger px-2" @click="formEgreso.monto = 0; accionEgreso('reemplazar');" title="Limpiar Todos">
                <i class="bi bi-trash"></i>
-             </button>
-             <button class="btn btn-sm btn-outline-primary flex-grow-1 fw-bold" @click="abrirModalInput('reemplazar')">
-               <i class="bi bi-pencil-square"></i> Editar
              </button>
              <button class="btn btn-sm btn-primary flex-grow-1 fw-bold" @click="abrirModalInput('sumar')">
                <i class="bi bi-plus-lg"></i> Añadir

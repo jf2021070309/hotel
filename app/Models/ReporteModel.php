@@ -101,7 +101,12 @@ class ReporteModel {
         }
 
         // 2. Ingresos por Consumos Extras (Solo Ventas Directas que NO tienen stay_id)
-        $sqlConsumos = "SELECT c.total, c.metodo_pago, 'PEN' as moneda 
+        $sqlConsumos = "SELECT c.total, c.metodo_pago,
+                            CASE 
+                                WHEN c.metodo_pago LIKE '%USD%' OR c.metodo_pago LIKE '%DOLAR%' THEN 'USD'
+                                WHEN c.metodo_pago LIKE '%CLP%' OR c.metodo_pago LIKE '%PESOS%' THEN 'CLP'
+                                ELSE 'PEN'
+                            END as moneda
                         FROM rooming_consumos c 
                         WHERE MONTH(c.created_at) = :mes AND YEAR(c.created_at) = :anio 
                           AND c.metodo_pago IS NOT NULL AND c.metodo_pago != ''
@@ -113,15 +118,16 @@ class ReporteModel {
         foreach ($stmtC->fetchAll(PDO::FETCH_ASSOC) as $c) {
             $t = strtoupper($c['metodo_pago'] ?? '');
             $val = (float)$c['total'];
+            $monedaC = $c['moneda'];
 
             if (strpos($t, 'YAPE') !== false || strpos($t, 'PLIN') !== false) {
                 $res['YAPE'] += $val;
             } elseif (strpos($t, 'TRANS') !== false || strpos($t, 'DEPO') !== false || strpos($t, 'BANCO') !== false) {
                 $res['TRANSFERENCIA'] += $val;
             } elseif (strpos($t, 'EFECTIVO') !== false) {
-                $res['EFECTIVO']['PEN'] += $val;
+                $res['EFECTIVO'][$monedaC] += $val;
             } elseif (strpos($t, 'POS') !== false) {
-                $res['POS']['PEN'] += $val;
+                $res['POS'][$monedaC] += $val;
             }
         }
 
@@ -141,6 +147,11 @@ class ReporteModel {
                 c.cantidad,
                 c.total,
                 c.metodo_pago,
+                CASE 
+                    WHEN c.metodo_pago LIKE '%USD%' OR c.metodo_pago LIKE '%DOLAR%' THEN 'USD'
+                    WHEN c.metodo_pago LIKE '%CLP%' OR c.metodo_pago LIKE '%PESOS%' THEN 'CLP'
+                    ELSE 'PEN'
+                END as moneda,
                 DATE(c.created_at) AS fecha,
                 CASE 
                     WHEN HOUR(c.created_at) >= 6 AND HOUR(c.created_at) < 14 THEN 'MAÑANA' 

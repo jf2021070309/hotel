@@ -428,8 +428,13 @@ window.MENDOZA_CONFIG = {
                                           </span>
                                       </td>
                                       <td class="text-end px-3">
-                                          <div class="fw-bold text-dark" style="font-size: 14px;">S/ {{ formatNumber(c.total) }}</div>
-                                          <div class="text-muted" style="font-size: 10px;">PEN</div>
+                                          <div class="fw-bold text-dark" style="font-size: 14px;">
+                                            <span v-if="c.moneda === 'PEN'">S/ </span>
+                                            <span v-if="c.moneda === 'USD'">$ </span>
+                                            <span v-if="c.moneda === 'CLP'">CLP </span>
+                                            {{ formatNumber(c.total, (c.moneda === 'CLP' ? 0 : 2)) }}
+                                          </div>
+                                          <div class="text-muted" style="font-size: 10px;">{{ c.moneda }}</div>
                                       </td>
                                   </tr>
                               </tbody>

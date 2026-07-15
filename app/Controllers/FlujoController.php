@@ -403,15 +403,15 @@ class FlujoController {
         $stmtS->execute([$stayId]);
         $hab = $stmtS->fetchColumn();
 
-        // Determinar Medio de Pago y Moneda
-        $moneda = 'PEN';
-        $medioPago = 'EFECTIVO';
+        // Determinar Medio de Pago Completo
+        $medioPago = 'SOLES EFECTIVO';
         if ($columna === 'depo') { $medioPago = 'TRANSFERENCIA'; }
         if ($columna === 'yape') { $medioPago = 'YAPE'; }
-        if ($columna === 'pos_usd') { $medioPago = 'POS'; $moneda = 'USD'; }
-        if ($columna === 'pos_pen') { $medioPago = 'POS'; }
-        if ($columna === 'pesos') { $moneda = 'CLP'; }
-        if ($columna === 'usd_ef') { $moneda = 'USD'; }
+        if ($columna === 'pos_usd') { $medioPago = 'POS DOLARES'; }
+        if ($columna === 'pos_pen') { $medioPago = 'POS SOLES'; }
+        if ($columna === 'pesos') { $medioPago = 'PESOS EFECTIVO'; }
+        if ($columna === 'usd_ef') { $medioPago = 'DOLARES EFECTIVO'; }
+        if ($columna === 'pen_ef') { $medioPago = 'SOLES EFECTIVO'; }
 
         $this->pdo->beginTransaction();
         try {

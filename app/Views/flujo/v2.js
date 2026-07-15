@@ -309,9 +309,9 @@ const app = createApp({
       formEgreso.turnoObj = turnoObj;
       formEgreso.campo = campo;
       formEgreso.columnaName = campo.toUpperCase();
-      formEgreso.monto = 0;
+      formEgreso.montoActual = turnoObj[campo] || 0;
+      formEgreso.monto = '';
       formEgreso.observacion = '';
-      formEgreso.detalles = turnoObj.detalles[campo] || [];
       
       if (!modalEgresoObj.value) {
         modalEgresoObj.value = new bootstrap.Modal(document.getElementById('modalAddEgresoFlujo'));
@@ -319,52 +319,51 @@ const app = createApp({
       modalEgresoObj.value.show();
     };
 
-    const limpiarEgresosCampo = () => {
-      const turnoObj = formEgreso.turnoObj;
-      const campo = formEgreso.campo;
-      if(!turnoObj) return;
-
-      turnoObj[campo] = 0;
-      turnoObj[campo + '_obs'] = '';
-      turnoObj.detalles[campo] = [];
-      formEgreso.detalles = turnoObj.detalles[campo];
-      
-      const diaObj = diasGrid.value.find(d => d.manana.flujo_id === turnoObj.flujo_id || d.tarde.flujo_id === turnoObj.flujo_id);
-      if(diaObj) {
-         const turnoNombre = diaObj.manana.flujo_id === turnoObj.flujo_id ? 'manana' : 'tarde';
-         recalcularFila(diaObj, turnoNombre);
-      }
-    };
-
-    const finalizarEdicion = () => {
+    const accionEgreso = (tipo) => {
       const turnoObj = formEgreso.turnoObj;
       const campo = formEgreso.campo;
       if(!turnoObj) return;
       
-      const nuevoMonto = parseFloat(formEgreso.monto) || 0;
-      if (nuevoMonto > 0) {
-          turnoObj[campo] = (turnoObj[campo] || 0) + nuevoMonto;
-          
-          if (!turnoObj.detalles[campo]) turnoObj.detalles[campo] = [];
-          
-          turnoObj.detalles[campo].push({
-            monto: nuevoMonto,
-            moneda: 'PEN',
-            observacion: formEgreso.observacion || 'Egreso',
-            categoria_nombre: formEgreso.columnaName
-          });
-          
-          let combinedObs = '';
-          turnoObj.detalles[campo].forEach(d => {
-             let textObs = d.observacion || 'Egreso';
-             combinedObs += textObs + ' (S/ ' + formatearNumero(d.monto) + ') | ';
-          });
-          turnoObj[campo + '_obs'] = combinedObs.slice(0, -3);
+      const inputMonto = parseFloat(formEgreso.monto) || 0;
+      const inputObs = formEgreso.observacion || 'Egreso';
+      
+      if (inputMonto === 0 && tipo === 'reemplazar') {
+          // Si envían 0 en reemplazar, asumimos que quieren limpiar la celda
+          turnoObj[campo] = 0;
+          turnoObj[campo + '_obs'] = '';
+          turnoObj.detalles[campo] = [];
+      } else if (inputMonto > 0) {
+          if (tipo === 'reemplazar') {
+              turnoObj[campo] = inputMonto;
+              if (!turnoObj.detalles[campo]) turnoObj.detalles[campo] = [];
+              turnoObj.detalles[campo] = [{
+                  monto: inputMonto,
+                  moneda: 'PEN',
+                  observacion: inputObs,
+                  categoria_nombre: formEgreso.columnaName
+              }];
+              turnoObj[campo + '_obs'] = inputObs;
+          } else if (tipo === 'sumar') {
+              turnoObj[campo] = (turnoObj[campo] || 0) + inputMonto;
+              if (!turnoObj.detalles[campo]) turnoObj.detalles[campo] = [];
+              turnoObj.detalles[campo].push({
+                  monto: inputMonto,
+                  moneda: 'PEN',
+                  observacion: inputObs,
+                  categoria_nombre: formEgreso.columnaName
+              });
+              
+              let combinedObs = '';
+              turnoObj.detalles[campo].forEach(d => {
+                 let textObs = d.observacion || 'Egreso';
+                 combinedObs += textObs + ' (S/ ' + formatearNumero(d.monto) + ') | ';
+              });
+              turnoObj[campo + '_obs'] = combinedObs.slice(0, -3);
+          }
       }
       
       modalEgresoObj.value.hide();
       
-      // Need to find the diaObj corresponding to this turnoObj
       const diaObj = diasGrid.value.find(d => d.manana.flujo_id === turnoObj.flujo_id || d.tarde.flujo_id === turnoObj.flujo_id);
       if(diaObj) {
          const turnoNombre = diaObj.manana.flujo_id === turnoObj.flujo_id ? 'manana' : 'tarde';
@@ -497,9 +496,9 @@ const app = createApp({
       turnoObj: null,
       campo: '',
       columnaName: '',
+      montoActual: 0,
       monto: 0,
-      observacion: '',
-      detalles: []
+      observacion: ''
     });
     const modalEgresoObj = ref(null);
 
@@ -616,8 +615,7 @@ const app = createApp({
       edicionActiva,
       turnosModificados,
       iniciarEdicion,
-      limpiarEgresosCampo,
-      finalizarEdicion,
+      accionEgreso,
       guardarCambiosEgresos,
       staysEnCelda,
       staysOtros,

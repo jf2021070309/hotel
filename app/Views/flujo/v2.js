@@ -309,8 +309,9 @@ const app = createApp({
       formEgreso.turnoObj = turnoObj;
       formEgreso.campo = campo;
       formEgreso.columnaName = campo.toUpperCase();
-      formEgreso.monto = turnoObj[campo] || 0;
-      formEgreso.observacion = (turnoObj.detalles[campo] && turnoObj.detalles[campo].length > 0) ? turnoObj.detalles[campo][0].observacion : '';
+      formEgreso.monto = 0;
+      formEgreso.observacion = '';
+      formEgreso.detalles = turnoObj.detalles[campo] || [];
       
       if (!modalEgresoObj.value) {
         modalEgresoObj.value = new bootstrap.Modal(document.getElementById('modalAddEgresoFlujo'));
@@ -318,20 +319,48 @@ const app = createApp({
       modalEgresoObj.value.show();
     };
 
+    const limpiarEgresosCampo = () => {
+      const turnoObj = formEgreso.turnoObj;
+      const campo = formEgreso.campo;
+      if(!turnoObj) return;
+
+      turnoObj[campo] = 0;
+      turnoObj[campo + '_obs'] = '';
+      turnoObj.detalles[campo] = [];
+      formEgreso.detalles = turnoObj.detalles[campo];
+      
+      const diaObj = diasGrid.value.find(d => d.manana.flujo_id === turnoObj.flujo_id || d.tarde.flujo_id === turnoObj.flujo_id);
+      if(diaObj) {
+         const turnoNombre = diaObj.manana.flujo_id === turnoObj.flujo_id ? 'manana' : 'tarde';
+         recalcularFila(diaObj, turnoNombre);
+      }
+    };
+
     const finalizarEdicion = () => {
       const turnoObj = formEgreso.turnoObj;
       const campo = formEgreso.campo;
       if(!turnoObj) return;
       
-      turnoObj[campo] = parseFloat(formEgreso.monto) || 0;
-      turnoObj[campo + '_obs'] = formEgreso.observacion;
-      
-      turnoObj.detalles[campo] = [{
-        monto: turnoObj[campo],
-        moneda: 'PEN',
-        observacion: formEgreso.observacion || 'Egreso',
-        categoria_nombre: formEgreso.columnaName
-      }];
+      const nuevoMonto = parseFloat(formEgreso.monto) || 0;
+      if (nuevoMonto > 0) {
+          turnoObj[campo] = (turnoObj[campo] || 0) + nuevoMonto;
+          
+          if (!turnoObj.detalles[campo]) turnoObj.detalles[campo] = [];
+          
+          turnoObj.detalles[campo].push({
+            monto: nuevoMonto,
+            moneda: 'PEN',
+            observacion: formEgreso.observacion || 'Egreso',
+            categoria_nombre: formEgreso.columnaName
+          });
+          
+          let combinedObs = '';
+          turnoObj.detalles[campo].forEach(d => {
+             let textObs = d.observacion || 'Egreso';
+             combinedObs += textObs + ' (S/ ' + formatearNumero(d.monto) + ') | ';
+          });
+          turnoObj[campo + '_obs'] = combinedObs.slice(0, -3);
+      }
       
       modalEgresoObj.value.hide();
       
@@ -469,7 +498,8 @@ const app = createApp({
       campo: '',
       columnaName: '',
       monto: 0,
-      observacion: ''
+      observacion: '',
+      detalles: []
     });
     const modalEgresoObj = ref(null);
 
@@ -586,6 +616,7 @@ const app = createApp({
       edicionActiva,
       turnosModificados,
       iniciarEdicion,
+      limpiarEgresosCampo,
       finalizarEdicion,
       guardarCambiosEgresos,
       staysEnCelda,

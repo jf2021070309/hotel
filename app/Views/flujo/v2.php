@@ -339,22 +339,38 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
     <div class="modal-dialog modal-sm modal-dialog-centered">
       <div class="modal-content border-0 shadow-lg">
         <div class="modal-header bg-danger text-white border-0 py-2">
-          <h6 class="modal-title fw-bold">Añadir Egreso - {{ formEgreso.columnaName }}</h6>
+          <h6 class="modal-title fw-bold">Egresos - {{ formEgreso.columnaName }}</h6>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body p-3">
+           
+           <div v-if="formEgreso.detalles && formEgreso.detalles.length > 0" class="mb-3">
+             <label class="form-label fw-bold text-secondary" style="font-size:12px;">Registrados:</label>
+             <div class="p-2 bg-light border rounded" style="max-height: 100px; overflow-y: auto; font-size: 11px;">
+               <div v-for="(item, index) in formEgreso.detalles" :key="index" class="d-flex justify-content-between mb-1 pb-1 border-bottom">
+                 <span class="text-truncate me-2" :title="item.observacion">{{ item.observacion || 'Egreso' }}</span>
+                 <span class="fw-bold text-danger">S/ {{ formatearNumero(item.monto) }}</span>
+               </div>
+               <div class="text-end mt-1">
+                 <button class="btn btn-sm btn-outline-danger py-0 px-1" style="font-size: 10px;" @click="limpiarEgresosCampo">
+                   <i class="bi bi-trash"></i> Limpiar Todos
+                 </button>
+               </div>
+             </div>
+           </div>
+
            <div class="mb-3">
-             <label class="form-label fw-bold text-secondary" style="font-size:12px;">Monto (S/)</label>
+             <label class="form-label fw-bold text-secondary" style="font-size:12px;">Nuevo Monto (S/)</label>
              <input type="number" step="0.01" class="form-control fw-bold" v-model="formEgreso.monto" v-focus>
            </div>
            <div class="mb-3">
-             <label class="form-label fw-bold text-secondary" style="font-size:12px;">Observación / Detalle</label>
+             <label class="form-label fw-bold text-secondary" style="font-size:12px;">Nueva Observación</label>
              <textarea class="form-control" v-model="formEgreso.observacion" rows="2" placeholder="Ej. Compra de pan..."></textarea>
            </div>
         </div>
         <div class="modal-footer border-0 pt-0">
           <button class="btn btn-sm btn-danger w-100 fw-bold" @click="finalizarEdicion">
-            Aplicar Egreso
+            Agregar Egreso
           </button>
         </div>
       </div>

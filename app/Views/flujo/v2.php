@@ -119,7 +119,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
                     :class="{'zero-val': d.manana[campo] === 0, 'has-details': d.manana.detalles[campo].length > 0, 'fw-bold text-success': campo === 'pen_ef'}" 
                     @click="abrirMenuHabitaciones(d, d.manana, 'MAÑANA', campo)">
                   {{ d.manana[campo] ? (campo === 'pos_usd' || campo === 'usd_ef' ? '$ ' : (campo === 'pesos' ? 'CLP ' : 'S/ ')) + formatearNumero(d.manana[campo]) : '-' }}
-                  <div v-if="d.manana.detalles[campo].length > 0" class="flujo-tooltip text-dark" v-html="getTooltipHtml(d.manana.detalles[campo])"></div>
+                  <div v-if="d.manana.detalles[campo].length > 0" class="flujo-tooltip text-dark" v-html="getTooltipHtml(d.manana.detalles[campo], 'Desglose de Ingresos')"></div>
                 </td>
                 
                 <!-- Egresos MAÑANA -->
@@ -133,7 +133,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
                        @click="iniciarEdicion(d.manana, campo)">
                     {{ d.manana[campo] ? 'S/ ' + formatearNumero(d.manana[campo]) : '-' }}
                   </div>
-                  <div v-if="d.manana.detalles && d.manana.detalles[campo] && d.manana.detalles[campo].length > 0" class="flujo-tooltip text-dark" v-html="getTooltipHtml(d.manana.detalles[campo])"></div>
+                  <div v-if="d.manana.detalles && d.manana.detalles[campo] && d.manana.detalles[campo].length > 0" class="flujo-tooltip text-dark" v-html="getTooltipHtml(d.manana.detalles[campo], 'Desglose de Egresos')"></div>
                 </td>
                 
                 <!-- Totales MAÑANA -->
@@ -162,7 +162,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
                     :class="{'zero-val': d.tarde[campo] === 0, 'has-details': d.tarde.detalles[campo].length > 0, 'fw-bold text-success': campo === 'pen_ef'}" 
                     @click="abrirMenuHabitaciones(d, d.tarde, 'TARDE', campo)">
                   {{ d.tarde[campo] ? (campo === 'pos_usd' || campo === 'usd_ef' ? '$ ' : (campo === 'pesos' ? 'CLP ' : 'S/ ')) + formatearNumero(d.tarde[campo]) : '-' }}
-                  <div v-if="d.tarde.detalles[campo].length > 0" class="flujo-tooltip text-dark" v-html="getTooltipHtml(d.tarde.detalles[campo])"></div>
+                  <div v-if="d.tarde.detalles[campo].length > 0" class="flujo-tooltip text-dark" v-html="getTooltipHtml(d.tarde.detalles[campo], 'Desglose de Ingresos')"></div>
                 </td>
                 
                 <!-- Egresos TARDE -->
@@ -176,7 +176,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
                        @click="iniciarEdicion(d.tarde, campo)">
                     {{ d.tarde[campo] ? 'S/ ' + formatearNumero(d.tarde[campo]) : '-' }}
                   </div>
-                  <div v-if="d.tarde.detalles && d.tarde.detalles[campo] && d.tarde.detalles[campo].length > 0" class="flujo-tooltip text-dark" v-html="getTooltipHtml(d.tarde.detalles[campo])"></div>
+                  <div v-if="d.tarde.detalles && d.tarde.detalles[campo] && d.tarde.detalles[campo].length > 0" class="flujo-tooltip text-dark" v-html="getTooltipHtml(d.tarde.detalles[campo], 'Desglose de Egresos')"></div>
                 </td>
                 
                 <!-- Totales TARDE -->
@@ -356,7 +356,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
                  </div>
                  <div class="d-flex align-items-center gap-2">
                    <span class="fw-bold text-danger text-nowrap">S/ {{ formatearNumero(item.monto) }}</span>
-                   <button class="btn btn-sm btn-outline-primary py-0 px-1" title="Editar este registro" @click="abrirModalInput('reemplazar', item)">
+                   <button class="btn btn-sm btn-outline-primary py-0 px-1" title="Editar este registro" @click="abrirModalInput('editar_item', item, index)">
                      <i class="bi bi-pencil"></i>
                    </button>
                  </div>

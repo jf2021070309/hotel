@@ -168,6 +168,35 @@ const app = createApp({
       }
     };
 
+    const expandirDetalles = (detallesOriginales) => {
+      let expansos = [];
+      detallesOriginales.forEach(d => {
+          if (d.observacion && d.observacion.includes(' | ')) {
+              let parts = d.observacion.split(' | ');
+              parts.forEach(p => {
+                  let textClean = p;
+                  let amount = 0;
+                  let m = p.match(/(.*?)\s*\(\s*[Ss\$]?\/?\s*([\d,.]+)\s*\)/);
+                  if (m) {
+                      textClean = m[1].trim();
+                      amount = parseFloat(m[2].replace(/,/g, '')) || 0;
+                  } else {
+                      amount = parseFloat(d.monto) / parts.length;
+                  }
+                  expansos.push({
+                      monto: amount,
+                      moneda: d.moneda,
+                      observacion: textClean,
+                      categoria_nombre: d.categoria_nombre
+                  });
+              });
+          } else {
+              expansos.push(d);
+          }
+      });
+      return expansos;
+    };
+
     /**
      * Procesa los flujos de caja y movimientos y arma la grilla de días
      */
@@ -217,8 +246,9 @@ const app = createApp({
                                manana.utiles + manana.recepcion + manana.repuestos + manana.personal + manana.otros_eg;
           manana.total_entregar = manana.pen_ef - manana.total_egreso;
 
-          // Reconstruir observaciones
+          // Reconstruir observaciones y separar items fusionados
           Object.keys(manana.detalles).forEach(campo => {
+            manana.detalles[campo] = expandirDetalles(manana.detalles[campo]);
             let combinedObs = '';
             manana.detalles[campo].forEach(d => {
               let textObs = d.observacion || 'Egreso';
@@ -257,6 +287,7 @@ const app = createApp({
 
           // Reconstruir observaciones
           Object.keys(tarde.detalles).forEach(campo => {
+            tarde.detalles[campo] = expandirDetalles(tarde.detalles[campo]);
             let combinedObs = '';
             tarde.detalles[campo].forEach(d => {
               let textObs = d.observacion || 'Egreso';
@@ -333,12 +364,13 @@ const app = createApp({
         return obs.replace(/\s*\(S\/\s*[\d,.]+\)/g, '');
     };
 
-    const abrirModalInput = (modo, item = null) => {
+    const abrirModalInput = (modo, item = null, index = -1) => {
        if (modalEgresoOpcionesObj.value) {
            modalEgresoOpcionesObj.value.hide();
        }
        formEgreso.modo = modo;
-       if (modo === 'reemplazar' && item) {
+       formEgreso.editIndex = index;
+       if ((modo === 'reemplazar' || modo === 'editar_item') && item) {
            formEgreso.monto = item.monto;
            formEgreso.observacion = cleanObs(item.observacion);
        } else {
@@ -417,6 +449,24 @@ const app = createApp({
                  combinedObs += textObs + ' | ';
               });
               turnoObj[campo + '_obs'] = combinedObs.slice(0, -3);
+          } else if (tipo === 'editar_item' && formEgreso.editIndex >= 0) {
+              if (turnoObj.detalles[campo][formEgreso.editIndex]) {
+                  turnoObj.detalles[campo][formEgreso.editIndex].monto = inputMonto;
+                  turnoObj.detalles[campo][formEgreso.editIndex].observacion = inputObs;
+                  
+                  let nuevoTotal = 0;
+                  let combinedObs = '';
+                  turnoObj.detalles[campo].forEach(d => {
+                     nuevoTotal += parseFloat(d.monto) || 0;
+                     let textObs = d.observacion || 'Egreso';
+                     if (!textObs.includes('(S/')) {
+                         textObs += ' (S/ ' + formatearNumero(d.monto) + ')';
+                     }
+                     combinedObs += textObs + ' | ';
+                  });
+                  turnoObj[campo] = nuevoTotal;
+                  turnoObj[campo + '_obs'] = combinedObs.slice(0, -3);
+              }
           }
       }
       
@@ -532,11 +582,12 @@ const app = createApp({
     };
 
     // LOGICA DE CONSUMO RAPIDO Y TOOLTIP FLOTANTE
-    const getTooltipHtml = (movs) => {
+    const getTooltipHtml = (movs, titleTooltip = 'Desglose de Ingresos') => {
       if (!movs || movs.length === 0) return '';
-      let res = `<strong style="color: #0288D1; display: block; margin-bottom: 3px; font-size: 12px;">Desglose de Ingresos</strong>`;
+      let titleColor = titleTooltip.includes('Egresos') ? '#D32F2F' : '#0288D1';
+      let res = `<strong style="color: ${titleColor}; display: block; margin-bottom: 3px; font-size: 12px;">${titleTooltip}</strong>`;
       movs.forEach(m => {
-        let label = m.observacion || m.categoria_nombre || 'Venta';
+        let label = m.observacion || m.categoria_nombre || 'Item';
         
         // Extraer solo la parte de la habitación si existe (ej. "Hab #304")
         let matchHab = label.match(/(Hab\s*#?\s*\d+)/i);
@@ -545,7 +596,7 @@ const app = createApp({
         }
         
         let pre = m.moneda === 'USD' ? '$' : (m.moneda === 'CLP' ? 'CLP' : 'S/');
-        res += `<div>${label}: <span class="fw-bold">${pre} ${formatearNumero(m.monto)}</span></div>`;
+        res += `<div>${cleanObs(label)}: <span class="fw-bold">${pre} ${formatearNumero(m.monto)}</span></div>`;
       });
       return res;
     };

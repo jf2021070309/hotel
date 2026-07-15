@@ -344,7 +344,8 @@ window.MENDOZA_CONFIG = {
         </div>
       </div>
         <!-- Loop de Días -->
-        <div v-for="(turnos, fecha) in groupedData" :key="fecha" class="mb-5">
+        <!-- Loop de Días -->
+        <div v-for="(info, fecha) in groupedData" :key="fecha" class="mb-5">
             <div class="date-separator" @click="toggleDia(fecha)">
                 <div><i class="bi bi-stars me-2"></i> {{ fecha }}</div>
                 <div style="font-size: 0.8rem;">
@@ -353,10 +354,9 @@ window.MENDOZA_CONFIG = {
                 </div>
             </div>
 
-            <div v-show="!colapsados[fecha]" v-for="(info, turno) in turnos" :key="turno">
+            <div v-show="!colapsados[fecha]">
                 <div v-if="info.hospedaje.length > 0 || info.consumos.length > 0" class="mb-5">
-                    <div class="turn-badge">Turno {{ turno }}</div>
-
+                        
                         <!-- Tabla Auditoria Style -->
                         <div class="audit-grid-container mb-3">
                           <table class="table table-bordered table-hover mb-0 align-middle table-mensual">
@@ -376,6 +376,7 @@ window.MENDOZA_CONFIG = {
                                   <tr v-for="i in info.hospedaje" :key="'h-'+i.pago_id" class="audit-row" @click="verDetalle(i.stay_id)">
                                       <td class="text-center px-2">
                                           <div class="fw-bold text-dark fs-6">{{ i.habitacion }}</div>
+                                          <div class="badge bg-light text-muted border mt-1" style="font-size: 9px;">{{ i.turno }}</div>
                                       </td>
                                       <td class="text-start px-3">
                                           <div class="fw-bold text-dark d-flex align-items-center" style="font-size: 13px;">
@@ -409,6 +410,7 @@ window.MENDOZA_CONFIG = {
                                   <tr v-for="c in info.consumos" :key="'c-'+c.id" class="consumption-row" @click="c.stay_id ? verDetalle(c.stay_id) : null">
                                       <td class="text-center px-2">
                                           <div class="fw-bold text-dark fs-6">{{ c.habitacion }}</div>
+                                          <div class="badge bg-light text-muted border mt-1" style="font-size: 9px;">{{ c.turno }}</div>
                                       </td>
                                       <td class="text-start px-3">
                                           <div class="fw-bold text-primary d-flex align-items-center" style="font-size: 13px;">
@@ -434,11 +436,18 @@ window.MENDOZA_CONFIG = {
                           </table>
                         </div>
                         
-                        <!-- Totales del Turno -->
-                        <div class="p-2 d-flex flex-wrap justify-content-end gap-2" style="border-top: 1px solid #f1f5f9; background-color: #f8fafc;">
-                            <div v-for="(val, label) in info.totales" :key="label" class="total-pill">
-                                <span class="total-label">Total {{ label }}</span>
-                                <span class="total-value">{{ getPrefix(label) }} {{ formatNumber(val, (label.includes('CLP')) ? 0 : 2) }}</span>
+                        <!-- Totales del Día -->
+                        <div class="p-3 bg-white" style="border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 2rem;">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <h6 class="fw-bold text-uppercase text-muted mb-0" style="font-size: 0.85rem; letter-spacing: 0.5px;">
+                                    <i class="bi bi-calculator me-1"></i> Totales del Día
+                                </h6>
+                            </div>
+                            <div class="d-flex flex-wrap gap-2">
+                                <div v-for="(val, label) in info.totales" :key="label" class="total-pill bg-light border-0 shadow-sm">
+                                    <span class="total-label text-dark">{{ label }}</span>
+                                    <span class="total-value text-primary">{{ getPrefix(label) }} {{ formatNumber(val, (label.includes('CLP')) ? 0 : 2) }}</span>
+                                </div>
                             </div>
                         </div>
                     </div>

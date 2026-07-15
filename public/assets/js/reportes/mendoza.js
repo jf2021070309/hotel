@@ -80,8 +80,7 @@ createApp({
             // 1. Procesar Hospedaje (Anticipos)
             filteredHospedaje.value.forEach(item => {
                 const fecha = item.pago_fecha;
-                const turno = item.turno;
-                if (!groups[fecha]) groups[fecha] = { MAÑANA: { hospedaje: [], consumos: [], totales: {} }, TARDE: { hospedaje: [], consumos: [], totales: {} } };
+                if (!groups[fecha]) groups[fecha] = { hospedaje: [], consumos: [], totales: {} };
                 
                 // Smart Merge: ¿Es un pago de consumo?
                 const match = filteredConsumos.value.find(c => 
@@ -96,12 +95,12 @@ createApp({
                     consumosUsados.add(match.id);
                 }
 
-                groups[fecha][turno].hospedaje.push(item);
+                groups[fecha].hospedaje.push(item);
                 
                 // Sumar a totales del turno
                 const label = item.medio_label;
                 const monto = parseFloat(item.total_fila || 0);
-                groups[fecha][turno].totales[label] = (groups[fecha][turno].totales[label] || 0) + monto;
+                groups[fecha].totales[label] = (groups[fecha].totales[label] || 0) + monto;
             });
 
             // 2. Procesar Consumos (Ventas Directas o no vinculadas)
@@ -109,9 +108,8 @@ createApp({
                 if (consumosUsados.has(item.id)) return;
 
                 const fecha = item.fecha;
-                const turno = item.turno;
-                if (!groups[fecha]) groups[fecha] = { MAÑANA: { hospedaje: [], consumos: [], totales: {} }, TARDE: { hospedaje: [], consumos: [], totales: {} } };
-                groups[fecha][turno].consumos.push(item);
+                if (!groups[fecha]) groups[fecha] = { hospedaje: [], consumos: [], totales: {} };
+                groups[fecha].consumos.push(item);
 
                 // Mapear medio de pago de consumo a label estándar si es necesario
                 const label = item.metodo_pago || 'EFECTIVO'; 
@@ -121,7 +119,7 @@ createApp({
                 if (label === 'EFECTIVO') standardLabel = 'EFEC S/';
 
                 const monto = parseFloat(item.total || 0);
-                groups[fecha][turno].totales[standardLabel] = (groups[fecha][turno].totales[standardLabel] || 0) + monto;
+                groups[fecha].totales[standardLabel] = (groups[fecha].totales[standardLabel] || 0) + monto;
             });
 
             return groups;

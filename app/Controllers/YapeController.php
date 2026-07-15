@@ -198,4 +198,61 @@ class YapeController {
             return ['ok' => false, 'msg' => $e->getMessage()];
         }
     }
+
+    public function guardarCelda(array $input): array {
+        $id = (int)($input['id'] ?? 0);
+        if ($id <= 0) return ['ok' => false, 'msg' => 'ID de Yape no válido.'];
+        
+        $registro = $this->model->getDetalle($id);
+        if (!$registro) return ['ok' => false, 'msg' => 'Registro Yape no encontrado.'];
+
+        $campo = $input['campo'] ?? '';
+        $monto = (float)($input['monto'] ?? 0);
+        $nota = trim($input['nota'] ?? '');
+
+        try {
+            $this->model->ejecutarTransaccionCierre(function($pdo) use ($id, $campo, $monto, $nota) {
+                if ($campo === 'YAPE_RECIBIDO') {
+                    $stmt = $pdo->prepare("UPDATE gastos_yape SET yape_recibido = ?, observacion = ? WHERE id = ?");
+                    $stmt->execute([$monto, $nota, $id]);
+                } else {
+                    // Categoria normal
+                    $stmt = $pdo->prepare("SELECT id FROM gastos_yape_detalle WHERE gasto_yape_id = ? AND rubro = ?");
+                    $stmt->execute([$id, $campo]);
+                    $detId = $stmt->fetchColumn();
+
+                    if ($monto > 0 || $nota !== '') {
+                        if ($detId) {
+                            $s = $pdo->prepare("UPDATE gastos_yape_detalle SET monto = ?, observacion = ? WHERE id = ?");
+                            $s->execute([$monto, $nota, $detId]);
+                        } else {
+                            $s = $pdo->prepare("INSERT INTO gastos_yape_detalle (gasto_yape_id, rubro, monto, observacion) VALUES (?, ?, ?, ?)");
+                            $s->execute([$id, $campo, $monto, $nota]);
+                        }
+                    } else {
+                        if ($detId) {
+                            $pdo->prepare("DELETE FROM gastos_yape_detalle WHERE id = ?")->execute([$detId]);
+                        }
+                    }
+                }
+                
+                // Recalcular totales
+                $sTot = $pdo->prepare("SELECT COALESCE(SUM(monto), 0) FROM gastos_yape_detalle WHERE gasto_yape_id = ?");
+                $sTot->execute([$id]);
+                $total_gastado = (float)$sTot->fetchColumn();
+
+                $sYp = $pdo->prepare("SELECT yape_recibido FROM gastos_yape WHERE id = ?");
+                $sYp->execute([$id]);
+                $yape_recibido = (float)$sYp->fetchColumn();
+                
+                $vuelto = $yape_recibido - $total_gastado;
+                
+                $sUpd = $pdo->prepare("UPDATE gastos_yape SET total_gastado = ?, vuelto = ? WHERE id = ?");
+                $sUpd->execute([$total_gastado, $vuelto, $id]);
+            });
+            return ['ok' => true, 'msg' => 'Celda actualizada correctamente'];
+        } catch (Throwable $e) {
+            return ['ok' => false, 'msg' => 'Error al guardar celda: ' . $e->getMessage()];
+        }
+    }
 }

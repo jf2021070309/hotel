@@ -106,14 +106,12 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
                 <th class="text-end">YAPE REC.</th>
                 <th class="text-end" v-for="cat in categoriasConfig" :key="cat">{{ cat }}</th>
                 <th class="text-end" style="background-color: #334155;">TOTAL</th>
-                <th class="text-end text-success">VUELTOS</th>
-                <th class="text-center">ESTADO</th>
-                <th class="text-center pe-3">ACCIONES</th>
+                <th class="text-end text-success pe-3">VUELTOS</th>
               </tr>
             </thead>
             <tbody>
               <tr v-if="diasAgrupados.length === 0">
-                <td :colspan="8 + categoriasConfig.length" class="text-center text-muted py-4">No se encontraron
+                <td :colspan="5 + categoriasConfig.length" class="text-center text-muted py-4">No se encontraron
                   registros Yape para el mes seleccionado.</td>
               </tr>
               <template v-for="grupo in diasAgrupados" :key="grupo.fecha">
@@ -123,33 +121,25 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
                     <span :class="y.turno=='MAÑANA' ? 'text-info' : 'text-dark'">{{ y.turno }}</span>
                   </td>
                   <td class="text-center fw-bold text-secondary">{{ formatFecha(y.fecha) }}</td>
-                  <td class="text-end text-primary fw-bold">{{ parseFloat(y.yape_recibido).toFixed(2) }}</td>
-                  <td class="text-end" v-for="cat in categoriasConfig" :key="cat">
+                  
+                  <!-- YAPE RECIBIDO -->
+                  <td class="text-end text-primary fw-bold position-relative" style="cursor:pointer;" @click="abrirModalCelda(y, 'YAPE_RECIBIDO')">
+                    {{ parseFloat(y.yape_recibido).toFixed(2) }}
+                    <div v-if="y.observacion" class="position-absolute top-0 end-0" style="width: 0; height: 0; border-left: 8px solid transparent; border-top: 8px solid #ef4444;" title="Tiene nota"></div>
+                  </td>
+                  
+                  <!-- CATEGORIAS -->
+                  <td class="text-end position-relative" v-for="cat in categoriasConfig" :key="cat" style="cursor:pointer;" @click="abrirModalCelda(y, cat)">
                     <template v-if="y.detalles_montos && y.detalles_montos[cat] > 0">
                       <span>{{ parseFloat(y.detalles_montos[cat]).toFixed(2) }}</span>
-                      <i v-if="y.detalles_info && y.detalles_info[cat] && (y.detalles_info[cat].observacion || y.detalles_info[cat].documento)" 
-                         class="bi bi-chat-dots-fill text-warning ms-1" 
-                         style="cursor: pointer; font-size: 11px;"
-                         @click.stop="verNota(cat, y.detalles_info[cat])"
-                         title="Ver detalles"></i>
                     </template>
                     <span v-else class="text-muted" style="opacity:0.3">-</span>
+                    <div v-if="y.detalles_info && y.detalles_info[cat] && y.detalles_info[cat].observacion" class="position-absolute top-0 end-0" style="width: 0; height: 0; border-left: 8px solid transparent; border-top: 8px solid #ef4444;" title="Tiene nota"></div>
                   </td>
+
                   <td class="text-end text-danger fw-bold" style="background-color: #f8fafc;">{{
                     parseFloat(y.total_gastado).toFixed(2) }}</td>
-                  <td class="text-end text-success fw-bold">{{ parseFloat(y.vuelto).toFixed(2) }}</td>
-                  <td class="text-center">
-                    <span v-if="y.estado==='borrador'" class="badge bg-warning text-dark" style="font-size: 10px;"><i
-                        class="bi bi-pencil-square"></i> Borrador</span>
-                    <span v-else class="badge bg-success" style="font-size: 10px;"><i
-                        class="bi bi-check-circle-fill"></i> Cerrado</span>
-                  </td>
-                  <td class="text-center pe-3">
-                    <a :href="`form.php?id=${y.id}`" class="btn btn-sm"
-                      :class="y.estado==='borrador'?'btn-primary':'btn-outline-secondary'">
-                      <i class="bi" :class="y.estado==='borrador'?'bi-pencil':'bi-eye'"></i>
-                    </a>
-                  </td>
+                  <td class="text-end text-success fw-bold pe-3">{{ parseFloat(y.vuelto).toFixed(2) }}</td>
                 </tr>
                 <!-- Fila de Totales del Día -->
                 <tr style="background-color: #fef08a; font-weight: bold; border-bottom: 2px solid #cbd5e1;">
@@ -164,9 +154,8 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
                   </td>
                   <td class="text-end text-danger" style="background-color: transparent;">{{
                     grupo.totales.total_gastado.toFixed(2) }}</td>
-                  <td class="text-end text-success" style="background-color: transparent;">{{
+                  <td class="text-end text-success pe-3" style="background-color: transparent;">{{
                     grupo.totales.vuelto.toFixed(2) }}</td>
-                  <td colspan="2" style="background-color: transparent;"></td>
                 </tr>
               </template>
               <!-- TOTAL MENSUAL -->
@@ -184,9 +173,8 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
                 </td>
                 <td class="text-end text-danger py-3" style="background-color: transparent;">{{
                   globales.total_gastado.toFixed(2) }}</td>
-                <td class="text-end text-success py-3" style="background-color: transparent;">{{
+                <td class="text-end text-success pe-3 py-3" style="background-color: transparent;">{{
                   globales.vuelto.toFixed(2) }}</td>
-                <td colspan="2" class="py-3" style="background-color: transparent;"></td>
               </tr>
             </tbody>
           </table>

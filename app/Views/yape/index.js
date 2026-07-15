@@ -156,23 +156,62 @@ createApp({
       }
     };
 
-    const verNota = (rubro, info) => {
-        let html = '<div style="text-align: left; font-size: 14px; color: #334155;">';
-        if (info.observacion) {
-            html += `<div style="margin-bottom:12px;"><label style="font-size:11px; font-weight:bold; color:#64748b; text-transform:uppercase;">Nota / Observación:</label><div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:10px; margin-top:4px;">${info.observacion}</div></div>`;
-        }
-        if (info.documento) {
-            html += `<div><label style="font-size:11px; font-weight:bold; color:#64748b; text-transform:uppercase;">N° Documento:</label><div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:10px; margin-top:4px; font-family: monospace;">${info.documento}</div></div>`;
-        }
-        html += '</div>';
+    const abrirModalCelda = async (yapeRow, campo) => {
+        let title = campo === 'YAPE_RECIBIDO' ? 'YAPE RECIBIDO' : campo;
+        let currentMonto = '';
+        let currentNota = '';
 
-        Swal.fire({
-            title: `Detalle: ${rubro}`,
-            html: html,
-            icon: 'info',
-            confirmButtonText: 'Cerrar',
-            confirmButtonColor: '#0f172a'
+        if (campo === 'YAPE_RECIBIDO') {
+            currentMonto = yapeRow.yape_recibido > 0 ? parseFloat(yapeRow.yape_recibido).toFixed(2) : '';
+            currentNota = yapeRow.observacion || '';
+        } else {
+            if (yapeRow.detalles_montos && yapeRow.detalles_montos[campo] > 0) {
+                currentMonto = parseFloat(yapeRow.detalles_montos[campo]).toFixed(2);
+            }
+            if (yapeRow.detalles_info && yapeRow.detalles_info[campo] && yapeRow.detalles_info[campo].observacion) {
+                currentNota = yapeRow.detalles_info[campo].observacion;
+            }
+        }
+
+        const { value: formData } = await Swal.fire({
+            title: `Editar: ${title}`,
+            html: `
+                <div style="text-align: left; font-size: 14px;">
+                    <label style="font-weight:700; font-size:11px; color:#6b7280; text-transform:uppercase; letter-spacing:.5px;">Monto (S/)</label>
+                    <input type="number" id="swal-celda-monto" class="swal2-input" placeholder="0.00" step="0.01" min="0" value="${currentMonto}" style="margin:6px 0 14px; width:100%;">
+                    
+                    <label style="font-weight:700; font-size:11px; color:#6b7280; text-transform:uppercase; letter-spacing:.5px;">Nota / Observación</label>
+                    <textarea id="swal-celda-nota" class="swal2-textarea" placeholder="Opcional..." style="margin:6px 0 0; width:100%; height: 80px;">${currentNota}</textarea>
+                </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Guardar',
+            confirmButtonColor: '#0f172a',
+            cancelButtonText: 'Cancelar',
+            preConfirm: () => {
+                return {
+                    id: yapeRow.id,
+                    campo: campo,
+                    monto: document.getElementById('swal-celda-monto').value,
+                    nota: document.getElementById('swal-celda-nota').value
+                };
+            }
         });
+
+        if (formData) {
+            try {
+                Swal.fire({ title: 'Guardando...', didOpen: () => Swal.showLoading() });
+                const res = await axios.post(`${BASE}guardar_celda`, formData);
+                if (res.data.ok) {
+                    Swal.fire({ icon: 'success', title: 'Guardado', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+                    listar(true); // reload silently
+                } else {
+                    Swal.fire('Error', res.data.msg || 'No se pudo guardar la celda', 'error');
+                }
+            } catch (e) {
+                Swal.fire('Error', e.response?.data?.msg || e.message || 'Error de red', 'error');
+            }
+        }
     };
 
     onMounted(() => {
@@ -186,7 +225,7 @@ createApp({
 
     return {
       globales, loading, registros, diasAgrupados, filtros, categoriasConfig,
-      formatFecha, listar, aplicarFiltrosFront, nuevoRegistro, nuevoRegistroForm, verNota
+      formatFecha, listar, aplicarFiltrosFront, nuevoRegistro, nuevoRegistroForm, abrirModalCelda
     };
   }
 }).mount('#app-yape-index');

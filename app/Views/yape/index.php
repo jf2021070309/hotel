@@ -123,18 +123,26 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
                   <td class="text-center fw-bold text-secondary">{{ formatFecha(y.fecha) }}</td>
                   
                   <!-- YAPE RECIBIDO -->
-                  <td class="text-end text-primary fw-bold position-relative" style="cursor:pointer;" @click="abrirModalCelda(y, 'YAPE_RECIBIDO')" :title="y.observacion ? y.observacion : ''">
+                  <td class="text-end text-primary fw-bold position-relative num-cell" style="cursor:pointer;" @click="abrirModalCelda(y, 'YAPE_RECIBIDO')">
                     {{ parseFloat(y.yape_recibido).toFixed(2) }}
                     <div v-if="y.observacion" class="position-absolute top-0 end-0" style="width: 0; height: 0; border-left: 8px solid transparent; border-top: 8px solid #ef4444;"></div>
+                    <div v-if="y.observacion" class="flujo-tooltip text-dark text-center" style="min-width: 150px;">
+                        <div style="font-weight:bold; color:#0284c7; margin-bottom:5px; border-bottom:1px solid #e2e8f0; padding-bottom:3px;">Nota / Observación</div>
+                        {{ y.observacion }}
+                    </div>
                   </td>
                   
                   <!-- CATEGORIAS -->
-                  <td class="text-end position-relative" v-for="cat in categoriasConfig" :key="cat" style="cursor:pointer;" @click="abrirModalCelda(y, cat)" :title="(y.detalles_info && y.detalles_info[cat] && y.detalles_info[cat].observacion) ? y.detalles_info[cat].observacion : ''">
+                  <td class="text-end position-relative num-cell" v-for="cat in categoriasConfig" :key="cat" style="cursor:pointer;" @click="abrirModalCelda(y, cat)">
                     <template v-if="y.detalles_montos && y.detalles_montos[cat] > 0">
                       <span>{{ parseFloat(y.detalles_montos[cat]).toFixed(2) }}</span>
                     </template>
                     <span v-else class="text-muted" style="opacity:0.3">-</span>
                     <div v-if="y.detalles_info && y.detalles_info[cat] && y.detalles_info[cat].observacion" class="position-absolute top-0 end-0" style="width: 0; height: 0; border-left: 8px solid transparent; border-top: 8px solid #ef4444;"></div>
+                    <div v-if="y.detalles_info && y.detalles_info[cat] && y.detalles_info[cat].observacion" class="flujo-tooltip text-dark text-center" style="min-width: 150px;">
+                        <div style="font-weight:bold; color:#0284c7; margin-bottom:5px; border-bottom:1px solid #e2e8f0; padding-bottom:3px;">Nota: {{ cat }}</div>
+                        {{ y.detalles_info[cat].observacion }}
+                    </div>
                   </td>
 
                   <td class="text-end text-danger fw-bold" style="background-color: #f8fafc;">{{
@@ -203,6 +211,58 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
 
   /* Estrechamos un poco la tabla en mobile para que el scroll sea más corto */
   .table th, .table td { padding: 0.6rem 0.5rem !important; }
+
+  /* Tooltip Flotante */
+  .flujo-tooltip {
+    visibility: hidden;
+    opacity: 0;
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(5px);
+    background: #fff;
+    color: #333;
+    text-align: left;
+    padding: 8px 12px;
+    border-radius: 6px;
+    z-index: 9999;
+    font-size: 11.5px;
+    font-weight: 500;
+    white-space: pre-wrap;
+    width: max-content;
+    max-width: 250px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    border: 1px solid #ddd;
+    transition: opacity 0.15s, transform 0.15s;
+    pointer-events: none;
+    line-height: 1.4;
+  }
+  .flujo-tooltip::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 6px;
+    border-style: solid;
+    border-color: #fff transparent transparent transparent;
+  }
+  .flujo-tooltip::before {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 7px;
+    border-style: solid;
+    border-color: #ddd transparent transparent transparent;
+    z-index: -1;
+  }
+  .num-cell:hover .flujo-tooltip {
+    visibility: visible;
+    opacity: 1;
+    transform: translateX(-50%) translateY(-5px);
+  }
 </style>
 
 <script>

@@ -27,22 +27,35 @@ class LimpiezaModel {
         }
 
         foreach ($dirtyRooms as $room) {
-            $stmtCheck = $this->pdo->prepare("SELECT id, estado FROM limpieza_registros WHERE fecha = ? AND habitacion_id = ?");
+            $stmtCheck = $this->pdo->prepare("SELECT id, estado, tipo_limpieza FROM limpieza_registros WHERE fecha = ? AND habitacion_id = ?");
             $stmtCheck->execute([$fecha, $room['id']]);
             $existing = $stmtCheck->fetch(PDO::FETCH_ASSOC);
 
-            if (!$existing) {
-                $tipo = ($room['estado'] === 'mantenimiento') ? 'estimacion' : 'salida';
-                $prioridad = ($room['estado'] === 'mantenimiento') ? 'alta' : 'normal';
+            $tipo = ($room['estado'] === 'mantenimiento') ? 'estimacion' : 'salida';
+            $prioridad = ($room['estado'] === 'mantenimiento') ? 'alta' : 'normal';
 
+            if (!$existing) {
                 $stmtInsert = $this->pdo->prepare("
                     INSERT INTO limpieza_registros (fecha, habitacion_id, tipo_limpieza, prioridad, estado, usuario_id)
                     VALUES (?, ?, ?, ?, 'pendiente', ?)
                 ");
                 $stmtInsert->execute([$fecha, $room['id'], $tipo, $prioridad, $validUid]);
             } else {
-                if ($room['estado'] === 'limpieza' && $existing['estado'] === 'lista') {
-                    $stmtReset = $this->pdo->prepare("UPDATE limpieza_registros SET estado = 'pendiente', hora_fin = NULL WHERE id = ?");
+                $updates = [];
+                // Si la habitación ahora está sucia o en mantenimiento, pero el registro de limpieza ya estaba finalizado (lista), lo reseteamos a pendiente
+                if (in_array($room['estado'], ['limpieza', 'sucio', 'mantenimiento']) && $existing['estado'] === 'lista') {
+                    $updates[] = "estado = 'pendiente'";
+                    $updates[] = "hora_fin = NULL";
+                }
+                
+                // Si la habitación está en mantenimiento, nos aseguramos que el tipo y prioridad sean los correctos
+                if ($room['estado'] === 'mantenimiento') {
+                    if ($existing['tipo_limpieza'] !== 'estimacion') $updates[] = "tipo_limpieza = 'estimacion'";
+                    $updates[] = "prioridad = 'alta'"; // Asegurar prioridad alta para mantenimiento
+                }
+
+                if (!empty($updates)) {
+                    $stmtReset = $this->pdo->prepare("UPDATE limpieza_registros SET " . implode(", ", $updates) . " WHERE id = ?");
                     $stmtReset->execute([$existing['id']]);
                 }
             }

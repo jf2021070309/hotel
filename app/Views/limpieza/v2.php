@@ -69,6 +69,7 @@ include $_projectRoot . 'app/Views/layouts/head.php';
                 <option value="pendiente">Pendiente ({{ countEstado('pendiente') }})</option>
                 <option value="en proceso">En Proceso ({{ countEstado('en proceso') }})</option>
                 <option value="lista">Lista ({{ countEstado('lista') }})</option>
+                <option value="mantenimiento">Mantenimiento ({{ countEstado('mantenimiento') }})</option>
               </select>
             </div>
 

@@ -142,7 +142,8 @@ createApp({
 
     // ─── Helpers de celda ─────────────────────────────────────────────
     const getCeldaStay = (hab, dia) => {
-      const stays = hab.stays.filter(s => s.dia_inicio <= dia && s.dia_fin >= dia);
+      // Usar > (estricto) para dia_fin: un stay de 1 noche solo ocupa 1 celda (no 2)
+      const stays = hab.stays.filter(s => s.dia_inicio <= dia && s.dia_fin > dia);
       return stays.length ? stays[0] : null;
     };
 
@@ -376,29 +377,13 @@ createApp({
             };
             popup.querySelector('#btn-opt-sucio').onclick = () => {
               Swal.close();
-              const d = new Date(anioActual.value, 0, dia);
-              crearBloqueoRapido({
-                id: null,
-                hab_id: hab.id,
-                fecha: `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`,
-                titular: '[SUCIO]',
-                noches: 1,
-                observaciones: 'Bloqueo de limpieza',
-                canal: 'DIRECTO'
-              });
+              // Cambia estado del campo habitaciones.estado directamente.
+              // Este estado es transitorio: el usuario debe marcar 'libre' para limpiarlo.
+              cambiarEstadoHabitacion(hab.id, 'sucio');
             };
             popup.querySelector('#btn-opt-mant').onclick = () => {
               Swal.close();
-              const d = new Date(anioActual.value, 0, dia);
-              crearBloqueoRapido({
-                id: null,
-                hab_id: hab.id,
-                fecha: `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`,
-                titular: '[MANTENIMIENTO]',
-                noches: 1,
-                observaciones: 'Bloqueo por mantenimiento',
-                canal: 'DIRECTO'
-              });
+              cambiarEstadoHabitacion(hab.id, 'mantenimiento');
             };
             popup.querySelector('#btn-opt-libre').onclick = () => {
               Swal.close();

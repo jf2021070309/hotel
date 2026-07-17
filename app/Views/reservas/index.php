@@ -668,7 +668,19 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
                     </div>
                   </div>
 
-                  <!-- (El estado especial flotante fue removido a pedido del usuario) -->
+                  <!-- Bloque visual de estado (sucio/mantenimiento): solo visible en el día de HOY.
+                       Se basa en hab.estado (no en rooming_stays), así nunca "trascenderá" a días futuros.
+                       El usuario debe marcar la hab como "libre" para quitarlo. -->
+                  <div v-if="getTodosCeldaStays(hab, d).length === 0 && d === hoyDia && anioActual === anioHoy && (hab.estado === 'sucio' || hab.estado === 'mantenimiento')"
+                       class="stay-block animate__animated animate__fadeIn shadow-sm"
+                       :class="hab.estado === 'mantenimiento' ? 'est-mantenimiento text-white' : 'est-sucio text-white'"
+                       :style="{ width: (colWidth - 3) + 'px', left: '1px' }"
+                       @click.stop="onCeldaClick(hab, d)">
+                    <span class="titular" style="font-size: 9.5px; letter-spacing: 0.3px; line-height: 1.2;">
+                      {{ hab.estado === 'mantenimiento' ? 'MANTENIMIENTO' : 'SUCIO' }}
+                    </span>
+                  </div>
+
                 </div>
 
               </td>

@@ -14,8 +14,21 @@ class ReservasModel {
      * Single optimized JOIN — no N+1 queries.
      */
     public function getDatosAnio(int $anio): array {
-        // Auto-cancelar reservas vencidas (donde hoy es posterior a la fecha de checkout y siguen como 'reservado')
+        // Auto-cancelar reservas vencidas normales
         $this->pdo->query("UPDATE rooming_stays SET estado = 'cancelado' WHERE estado = 'reservado' AND fecha_checkout < CURRENT_DATE");
+        // Auto-cancelar bloqueos [SUCIO]/[MANTENIMIENTO] que ya llegaron a su fecha_checkout (hoy inclusive)
+        // Esto limpia los stays de bloqueo creados antes de la refactorización del sistema
+        $this->pdo->query("UPDATE rooming_stays s 
+            SET s.estado = 'cancelado' 
+            WHERE s.estado IN ('reservado','activo') 
+              AND s.fecha_checkout <= CURRENT_DATE
+              AND EXISTS (
+                SELECT 1 FROM rooming_pax p 
+                JOIN clientes c ON c.id = p.cliente_id 
+                WHERE p.stay_id = s.id 
+                  AND c.nombre_razon_social IN ('[SUCIO]','[MANTENIMIENTO]')
+              )");
+
 
         $primerDia  = sprintf('%04d-01-01', $anio);
         $ultimoDia  = sprintf('%04d-12-31', $anio);

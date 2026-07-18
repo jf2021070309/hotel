@@ -29,7 +29,7 @@ createApp({
     const anioHoy       = ref(today.getFullYear());
 
     const filtroPiso    = ref('');
-    const filtroPago    = ref('');
+
     const fechaBuscador = ref('');
     const viewMode      = ref('normal');   // 'compacto' | 'normal' | 'ampliado'
     const staySeleccionado = ref(null);
@@ -86,10 +86,7 @@ createApp({
     const habitacionesFiltradas = computed(() => {
       return habitaciones.value.filter(h => {
         if (filtroPiso.value && h.piso != filtroPiso.value) return false;
-        if (filtroPago.value) {
-          const tiene = h.stays.some(s => s.estado_pago === filtroPago.value);
-          if (!tiene) return false;
-        }
+
         return true;
       });
     });
@@ -840,7 +837,7 @@ createApp({
       loading, loadingPago,
       habitaciones, diasEnAnio, resumen, ingresos,
       mesActual, anioActual, hoyDia, mesHoy, anioHoy,
-      filtroPiso, filtroPago, fechaBuscador,
+      filtroPiso, fechaBuscador,
       staySeleccionado, pagoRapido,
       pisos, formatDiaHdr,
       habitacionesFiltradas, staysHoyMovil,

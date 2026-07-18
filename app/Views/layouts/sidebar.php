@@ -217,6 +217,14 @@ function isActive(string $page, string $folder_): string {
     </div>
     <?php endif; ?>
 
+    <?php if (tieneAccesoModulo('reporte_mendoza')): ?>
+    <div class="nav-item">
+      <a href="<?= route('app/Views/graficos/index.php', $base) ?>" class="<?= isActive('index.php','graficos') ?>" onclick="closeSidebarOnMobile()">
+        <i class="bi bi-pie-chart-fill text-info"></i> <span>Dashboard Analítico</span>
+      </a>
+    </div>
+    <?php endif; ?>
+
 
   </nav>
 

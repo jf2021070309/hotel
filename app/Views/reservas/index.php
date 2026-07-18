@@ -571,13 +571,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
         <option value="">Todos pisos</option>
         <option v-for="p in pisos" :key="p" :value="p">Piso {{ p }}</option>
       </select>
-      <select class="form-select form-select-sm" v-model="filtroPago" style="width:140px;">
-        <option value="">Todos pagos</option>
-        <option value="pendiente">🔴 Pendiente</option>
-        <option value="adelanto">🟡 Adelanto</option>
-        <option value="parcial">🟠 Parcial</option>
-        <option value="pagado">🟢 Pagado</option>
-      </select>
+
 
       <div class="divider"></div>
 
@@ -595,9 +589,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
 
 
 
-      <div class="ms-auto">
-        <button class="btn btn-sm btn-outline-dark" onclick="window.print()"><i class="bi bi-printer"></i></button>
-      </div>
+
     </div>
 
     <!-- GRILLA -->

@@ -21,7 +21,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
   }
   .kpi-cards {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 1rem;
     margin-bottom: 1rem;
   }
@@ -125,13 +125,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
             <h2>{{ resumen.ocupadas }} <small class="text-muted fs-6">/ {{ resumen.total }}</small></h2>
           </div>
         </div>
-        <div class="kpi-card">
-          <div class="kpi-icon bg-success text-white bg-opacity-75"><i class="bi bi-cash-stack"></i></div>
-          <div class="kpi-info">
-            <h4>Ingresos Hoy</h4>
-            <h2>S/ {{ resumen.ingresos_hoy.toFixed(2) }}</h2>
-          </div>
-        </div>
+
         <div class="kpi-card">
           <div class="kpi-icon bg-warning text-dark bg-opacity-75"><i class="bi bi-people-fill"></i></div>
           <div class="kpi-info">

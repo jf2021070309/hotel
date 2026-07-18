@@ -187,7 +187,16 @@ createApp({
   setup() {
     const BASE_URL = PROJECT_BASE_URL + 'api/reservas.php?action=';
     const loading = ref(true);
-    const resumen = ref({});
+    const resumen = ref({
+      ocupadas: 0,
+      total: 0,
+      pax_total: 0,
+      ingresos_hoy: 0,
+      cnt_pendiente: 0,
+      cnt_adelanto: 0,
+      cnt_parcial: 0,
+      cnt_pagado: 0
+    });
     const habitaciones = ref([]);
     
     // Chart instances to destroy/recreate
@@ -203,15 +212,15 @@ createApp({
         const anio = url.searchParams.get('anio') || new Date().getFullYear();
         const res = await axios.get(`${BASE_URL}datos&anio=${anio}`);
         if (res.data && res.data.ok) {
-          resumen.value = res.data.resumen;
-          habitaciones.value = res.data.habitaciones;
-          await nextTick();
-          renderCharts();
+          resumen.value = res.data.data.resumen;
+          habitaciones.value = res.data.data.habitaciones;
         }
       } catch (error) {
         console.error("Error cargando dashboard:", error);
       } finally {
         loading.value = false;
+        await nextTick();
+        renderCharts();
       }
     };
 

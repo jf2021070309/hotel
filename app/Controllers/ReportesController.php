@@ -39,6 +39,37 @@ class ReportesController {
     }
 
     /**
+     * Reporte SUNAT (Excluye opción 'Ninguna' / 'NINGUNO' / '-')
+     */
+    public function sunat($desde, $hasta) {
+        $sql = "SELECT 
+                    IFNULL(c.nombre_razon_social, 'General') AS nombre_razon_social, 
+                    IFNULL(c.documento_tipo, 'DNI') AS tipo_documento, 
+                    IFNULL(c.documento_num, '-') AS numero_documento, 
+                    c.celular,
+                    rs.id AS stay_id,
+                    rs.num_comprobante, 
+                    rs.tipo_comprobante,
+                    rs.total_pago, 
+                    rs.moneda_pago, 
+                    rs.fecha_registro, 
+                    rs.estado,
+                    h.numero AS habitacion_numero
+                FROM rooming_stays rs
+                LEFT JOIN rooming_pax rp ON rp.stay_id = rs.id AND rp.es_titular_acompanante = 1
+                LEFT JOIN clientes c ON c.id = rp.cliente_id
+                LEFT JOIN habitaciones h ON h.id = rs.habitacion_id
+                WHERE rs.tipo_comprobante IS NOT NULL 
+                  AND UPPER(rs.tipo_comprobante) NOT IN ('NINGUNO', 'NINGUNA', 'NINGUN', '-', '')
+                  AND (rs.fecha_registro BETWEEN ? AND ?)
+                ORDER BY rs.fecha_registro DESC";
+        
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$desde, $hasta]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
      * Reporte de Corporativas Extranjeras
      */
     public function corporativasExtranjeras() {

@@ -99,7 +99,10 @@ include __DIR__ . '/../layouts/head.php';
                        oninput="recalcularTodo()">
               </div>
             </div>
-            <div class="col-auto ms-auto">
+            <div class="col-auto ms-auto d-flex gap-2">
+              <button class="btn btn-primary btn-sm px-3 shadow-sm fw-bold" onclick="guardarTCDirecto()" id="btnGuardarTCDirecto">
+                <i class="bi bi-floppy-fill me-1"></i>Guardar
+              </button>
               <button class="btn btn-outline-secondary btn-sm px-3 shadow-sm" onclick="recargarTC()" id="btnRecargar">
                 <i class="bi bi-arrow-clockwise me-1"></i>Recargar
               </button>
@@ -714,6 +717,50 @@ async function guardarTC() {
     } finally {
         btn.disabled = false;
         btn.innerHTML = '<i class="bi bi-floppy-fill me-2"></i>Guardar Tipo de Cambio';
+    }
+}
+
+async function guardarTCDirecto() {
+    const fecha = document.getElementById('barFecha').value || new Date().toISOString().split('T')[0];
+    const tc_usd = parseFloat(document.getElementById('barTcUsd').value);
+    const tc_clp = parseFloat(document.getElementById('barTcClp').value);
+
+    if (isNaN(tc_usd) || tc_usd <= 0 || isNaN(tc_clp) || tc_clp <= 0) {
+        Swal.fire({ icon: 'warning', title: 'Datos incompletos', text: 'Ingresa valores válidos de tipo de cambio.', confirmButtonColor: '#22c55e' });
+        return;
+    }
+
+    const btn = document.getElementById('btnGuardarTCDirecto');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Guardando...';
+    }
+
+    try {
+        const res = await fetch('<?= $base ?>api/calculadora.php?action=guardarTC', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fecha, tc_usd, tc_clp })
+        });
+        const json = await res.json();
+
+        if (json.ok) {
+            Swal.fire({ icon: 'success', title: '¡Guardado!', text: 'Tipos de cambio guardados correctamente', timer: 2000, showConfirmButton: false });
+            recalcularTodo();
+            const tcUsdInput = document.getElementById('tcUsdInput');
+            const tcClpInput = document.getElementById('tcClpInput');
+            if (tcUsdInput) tcUsdInput.value = tc_usd;
+            if (tcClpInput) tcClpInput.value = tc_clp;
+        } else {
+            Swal.fire({ icon: 'error', title: 'Error', text: json.msg, confirmButtonColor: '#ef4444' });
+        }
+    } catch(e) {
+        Swal.fire({ icon: 'error', title: 'Error de red', text: e.message });
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-floppy-fill me-1"></i>Guardar';
+        }
     }
 }
 

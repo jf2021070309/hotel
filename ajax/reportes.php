@@ -21,6 +21,12 @@ switch ($action) {
         json_response(true, $controller->facturas($desde, $hasta, $estado));
         break;
 
+    case 'sunat':
+        $desde = $_GET['desde'] ?? date('Y-m-01');
+        $hasta = $_GET['hasta'] ?? date('Y-m-d');
+        json_response(true, $controller->sunat($desde, $hasta));
+        break;
+
     case 'corporativas':
         json_response(true, $controller->corporativasExtranjeras());
         break;
@@ -34,6 +40,23 @@ switch ($action) {
         $mes  = (int)($_GET['mes']  ?? date('m'));
         $anio = (int)($_GET['anio'] ?? date('Y'));
         json_response(true, $controller->mendoza($mes, $anio));
+        break;
+
+    case 'subir_voucher':
+        $data = json_decode(file_get_contents('php://input'), true);
+        $tipo = $data['tipo'] ?? '';
+        $id = (int)($data['id'] ?? 0);
+        $b64 = $data['b64'] ?? '';
+        
+        if (!$tipo || !$id || !$b64) {
+            json_response(false, null, 400, "Faltan datos obligatorios");
+            exit;
+        }
+        
+        require_once __DIR__ . '/../app/Models/ReporteModel.php';
+        $model = new ReporteModel($pdo);
+        $res = $model->guardarVoucherB64($tipo, $id, $b64);
+        json_response($res, null, $res ? 200 : 500, $res ? "Guardado" : "Error al guardar");
         break;
 
     default:

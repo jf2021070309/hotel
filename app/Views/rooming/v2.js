@@ -617,8 +617,6 @@ createApp({
     agregarExtension(fila) {
       fila.modificado = true;
       const last = fila.periodos_list[fila.periodos_list.length - 1];
-      // Marcar el período anterior como late_checkout = SI
-      last.late_checkout = 'SI';
       // Calcular nuevo checkin = día siguiente al último checkout
       let newCheckin = '';
       if (last.fecha_checkout) {

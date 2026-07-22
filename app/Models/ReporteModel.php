@@ -10,11 +10,39 @@ class ReporteModel {
     }
 
 
+    public function asegurarTablaVouchers(): void {
+        $this->pdo->exec("
+            CREATE TABLE IF NOT EXISTS `rooming_vouchers` (
+              `id` INT AUTO_INCREMENT PRIMARY KEY,
+              `referencia_tipo` VARCHAR(30) NOT NULL,
+              `referencia_id` INT NOT NULL,
+              `comprobante_b64` LONGTEXT NOT NULL,
+              `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+              UNIQUE KEY `uk_ref` (`referencia_tipo`, `referencia_id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        ");
+    }
+
+    public function guardarVoucherB64(string $tipo, int $id, string $b64): bool {
+        $this->asegurarTablaVouchers();
+        $sql = "INSERT INTO rooming_vouchers (referencia_tipo, referencia_id, comprobante_b64)
+                VALUES (:tipo, :id, :b64)
+                ON DUPLICATE KEY UPDATE comprobante_b64 = :b64_upd";
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute([
+            ':tipo' => $tipo,
+            ':id' => $id,
+            ':b64' => $b64,
+            ':b64_upd' => $b64
+        ]);
+    }
+
     /**
      * Reporte Sr. Mendoza: Venta Detallada por Habitación
      * Incluye todos los pagos (Efectivo, POS, Yape) asociados a estadías del mes.
      */
     public function getVentaHospedaje(int $mes, int $anio): array {
+        $this->asegurarTablaVouchers();
         $sql = "
             SELECT 
                 a.id AS pago_id,
@@ -37,7 +65,7 @@ class ReporteModel {
                 a.tipo_pago,
                 CASE 
                     WHEN a.tipo_pago IN ('TRANSFERENCIA', 'DEPOSITO', 'TRANSF', 'DEPOS/TRANS.') THEN 'TRANSFER.'
-                    WHEN a.tipo_pago IN ('YAPE', 'PLIN', 'YAPE O PLIN') THEN 'YAPE/PLIN'
+                    WHEN a.tipo_pago IN ('YAPE', 'PLIN', 'YAPE O PLIN', 'YAPE/PLIN') THEN 'YAPE/PLIN'
                     WHEN a.tipo_pago LIKE '%POS%' AND a.moneda = 'USD' THEN 'POS $'
                     WHEN a.tipo_pago LIKE '%POS%' AND a.moneda = 'PEN' THEN 'POS S/'
                     WHEN a.tipo_pago LIKE '%POS%' AND a.moneda = 'CLP' THEN 'POS CLP'
@@ -47,10 +75,12 @@ class ReporteModel {
                     ELSE a.tipo_pago
                 END AS medio_label,
                 a.monto AS total_fila,
-                CONCAT(s.tipo_comprobante, ' ', IFNULL(s.num_comprobante, '')) AS comprobante
+                CONCAT(s.tipo_comprobante, ' ', IFNULL(s.num_comprobante, '')) AS comprobante,
+                v.comprobante_b64
             FROM anticipos a
             JOIN rooming_stays s ON a.stay_id = s.id
             JOIN habitaciones h ON s.habitacion_id = h.id
+            LEFT JOIN rooming_vouchers v ON (v.referencia_tipo = 'hospedaje' AND v.referencia_id = a.id)
             WHERE MONTH(a.fecha) = :mes AND YEAR(a.fecha) = :anio
               AND s.estado != 'anulado'
             ORDER BY a.fecha DESC, turno DESC, h.piso, h.numero
@@ -72,62 +102,37 @@ class ReporteModel {
             'TRANSFERENCIA' => 0
         ];
 
-        // 1. Procesar Anticipos (Hospedaje + Pagos de consumos vinculados)
-        $sqlAnticipos = "
-            SELECT a.moneda, a.tipo_pago, SUM(a.monto) AS total
-            FROM anticipos a
-            JOIN rooming_stays s ON a.stay_id = s.id
-            WHERE MONTH(a.fecha) = :mes AND YEAR(a.fecha) = :anio
-              AND s.estado != 'anulado'
-            GROUP BY a.moneda, a.tipo_pago
-        ";
-        $stmtA = $this->pdo->prepare($sqlAnticipos);
-        $stmtA->execute([':mes' => $mes, ':anio' => $anio]);
-        
-        foreach ($stmtA->fetchAll(PDO::FETCH_ASSOC) as $r) {
-            $m = $r['moneda'];
-            $t = strtoupper($r['tipo_pago'] ?? '');
-            $val = (float)$r['total'];
+        // 1. Pagos de Hospedaje
+        $hospedaje = $this->getVentaHospedaje($mes, $anio);
+        foreach ($hospedaje as $row) {
+            $monto  = (float)$row['monto'];
+            $moneda = $row['moneda'];
+            $medio  = $row['medio_label'];
 
-            if (strpos($t, 'YAPE') !== false || strpos($t, 'PLIN') !== false) {
-                $res['YAPE'] += $val;
-            } elseif (strpos($t, 'TRANS') !== false || strpos($t, 'DEPO') !== false || strpos($t, 'BANCO') !== false) {
-                $res['TRANSFERENCIA'] += $val;
-            } elseif (strpos($t, 'EFECTIVO') !== false) {
-                $res['EFECTIVO'][$m] = ($res['EFECTIVO'][$m] ?? 0) + $val;
-            } elseif (strpos($t, 'POS') !== false) {
-                $res['POS'][$m] = ($res['POS'][$m] ?? 0) + $val;
+            if ($medio === 'YAPE/PLIN') {
+                $res['YAPE'] += $monto;
+            } elseif ($medio === 'TRANSFER.') {
+                $res['TRANSFERENCIA'] += $monto;
+            } elseif (strpos($medio, 'POS') !== false) {
+                if (isset($res['POS'][$moneda])) $res['POS'][$moneda] += $monto;
+            } elseif (strpos($medio, 'EFEC') !== false) {
+                if (isset($res['EFECTIVO'][$moneda])) $res['EFECTIVO'][$moneda] += $monto;
             }
         }
 
-        // 2. Ingresos por Consumos Extras (Solo Ventas Directas que NO tienen stay_id)
-        $sqlConsumos = "SELECT c.total, c.metodo_pago,
-                            CASE 
-                                WHEN c.metodo_pago LIKE '%USD%' OR c.metodo_pago LIKE '%DOLAR%' THEN 'USD'
-                                WHEN c.metodo_pago LIKE '%CLP%' OR c.metodo_pago LIKE '%PESOS%' THEN 'CLP'
-                                ELSE 'PEN'
-                            END as moneda
-                        FROM rooming_consumos c 
-                        WHERE MONTH(c.created_at) = :mes AND YEAR(c.created_at) = :anio 
-                          AND c.metodo_pago IS NOT NULL AND c.metodo_pago != ''
-                          AND (c.stay_id IS NULL OR c.stay_id = 0)"; 
-        
-        $stmtC = $this->pdo->prepare($sqlConsumos);
-        $stmtC->execute([':mes' => $mes, ':anio' => $anio]);
-        
-        foreach ($stmtC->fetchAll(PDO::FETCH_ASSOC) as $c) {
-            $t = strtoupper($c['metodo_pago'] ?? '');
-            $val = (float)$c['total'];
-            $monedaC = $c['moneda'];
-
-            if (strpos($t, 'YAPE') !== false || strpos($t, 'PLIN') !== false) {
-                $res['YAPE'] += $val;
-            } elseif (strpos($t, 'TRANS') !== false || strpos($t, 'DEPO') !== false || strpos($t, 'BANCO') !== false) {
-                $res['TRANSFERENCIA'] += $val;
-            } elseif (strpos($t, 'EFECTIVO') !== false) {
-                $res['EFECTIVO'][$monedaC] += $val;
-            } elseif (strpos($t, 'POS') !== false) {
-                $res['POS'][$monedaC] += $val;
+        // 2. Consumos Extras Directos
+        $consumos = $this->getConsumosDetail($mes, $anio);
+        foreach ($consumos as $c) {
+            $monto = (float)$c['total'];
+            $metodo = strtoupper($c['metodo_pago'] ?? '');
+            if (strpos($metodo, 'YAPE') !== false || strpos($metodo, 'PLIN') !== false) {
+                $res['YAPE'] += $monto;
+            } elseif (strpos($metodo, 'TRANSF') !== false) {
+                $res['TRANSFERENCIA'] += $monto;
+            } elseif (strpos($metodo, 'POS') !== false) {
+                $res['POS']['PEN'] += $monto;
+            } else {
+                $res['EFECTIVO']['PEN'] += $monto;
             }
         }
 
@@ -138,6 +143,7 @@ class ReporteModel {
      * Mendoza: Detalle de consumos realizados en el mes
      */
     public function getConsumosDetail(int $mes, int $anio): array {
+        $this->asegurarTablaVouchers();
         $sql = "
             SELECT 
                 c.id,
@@ -156,11 +162,13 @@ class ReporteModel {
                 CASE 
                     WHEN HOUR(c.created_at) >= 6 AND HOUR(c.created_at) < 14 THEN 'MAÑANA' 
                     ELSE 'TARDE' 
-                END AS turno
+                END AS turno,
+                v.comprobante_b64
             FROM rooming_consumos c
             LEFT JOIN inventario_productos ip ON c.producto_id = ip.id
             LEFT JOIN rooming_stays s ON c.stay_id = s.id
             LEFT JOIN habitaciones h ON s.habitacion_id = h.id
+            LEFT JOIN rooming_vouchers v ON (v.referencia_tipo = 'consumo' AND v.referencia_id = c.id)
             WHERE MONTH(c.created_at) = :mes AND YEAR(c.created_at) = :anio
             ORDER BY c.created_at DESC
         ";

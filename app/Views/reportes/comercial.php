@@ -43,6 +43,11 @@ include $_projectRoot . '/app/Views/layouts/head.php';
           </button>
         </li>
         <li class="nav-item" role="presentation">
+          <button class="nav-link fw-bold" id="tab-sunat" data-bs-toggle="pill" data-bs-target="#content-sunat" type="button" @click="tab = 'sunat'">
+            <i class="bi bi-file-earmark-text me-2"></i>Reporte SUNAT
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
           <button class="nav-link fw-bold" id="tab-corporativas" data-bs-toggle="pill" data-bs-target="#content-corporativas" type="button" @click="tab = 'corporativas'">
             <i class="bi bi-building me-2"></i>Corporativas Extranjeras
           </button>
@@ -112,7 +117,70 @@ include $_projectRoot . '/app/Views/layouts/head.php';
           </div>
         </div>
 
-        <!-- 2. CORPORATIVAS EXTRANJERAS -->
+        <!-- 2. REPORTE SUNAT (EXCLUYE NINGUNA) -->
+        <div class="tab-pane fade" id="content-sunat" role="tabpanel">
+          <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+            <div class="card-header bg-white border-0 py-3 d-flex flex-wrap gap-3 align-items-center justify-content-between">
+              <div class="d-flex align-items-center gap-2">
+                <input type="date" v-model="filtros.sunat.desde" class="form-control form-control-sm">
+                <span class="text-muted small">al</span>
+                <input type="date" v-model="filtros.sunat.hasta" class="form-control form-control-sm">
+                <button class="btn btn-primary btn-sm px-3" @click="cargarSunat">
+                  <i class="bi bi-search me-1"></i> Filtrar
+                </button>
+              </div>
+              <div class="d-flex gap-2">
+                <input type="text" v-model="busqueda.sunat" class="form-control form-control-sm" placeholder="Buscar cliente / comprobante..." style="width: 250px;">
+                <button class="btn btn-success btn-sm px-3" @click="exportarSunat">
+                  <i class="bi bi-file-earmark-excel me-1"></i> Excel SUNAT
+                </button>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0" style="font-size:13px;">
+                <thead class="bg-light text-muted fw-bold">
+                  <tr>
+                    <th class="ps-4">Fecha</th>
+                    <th>Hab.</th>
+                    <th>Comprobante</th>
+                    <th>N° Comprobante</th>
+                    <th>Cliente / Empresa</th>
+                    <th>Tipo Doc</th>
+                    <th>N° Documento</th>
+                    <th class="text-center">Monto Declarado</th>
+                    <th class="text-center">Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="s in sunatFiltrado" :key="s.stay_id">
+                    <td class="ps-4 text-muted">{{ s.fecha_registro }}</td>
+                    <td class="fw-bold">#{{ s.habitacion_numero || '—' }}</td>
+                    <td>
+                      <span class="badge" :class="s.tipo_comprobante == 'FACTURA' ? 'bg-primary' : (s.tipo_comprobante == 'BOLETA' ? 'bg-success' : 'bg-info')">
+                        {{ s.tipo_comprobante }}
+                      </span>
+                    </td>
+                    <td class="fw-bold">{{ s.num_comprobante || '—' }}</td>
+                    <td class="fw-semibold text-dark">{{ s.nombre_razon_social }}</td>
+                    <td><span class="badge bg-light text-dark border">{{ s.tipo_documento }}</span></td>
+                    <td class="fw-bold">{{ s.numero_documento }}</td>
+                    <td class="text-center fw-bold text-success">
+                      {{ s.moneda_pago == 'USD' ? '$' : 'S/' }} {{ parseFloat(s.total_pago).toFixed(2) }}
+                    </td>
+                    <td class="text-center">
+                      <span class="badge bg-secondary">{{ s.estado.toUpperCase() }}</span>
+                    </td>
+                  </tr>
+                  <tr v-if="!sunatFiltrado.length">
+                    <td colspan="9" class="text-center py-5 text-muted">No se encontraron comprobantes declarables en el rango seleccionado (Registros "Ninguna" excluidos).</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. CORPORATIVAS EXTRANJERAS -->
         <div class="tab-pane fade" id="content-corporativas" role="tabpanel">
            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
             <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">

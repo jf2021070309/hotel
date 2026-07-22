@@ -6,11 +6,13 @@ createApp({
     const loading = ref(false);
     
     const facturas = ref([]);
+    const sunat = ref([]);
     const corporativas = ref([]);
     const recurrentes = ref([]);
 
     const busqueda = ref({
       facturas: '',
+      sunat: '',
       corporativas: '',
       recurrentes: ''
     });
@@ -18,6 +20,10 @@ createApp({
     const filtros = ref({
       facturas: {
         desde: new Date().toISOString().split('T')[0],
+        hasta: new Date().toISOString().split('T')[0]
+      },
+      sunat: {
+        desde: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0],
         hasta: new Date().toISOString().split('T')[0]
       },
       recurrentes: {
@@ -29,9 +35,18 @@ createApp({
     const facturasFiltradas = computed(() => {
       const b = busqueda.value.facturas.toLowerCase();
       return facturas.value.filter(f => 
-        f.nombre_completo.toLowerCase().includes(b) || 
-        f.ruc_factura.toLowerCase().includes(b) ||
-        (f.razon_social && f.razon_social.toLowerCase().includes(b))
+        (f.nombre_razon_social || f.nombre_completo || '').toLowerCase().includes(b) || 
+        (f.numero_documento || f.ruc_factura || '').toLowerCase().includes(b)
+      );
+    });
+
+    const sunatFiltrado = computed(() => {
+      const b = busqueda.value.sunat.toLowerCase();
+      return sunat.value.filter(s => 
+        (s.nombre_razon_social || '').toLowerCase().includes(b) || 
+        (s.numero_documento || '').toLowerCase().includes(b) ||
+        (s.num_comprobante || '').toLowerCase().includes(b) ||
+        (s.tipo_comprobante || '').toLowerCase().includes(b)
       );
     });
 
@@ -57,6 +72,18 @@ createApp({
       try {
         const res = await axios.get(`../../../api/reportes.php?action=facturas&desde=${filtros.value.facturas.desde}&hasta=${filtros.value.facturas.hasta}`);
         facturas.value = res.data.data || [];
+      } catch (err) {
+        console.error(err);
+      } finally {
+        loading.value = false;
+      }
+    };
+
+    const cargarSunat = async () => {
+      loading.value = true;
+      try {
+        const res = await axios.get(`../../../api/reportes.php?action=sunat&desde=${filtros.value.sunat.desde}&hasta=${filtros.value.sunat.hasta}`);
+        sunat.value = res.data.data || [];
       } catch (err) {
         console.error(err);
       } finally {
@@ -90,6 +117,7 @@ createApp({
 
     const cargarDatosActual = () => {
       if (tab.value === 'facturas') cargarFacturas();
+      if (tab.value === 'sunat') cargarSunat();
       if (tab.value === 'corporativas') cargarCorporativas();
       if (tab.value === 'recurrentes') cargarRecurrentes();
     };
@@ -141,9 +169,16 @@ createApp({
 
     const exportarFacturas = () => {
       const data = facturasFiltradas.value.map(f => [
-        f.nombre_completo, f.documento_num, f.celular, f.ruc_factura, f.razon_social, f.total_pago, f.fecha_registro, f.num_comprobante, f.estado
+        f.nombre_razon_social || f.nombre_completo, f.numero_documento || f.documento_num, f.celular, f.ruc_factura, f.razon_social, f.total_pago, f.fecha_registro, f.num_comprobante, f.estado
       ]);
       exportarExcel('Reporte de Facturas Solicitadas', ['Huésped', 'Doc', 'Celular', 'RUC', 'Razón Social', 'Monto', 'Fecha', 'N° Comp.', 'Estado'], data, 'Facturas_Solicitadas');
+    };
+
+    const exportarSunat = () => {
+      const data = sunatFiltrado.value.map(s => [
+        s.fecha_registro, s.tipo_comprobante, s.num_comprobante || '-', s.nombre_razon_social, s.tipo_documento, s.numero_documento, s.total_pago, s.moneda_pago
+      ]);
+      exportarExcel('Reporte SUNAT (Excluye Ninguna)', ['Fecha', 'Comprobante', 'N° Comprobante', 'Cliente / Empresa', 'Tipo Doc', 'N° Doc', 'Total', 'Moneda'], data, 'Reporte_SUNAT');
     };
 
     const exportarCorporativas = () => {
@@ -162,15 +197,16 @@ createApp({
 
     onMounted(() => {
       cargarFacturas();
+      cargarSunat();
       cargarCorporativas();
       cargarRecurrentes();
     });
 
     return {
       tab, loading, busqueda, filtros,
-      facturasFiltradas, corpFiltradas, recFiltrados,
-      cargarFacturas, cargarCorporativas, cargarRecurrentes, cargarDatosActual,
-      exportarFacturas, exportarCorporativas, exportarRecurrentes
+      facturasFiltradas, sunatFiltrado, corpFiltradas, recFiltrados,
+      cargarFacturas, cargarSunat, cargarCorporativas, cargarRecurrentes, cargarDatosActual,
+      exportarFacturas, exportarSunat, exportarCorporativas, exportarRecurrentes
     };
   }
 }).mount('#app-comercial');

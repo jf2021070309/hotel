@@ -367,16 +367,16 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                   <div class="d-flex flex-column h-100">
                     <div v-for="(p, pIdx) in f.periodos_list" :key="'co'+pIdx" class="pax-input-container w-100 d-flex align-items-center"
                          :style="{ borderBottom: pIdx===f.periodos_list.length-1 ? 'none':'1px dashed #000', padding:'2px 4px', backgroundColor:'#70ad47' }">
-                      <button v-if="pIdx===f.periodos_list.length-1 && (f.periodos_list.length > 1 || p.late_checkout === 'SI')"
+                      <button v-if="pIdx===f.periodos_list.length-1 && f.periodos_list.length > 1"
                               class="btn btn-sm btn-link text-dark p-0 me-1 flex-shrink-0"
                               @click="quitarExtension(f, pIdx)" title="Quitar Extensión"
                               style="font-size:18px;line-height:1;font-weight:700;">-</button>
                       <input type="date" v-model="p.fecha_checkout"
                              class="table-editable-input text-center text-dark fw-bold w-100 border-0 bg-transparent px-1"
                              @input="marcarModificado(f)" style="height:30px;font-size:11px;">
-                      <button v-if="pIdx===f.periodos_list.length-1 && p.late_checkout === 'SI'"
+                      <button v-if="pIdx===f.periodos_list.length-1"
                               class="btn btn-sm btn-link text-dark p-0 ms-1 flex-shrink-0"
-                              @click="agregarExtension(f)" title="Agregar Extensión"
+                              @click="agregarExtension(f)" title="Agregar Extensión (+)"
                               style="font-size:18px;line-height:1;font-weight:700;">+</button>
                     </div>
                   </div>
@@ -423,7 +423,9 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                         <option value="POS DOLARES">POS DOLARES</option>
                         <option value="PESOS EFECTIVO">PESOS EFECTIVO</option>
                         <option value="POS PESOS">POS PESOS</option>
+                        <option value="YAPE/PLIN">YAPE/PLIN</option>
                         <option value="YAPE O PLIN">YAPE O PLIN</option>
+                        <option value="TRANSFERENCIA">TRANSFERENCIA</option>
                       </select>
                     </div>
                   </div>

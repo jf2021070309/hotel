@@ -264,6 +264,8 @@ window.MENDOZA_CONFIG = {
     roomingUrl: <?= json_encode(project_base_url() . 'rooming') ?>
 };
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
 
 <div class="main-content" id="app-mendoza" v-cloak>
     <!-- TOPBAR PREMIUM DARK -->
@@ -348,13 +350,18 @@ window.MENDOZA_CONFIG = {
         <div v-for="(info, fecha) in groupedData" :key="fecha" class="mb-5">
             <div class="date-separator" @click="toggleDia(fecha)">
                 <div><i class="bi bi-stars me-2"></i> {{ fecha }}</div>
-                <div style="font-size: 0.8rem;">
-                    {{ colapsados[fecha] ? 'EXPANDIR VISTA' : 'COLAPSAR VISTA' }} 
-                    <i class="bi ms-2" :class="colapsados[fecha] ? 'bi-chevron-down' : 'bi-chevron-up'"></i>
+                <div class="d-flex align-items-center gap-3">
+                    <button class="btn btn-sm btn-outline-secondary" @click.stop="tomarCaptura(fecha)" title="Captura de Pantalla">
+                        <i class="bi bi-camera"></i>
+                    </button>
+                    <div style="font-size: 0.8rem;">
+                        {{ colapsados[fecha] ? 'EXPANDIR VISTA' : 'COLAPSAR VISTA' }} 
+                        <i class="bi ms-2" :class="colapsados[fecha] ? 'bi-chevron-down' : 'bi-chevron-up'"></i>
+                    </div>
                 </div>
             </div>
 
-            <div v-show="!colapsados[fecha]">
+            <div v-show="!colapsados[fecha]" :id="'dia-container-' + fecha">
                 <div v-if="info.hospedaje.length > 0 || info.consumos.length > 0" class="mb-5">
                         
                         <!-- Tabla Auditoria Style -->
@@ -397,9 +404,17 @@ window.MENDOZA_CONFIG = {
                                           <div class="fw-bold text-dark">{{ i.noches }}</div>
                                       </td>
                                       <td class="text-center px-2">
-                                          <span class="badge" :class="getBadgeClass(i.medio_label)">
-                                              {{ i.medio_label }}
-                                          </span>
+                                          <div class="d-flex align-items-center justify-content-center gap-2">
+                                              <span class="badge" :class="getBadgeClass(i.medio_label)">
+                                                  {{ i.medio_label }}
+                                              </span>
+                                              <button v-if="['YAPE', 'TRANSFER', 'PLIN'].some(m => i.medio_label.includes(m)) || i.comprobante_b64" 
+                                                      class="btn btn-sm p-0 text-secondary" 
+                                                      @click.stop="abrirVoucher(i, 'hospedaje')" 
+                                                      title="Comprobante">
+                                                  <i class="bi bi-receipt" :class="{'text-primary': i.comprobante_b64}"></i>
+                                              </button>
+                                          </div>
                                       </td>
                                       <td class="text-end px-3">
                                           <div class="fw-bold text-dark" style="font-size: 14px;">{{ formatNumber(i.monto, (i.moneda === 'CLP' ? 0 : 2)) }}</div>
@@ -423,9 +438,17 @@ window.MENDOZA_CONFIG = {
                                           <div class="text-muted" style="font-size: 12px;">Venta Directa</div>
                                       </td>
                                       <td class="text-center px-2">
-                                          <span class="badge bg-light text-dark border">
-                                              {{ c.metodo_pago }}
-                                          </span>
+                                          <div class="d-flex align-items-center justify-content-center gap-2">
+                                              <span class="badge bg-light text-dark border">
+                                                  {{ c.metodo_pago }}
+                                              </span>
+                                              <button v-if="['YAPE', 'TRANSFERENCIA', 'PLIN'].some(m => (c.metodo_pago || '').toUpperCase().includes(m)) || c.comprobante_b64" 
+                                                      class="btn btn-sm p-0 text-secondary" 
+                                                      @click.stop="abrirVoucher(c, 'consumo')" 
+                                                      title="Comprobante">
+                                                  <i class="bi bi-receipt" :class="{'text-primary': c.comprobante_b64}"></i>
+                                              </button>
+                                          </div>
                                       </td>
                                       <td class="text-end px-3">
                                           <div class="fw-bold text-dark" style="font-size: 14px;">
@@ -540,6 +563,37 @@ window.MENDOZA_CONFIG = {
             </div>
         </div>
     </div>
+    
+    <!-- Modal Voucher -->
+    <div class="modal fade" id="modalVoucher" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Comprobante de Pago</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body text-center">
+             <div v-if="voucherActual.preview">
+                <img :src="voucherActual.preview" class="img-fluid rounded shadow-sm" style="max-height: 400px; object-fit: contain;">
+             </div>
+             <div v-else-if="voucherActual.comprobante_b64">
+                <img :src="voucherActual.comprobante_b64" class="img-fluid rounded shadow-sm" style="max-height: 400px; object-fit: contain;">
+             </div>
+             <div v-else>
+                <p class="text-muted">No hay comprobante subido.</p>
+             </div>
+             <div class="mt-3">
+                <input type="file" id="voucherInput" class="form-control form-control-sm mb-2" accept="image/*" @change="onVoucherSelect">
+                <button class="btn btn-primary btn-sm w-100" @click="subirVoucher" :disabled="!voucherActual.preview || loadingVoucher">
+                   <span v-if="loadingVoucher" class="spinner-border spinner-border-sm me-1"></span>
+                   Guardar Comprobante
+                </button>
+             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
 </div>
 
 <script src="<?= $_root ?>public/assets/js/reportes/mendoza.js?v=<?= time() ?>"></script>

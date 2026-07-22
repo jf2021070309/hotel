@@ -20,6 +20,10 @@ createApp({
         const consumos = ref([]);
         const loading = ref(false);
         const colapsados = ref({});
+        
+        const voucherActual = ref({});
+        const loadingVoucher = ref(false);
+        let modalVoucherInstance = null;
         let pollingTimer = null;
 
         const fetchData = async (silent = false) => {
@@ -253,9 +257,76 @@ createApp({
             exportarExcel(titulo, columnas, data.value, titulo);
         };
 
+        const tomarCaptura = async (fecha) => {
+            const el = document.getElementById('dia-container-' + fecha);
+            if (!el) return;
+            try {
+                if (colapsados.value[fecha]) {
+                    colapsados.value[fecha] = false;
+                    await Vue.nextTick();
+                }
+                const canvas = await html2canvas(el, { scale: 2, backgroundColor: '#f8f9fa' });
+                const link = document.createElement('a');
+                link.download = `Turno-${fecha}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            } catch (e) {
+                console.error("Error al capturar", e);
+                alert("Error al tomar captura");
+            }
+        };
+
+        const abrirVoucher = (item, tipo) => {
+            voucherActual.value = {
+                id: item.pago_id || item.id,
+                tipo: tipo,
+                comprobante_b64: item.comprobante_b64,
+                preview: null
+            };
+            const input = document.getElementById('voucherInput');
+            if (input) input.value = '';
+            if (modalVoucherInstance) modalVoucherInstance.show();
+        };
+
+        const onVoucherSelect = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                voucherActual.value.preview = ev.target.result;
+            };
+            reader.readAsDataURL(file);
+        };
+
+        const subirVoucher = async () => {
+            if (!voucherActual.value.preview) return;
+            loadingVoucher.value = true;
+            try {
+                const res = await axios.post(`${window.MENDOZA_CONFIG.apiEndpoint}?action=subir_voucher`, {
+                    tipo: voucherActual.value.tipo,
+                    id: voucherActual.value.id,
+                    b64: voucherActual.value.preview
+                });
+                if (res.data.ok) {
+                    alert("Comprobante guardado correctamente");
+                    if (modalVoucherInstance) modalVoucherInstance.hide();
+                    fetchData(true);
+                } else {
+                    alert(res.data.msg || "Error al guardar comprobante");
+                }
+            } catch (e) {
+                console.error(e);
+                alert("Error al guardar comprobante");
+            } finally {
+                loadingVoucher.value = false;
+            }
+        };
+
         onMounted(() => {
             fetchData();
             pollingTimer = setInterval(() => fetchData(true), 10000);
+            const el = document.getElementById('modalVoucher');
+            if (el) modalVoucherInstance = new bootstrap.Modal(el);
         });
 
         onUnmounted(() => {
@@ -266,7 +337,9 @@ createApp({
             filtro, data, groupedData, resumen, resumenDesglosado, egresos, colapsados, loading, 
             fetchData, toggleDia, getResumenTurno, getBadgeClass, getPrefix, getMesNombre, formatCurrency, formatNumber, getSym, exportar,
             filtroAvanzado,
-            verDetalle
+            verDetalle,
+            voucherActual, loadingVoucher,
+            tomarCaptura, abrirVoucher, onVoucherSelect, subirVoucher
         };
     }
 }).mount('#app-mendoza');

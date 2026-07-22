@@ -862,6 +862,17 @@ createApp({
       new bootstrap.Modal('#modalConsumo').show();
     };
 
+    const seleccionarMiniBar = (nombreBuscar) => {
+      const p = inventario.value.find(x => x.nombre.toLowerCase().includes(nombreBuscar.toLowerCase()));
+      if (p) {
+        consumoForm.producto_id = p.id;
+        onProductoChange();
+      } else if (inventario.value.length > 0) {
+        consumoForm.producto_id = inventario.value[0].id;
+        onProductoChange();
+      }
+    };
+
     const onProductoChange = () => {
       const p = inventario.value.find(x => x.id == consumoForm.producto_id);
       if (p) {
@@ -1629,7 +1640,7 @@ createApp({
       abrirEdicion, activarReserva, cambiarTipoPago, fmtCur, isEditingAdelanto, adelantoExcede, getMetodoPagoIcon,
       saldoPendienteOriginal, adelantoInvalido,
       // CONSUMOS
-      inventario, inventarioAgrupado, stayParaConsumo, consumosStay, consumoForm,
+      inventario, inventarioAgrupado, stayParaConsumo, consumosStay, consumoForm, seleccionarMiniBar,
       abrirConsumo, onProductoChange, onPosConsumoToggle, onMetodoPagoDropdownChange, calcularTotalConsumo, guardarConsumo,
       consumoFormTotalEnMonedaEstadia, monedaEstadiaSimbolo, monedaConsumoSimbolo,
       // AUTOCOMPLETE PAX

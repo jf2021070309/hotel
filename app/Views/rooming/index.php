@@ -1154,6 +1154,17 @@ include $_projectRoot . '/app/Views/layouts/head.php';
 
           <form @submit.prevent="guardarConsumo">
             <div class="mb-3">
+              <label class="form-label small fw-bold">Mini Bar — Acceso Rápido</label>
+              <div class="d-flex flex-wrap gap-1 mb-2">
+                <button type="button" class="btn btn-sm btn-outline-primary fw-bold" @click="seleccionarMiniBar('San Mateo', 5)">💧 San Mateo S/ 5.00</button>
+                <button type="button" class="btn btn-sm btn-outline-primary fw-bold" @click="seleccionarMiniBar('Inca Kola', 7)">🥤 Inca Kola S/ 7.00</button>
+                <button type="button" class="btn btn-sm btn-outline-primary fw-bold" @click="seleccionarMiniBar('Coca Cola', 7)">🥤 Coca Cola S/ 7.00</button>
+                <button type="button" class="btn btn-sm btn-outline-primary fw-bold" @click="seleccionarMiniBar('Cerveza', 10)">🍺 Cerveza S/ 10.00</button>
+                <button type="button" class="btn btn-sm btn-outline-primary fw-bold" @click="seleccionarMiniBar('Powerade', 7)">⚡ Powerade S/ 7.00</button>
+              </div>
+            </div>
+
+            <div class="mb-3">
               <label class="form-label small fw-bold">Producto</label>
               <select class="form-select" v-model="consumoForm.producto_id" @change="onProductoChange" required>
                 <option value="">Seleccione...</option>
@@ -1187,7 +1198,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                     :class="consumoForm.pago_inmediato ? 'bg-white text-muted' : 'bg-primary text-white'"
                     @click="consumoForm.pago_inmediato = false; consumoForm.metodo_pago = null; consumoForm.recargo_pos = false; calcularTotalConsumo()">
                     <i class="bi bi-clock-history mb-1 d-block"></i>
-                    <span class="mini fw-bold">CARGAR A HAB.</span>
+                    <span class="mini fw-bold">INCLUIR EN FACTURA (CARGO A HAB.)</span>
                   </div>
                 </div>
                 <div class="col-6">
@@ -1195,7 +1206,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                     :class="consumoForm.pago_inmediato ? 'bg-success text-white' : 'bg-white text-muted'"
                     @click="consumoForm.pago_inmediato = true; consumoForm.metodo_pago = 'SOLES EFECTIVO'; consumoForm.recargo_pos = false; calcularTotalConsumo()">
                     <i class="bi bi-cash-stack mb-1 d-block"></i>
-                    <span class="mini fw-bold">PAGO AL CONTADO</span>
+                    <span class="mini fw-bold">MANEJO SEPARADO (PAGO AL CONTADO)</span>
                   </div>
                 </div>
               </div>
@@ -1228,6 +1239,8 @@ include $_projectRoot . '/app/Views/layouts/head.php';
               <select class="form-select" v-model="consumoForm.metodo_pago" required @change="onMetodoPagoDropdownChange">
                 <option value="SOLES EFECTIVO">SOLES EFECTIVO</option>
                 <option value="POS SOLES">POS SOLES</option>
+                <option value="YAPE/PLIN">YAPE/PLIN</option>
+                <option value="TRANSFERENCIA">TRANSFERENCIA</option>
               </select>
             </div>
 

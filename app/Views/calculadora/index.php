@@ -50,25 +50,6 @@ include __DIR__ . '/../layouts/head.php';
 
   <div class="page-body">
 
-    <!-- ==================== TABS ==================== -->
-    <ul class="nav calc-tabs mb-4" id="calcTabs">
-      <li class="nav-item">
-        <button class="calc-tab active" data-tab="calculadora" onclick="switchTab('calculadora', this)">
-          <i class="bi bi-calculator me-1"></i>Calculadora
-        </button>
-      </li>
-      <li class="nav-item">
-        <button class="calc-tab" data-tab="tipos_cambio" onclick="switchTab('tipos_cambio', this)">
-          <i class="bi bi-currency-exchange me-1"></i>Tipos de Cambio
-        </button>
-      </li>
-      <li class="nav-item">
-        <button class="calc-tab" data-tab="parametros" onclick="switchTab('parametros', this)">
-          <i class="bi bi-gear me-1"></i>Parámetros
-        </button>
-      </li>
-    </ul>
-
     <!-- ==================== TAB 1: CALCULADORA ==================== -->
     <div id="tab-calculadora" class="tab-content-pane">
 
@@ -85,8 +66,8 @@ include __DIR__ . '/../layouts/head.php';
               <label class="tc-bar-label">TC USD → PEN</label>
               <div class="input-group input-group-sm">
                 <span class="input-group-text tc-symbol">$</span>
-                <input type="number" id="barTcUsd" class="form-control tc-input" step="0.0001" min="0"
-                       value="<?= number_format($tc['tc_usd'], 4, '.', '') ?>"
+                <input type="number" id="barTcUsd" class="form-control tc-input" step="any" min="0"
+                       value="<?= (float)$tc['tc_usd'] ?>"
                        oninput="recalcularTodo()">
               </div>
             </div>
@@ -94,8 +75,8 @@ include __DIR__ . '/../layouts/head.php';
               <label class="tc-bar-label">1 SOL = X PESOS (CLP)</label>
               <div class="input-group input-group-sm">
                 <span class="input-group-text tc-symbol">CLP</span>
-                <input type="number" id="barTcClp" class="form-control tc-input" step="0.01" min="0"
-                       value="<?= number_format($tc['tc_clp'], 4, '.', '') ?>"
+                <input type="number" id="barTcClp" class="form-control tc-input" step="any" min="0"
+                       value="<?= (float)$tc['tc_clp'] ?>"
                        oninput="recalcularTodo()">
               </div>
             </div>
@@ -279,204 +260,7 @@ include __DIR__ . '/../layouts/head.php';
     </div><!-- end tab-calculadora -->
 
 
-    <!-- ==================== TAB 2: TIPOS DE CAMBIO ==================== -->
-    <div id="tab-tipos_cambio" class="tab-content-pane" style="display:none;">
 
-      <div class="row g-4">
-        <!-- Formulario agregar TC -->
-        <div class="col-12 col-md-4">
-          <div class="card border-0 shadow-sm" style="border-radius:12px;">
-            <div class="card-header border-0 pt-4 px-4 pb-0">
-              <h6 class="fw-bold mb-0"><i class="bi bi-plus-circle-fill text-success me-2"></i>Registrar Tipo de Cambio</h6>
-              <p class="text-muted small mt-1 mb-0">Se insertan 2 registros: USD→PEN y CLP→PEN</p>
-            </div>
-            <div class="card-body p-4">
-              <div class="mb-3">
-                <label class="form-label small fw-bold">Fecha</label>
-                <input type="date" id="tcFecha" class="form-control"
-                       value="<?= date('Y-m-d') ?>" max="<?= date('Y-m-d') ?>">
-              </div>
-              <div class="mb-3">
-                <label class="form-label small fw-bold">TC USD → PEN <span class="text-muted">(1 dólar en soles)</span></label>
-                <div class="input-group">
-                  <span class="input-group-text">$</span>
-                  <input type="number" id="tcUsdInput" class="form-control" step="0.0001" min="0.01"
-                         placeholder="ej: 3.7500" value="<?= number_format($tc['tc_usd'], 4, '.', '') ?>">
-                  <span class="input-group-text">PEN</span>
-                </div>
-              </div>
-              <div class="mb-4">
-                <label class="form-label small fw-bold">TC CLP → PEN <span class="text-muted">(1 sol en pesos)</span></label>
-                <div class="input-group">
-                  <span class="input-group-text">S/</span>
-                  <input type="number" id="tcClpInput" class="form-control" step="0.01" min="1"
-                         placeholder="ej: 277.00" value="<?= number_format($tc['tc_clp'], 4, '.', '') ?>">
-                  <span class="input-group-text">CLP</span>
-                </div>
-              </div>
-              <button class="btn btn-success w-100 fw-bold shadow-sm" onclick="guardarTC()" id="btnGuardarTC">
-                <i class="bi bi-floppy-fill me-2"></i>Guardar Tipo de Cambio
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Historial de TC -->
-        <div class="col-12 col-md-8">
-          <div class="card border-0 shadow-sm" style="border-radius:12px;">
-            <div class="card-header border-0 pt-4 px-4 pb-3 d-flex align-items-center justify-content-between">
-              <div>
-                <h6 class="fw-bold mb-0"><i class="bi bi-clock-history text-primary me-2"></i>Historial de Tipos de Cambio</h6>
-                <p class="text-muted small mt-1 mb-0">Últimos 90 días registrados</p>
-              </div>
-            </div>
-            <div class="table-responsive">
-              <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
-                  <tr>
-                    <th class="ps-4" style="font-size:11px; color:#6c757d; letter-spacing:.5px;">FECHA</th>
-                    <th style="font-size:11px; color:#6c757d; letter-spacing:.5px;">TC USD → PEN</th>
-                    <th style="font-size:11px; color:#6c757d; letter-spacing:.5px;">1 SOL = X PESOS</th>
-                    <th style="font-size:11px; color:#6c757d; letter-spacing:.5px;">REGISTRADO</th>
-                  </tr>
-                </thead>
-                <tbody id="tbodyHistorial">
-                  <?php foreach ($historial as $row): ?>
-                  <tr>
-                    <td class="ps-4 fw-semibold"><?= htmlspecialchars($row['fecha']) ?></td>
-                    <td>
-                      <span class="badge" style="background:#eff6ff; color:#1e40af; font-size:12px; padding:5px 10px; border-radius:6px;">
-                        S/ <?= number_format((float)$row['tc_usd'], 4) ?>
-                      </span>
-                    </td>
-                    <td>
-                      <span class="badge" style="background:#fff7ed; color:#9a3412; font-size:12px; padding:5px 10px; border-radius:6px;">
-                        <?= number_format((float)$row['tc_clp'], 2) ?> CLP
-                      </span>
-                    </td>
-                    <td class="text-muted small"><?= htmlspecialchars(substr($row['created_at'], 0, 16)) ?></td>
-                  </tr>
-                  <?php endforeach; ?>
-                  <?php if (empty($historial)): ?>
-                  <tr><td colspan="4" class="text-center py-5 text-muted">No hay registros aún.</td></tr>
-                  <?php endif; ?>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div><!-- end tab-tipos_cambio -->
-
-
-    <!-- ==================== TAB 3: PARÁMETROS ==================== -->
-    <div id="tab-parametros" class="tab-content-pane" style="display:none;">
-
-      <!-- Header bar con botón guardar a la derecha -->
-      <div class="d-flex align-items-center gap-3 mb-4 p-3 rounded-3"
-           style="background:white; border:1px solid #e9ecef; box-shadow:0 1px 6px rgba(0,0,0,.05);">
-        <div class="d-flex align-items-center justify-content-center rounded-3 flex-shrink-0"
-             style="width:42px; height:42px; background:linear-gradient(135deg,#eff6ff,#dbeafe);">
-          <i class="bi bi-sliders fs-5 text-primary"></i>
-        </div>
-        <div>
-          <div class="fw-bold" style="color:#1e293b; font-size:15px;">Parámetros de la Calculadora</div>
-          <div class="text-muted" style="font-size:12px;">Configuración guardada en base de datos</div>
-        </div>
-        <div class="ms-auto d-flex align-items-center gap-3">
-          <div id="paramsMsg" style="display:none;"></div>
-          <button class="btn btn-primary px-4 fw-bold shadow-sm" onclick="guardarParams()" id="btnGuardarParams">
-            <i class="bi bi-floppy-fill me-2"></i>Guardar Parámetros
-          </button>
-        </div>
-      </div>
-
-      <!-- 3 tarjetas horizontales -->
-      <div class="row g-3 align-items-stretch">
-
-        <!-- Card 1: Recargo POS -->
-        <div class="col-12 col-md-4">
-          <div class="param-card h-100">
-            <div class="param-card-icon" style="background:#f0fdf4; color:#16a34a;">
-              <i class="bi bi-percent fs-4"></i>
-            </div>
-            <div class="param-card-body">
-              <div class="param-card-title">Recargo POS</div>
-              <div class="param-card-desc">Porcentaje informativo de comisión POS. No afecta cobros reales.</div>
-              <div class="input-group input-group-sm mt-3" style="max-width:160px;">
-                <input type="number" id="pRecargoPOS" class="form-control fw-bold text-center"
-                       style="font-size:1.1rem;"
-                       step="0.01" min="0" max="1"
-                       value="<?= number_format($config['recargo_pos'], 2, '.', '') ?>">
-                <span class="input-group-text fw-bold">%</span>
-              </div>
-              <div class="mt-2" style="font-size:11px; color:#94a3b8;">0.05 = 5% &nbsp;·&nbsp; 0.10 = 10%</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Card 2: Panel USD -->
-        <div class="col-12 col-md-4">
-          <div class="param-card h-100">
-            <div class="param-card-icon" style="background:#eff6ff; color:#2563eb;">
-              <i class="bi bi-currency-dollar fs-4"></i>
-            </div>
-            <div class="param-card-body">
-              <div class="param-card-title">Panel Dólares (USD)</div>
-              <div class="param-card-desc">Controla la visibilidad del panel de conversión a dólares en la calculadora.</div>
-              <div class="d-flex align-items-center gap-3 mt-3">
-                <label class="toggle-switch mb-0">
-                  <input type="checkbox" id="pMostrarUSD"
-                         <?= $config['mostrar_panel_usd'] ? 'checked' : '' ?>
-                         onchange="document.getElementById('lblUSD').textContent = this.checked ? 'Visible' : 'Oculto'">
-                  <span class="toggle-slider"></span>
-                </label>
-                <span id="lblUSD" class="fw-semibold" style="font-size:13px; color:#2563eb;">
-                  <?= $config['mostrar_panel_usd'] ? 'Visible' : 'Oculto' ?>
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Card 3: Panel CLP -->
-        <div class="col-12 col-md-4">
-          <div class="param-card h-100">
-            <div class="param-card-icon" style="background:#fff7ed; color:#ea580c;">
-              <i class="bi bi-cash-coin fs-4"></i>
-            </div>
-            <div class="param-card-body">
-              <div class="param-card-title">Panel Pesos Chilenos (CLP)</div>
-              <div class="param-card-desc">Controla la visibilidad del panel de conversión a pesos chilenos.</div>
-              <div class="d-flex align-items-center gap-3 mt-3">
-                <label class="toggle-switch mb-0">
-                  <input type="checkbox" id="pMostrarCLP"
-                         <?= $config['mostrar_panel_clp'] ? 'checked' : '' ?>
-                         onchange="document.getElementById('lblCLP').textContent = this.checked ? 'Visible' : 'Oculto'">
-                  <span class="toggle-slider"></span>
-                </label>
-                <span id="lblCLP" class="fw-semibold" style="font-size:13px; color:#ea580c;">
-                  <?= $config['mostrar_panel_clp'] ? 'Visible' : 'Oculto' ?>
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div><!-- end row -->
-
-      <!-- Nota informativa -->
-      <div class="mt-4 p-3 rounded-3 d-flex align-items-start gap-2"
-           style="background:#f8faff; border:1px solid #dbeafe;">
-        <i class="bi bi-info-circle-fill text-primary flex-shrink-0 mt-1"></i>
-        <span class="small text-muted">
-          <strong class="text-dark">Nota:</strong> El recargo POS es solo informativo aquí.
-          El cargo real al pagar con tarjeta se aplica en <strong>Rooming</strong> usando
-          el campo <code>recargo_pos</code> de la tabla <code>configuracion</code>.
-        </span>
-      </div>
-
-    </div><!-- end tab-parametros -->
 
   </div><!-- page-body -->
 </div><!-- main-content -->

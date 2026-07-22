@@ -297,6 +297,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
            <div class="mb-3">
              <label class="form-label fw-bold text-secondary" style="font-size:12px;">Medio de Pago / Destino</label>
              <select class="form-select form-select-sm fw-bold" v-model="formConsumo.columna">
+               <option value="cuenta_hab">Cargar a la Habitación (No pagado)</option>
                <option value="pen_ef">Efectivo Soles</option>
                <option value="usd_ef">Efectivo Dólares</option>
                <option value="pesos">Efectivo Pesos</option>
@@ -319,7 +320,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
         </div>
         <div class="modal-footer border-0 pt-0">
           <button class="btn btn-sm btn-primary w-100 fw-bold" @click="guardarConsumoFlujo">
-            Sumar a {{ 
+            {{ formConsumo.columna === 'cuenta_hab' ? 'Cargar a Cuenta' : 'Sumar a ' + (
               formConsumo.columna === 'pen_ef' ? 'Efectivo Soles' :
               formConsumo.columna === 'usd_ef' ? 'Efectivo Dólares' :
               formConsumo.columna === 'pesos' ? 'Efectivo Pesos' :
@@ -327,7 +328,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
               formConsumo.columna === 'pos_usd' ? 'POS Dólares' :
               formConsumo.columna === 'yape' ? 'Yape / Plin' :
               'Transferencia'
-            }}
+            ) }}
           </button>
         </div>
       </div>

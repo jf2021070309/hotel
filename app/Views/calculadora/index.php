@@ -655,7 +655,7 @@ async function recargarTC() {
     btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Cargando...';
 
     try {
-        const res = await fetch('<?= $base ?>api/calculadora.php?action=getTipoCambio');
+        const res = await fetch('<?= project_base_url() ?>api/calculadora.php?action=getTipoCambio');
         const json = await res.json();
         if (json.ok && json.data) {
             document.getElementById('barTcUsd').value  = json.data.tc_usd;
@@ -692,7 +692,7 @@ async function guardarTC() {
     btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Guardando...';
 
     try {
-        const res  = await fetch('<?= $base ?>api/calculadora.php?action=guardarTC', {
+        const res  = await fetch('<?= project_base_url() ?>api/calculadora.php?action=guardarTC', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ fecha, tc_usd, tc_clp })
@@ -737,7 +737,7 @@ async function guardarTCDirecto() {
     }
 
     try {
-        const res = await fetch('<?= $base ?>api/calculadora.php?action=guardarTC', {
+        const res = await fetch('<?= project_base_url() ?>api/calculadora.php?action=guardarTC', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ fecha, tc_usd, tc_clp })
@@ -766,7 +766,7 @@ async function guardarTCDirecto() {
 
 async function recargarHistorial() {
     try {
-        const res  = await fetch('<?= $base ?>api/calculadora.php?action=getTipoCambio');
+        const res  = await fetch('<?= project_base_url() ?>api/calculadora.php?action=getTipoCambio');
         // Reload the whole page to refresh historial table
         window.location.reload();
     } catch(e) {}
@@ -785,7 +785,7 @@ async function guardarParams() {
     btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Guardando...';
 
     try {
-        const res  = await fetch('<?= $base ?>api/calculadora.php?action=guardarParams', {
+        const res  = await fetch('<?= project_base_url() ?>api/calculadora.php?action=guardarParams', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

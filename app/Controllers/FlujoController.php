@@ -378,8 +378,13 @@ class FlujoController {
         $stmtStays = $this->pdo->query($sql);
         $stays = $stmtStays->fetchAll(PDO::FETCH_ASSOC);
 
-        $stmtProds = $this->pdo->query("SELECT id, nombre, precio_venta FROM inventario_productos WHERE activo = 1 ORDER BY nombre ASC");
-        $prods = $stmtProds->fetchAll(PDO::FETCH_ASSOC);
+        $prods = [
+            ['id' => 's_san_mateo', 'nombre' => 'SAN MATEO', 'precio_venta' => 5],
+            ['id' => 's_inca_kola', 'nombre' => 'INCA KOLA', 'precio_venta' => 7],
+            ['id' => 's_coca_cola', 'nombre' => 'COCA COLA', 'precio_venta' => 7],
+            ['id' => 's_cerveza', 'nombre' => 'CERVEZA', 'precio_venta' => 10],
+            ['id' => 's_powerade', 'nombre' => 'POWERADE', 'precio_venta' => 7],
+        ];
 
         return ['ok' => true, 'data' => ['stays' => $stays, 'productos' => $prods]];
     }
@@ -412,42 +417,62 @@ class FlujoController {
         if ($columna === 'pesos') { $medioPago = 'PESOS EFECTIVO'; }
         if ($columna === 'usd_ef') { $medioPago = 'DOLARES EFECTIVO'; }
         if ($columna === 'pen_ef') { $medioPago = 'SOLES EFECTIVO'; }
+        if ($columna === 'cuenta_hab') { $medioPago = 'CUENTA HABITACION'; }
 
         $this->pdo->beginTransaction();
         try {
             $obs = ($tipo === 'DESAYUNO') ? 'Desayuno Buffet' : 'Bebida Refri';
-            $prodId = ($tipo === 'BEBIDA') ? (int)$input['producto_id'] : null;
-            
-            $stmtC = $this->pdo->prepare("INSERT INTO rooming_consumos (stay_id, producto_id, cantidad, precio_unitario, total, metodo_pago, pagado, usuario_id) VALUES (?, ?, 1, ?, ?, ?, 1, ?)");
-            $stmtC->execute([$stayId, $prodId, $precio, $precio, $medioPago, $_SESSION['auth_id'] ?? 1]);
+            $prodId = ($tipo === 'BEBIDA') ? $input['producto_id'] : null;
+            $invId = null;
 
             if ($tipo === 'BEBIDA' && $prodId) {
-                $stmtP = $this->pdo->prepare("SELECT nombre FROM inventario_productos WHERE id = ?");
-                $stmtP->execute([$prodId]);
-                $obs = $stmtP->fetchColumn() ?: 'Bebida';
-                
-                $stmtInv = $this->pdo->prepare("UPDATE inventario_productos SET stock_actual = stock_actual - 1 WHERE id = ?");
-                $stmtInv->execute([$prodId]);
+                $staticProds = [
+                    's_san_mateo' => 'SAN MATEO',
+                    's_inca_kola' => 'INCA KOLA',
+                    's_coca_cola' => 'COCA COLA',
+                    's_cerveza' => 'CERVEZA',
+                    's_powerade' => 'POWERADE',
+                ];
+                if (isset($staticProds[$prodId])) {
+                    $obs = $staticProds[$prodId];
+                } else {
+                    $invId = (int)$prodId;
+                    $stmtP = $this->pdo->prepare("SELECT nombre FROM inventario_productos WHERE id = ?");
+                    $stmtP->execute([$invId]);
+                    $obs = $stmtP->fetchColumn() ?: 'Bebida';
+                    
+                    $stmtInv = $this->pdo->prepare("UPDATE inventario_productos SET stock_actual = stock_actual - 1 WHERE id = ?");
+                    $stmtInv->execute([$invId]);
+                }
+            }
+            
+            $pagado = ($columna === 'cuenta_hab') ? 0 : 1;
+
+            $stmtC = $this->pdo->prepare("INSERT INTO rooming_consumos (stay_id, producto_id, cantidad, precio_unitario, total, metodo_pago, pagado, usuario_id) VALUES (?, ?, 1, ?, ?, ?, ?, ?)");
+            $stmtC->execute([$stayId, $invId, $precio, $precio, $medioPago, $pagado, $_SESSION['auth_id'] ?? 1]);
+
+            if ($columna !== 'cuenta_hab') {
+                $catIdMap = [
+                    'depo' => 1,
+                    'yape' => 2,
+                    'pos_usd' => 3,
+                    'pos_pen' => 4,
+                    'pesos' => 5,
+                    'usd_ef' => 6,
+                    'pen_ef' => 7
+                ];
+                $catId = $catIdMap[$columna] ?? 7;
+
+                $obsFlujo = "$obs - Registro #$stayId (Hab #$hab)";
+
+                $moneda = (in_array($columna, ['pos_usd', 'usd_ef'])) ? 'USD' : (($columna === 'pesos') ? 'CLP' : 'PEN');
+
+                $stmtF = $this->pdo->prepare("INSERT INTO flujo_caja_movimientos (flujo_id, categoria_id, tipo, moneda, monto, medio_pago, observacion) VALUES (?, ?, 'Ingreso', ?, ?, ?, ?)");
+                $stmtF->execute([$flujoId, $catId, $moneda, $precio, $medioPago, $obsFlujo]);
             }
 
-            $catIdMap = [
-                'depo' => 1,
-                'yape' => 2,
-                'pos_usd' => 3,
-                'pos_pen' => 4,
-                'pesos' => 5,
-                'usd_ef' => 6,
-                'pen_ef' => 7
-            ];
-            $catId = $catIdMap[$columna] ?? 7;
-
-            $obsFlujo = "$obs - Registro #$stayId (Hab #$hab)";
-
-            $stmtF = $this->pdo->prepare("INSERT INTO flujo_caja_movimientos (flujo_id, categoria_id, tipo, moneda, monto, medio_pago, observacion) VALUES (?, ?, 'Ingreso', ?, ?, ?, ?)");
-            $stmtF->execute([$flujoId, $catId, $moneda, $precio, $medioPago, $obsFlujo]);
-
             $this->pdo->commit();
-            return ['ok' => true, 'msg' => 'Consumo guardado y sumado a caja'];
+            return ['ok' => true, 'msg' => ($columna === 'cuenta_hab') ? 'Consumo cargado a la habitación' : 'Consumo guardado y sumado a caja'];
         } catch (Exception $e) {
             $this->pdo->rollBack();
             return ['ok' => false, 'msg' => 'Error: ' . $e->getMessage()];

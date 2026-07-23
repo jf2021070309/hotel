@@ -57,11 +57,7 @@ include __DIR__ . '/../layouts/head.php';
       <div class="tc-bar card border-0 shadow-sm mb-4">
         <div class="card-body py-3 px-4">
           <div class="row g-3 align-items-center">
-            <div class="col-auto">
-              <label class="tc-bar-label">FECHA TC</label>
-              <input type="date" id="barFecha" class="form-control form-control-sm tc-input"
-                     value="<?= htmlspecialchars($tc['fecha']) ?>" readonly>
-            </div>
+
             <div class="col-auto">
               <label class="tc-bar-label">TC USD → PEN</label>
               <div class="input-group input-group-sm">
@@ -223,10 +219,6 @@ include __DIR__ . '/../layouts/head.php';
                   <span class="result-value fw-bold" style="font-size:16px;" id="clpEnDolares">—</span>
                 </div>
               </div>
-
-              <div class="result-total" style="font-size:11px; text-align:center; background:#f1f5f9; color:#475569; border-top: 1px solid #e2e8f0;">
-                <span id="clpInfoTc">1 USD = <span class="fw-bold">—</span> PEN = <span class="fw-bold">—</span> CLP</span>
-              </div>
             </div>
           </div>
         </div>
@@ -361,8 +353,6 @@ function calcularPesos() {
     if (base_clp <= 0) {
         document.getElementById('clpEnSoles').textContent  = '—';
         document.getElementById('clpEnDolares').textContent = '—';
-        document.getElementById('clpInfoTc').innerHTML     =
-            '1 USD = <span class="fw-bold">—</span> PEN = <span class="fw-bold">—</span> CLP';
         return;
     }
 
@@ -372,10 +362,6 @@ function calcularPesos() {
 
     document.getElementById('clpEnSoles').textContent  = 'S/ ' + formatNum(en_soles);
     document.getElementById('clpEnDolares').textContent = '$ ' + formatNum(en_dolares);
-
-    const clp_por_usd = tc_usd * tc_clp;
-    document.getElementById('clpInfoTc').innerHTML =
-        '1 USD = <span class="fw-bold">'+formatNum(tc_usd)+'</span> PEN = <span class="fw-bold">'+formatNum(clp_por_usd)+'</span> CLP';
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -401,7 +387,8 @@ async function recargarTC() {
         if (json.ok && json.data) {
             document.getElementById('barTcUsd').value  = json.data.tc_usd;
             document.getElementById('barTcClp').value  = json.data.tc_clp;
-            document.getElementById('barFecha').value  = json.data.fecha;
+            const barFechaEl = document.getElementById('barFecha');
+            if (barFechaEl) barFechaEl.value = json.data.fecha;
             recalcularTodo();
             // Actualizar también el formulario de TC
             document.getElementById('tcUsdInput').value = json.data.tc_usd;
@@ -446,7 +433,8 @@ async function guardarTC() {
             setTimeout(() => {
                 document.getElementById('barTcUsd').value = tc_usd;
                 document.getElementById('barTcClp').value = tc_clp;
-                document.getElementById('barFecha').value = fecha;
+                const barFechaEl = document.getElementById('barFecha');
+                if (barFechaEl) barFechaEl.value = fecha;
                 recalcularTodo();
                 recargarHistorial();
             }, 800);
@@ -462,7 +450,8 @@ async function guardarTC() {
 }
 
 async function guardarTCDirecto() {
-    const fecha = document.getElementById('barFecha').value || new Date().toISOString().split('T')[0];
+    const barFechaEl = document.getElementById('barFecha');
+    const fecha = barFechaEl ? barFechaEl.value : new Date().toISOString().split('T')[0];
     const tc_usd = parseFloat(document.getElementById('barTcUsd').value);
     const tc_clp = parseFloat(document.getElementById('barTcClp').value);
 

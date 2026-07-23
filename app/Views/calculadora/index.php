@@ -116,28 +116,23 @@ include __DIR__ . '/../layouts/head.php';
             </div>
 
             <div class="panel-body">
-              <label class="input-label">Monto en Dólares (USD)</label>
+              <label class="input-label">Monto en Soles (S/.)</label>
               <div class="input-group mb-3">
-                <span class="input-group-text monto-symbol">$</span>
+                <span class="input-group-text monto-symbol">S/</span>
                 <input type="number" id="montoSoles" class="form-control monto-input"
-                       placeholder="0.00" step="0.01" min="0"
+                       placeholder="0" step="any" min="0"
                        oninput="calcularSoles()">
               </div>
 
-              <div class="result-rows">
-                <div class="result-row">
-                  <span class="result-label">Neto Soles</span>
-                  <span class="result-value" id="solNeto">—</span>
+              <div class="result-rows pb-3" style="border:none;">
+                <div class="result-row mt-1" style="padding-top: 8px;">
+                  <span class="result-label text-muted" style="font-size:13px;">Equiv. en Dólares</span>
+                  <span class="result-value fw-bold" style="font-size:16px;" id="solEnDolares">—</span>
                 </div>
-                <div class="result-row comision-row" id="rowComisionSoles" style="display:none;">
-                  <span class="result-label text-success">Comisión (5%)</span>
-                  <span class="result-value text-success" id="solComision">—</span>
+                <div class="result-row mt-1" style="padding-top: 8px;">
+                  <span class="result-label text-muted" style="font-size:13px;">Equiv. en Pesos</span>
+                  <span class="result-value fw-bold" style="font-size:16px;" id="solEnPesos">—</span>
                 </div>
-              </div>
-
-              <div class="result-total">
-                <span class="total-label">TOTAL</span>
-                <span class="total-value" id="solTotal">—</span>
               </div>
             </div>
           </div>
@@ -286,33 +281,29 @@ function switchTab(tab, btn) {
 // PANEL 1: SOLES
 // ═══════════════════════════════════════════════════════════
 function calcularSoles() {
-    const monto    = parseFloat(document.getElementById('montoSoles').value) || 0;
+    const monto_soles = parseFloat(document.getElementById('montoSoles').value) || 0;
     const tc_usd   = getTcUsd();
+    const tc_clp   = getTcClp();
     const posOn    = document.getElementById('togglePosSoles').checked;
-    const panel    = document.getElementById('panelSoles');
 
-    if (monto <= 0) {
-        document.getElementById('solNeto').textContent    = '—';
-        document.getElementById('solComision').textContent = '—';
-        document.getElementById('solTotal').textContent   = '—';
+    if (monto_soles <= 0) {
+        document.getElementById('solEnDolares').textContent = '—';
+        document.getElementById('solEnPesos').textContent = '—';
         return;
     }
 
-    const neto      = monto * tc_usd;
-    const comision  = posOn ? neto * 0.05 : 0;
-    const total     = neto + comision;
+    const total_soles = posOn ? monto_soles * 1.05 : monto_soles;
+    const en_dolares = tc_usd > 0 ? (total_soles / tc_usd) : 0;
+    const en_pesos = total_soles * tc_clp;
 
-    document.getElementById('solNeto').textContent    = 'S/ ' + formatNum(neto);
-    document.getElementById('solComision').textContent = '+S/ ' + formatNum(comision);
-    document.getElementById('solTotal').textContent   = 'S/ ' + formatNum(total);
+    document.getElementById('solEnDolares').textContent = '$ ' + formatNum(en_dolares);
+    document.getElementById('solEnPesos').textContent = 'CLP ' + formatNum(en_pesos);
 }
 
 function togglePosSolesChange() {
     const posOn = document.getElementById('togglePosSoles').checked;
     const panel  = document.getElementById('panelSoles');
-    const rowCom = document.getElementById('rowComisionSoles');
 
-    rowCom.style.display = posOn ? 'flex' : 'none';
     panel.classList.toggle('panel-pos-activo', posOn);
     calcularSoles();
 }

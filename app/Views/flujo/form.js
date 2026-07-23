@@ -246,6 +246,43 @@ createApp({
       });
     };
 
+    /** @type {Array} Productos estáticos del minibar */
+    const minibarProductos = [
+      { nombre: 'Agua Cielo', precio: 3.00 },
+      { nombre: 'Inca Kola 500ml', precio: 4.00 },
+      { nombre: 'Coca Cola 500ml', precio: 4.00 },
+      { nombre: 'Cerveza Pilsen', precio: 6.00 },
+      { nombre: 'Cerveza Cusqueña', precio: 7.00 },
+      { nombre: 'Gatorade', precio: 5.00 },
+      { nombre: 'Galleta Casino', precio: 2.00 },
+      { nombre: 'Galleta Morocha', precio: 2.00 },
+      { nombre: 'Papitas Lays', precio: 3.50 }
+    ];
+
+    /**
+     * Añade rápidamente un producto de minibar a los ingresos.
+     */
+    const agregarMinibar = (prod) => {
+      if (!esEditable.value) return;
+      ingresos.value.push({
+        categoria_id: null,
+        categoria: 'MINIBAR', 
+        tipo: 'Ingreso',
+        moneda: 'PEN',
+        monto: prod.precio.toFixed(2),
+        medio_pago: 'EFECTIVO',
+        observacion: prod.nombre,
+        _usaSobre: false,
+        sobre_fecha: cabecera.fecha,
+        sobre_turno: cabecera.turno
+      });
+      const catList = categorias.ingreso;
+      const found = catList.find(c => c.nombre.toUpperCase() === 'MINIBAR' || c.nombre.toUpperCase() === 'MINI BAR' || c.nombre.toUpperCase().includes('MINI'));
+      if (found) {
+        ingresos.value[ingresos.value.length - 1].categoria_id = found.id;
+      }
+    };
+
     /**
      * Automatiza el seteo del medio de pago basado en la categoría seleccionada.
      * Resuelve la duplicidad entre categoría y medio de pago para el usuario.
@@ -444,9 +481,9 @@ createApp({
 
     return {
       loading, isSaving, esNuevo, esEditable,
-      cabecera, ingresos, egresos, categorias,
+      cabecera, ingresos, egresos, categorias, minibarProductos,
       totalesDia, efectivoEnSobrePEN, efectivoEnSobreUSD, efectivoEnSobreCLP, acumuladoMensual, totalesMonedas,
-      agregarMovimiento, eliminarMovimiento, onCategoriaChange, guardarTurno, marcarDepositado, reabrirTurno,
+      agregarMovimiento, agregarMinibar, eliminarMovimiento, onCategoriaChange, guardarTurno, marcarDepositado, reabrirTurno,
       SERVER_DATA,
       focusedField, fmtMonto
     };

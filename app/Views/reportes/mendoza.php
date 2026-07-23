@@ -291,6 +291,16 @@ window.MENDOZA_CONFIG = {
     <!-- BODY -->
     <div class="page-body pt-3 px-4">
 
+      <!-- TABS -->
+      <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link fw-bold" :class="{active: filtroAvanzado.activeTab === 'GENERAL', 'bg-success text-white': filtroAvanzado.activeTab === 'GENERAL', 'text-muted': filtroAvanzado.activeTab !== 'GENERAL'}" @click="filtroAvanzado.activeTab = 'GENERAL'" type="button" style="border-radius: 20px 0 0 20px; padding: 6px 20px; font-size: 13px;">GENERAL</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link fw-bold" :class="{active: filtroAvanzado.activeTab === 'SUNAT', 'bg-primary text-white': filtroAvanzado.activeTab === 'SUNAT', 'text-muted': filtroAvanzado.activeTab !== 'SUNAT'}" @click="filtroAvanzado.activeTab = 'SUNAT'" type="button" style="border-radius: 0 20px 20px 0; padding: 6px 20px; font-size: 13px;">SUNAT</button>
+        </li>
+      </ul>
+
       <!-- FILTROS -->
       <div class="card border-0 shadow-sm mb-3" style="border-radius: 12px;">
         <div class="card-body p-3">
@@ -466,7 +476,7 @@ window.MENDOZA_CONFIG = {
                 </div>
                         
                         <!-- Totales del Día -->
-                        <div class="mb-5 shadow-sm" style="border-radius: 8px; border: 1px solid #e2e8f0; overflow: hidden; background-color: #fff;">
+                        <div class="mb-5 shadow-sm" :id="'resumen-dia-' + fecha" style="border-radius: 8px; border: 1px solid #e2e8f0; overflow: hidden; background-color: #fff;">
                             <div class="table-responsive">
                                 <table class="table table-bordered mb-0 text-center align-middle" style="font-size: 0.85rem;">
                                     <thead class="text-muted" style="font-size: 0.75rem;">
@@ -478,7 +488,14 @@ window.MENDOZA_CONFIG = {
                                     </thead>
                                     <tbody>
                                         <tr v-if="Object.keys(info.totales_manana).length > 0 || info.egresos_manana > 0">
-                                            <td class="text-start px-3 py-2 fw-bold text-muted" style="font-size: 0.75rem;">MAÑANA</td>
+                                            <td class="text-start px-3 py-2 fw-bold text-muted" style="font-size: 0.75rem;">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span>MAÑANA</span>
+                                                    <button class="btn btn-sm btn-outline-secondary py-0 px-1" @click.stop="tomarCapturaTurno(fecha, 'manana')" title="Capturar Turno Mañana">
+                                                        <i class="bi bi-camera" style="font-size: 0.7rem;"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
                                             <td v-for="(val, label) in info.totales" :key="'td-m-'+label" class="py-2">
                                                 <span v-if="info.totales_manana[label]" class="fw-bold text-primary">
                                                     {{ getPrefix(label) }} {{ formatNumber(info.totales_manana[label], (label.includes('CLP')) ? 0 : 2) }}
@@ -490,7 +507,14 @@ window.MENDOZA_CONFIG = {
                                             </td>
                                         </tr>
                                         <tr v-if="Object.keys(info.totales_tarde).length > 0 || info.egresos_tarde > 0">
-                                            <td class="text-start px-3 py-2 fw-bold text-muted" style="font-size: 0.75rem;">TARDE</td>
+                                            <td class="text-start px-3 py-2 fw-bold text-muted" style="font-size: 0.75rem;">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span>TARDE</span>
+                                                    <button class="btn btn-sm btn-outline-secondary py-0 px-1" @click.stop="tomarCapturaTurno(fecha, 'tarde')" title="Capturar Turno Tarde">
+                                                        <i class="bi bi-camera" style="font-size: 0.7rem;"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
                                             <td v-for="(val, label) in info.totales" :key="'td-t-'+label" class="py-2">
                                                 <span v-if="info.totales_tarde[label]" class="fw-bold text-primary">
                                                     {{ getPrefix(label) }} {{ formatNumber(info.totales_tarde[label], (label.includes('CLP')) ? 0 : 2) }}

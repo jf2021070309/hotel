@@ -222,8 +222,12 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                       <i class="bi bi-wallet2 text-success"></i>
                     </button>
                     <button v-if="s.estado !== 'reservado' && s.estado !== 'cancelado' && s.estado !== 'finalizado'"
-                      class="btn btn-white btn-sm border" title="Late Checkout (Ampliar Estadía)" @click="abrirLateCheckout(s)">
+                      class="btn btn-white btn-sm border" title="Extender Hospedaje" @click="abrirExtenderHospedaje(s)">
                       <i class="bi bi-calendar-plus text-info"></i>
+                    </button>
+                    <button v-if="s.estado !== 'reservado' && s.estado !== 'cancelado' && s.estado !== 'finalizado'"
+                      class="btn btn-white btn-sm border" title="Late Checkout" @click="abrirLateCheckout(s)">
+                      <i class="bi bi-clock-history text-warning"></i>
                     </button>
                     <button v-if="s.estado !== 'reservado' && s.estado !== 'cancelado' && s.estado !== 'finalizado'"
                       class="btn btn-white btn-sm border" title="Checkout" @click="procederCheckout(s)">
@@ -877,6 +881,8 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                         <option value="">Seleccione...</option>
                         <option value="SOLES EFECTIVO">SOLES EFECTIVO</option>
                         <option value="POS SOLES">POS SOLES</option>
+                        <option value="YAPE/PLIN">YAPE/PLIN</option>
+                        <option value="TRANSFERENCIA">TRANSFERENCIA</option>
                       </select>
                     </div>
 
@@ -1315,6 +1321,8 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                     <option value="">Seleccione...</option>
                     <option value="SOLES EFECTIVO">SOLES EFECTIVO</option>
                     <option value="POS SOLES">POS SOLES</option>
+                    <option value="YAPE/PLIN">YAPE/PLIN</option>
+                    <option value="TRANSFERENCIA">TRANSFERENCIA</option>
                   </select>
                 </div>
               </div>

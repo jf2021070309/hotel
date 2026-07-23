@@ -11,7 +11,8 @@ createApp({
         });
         const filtroAvanzado = ref({
             search: '',
-            metodo: ''
+            metodo: '',
+            activeTab: 'GENERAL'
         });
         const data = ref([]);
         const resumen = ref({ ingresos_hospedaje: 0, otros_ingresos: 0, egresos_operativos: 0, gastos_caja_chica: 0, gastos_yape: 0, utilidad_neta: 0 });
@@ -59,6 +60,12 @@ createApp({
 
         const filteredHospedaje = computed(() => {
             return data.value.filter(item => {
+                if (filtroAvanzado.value.activeTab === 'SUNAT') {
+                    const comp = item.comprobante ? item.comprobante.toUpperCase() : '';
+                    if (!comp || comp === '' || comp === '-' || comp.includes('NINGUN')) {
+                        return false;
+                    }
+                }
                 const matchesSearch = !filtroAvanzado.value.search || 
                                      item.habitacion.toLowerCase().includes(filtroAvanzado.value.search.toLowerCase()) ||
                                      item.medio_label.toLowerCase().includes(filtroAvanzado.value.search.toLowerCase());
@@ -267,12 +274,28 @@ createApp({
                 }
                 const canvas = await html2canvas(el, { scale: 2, backgroundColor: '#f8f9fa' });
                 const link = document.createElement('a');
-                link.download = `Turno-${fecha}.png`;
+                link.download = `Detalle-Dia-${fecha}.png`;
                 link.href = canvas.toDataURL('image/png');
                 link.click();
             } catch (e) {
                 console.error("Error al capturar", e);
                 alert("Error al tomar captura");
+            }
+        };
+
+        const tomarCapturaTurno = async (fecha, turno) => {
+            const el = document.getElementById('resumen-dia-' + fecha);
+            if (!el) return;
+            try {
+                // Hacer un clon temporal si queremos ocultar filas, o simplemente tomar la tabla de resumen
+                const canvas = await html2canvas(el, { scale: 2, backgroundColor: '#ffffff' });
+                const link = document.createElement('a');
+                link.download = `Resumen-${turno.toUpperCase()}-${fecha}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            } catch (e) {
+                console.error("Error al capturar turno", e);
+                alert("Error al tomar captura del resumen");
             }
         };
 
@@ -339,7 +362,7 @@ createApp({
             filtroAvanzado,
             verDetalle,
             voucherActual, loadingVoucher,
-            tomarCaptura, abrirVoucher, onVoucherSelect, subirVoucher
+            tomarCaptura, tomarCapturaTurno, abrirVoucher, onVoucherSelect, subirVoucher
         };
     }
 }).mount('#app-mendoza');

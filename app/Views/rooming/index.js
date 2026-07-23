@@ -325,7 +325,7 @@ createApp({
       // Caso A: hay caja del turno incorrecto abierta (ej: MAÑANA cuando ya es TARDE)
       if (estadoCaja?.turno_pendiente) {
         const turnoPendiente = estadoCaja.turno_pendiente;
-        const turnoActual    = estadoCaja.turno_actual;
+        const turnoActual = estadoCaja.turno_actual;
         Swal.fire({
           title: `⚠️ Caja de ${turnoPendiente} sin cerrar`,
           html: `
@@ -553,7 +553,7 @@ createApp({
       if (!isNaN(d.getTime())) {
         d.setDate(d.getDate() + n);
         form.stay.fecha_checkout = d.toISOString().split('T')[0];
-        
+
         // Multiplicar el precio diario por el número de noches sin resetearlo a 0
         const noches = Math.max(1, n);
         const precioDiario = parseFloat(form.stay.precio_diario) || 0;
@@ -562,7 +562,7 @@ createApp({
           base *= 1.05;
         }
         form.stay.total_pago = base.toFixed(2);
-        
+
         recalcularMoneda();
         cargarHabitacionesDisponibles();
       }
@@ -690,9 +690,9 @@ createApp({
 
     // ─── LOOKUP DNI / RUC VÍA API (DocumentLookupService) ────────
     const lookupLoading = ref({});  // { [idx]: bool }
-    const lookupOk      = ref({});
-    const rucLoading    = ref({});
-    const rucOk         = ref({});
+    const lookupOk = ref({});
+    const rucLoading = ref({});
+    const rucOk = ref({});
     let dniTimer = null;
     let rucTimer = null;
 
@@ -751,7 +751,7 @@ createApp({
             if (razon) {
               pax.empresa = razon;
               form.stay.razon_social = razon;
-              form.stay.ruc_factura  = ruc;
+              form.stay.ruc_factura = ruc;
               form.stay.tipo_comprobante = 'FACTURA';
             }
             rucOk.value[idx] = true;
@@ -765,11 +765,11 @@ createApp({
      * Limpia nombre y estado de lookup cuando se cambia el tipo de documento.
      */
     const onDocTipoChange = (pax, idx) => {
-      pax.documento_num   = '';
+      pax.documento_num = '';
       pax.nombre_completo = '';
-      lookupOk.value[idx]      = false;
+      lookupOk.value[idx] = false;
       lookupLoading.value[idx] = false;
-      sugerencias.value[idx]   = [];
+      sugerencias.value[idx] = [];
     };
     // ────────────────────────────────────────────────────────────
 
@@ -921,7 +921,7 @@ createApp({
       // Calcular montos de pago según la moneda seleccionada
       const tcPago = consumoForm.moneda === 'PEN' ? 1 : parseFloat(tcs.value[consumoForm.moneda]) || 1;
       consumoForm.tc = tcPago;
-      
+
       const totalPen = parseFloat(consumoForm.total) || 0;
       consumoForm.monto_pen = totalPen.toFixed(2);
 
@@ -1093,13 +1093,13 @@ createApp({
       }
     };
 
-    const abrirLateCheckout = async (s) => {
+    const abrirExtenderHospedaje = async (s) => {
       const totalPago = parseFloat(s.total_pago) || 0;
       const nochesActuales = parseInt(s.noches) || 1;
       const precioDiario = nochesActuales > 0 ? totalPago / nochesActuales : totalPago;
 
       const { value: formValues } = await Swal.fire({
-        title: 'Ampliar Estadía / Late Checkout',
+        title: 'Extender Hospedaje',
         html: `
           <div class="text-start" style="font-size:14px; color:#495057;">
             <div class="mb-2"><strong>Habitación:</strong> #${s.hab_numero || s.habitacion_id}</div>
@@ -1141,32 +1141,32 @@ createApp({
           const inputFecha = document.getElementById('swal-nueva-fecha');
           const inputNoches = document.getElementById('swal-nuevas-noches');
           const inputTotal = document.getElementById('swal-nuevo-total');
-          
+
           const fechaReg = new Date(s.fecha_registro + 'T00:00:00');
-          
+
           const calcularNoches = (fechaFinStr) => {
             const fechaFin = new Date(fechaFinStr + 'T00:00:00');
             const diffTime = fechaFin - fechaReg;
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
             return diffDays > 0 ? diffDays : 1;
           };
-          
+
           inputFecha.addEventListener('change', () => {
             const noches = calcularNoches(inputFecha.value);
             inputNoches.value = noches;
             inputTotal.value = (noches * precioDiario).toFixed(2);
           });
-          
+
           inputNoches.addEventListener('input', () => {
             const noches = parseInt(inputNoches.value) || 1;
             const nuevaFecha = new Date(fechaReg);
             nuevaFecha.setDate(fechaReg.getDate() + noches);
-            
+
             const yyyy = nuevaFecha.getFullYear();
             const mm = String(nuevaFecha.getMonth() + 1).padStart(2, '0');
             const dd = String(nuevaFecha.getDate()).padStart(2, '0');
             inputFecha.value = `${yyyy}-${mm}-${dd}`;
-            
+
             inputTotal.value = (noches * precioDiario).toFixed(2);
           });
         },
@@ -1174,7 +1174,7 @@ createApp({
           const fecha = document.getElementById('swal-nueva-fecha').value;
           const noches = parseInt(document.getElementById('swal-nuevas-noches').value);
           const total = parseFloat(document.getElementById('swal-nuevo-total').value);
-          
+
           if (!fecha) {
             Swal.showValidationMessage('Selecciona una fecha de salida');
             return false;
@@ -1187,7 +1187,7 @@ createApp({
             Swal.showValidationMessage('El monto total debe ser un número válido');
             return false;
           }
-          
+
           return { fecha_checkout: fecha, noches, total_pago: total };
         }
       });
@@ -1195,19 +1195,83 @@ createApp({
       if (formValues) {
         try {
           Swal.fire({ title: 'Guardando ampliación...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-          
-          const response = await axios.post('../../../api/rooming.php?action=late_checkout', {
+
+          const response = await axios.post('../../../api/rooming.php?action=extender_hospedaje', {
             id: s.id,
             fecha_checkout: formValues.fecha_checkout,
             noches: formValues.noches,
             total_pago: formValues.total_pago
           });
-          
+
           if (response.data && response.data.ok) {
             Swal.fire('¡Éxito!', response.data.msg || 'La estadía ha sido ampliada correctamente.', 'success');
             cargarDatos(true);
           } else {
             Swal.fire('Atención', response.data.msg || 'No se pudo guardar la ampliación.', 'warning');
+          }
+        } catch (error) {
+          Swal.fire('Error', error.response?.data?.msg || 'Error al conectar con el servidor.', 'error');
+        }
+      }
+    };
+
+    const abrirLateCheckout = async (s) => {
+      const { value: formValues } = await Swal.fire({
+        title: 'Late Checkout',
+        html: `
+          <div class="text-start" style="font-size:14px; color:#495057;">
+            <div class="mb-2"><strong>Habitación:</strong> #${s.hab_numero || s.habitacion_id}</div>
+            <hr class="my-2">
+            <div class="mb-3">
+              <label class="form-label fw-bold small mb-1">Nueva Fecha/Hora Límite</label>
+              <input type="datetime-local" id="swal-late-fecha" class="form-control form-control-sm" value="${s.fecha_checkout}T12:00">
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-bold small mb-1">Precio Adicional (S/)</label>
+              <input type="number" id="swal-late-precio" class="form-control form-control-sm" value="0.00" step="0.01" min="0">
+            </div>
+            <div class="text-muted small mt-2"><i class="bi bi-info-circle"></i> Esto añadirá un cargo extra al total y marcará la habitación en Late Checkout.</div>
+          </div>
+        `,
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonText: 'Registrar',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#ffc107',
+        preConfirm: () => {
+          const fecha = document.getElementById('swal-late-fecha').value;
+          const precioExtra = parseFloat(document.getElementById('swal-late-precio').value);
+
+          if (!fecha) {
+            Swal.showValidationMessage('Selecciona una fecha y hora');
+            return false;
+          }
+          if (isNaN(precioExtra) || precioExtra < 0) {
+            Swal.showValidationMessage('El precio adicional debe ser válido');
+            return false;
+          }
+
+          // Convertir datetime-local a formato DB compatible si es necesario, o mantenerlo así (MySQL acepta Y-m-d H:i:s)
+          const dbFecha = fecha.replace('T', ' ') + ':00';
+          return { fecha_checkout: dbFecha, precio_extra: precioExtra };
+        }
+      });
+
+      if (formValues) {
+        try {
+          Swal.fire({ title: 'Procesando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+          const response = await axios.post('../../../api/rooming.php?action=late_checkout', {
+            id: s.id,
+            fecha_checkout: formValues.fecha_checkout,
+            precio_extra: formValues.precio_extra
+          });
+
+          if (response.data && response.data.ok) {
+            Swal.fire('¡Éxito!', response.data.msg || 'Late checkout registrado.', 'success');
+            cargarDatos(true);
+          } else {
+            Swal.fire('Atención', response.data.msg || 'No se pudo registrar.', 'warning');
           }
         } catch (error) {
           Swal.fire('Error', error.response?.data?.msg || 'Error al conectar con el servidor.', 'error');
@@ -1416,7 +1480,7 @@ createApp({
           // Hallar el label original para aplicar WrapText y alineación
           const currentLabel = labels[colIndex - 1];
           const needsWrap = ["TIPO DE HAB", "NOMBRE Y APELLIDO", "OBS"].includes(currentLabel);
-          
+
           let horiz = "left";
           if (["OPERADOR", "FECHA REGISTRO", "HAB", "PAX", "HORA DE CHECK IN", "TIPO DOC", "NÚMERO", "ENTRADA", "SALIDA", "LATE", "METODO", "COMPROBANTE", "Nº COMPROBANTE", "QUIEN COBRO", "CARRO"].includes(currentLabel)) {
             horiz = "center";
@@ -1636,7 +1700,7 @@ createApp({
       staysFiltrados, selectedStay, stayParaPago, mediosPago, pagoForm,
       abrirCheckin, onHabChange, calcularNoches, onNochesChange, recalcularMoneda, simboloMoneda, montoFinalMostrado, onPrecioDiarioChange,
       onAdelantoChange, agregarPax, setTitular, guardarCheckin, verDetalle, cargarDatos,
-      fmtFecha, getPagoClass, getEstadBadge, procederCheckout, abrirLateCheckout, abrirPago, recalcularPago, cambiarMonedaPago, guardarPago,
+      fmtFecha, getPagoClass, getEstadBadge, procederCheckout, abrirExtenderHospedaje, abrirLateCheckout, abrirPago, recalcularPago, cambiarMonedaPago, guardarPago,
       abrirEdicion, activarReserva, cambiarTipoPago, fmtCur, isEditingAdelanto, adelantoExcede, getMetodoPagoIcon,
       saldoPendienteOriginal, adelantoInvalido,
       // CONSUMOS

@@ -38,6 +38,9 @@ switch ($action) {
     case 'late_checkout':
         json_response_obj($controller->lateCheckout($input));
         break;
+    case 'extender_hospedaje':
+        json_response_obj($controller->extenderHospedaje($input));
+        break;
     case 'reporte_pax':
         try {
             $mes  = (int)($_GET['mes']  ?? date('n'));

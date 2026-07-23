@@ -81,9 +81,24 @@ $fechaQuery = $_GET['fecha'] ?? date('Y-m-d');
         <div class="card mb-3 border-0 shadow-sm">
           <div class="card-header bg-white d-flex justify-content-between align-items-center">
             <h6 class="mb-0 fw-bold text-success"><i class="bi bi-arrow-down-circle-fill me-2"></i>INGRESOS</h6>
-            <button class="btn btn-sm btn-outline-success" @click="agregarMovimiento('ingresos')" v-if="esEditable">
-              <i class="bi bi-plus"></i> Fila
-            </button>
+            <div class="d-flex gap-2" v-if="esEditable">
+              <div class="dropdown">
+                <button class="btn btn-sm btn-outline-info dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="bi bi-cup-straw"></i> Minibar
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="font-size:13px;">
+                  <li v-for="prod in minibarProductos" :key="prod.nombre">
+                    <a class="dropdown-item d-flex justify-content-between align-items-center" href="#" @click.prevent="agregarMinibar(prod)">
+                      <span>{{ prod.nombre }}</span>
+                      <strong class="text-success ms-3">S/ {{ prod.precio.toFixed(2) }}</strong>
+                    </a>
+                  </li>
+                </ul>
+              </div>
+              <button class="btn btn-sm btn-outline-success" @click="agregarMovimiento('ingresos')">
+                <i class="bi bi-plus"></i> Fila
+              </button>
+            </div>
           </div>
           <div class="card-body p-0">
             <div class="table-responsive">

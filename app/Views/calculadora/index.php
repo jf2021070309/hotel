@@ -93,37 +93,104 @@ include __DIR__ . '/../layouts/head.php';
       </div>
 
       <!-- Paneles de Conversión -->
-      <div class="row g-4 panels-row justify-content-center">
+      <div class="row g-4 panels-row">
+
+        <!-- PANEL 1: SOLES -->
+        <div class="col-12 col-md-4">
+          <div class="calc-panel panel-soles" id="panelSoles">
+            <div class="panel-header">
+              <span class="panel-icon">💵</span>
+              <div>
+                <div class="panel-title">SOLES</div>
+                <div class="panel-subtitle">PEN — Nuevos Soles</div>
+              </div>
+              <div class="ms-auto">
+                <div class="toggle-container" title="Aplicar recargo POS 5%">
+                  <span class="toggle-label">5% POS</span>
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="togglePosSoles" onchange="togglePosSolesChange()">
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel-body">
+              <label class="input-label">Monto en Dólares (USD)</label>
+              <div class="input-group mb-3">
+                <span class="input-group-text monto-symbol">$</span>
+                <input type="number" id="montoSoles" class="form-control monto-input"
+                       placeholder="0.00" step="0.01" min="0"
+                       oninput="calcularSoles()">
+              </div>
+
+              <div class="result-rows">
+                <div class="result-row">
+                  <span class="result-label">Neto Soles</span>
+                  <span class="result-value" id="solNeto">—</span>
+                </div>
+                <div class="result-row comision-row" id="rowComisionSoles" style="display:none;">
+                  <span class="result-label text-success">Comisión (5%)</span>
+                  <span class="result-value text-success" id="solComision">—</span>
+                </div>
+              </div>
+
+              <div class="result-total">
+                <span class="total-label">TOTAL</span>
+                <span class="total-value" id="solTotal">—</span>
+              </div>
+            </div>
+          </div>
+        </div>
 
         <!-- PANEL 2: DÓLARES -->
         <?php if ($config['mostrar_panel_usd']): ?>
-        <div class="col-12 col-md-6 col-lg-5">
+        <div class="col-12 col-md-4">
           <div class="calc-panel panel-dolares" id="panelDolares">
             <div class="panel-header">
               <span class="panel-icon">💲</span>
               <div>
-                <div class="panel-title">DÓLARES ↔ SOLES</div>
-                <div class="panel-subtitle">Conversión Bidireccional</div>
+                <div class="panel-title">DÓLARES</div>
+                <div class="panel-subtitle">USD — Dólares Americanos</div>
+              </div>
+              <div class="ms-auto">
+                <div class="toggle-container" title="Aplicar recargo POS 5%">
+                  <span class="toggle-label">5% POS</span>
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="togglePosDolares" onchange="togglePosDolaresChange()">
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
               </div>
             </div>
 
-            <div class="panel-body pb-4">
+            <div class="panel-body">
               <label class="input-label">Monto en Dólares (USD)</label>
               <div class="input-group mb-3">
                 <span class="input-group-text monto-symbol">$</span>
-                <input type="number" id="inpUsd1" class="form-control monto-input"
-                       placeholder="0.00" step="0.01" min="0" oninput="syncUsdToPen()">
+                <input type="number" id="montoDolares" class="form-control monto-input"
+                       placeholder="0.00" step="0.01" min="0"
+                       oninput="calcularDolares()">
               </div>
 
-              <div class="text-center text-muted mb-3" style="font-size: 1.2rem; opacity: 0.3;">
-                <i class="bi bi-arrow-down-up"></i>
+              <div class="result-rows">
+                <div class="result-row">
+                  <span class="result-label">Neto USD</span>
+                  <span class="result-value" id="usdBase">—</span>
+                </div>
+                <div class="result-row comision-row" id="rowComisionUsd" style="display:none;">
+                  <span class="result-label text-success">Comisión (5%)</span>
+                  <span class="result-value text-success" id="usdComision">—</span>
+                </div>
+                <div class="result-row mt-1" style="border-top: 1px dashed #e2e8f0; padding-top: 8px;">
+                  <span class="result-label text-muted" style="font-size:11px;">Equiv. en Soles</span>
+                  <span class="result-value" style="font-size:13px;" id="usdEnSoles">—</span>
+                </div>
               </div>
 
-              <label class="input-label">Monto en Soles (PEN)</label>
-              <div class="input-group mb-2">
-                <span class="input-group-text monto-symbol" style="background:#fefce8; color:#a16207;">S/</span>
-                <input type="number" id="inpPen1" class="form-control monto-input"
-                       placeholder="0.00" step="0.01" min="0" oninput="syncPenToUsd()">
+              <div class="result-total">
+                <span class="total-label">TOTAL USD</span>
+                <span class="total-value" id="usdTotal">—</span>
               </div>
             </div>
           </div>
@@ -132,33 +199,56 @@ include __DIR__ . '/../layouts/head.php';
 
         <!-- PANEL 3: PESOS CHILENOS -->
         <?php if ($config['mostrar_panel_clp']): ?>
-        <div class="col-12 col-md-6 col-lg-5">
+        <div class="col-12 col-md-4">
           <div class="calc-panel panel-pesos" id="panelPesos">
             <div class="panel-header">
               <span class="panel-icon">🇨🇱</span>
               <div>
-                <div class="panel-title">PESOS ↔ SOLES</div>
-                <div class="panel-subtitle">Conversión Bidireccional</div>
+                <div class="panel-title">PESOS CHILENOS</div>
+                <div class="panel-subtitle">CLP — Pesos Chile</div>
+              </div>
+              <div class="ms-auto">
+                <div class="toggle-container" title="Aplicar recargo POS 5%">
+                  <span class="toggle-label">5% POS</span>
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="togglePosPesos" onchange="togglePosPesosChange()">
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
               </div>
             </div>
 
-            <div class="panel-body pb-4">
-              <label class="input-label">Monto en Pesos (CLP)</label>
+            <div class="panel-body">
+              <label class="input-label">Monto en Dólares (USD)</label>
               <div class="input-group mb-3">
-                <span class="input-group-text monto-symbol">CLP</span>
-                <input type="number" id="inpClp" class="form-control monto-input"
-                       placeholder="0" step="0.01" min="0" oninput="syncClpToPen()">
+                <span class="input-group-text monto-symbol">$</span>
+                <input type="number" id="montoPesos" class="form-control monto-input"
+                       placeholder="0.00" step="0.01" min="0"
+                       oninput="calcularPesos()">
               </div>
 
-              <div class="text-center text-muted mb-3" style="font-size: 1.2rem; opacity: 0.3;">
-                <i class="bi bi-arrow-down-up"></i>
+              <div class="result-rows">
+                <div class="result-row">
+                  <span class="result-label">Neto CLP</span>
+                  <span class="result-value" id="clpNeto">—</span>
+                </div>
+                <div class="result-row comision-row" id="rowComisionPesos" style="display:none;">
+                  <span class="result-label text-success">Comisión (5%)</span>
+                  <span class="result-value text-success" id="clpComision">—</span>
+                </div>
+                <div class="result-row mt-1" style="border-top: 1px dashed #e2e8f0; padding-top: 8px;">
+                  <span class="result-label text-muted" style="font-size:11px;">Equiv. en Soles</span>
+                  <span class="result-value" style="font-size:13px;" id="clpEnSoles">—</span>
+                </div>
               </div>
 
-              <label class="input-label">Monto en Soles (PEN)</label>
-              <div class="input-group mb-2">
-                <span class="input-group-text monto-symbol" style="background:#fefce8; color:#a16207;">S/</span>
-                <input type="number" id="inpPen2" class="form-control monto-input"
-                       placeholder="0.00" step="0.01" min="0" oninput="syncPenToClp()">
+              <div class="result-total">
+                <span class="total-label">TOTAL CLP</span>
+                <span class="total-value" id="clpTotal">—</span>
+              </div>
+
+              <div class="result-total" style="font-size:11px; text-align:center; background:#f1f5f9; color:#475569; border-top: 1px solid #e2e8f0;">
+                <span id="clpInfoTc">1 USD = <span class="fw-bold">—</span> PEN = <span class="fw-bold">—</span> CLP</span>
               </div>
             </div>
           </div>
@@ -210,63 +300,134 @@ function switchTab(tab, btn) {
     if (btn) btn.classList.add('active');
 }
 
+// ═══════════════════════════════════════════════════════════
+// PANEL 1: SOLES
+// ═══════════════════════════════════════════════════════════
+function calcularSoles() {
+    const monto    = parseFloat(document.getElementById('montoSoles').value) || 0;
+    const tc_usd   = getTcUsd();
+    const posOn    = document.getElementById('togglePosSoles').checked;
+    const panel    = document.getElementById('panelSoles');
 
-// ═══════════════════════════════════════════════════════════
-// PANEL DÓLARES ↔ SOLES
-// ═══════════════════════════════════════════════════════════
-function syncUsdToPen() {
-    const usd = parseFloat(document.getElementById('inpUsd1').value);
-    const tc = getTcUsd();
-    if (isNaN(usd) || tc <= 0) {
-        document.getElementById('inpPen1').value = '';
+    if (monto <= 0) {
+        document.getElementById('solNeto').textContent    = '—';
+        document.getElementById('solComision').textContent = '—';
+        document.getElementById('solTotal').textContent   = '—';
         return;
     }
-    const pen = usd * tc;
-    document.getElementById('inpPen1').value = Math.round(pen * 100) / 100;
+
+    const neto      = monto * tc_usd;
+    const comision  = posOn ? neto * 0.05 : 0;
+    const total     = neto + comision;
+
+    document.getElementById('solNeto').textContent    = 'S/ ' + formatNum(neto);
+    document.getElementById('solComision').textContent = '+S/ ' + formatNum(comision);
+    document.getElementById('solTotal').textContent   = 'S/ ' + formatNum(total);
 }
 
-function syncPenToUsd() {
-    const pen = parseFloat(document.getElementById('inpPen1').value);
-    const tc = getTcUsd();
-    if (isNaN(pen) || tc <= 0) {
-        document.getElementById('inpUsd1').value = '';
-        return;
-    }
-    const usd = pen / tc;
-    document.getElementById('inpUsd1').value = Math.round(usd * 100) / 100;
+function togglePosSolesChange() {
+    const posOn = document.getElementById('togglePosSoles').checked;
+    const panel  = document.getElementById('panelSoles');
+    const rowCom = document.getElementById('rowComisionSoles');
+
+    rowCom.style.display = posOn ? 'flex' : 'none';
+    panel.classList.toggle('panel-pos-activo', posOn);
+    calcularSoles();
 }
 
 // ═══════════════════════════════════════════════════════════
-// PANEL PESOS ↔ SOLES
+// PANEL 2: DÓLARES
 // ═══════════════════════════════════════════════════════════
-function syncClpToPen() {
-    const clp = parseFloat(document.getElementById('inpClp').value);
-    const tc_clp = getTcClp(); // 1 SOL = X PESOS
-    if (isNaN(clp) || tc_clp <= 0) {
-        document.getElementById('inpPen2').value = '';
-        return;
-    }
-    const pen = clp / tc_clp;
-    document.getElementById('inpPen2').value = Math.round(pen * 100) / 100;
+function togglePosDolaresChange() {
+    const posOn = document.getElementById('togglePosDolares').checked;
+    const panel = document.getElementById('panelDolares');
+    const rowCom = document.getElementById('rowComisionUsd');
+
+    rowCom.style.display = posOn ? 'flex' : 'none';
+    panel.classList.toggle('panel-pos-activo', posOn);
+    calcularDolares();
 }
 
-function syncPenToClp() {
-    const pen = parseFloat(document.getElementById('inpPen2').value);
-    const tc_clp = getTcClp(); // 1 SOL = X PESOS
-    if (isNaN(pen) || tc_clp <= 0) {
-        document.getElementById('inpClp').value = '';
+function calcularDolares() {
+    const el = document.getElementById('montoDolares');
+    if (!el) return;
+    const monto  = parseFloat(el.value) || 0;
+    const tc_usd = getTcUsd();
+    const posOn = document.getElementById('togglePosDolares').checked;
+
+    if (monto <= 0) {
+        document.getElementById('usdBase').textContent       = '—';
+        document.getElementById('usdComision').textContent   = '—';
+        document.getElementById('usdEnSoles').textContent    = '—';
+        document.getElementById('usdTotal').textContent      = '—';
         return;
     }
-    const clp = pen * tc_clp;
-    document.getElementById('inpClp').value = Math.round(clp * 100) / 100;
+
+    const comision_usd = posOn ? monto * 0.05 : 0;
+    const total_usd = monto + comision_usd;
+    const en_soles = total_usd * tc_usd;
+
+    document.getElementById('usdBase').textContent      = '$ ' + formatNum(monto);
+    document.getElementById('usdComision').textContent  = '+$ ' + formatNum(comision_usd);
+    document.getElementById('usdEnSoles').textContent   = 'S/ ' + formatNum(en_soles);
+    document.getElementById('usdTotal').textContent     = '$ ' + formatNum(total_usd);
+}
+
+// ═══════════════════════════════════════════════════════════
+// PANEL 3: PESOS CHILENOS
+// ═══════════════════════════════════════════════════════════
+function togglePosPesosChange() {
+    const posOn = document.getElementById('togglePosPesos').checked;
+    const panel = document.getElementById('panelPesos');
+    const rowCom = document.getElementById('rowComisionPesos');
+
+    rowCom.style.display = posOn ? 'flex' : 'none';
+    panel.classList.toggle('panel-pos-activo', posOn);
+    calcularPesos();
+}
+
+function calcularPesos() {
+    const el = document.getElementById('montoPesos');
+    if (!el) return;
+    const base_usd  = parseFloat(el.value) || 0;
+    const tc_usd    = getTcUsd();
+    const tc_clp    = getTcClp(); // 1 SOL = X PESOS
+    const posOn     = document.getElementById('togglePosPesos').checked;
+
+    if (base_usd <= 0) {
+        document.getElementById('clpNeto').textContent     = '—';
+        document.getElementById('clpComision').textContent = '—';
+        document.getElementById('clpEnSoles').textContent  = '—';
+        document.getElementById('clpTotal').textContent    = '—';
+        document.getElementById('clpInfoTc').innerHTML     =
+            '1 USD = <span class="fw-bold">—</span> PEN = <span class="fw-bold">—</span> CLP';
+        return;
+    }
+
+    const clp_por_usd = tc_usd * tc_clp;
+    const monto_clp = base_usd * clp_por_usd;
+    const comision_clp = posOn ? monto_clp * 0.05 : 0;
+    const total_clp = monto_clp + comision_clp;
+    
+    // Equiv en Soles (ya sea con o sin comisión POS)
+    const total_soles = posOn ? (base_usd * tc_usd) * 1.05 : (base_usd * tc_usd);
+
+    document.getElementById('clpNeto').textContent     = 'CLP ' + formatNum(monto_clp);
+    document.getElementById('clpComision').textContent = '+CLP ' + formatNum(comision_clp);
+    document.getElementById('clpEnSoles').textContent  = 'S/ ' + formatNum(total_soles);
+    document.getElementById('clpTotal').textContent    = 'CLP ' + formatNum(total_clp);
+
+    document.getElementById('clpInfoTc').innerHTML =
+        '1 USD = <span class="fw-bold">'+formatNum(tc_usd)+'</span> PEN = <span class="fw-bold">'+formatNum(clp_por_usd)+'</span> CLP';
 }
 
 // ═══════════════════════════════════════════════════════════
 // RECALCULAR TODO (al cambiar TC en la barra)
 // ═══════════════════════════════════════════════════════════
 function recalcularTodo() {
-    if (document.getElementById('inpUsd1') && document.getElementById('inpUsd1').value !== '') syncUsdToPen();
-    if (document.getElementById('inpClp') && document.getElementById('inpClp').value !== '') syncClpToPen();
+    calcularSoles();
+    calcularDolares();
+    calcularPesos();
 }
 
 // ═══════════════════════════════════════════════════════════

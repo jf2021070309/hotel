@@ -173,24 +173,15 @@ include __DIR__ . '/../layouts/head.php';
                        oninput="calcularDolares()">
               </div>
 
-              <div class="result-rows">
-                <div class="result-row">
-                  <span class="result-label">Neto USD</span>
-                  <span class="result-value" id="usdBase">—</span>
+              <div class="result-rows pb-3" style="border:none;">
+                <div class="result-row mt-1" style="padding-top: 8px;">
+                  <span class="result-label text-muted" style="font-size:13px;">Equiv. en Soles</span>
+                  <span class="result-value fw-bold" style="font-size:16px;" id="usdEnSoles">—</span>
                 </div>
-                <div class="result-row comision-row" id="rowComisionUsd" style="display:none;">
-                  <span class="result-label text-success">Comisión (5%)</span>
-                  <span class="result-value text-success" id="usdComision">—</span>
+                <div class="result-row mt-1" style="padding-top: 8px;">
+                  <span class="result-label text-muted" style="font-size:13px;">Equiv. en Pesos</span>
+                  <span class="result-value fw-bold" style="font-size:16px;" id="usdEnPesos">—</span>
                 </div>
-                <div class="result-row mt-1" style="border-top: 1px dashed #e2e8f0; padding-top: 8px;">
-                  <span class="result-label text-muted" style="font-size:11px;">Equiv. en Soles</span>
-                  <span class="result-value" style="font-size:13px;" id="usdEnSoles">—</span>
-                </div>
-              </div>
-
-              <div class="result-total">
-                <span class="total-label">TOTAL USD</span>
-                <span class="total-value" id="usdTotal">—</span>
               </div>
             </div>
           </div>
@@ -219,32 +210,23 @@ include __DIR__ . '/../layouts/head.php';
             </div>
 
             <div class="panel-body">
-              <label class="input-label">Monto en Dólares (USD)</label>
+              <label class="input-label">Monto en Pesos (CLP)</label>
               <div class="input-group mb-3">
-                <span class="input-group-text monto-symbol">$</span>
+                <span class="input-group-text monto-symbol">CLP</span>
                 <input type="number" id="montoPesos" class="form-control monto-input"
-                       placeholder="0.00" step="0.01" min="0"
+                       placeholder="0" step="any" min="0"
                        oninput="calcularPesos()">
               </div>
 
-              <div class="result-rows">
-                <div class="result-row">
-                  <span class="result-label">Neto CLP</span>
-                  <span class="result-value" id="clpNeto">—</span>
+              <div class="result-rows pb-3" style="border:none;">
+                <div class="result-row mt-1" style="padding-top: 8px;">
+                  <span class="result-label text-muted" style="font-size:13px;">Equiv. en Soles</span>
+                  <span class="result-value fw-bold" style="font-size:16px;" id="clpEnSoles">—</span>
                 </div>
-                <div class="result-row comision-row" id="rowComisionPesos" style="display:none;">
-                  <span class="result-label text-success">Comisión (5%)</span>
-                  <span class="result-value text-success" id="clpComision">—</span>
+                <div class="result-row mt-1" style="padding-top: 8px;">
+                  <span class="result-label text-muted" style="font-size:13px;">Equiv. en Dólares</span>
+                  <span class="result-value fw-bold" style="font-size:16px;" id="clpEnDolares">—</span>
                 </div>
-                <div class="result-row mt-1" style="border-top: 1px dashed #e2e8f0; padding-top: 8px;">
-                  <span class="result-label text-muted" style="font-size:11px;">Equiv. en Soles</span>
-                  <span class="result-value" style="font-size:13px;" id="clpEnSoles">—</span>
-                </div>
-              </div>
-
-              <div class="result-total">
-                <span class="total-label">TOTAL CLP</span>
-                <span class="total-value" id="clpTotal">—</span>
               </div>
 
               <div class="result-total" style="font-size:11px; text-align:center; background:#f1f5f9; color:#475569; border-top: 1px solid #e2e8f0;">
@@ -341,9 +323,6 @@ function togglePosSolesChange() {
 function togglePosDolaresChange() {
     const posOn = document.getElementById('togglePosDolares').checked;
     const panel = document.getElementById('panelDolares');
-    const rowCom = document.getElementById('rowComisionUsd');
-
-    rowCom.style.display = posOn ? 'flex' : 'none';
     panel.classList.toggle('panel-pos-activo', posOn);
     calcularDolares();
 }
@@ -353,24 +332,21 @@ function calcularDolares() {
     if (!el) return;
     const monto  = parseFloat(el.value) || 0;
     const tc_usd = getTcUsd();
+    const tc_clp = getTcClp();
     const posOn = document.getElementById('togglePosDolares').checked;
 
     if (monto <= 0) {
-        document.getElementById('usdBase').textContent       = '—';
-        document.getElementById('usdComision').textContent   = '—';
-        document.getElementById('usdEnSoles').textContent    = '—';
-        document.getElementById('usdTotal').textContent      = '—';
+        document.getElementById('usdEnSoles').textContent = '—';
+        document.getElementById('usdEnPesos').textContent = '—';
         return;
     }
 
-    const comision_usd = posOn ? monto * 0.05 : 0;
-    const total_usd = monto + comision_usd;
+    const total_usd = posOn ? monto * 1.05 : monto;
     const en_soles = total_usd * tc_usd;
+    const en_pesos = en_soles * tc_clp;
 
-    document.getElementById('usdBase').textContent      = '$ ' + formatNum(monto);
-    document.getElementById('usdComision').textContent  = '+$ ' + formatNum(comision_usd);
-    document.getElementById('usdEnSoles').textContent   = 'S/ ' + formatNum(en_soles);
-    document.getElementById('usdTotal').textContent     = '$ ' + formatNum(total_usd);
+    document.getElementById('usdEnSoles').textContent = 'S/ ' + formatNum(en_soles);
+    document.getElementById('usdEnPesos').textContent = 'CLP ' + formatNum(en_pesos);
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -379,9 +355,6 @@ function calcularDolares() {
 function togglePosPesosChange() {
     const posOn = document.getElementById('togglePosPesos').checked;
     const panel = document.getElementById('panelPesos');
-    const rowCom = document.getElementById('rowComisionPesos');
-
-    rowCom.style.display = posOn ? 'flex' : 'none';
     panel.classList.toggle('panel-pos-activo', posOn);
     calcularPesos();
 }
@@ -389,34 +362,27 @@ function togglePosPesosChange() {
 function calcularPesos() {
     const el = document.getElementById('montoPesos');
     if (!el) return;
-    const base_usd  = parseFloat(el.value) || 0;
+    const base_clp  = parseFloat(el.value) || 0;
     const tc_usd    = getTcUsd();
     const tc_clp    = getTcClp(); // 1 SOL = X PESOS
     const posOn     = document.getElementById('togglePosPesos').checked;
 
-    if (base_usd <= 0) {
-        document.getElementById('clpNeto').textContent     = '—';
-        document.getElementById('clpComision').textContent = '—';
+    if (base_clp <= 0) {
         document.getElementById('clpEnSoles').textContent  = '—';
-        document.getElementById('clpTotal').textContent    = '—';
+        document.getElementById('clpEnDolares').textContent = '—';
         document.getElementById('clpInfoTc').innerHTML     =
             '1 USD = <span class="fw-bold">—</span> PEN = <span class="fw-bold">—</span> CLP';
         return;
     }
 
+    const total_clp = posOn ? base_clp * 1.05 : base_clp;
+    const en_soles = total_clp / tc_clp;
+    const en_dolares = tc_usd > 0 ? (en_soles / tc_usd) : 0;
+
+    document.getElementById('clpEnSoles').textContent  = 'S/ ' + formatNum(en_soles);
+    document.getElementById('clpEnDolares').textContent = '$ ' + formatNum(en_dolares);
+
     const clp_por_usd = tc_usd * tc_clp;
-    const monto_clp = base_usd * clp_por_usd;
-    const comision_clp = posOn ? monto_clp * 0.05 : 0;
-    const total_clp = monto_clp + comision_clp;
-    
-    // Equiv en Soles (ya sea con o sin comisión POS)
-    const total_soles = posOn ? (base_usd * tc_usd) * 1.05 : (base_usd * tc_usd);
-
-    document.getElementById('clpNeto').textContent     = 'CLP ' + formatNum(monto_clp);
-    document.getElementById('clpComision').textContent = '+CLP ' + formatNum(comision_clp);
-    document.getElementById('clpEnSoles').textContent  = 'S/ ' + formatNum(total_soles);
-    document.getElementById('clpTotal').textContent    = 'CLP ' + formatNum(total_clp);
-
     document.getElementById('clpInfoTc').innerHTML =
         '1 USD = <span class="fw-bold">'+formatNum(tc_usd)+'</span> PEN = <span class="fw-bold">'+formatNum(clp_por_usd)+'</span> CLP';
 }

@@ -144,6 +144,9 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 <input type="radio" class="btn-check" name="btnradio_vista" id="btn-principales" autocomplete="off" checked @click="filtro.vista = 'principales'">
                 <label class="btn btn-sm btn-outline-primary fw-bold px-3" for="btn-principales" style="border-radius: 6px 0 0 6px;">Principales</label>
 
+                <input type="radio" class="btn-check" name="btnradio_vista" id="btn-sunat" autocomplete="off" @click="filtro.vista = 'sunat'">
+                <label class="btn btn-sm btn-outline-success fw-bold px-3" for="btn-sunat" style="border-radius: 0;">SUNAT</label>
+
                 <input type="radio" class="btn-check" name="btnradio_vista" id="btn-noreg" autocomplete="off" @click="filtro.vista = 'no_registrados'">
                 <label class="btn btn-sm btn-outline-secondary fw-bold px-3" for="btn-noreg" style="border-radius: 0 6px 6px 0;">No registrados</label>
               </div>

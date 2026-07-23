@@ -88,6 +88,26 @@ createApp({
       let filtradas = this.filas;
       if (this.filtro.vista === 'no_registrados') {
         filtradas = filtradas.filter(f => f.no_registrado == 1);
+      } else if (this.filtro.vista === 'sunat') {
+        filtradas = filtradas.filter(f => {
+          if (f.no_registrado == 1) return false;
+          const excluidos = ['NINGUNO', 'NINGUNA', 'NINGUN', '-', ''];
+          
+          // Chequea si el comprobante base está excluido
+          const baseComprobante = (f.comprobante_pago || f.tipo_comprobante || '').toUpperCase().trim();
+          
+          // O si la fila tiene periodos, verifica que NO tenga solo NINGUNO
+          let periodoNinguno = false;
+          if (f.periodos_list && f.periodos_list.length > 0) {
+              periodoNinguno = f.periodos_list.every(p => excluidos.includes((p.comprobante_pago || '').toUpperCase().trim()));
+          }
+          
+          if (f.periodos_list && f.periodos_list.length > 0) {
+              return !periodoNinguno;
+          } else {
+              return !excluidos.includes(baseComprobante);
+          }
+        });
       } else {
         filtradas = filtradas.filter(f => f.no_registrado != 1);
       }

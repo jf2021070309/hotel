@@ -456,12 +456,15 @@ class FlujoController {
                 }
             }
             
-            $pagado = ($columna === 'cuenta_hab') ? 0 : 1;
+            if ($columna === 'cuenta_hab') {
+                $obsAdicional = " - Se adiciona {$precio} del {$obs}";
+                $stmtStay = $this->pdo->prepare("UPDATE rooming_stays SET total_pago = total_pago + ?, observaciones = CONCAT(IFNULL(observaciones, ''), ?) WHERE id = ?");
+                $stmtStay->execute([$precio, $obsAdicional, $stayId]);
+            } else {
+                $pagado = 1;
+                $stmtC = $this->pdo->prepare("INSERT INTO rooming_consumos (stay_id, producto_id, cantidad, precio_unitario, total, metodo_pago, pagado, usuario_id) VALUES (?, ?, 1, ?, ?, ?, ?, ?)");
+                $stmtC->execute([$stayId, $invId, $precio, $precio, $medioPago, $pagado, $_SESSION['auth_id'] ?? 1]);
 
-            $stmtC = $this->pdo->prepare("INSERT INTO rooming_consumos (stay_id, producto_id, cantidad, precio_unitario, total, metodo_pago, pagado, usuario_id) VALUES (?, ?, 1, ?, ?, ?, ?, ?)");
-            $stmtC->execute([$stayId, $invId, $precio, $precio, $medioPago, $pagado, $_SESSION['auth_id'] ?? 1]);
-
-            if ($columna !== 'cuenta_hab') {
                 $catIdMap = [
                     'depo' => 1,
                     'yape' => 2,

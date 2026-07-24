@@ -279,14 +279,6 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
                 </select>
               </div>
            <div class="mb-3">
-             <label class="form-label fw-bold text-secondary" style="font-size:12px;">Tipo de Consumo</label>
-             <select class="form-select form-select-sm fw-bold" v-model="formConsumo.tipo">
-               <option value="BEBIDA">Bebida (Frigobar)</option>
-               <option value="DESAYUNO">Desayuno Buffet</option>
-             </select>
-           </div>
-           
-           <div v-if="formConsumo.tipo === 'BEBIDA'" class="mb-3">
              <label class="form-label fw-bold text-secondary" style="font-size:12px;">Producto</label>
              <select class="form-select form-select-sm fw-bold" v-model="formConsumo.producto_id" @change="onProductoChange">
                <option value="">- Seleccione Bebida -</option>

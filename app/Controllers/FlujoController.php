@@ -423,7 +423,7 @@ class FlujoController {
         try {
             $obs = ($tipo === 'DESAYUNO') ? 'Desayuno Buffet' : 'Bebida Refri';
             $prodId = ($tipo === 'BEBIDA') ? $input['producto_id'] : null;
-            $invId = null;
+            $invId = 0;
 
             if ($tipo === 'BEBIDA' && $prodId) {
                 $staticProds = [

@@ -125,6 +125,12 @@ class ReporteModel {
         foreach ($consumos as $c) {
             $monto = (float)$c['total'];
             $metodo = strtoupper($c['metodo_pago'] ?? '');
+            
+            // No sumar si es a cuenta de habitación, porque ya viene sumado en el Hospedaje
+            if (strpos($metodo, 'CUENTA HAB') !== false) {
+                continue;
+            }
+
             if (strpos($metodo, 'YAPE') !== false || strpos($metodo, 'PLIN') !== false) {
                 $res['YAPE'] += $monto;
             } elseif (strpos($metodo, 'TRANSF') !== false) {

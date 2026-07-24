@@ -624,6 +624,7 @@ const app = createApp({
     const formConsumo = reactive({
       flujo_id: null,
       columna: '',
+      destino: 'independiente',
       turnoName: '',
       stay_id: '',
       tipo: 'BEBIDA',
@@ -648,6 +649,7 @@ const app = createApp({
       }
       formConsumo.flujo_id = turnoObj.flujo_id;
       formConsumo.columna = columna;
+      formConsumo.destino = 'independiente';
       formConsumo.turnoName = turnoLabel;
       formConsumo.stay_id = '';
       formConsumo.tipo = 'BEBIDA';

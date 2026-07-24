@@ -398,6 +398,10 @@ class FlujoController {
         $precio = (float)($input['precio'] ?? 0);
         $tipo = $input['tipo'] ?? ''; // BEBIDA o DESAYUNO
         $columna = $input['columna'] ?? 'pen_ef'; 
+        $destino = $input['destino'] ?? 'independiente';
+        
+        $invId = null;
+        $obs = 'Consumo';
 
         if ($flujoId <= 0 || $stayId <= 0 || $precio <= 0) {
             return ['ok' => false, 'msg' => 'Datos incompletos'];
@@ -456,7 +460,7 @@ class FlujoController {
                 }
             }
             
-            if ($columna === 'cuenta_hab') {
+            if ($destino === 'cuenta_hab') {
                 $obsAdicional = " - Se adiciona {$precio} del {$obs}";
                 
                 $stmtCheck = $this->pdo->prepare("SELECT total_pago, pagos_json, observaciones FROM rooming_stays WHERE id = ?");
@@ -517,7 +521,7 @@ class FlujoController {
             }
 
             $this->pdo->commit();
-            return ['ok' => true, 'msg' => ($columna === 'cuenta_hab') ? 'Consumo cargado a la habitación' : 'Consumo guardado y sumado a caja'];
+            return ['ok' => true, 'msg' => ($destino === 'cuenta_hab') ? 'Consumo cargado a la factura de la habitación' : 'Consumo guardado y sumado a caja de forma independiente'];
         } catch (Exception $e) {
             $this->pdo->rollBack();
             return ['ok' => false, 'msg' => 'Error: ' . $e->getMessage()];

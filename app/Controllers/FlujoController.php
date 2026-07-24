@@ -501,8 +501,19 @@ class FlujoController {
 
                 $moneda = (in_array($columna, ['pos_usd', 'usd_ef'])) ? 'USD' : (($columna === 'pesos') ? 'CLP' : 'PEN');
 
+                $medioFinalMap = [
+                    'depo' => 'TRANSFERENCIA',
+                    'yape' => 'YAPE_CAJA',
+                    'pos_usd' => 'POS_DOLARES',
+                    'pos_pen' => 'POS_SOLES',
+                    'pesos' => 'EFECTIVO',
+                    'usd_ef' => 'EFECTIVO',
+                    'pen_ef' => 'EFECTIVO'
+                ];
+                $medioFinal = $medioFinalMap[$columna] ?? 'EFECTIVO';
+
                 $stmtF = $this->pdo->prepare("INSERT INTO flujo_caja_movimientos (flujo_id, categoria_id, tipo, moneda, monto, medio_pago, observacion) VALUES (?, ?, 'Ingreso', ?, ?, ?, ?)");
-                $stmtF->execute([$flujoId, $catId, $moneda, $precio, $medioPago, $obsFlujo]);
+                $stmtF->execute([$flujoId, $catId, $moneda, $precio, $medioFinal, $obsFlujo]);
             }
 
             $this->pdo->commit();

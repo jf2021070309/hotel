@@ -435,6 +435,16 @@ class FlujoController {
                 ];
                 if (isset($staticProds[$prodId])) {
                     $obs = $staticProds[$prodId];
+                    // Obtener o crear un producto genérico en inventario_productos
+                    $stmtGen = $this->pdo->prepare("SELECT id FROM inventario_productos WHERE nombre = ? LIMIT 1");
+                    $stmtGen->execute([$obs]);
+                    $genId = $stmtGen->fetchColumn();
+                    if (!$genId) {
+                        $stmtInsGen = $this->pdo->prepare("INSERT INTO inventario_productos (nombre, categoria, precio_compra, precio_venta, stock_actual, stock_minimo) VALUES (?, 'Bebidas', 0, 0, 1000, 10)");
+                        $stmtInsGen->execute([$obs]);
+                        $genId = $this->pdo->lastInsertId();
+                    }
+                    $invId = $genId;
                 } else {
                     $invId = (int)$prodId;
                     $stmtP = $this->pdo->prepare("SELECT nombre FROM inventario_productos WHERE id = ?");

@@ -458,8 +458,25 @@ class FlujoController {
             
             if ($columna === 'cuenta_hab') {
                 $obsAdicional = " - Se adiciona {$precio} del {$obs}";
-                $stmtStay = $this->pdo->prepare("UPDATE rooming_stays SET total_pago = total_pago + ?, observaciones = CONCAT(IFNULL(observaciones, ''), ?) WHERE id = ?");
-                $stmtStay->execute([$precio, $obsAdicional, $stayId]);
+                
+                $stmtCheck = $this->pdo->prepare("SELECT total_pago, pagos_json, observaciones FROM rooming_stays WHERE id = ?");
+                $stmtCheck->execute([$stayId]);
+                $stay = $stmtCheck->fetch(PDO::FETCH_ASSOC);
+                
+                $nuevoTotal = (float)$stay['total_pago'] + $precio;
+                $nuevaObs = $stay['observaciones'] ? $stay['observaciones'] . $obsAdicional : $obsAdicional;
+                $pagosJson = $stay['pagos_json'];
+                
+                if ($pagosJson) {
+                    $pagosArr = json_decode($pagosJson, true);
+                    if (is_array($pagosArr) && count($pagosArr) > 0) {
+                        $pagosArr[0]['pago_total'] = (float)$pagosArr[0]['pago_total'] + $precio;
+                        $pagosJson = json_encode($pagosArr, JSON_UNESCAPED_UNICODE);
+                    }
+                }
+                
+                $stmtStay = $this->pdo->prepare("UPDATE rooming_stays SET total_pago = ?, observaciones = ?, pagos_json = ? WHERE id = ?");
+                $stmtStay->execute([$nuevoTotal, $nuevaObs, $pagosJson, $stayId]);
             } else {
                 $pagado = 1;
                 $stmtC = $this->pdo->prepare("INSERT INTO rooming_consumos (stay_id, producto_id, cantidad, precio_unitario, total, metodo_pago, pagado, usuario_id) VALUES (?, ?, 1, ?, ?, ?, ?, ?)");

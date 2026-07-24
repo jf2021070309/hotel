@@ -440,7 +440,7 @@ class FlujoController {
                     $stmtGen->execute([$obs]);
                     $genId = $stmtGen->fetchColumn();
                     if (!$genId) {
-                        $stmtInsGen = $this->pdo->prepare("INSERT INTO inventario_productos (nombre, categoria, precio_compra, precio_venta, stock_actual, stock_minimo) VALUES (?, 'Bebidas', 0, 0, 1000, 10)");
+                        $stmtInsGen = $this->pdo->prepare("INSERT INTO inventario_productos (nombre, categoria, refrigeradora, precio_venta, stock_actual, activo) VALUES (?, 'Bebidas', 1, 0, 1000, 1)");
                         $stmtInsGen->execute([$obs]);
                         $genId = $this->pdo->lastInsertId();
                     }

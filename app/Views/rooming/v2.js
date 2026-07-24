@@ -364,6 +364,27 @@ createApp({
       return 'S/';
     },
 
+    extraerDesgloseConsumos(obs, total) {
+      if (!obs) return `Total: ${total || 0}`;
+      const consumos = [];
+      let montoHabitacion = parseFloat(total || 0);
+      
+      // Buscar el patrón " - Se adiciona {precio} del {producto}"
+      const regex = / - Se adiciona ([\d.]+) del (.*?)(?= - Se adiciona|$)/g;
+      let match;
+      while ((match = regex.exec(obs)) !== null) {
+        const precio = parseFloat(match[1]);
+        if (!isNaN(precio)) {
+          consumos.push(`+ ${precio.toFixed(2)} (${match[2].trim()})`);
+          montoHabitacion -= precio;
+        }
+      }
+      
+      if (consumos.length === 0) return `Total: ${total || 0}`;
+      
+      return `Habitación: ${montoHabitacion.toFixed(2)}\n` + consumos.join('\n') + `\n------------------\nTotal: ${parseFloat(total || 0).toFixed(2)}`;
+    },
+
     onCheckoutEnter(fila) {
       fila.modificado = true;
       fila.checkout_list.push({ fecha: '' });

@@ -393,6 +393,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                       <span class="fw-bold small text-muted me-1">{{ obtenerSimboloMoneda(p.medio_pago) }}</span>
                       <input type="number" step="0.50" v-model.number="p.pago_total"
                              class="table-editable-input text-end fw-bold text-dark border-0 bg-transparent"
+                             :title="extraerDesgloseConsumos(f.observaciones, p.pago_total)"
                              @input="marcarModificado(f)" style="width:70px;height:28px;font-size:11px;">
                     </div>
                   </div>

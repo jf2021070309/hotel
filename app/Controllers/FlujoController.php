@@ -477,6 +477,10 @@ class FlujoController {
                 
                 $stmtStay = $this->pdo->prepare("UPDATE rooming_stays SET total_pago = ?, observaciones = ?, pagos_json = ? WHERE id = ?");
                 $stmtStay->execute([$nuevoTotal, $nuevaObs, $pagosJson, $stayId]);
+                
+                // Actualizar el movimiento de ingreso de hospedaje en la caja para que el Flujo de Caja refleje el nuevo total
+                $stmtUpdateMov = $this->pdo->prepare("UPDATE flujo_caja_movimientos SET monto = monto + ? WHERE stay_id = ? ORDER BY id ASC LIMIT 1");
+                $stmtUpdateMov->execute([$precio, $stayId]);
             } else {
                 $pagado = 1;
                 $stmtC = $this->pdo->prepare("INSERT INTO rooming_consumos (stay_id, producto_id, cantidad, precio_unitario, total, metodo_pago, pagado, usuario_id) VALUES (?, ?, 1, ?, ?, ?, ?, ?)");

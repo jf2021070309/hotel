@@ -125,6 +125,21 @@ createApp({
              originalNotes.value.set(`${d.fecha}_MAÑANA`, JSON.stringify({ n: d.MAÑANA.nota_entrega, p: d.MAÑANA.manual_pen, u: d.MAÑANA.manual_usd, c: d.MAÑANA.manual_clp }));
              originalNotes.value.set(`${d.fecha}_TARDE`, JSON.stringify({ n: d.TARDE.nota_entrega, p: d.TARDE.manual_pen, u: d.TARDE.manual_usd, c: d.TARDE.manual_clp }));
           });
+
+          // Auto-scroll a la fila de hoy
+          setTimeout(() => {
+             const rowId = 'row-' + SERVER_FECHA;
+             const el = document.getElementById(rowId);
+             if (el) {
+                 el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                 // Resaltado temporal
+                 const originalBg = el.className;
+                 el.className = originalBg.replace('bg-white', 'bg-yellow-100');
+                 setTimeout(() => {
+                     el.className = originalBg;
+                 }, 3000);
+             }
+          }, 300);
         }
       } catch (e) {
         console.error("Error al consultar reporte alex mensual", e);

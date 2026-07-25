@@ -77,7 +77,7 @@ $fecha = date('Y-m-d');
     </div>
   </div>
 
-  <main class="max-w-7xl mx-auto px-6 py-8">
+  <main class="w-full px-2 py-4 md:px-6 md:py-8">
     <div v-if="loading" class="min-h-[400px] flex flex-col items-center justify-center gap-4">
       <div class="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
       <p class="text-sm font-bold text-slate-500 tracking-wide animate-pulse">Sincronizando flujos y cierres de caja...</p>
@@ -101,7 +101,7 @@ $fecha = date('Y-m-d');
           <tbody>
             <template v-for="dia in dias" :key="dia.fecha">
               <!-- MAÑANA -->
-              <tr class="bg-white hover:bg-slate-50 transition-colors">
+              <tr :id="'row-' + dia.fecha" class="bg-white hover:bg-slate-50 transition-colors">
                 <td class="border border-slate-400 px-3 py-1.5 font-bold text-black text-[13px] uppercase w-24">MAÑANA</td>
                 <td class="border border-slate-400 px-3 py-1.5 text-center text-black text-[13px] w-28">{{ formatDateNumeric(dia.fecha) }}</td>
                 <td class="border border-slate-400 p-0 relative">

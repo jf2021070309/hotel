@@ -206,6 +206,17 @@ createApp({
       debug.value = !debug.value;
     };
 
+    const calcularTotalDia = (dia, moneda) => {
+      const field = 'manual_' + moneda.toLowerCase();
+      let val1 = dia.MAÑANA[field];
+      if (val1 === null || val1 === undefined || val1 === '') val1 = dia.MAÑANA[moneda];
+      
+      let val2 = dia.TARDE[field];
+      if (val2 === null || val2 === undefined || val2 === '') val2 = dia.TARDE[moneda];
+      
+      return toNumber(val1) + toNumber(val2);
+    };
+
     onMounted(() => {
       consultar();
     });
@@ -233,7 +244,8 @@ createApp({
       toggleDebug,
       pendingChanges,
       guardandoNotas,
-      guardarNotas
+      guardarNotas,
+      calcularTotalDia
     };
   }
 }).mount('#app-sobres');

@@ -138,9 +138,9 @@ $fecha = date('Y-m-d');
               <tr class="hover:bg-[#d5e7d5] transition-colors" style="background-color: #C3D8C3;">
                 <td class="border border-slate-400 px-3 py-1.5 font-bold text-black text-[13px] uppercase">TOTAL</td>
                 <td class="border border-slate-400 px-3 py-1.5 text-center"></td>
-                <td class="border border-slate-400 px-3 py-1.5 text-right text-black text-[13px]">{{ dia.TOTAL.CLP > 0 ? formatMoney(dia.TOTAL.CLP, 0) : '' }}</td>
-                <td class="border border-slate-400 px-3 py-1.5 text-right text-black text-[13px]">{{ dia.TOTAL.USD > 0 ? formatMoney(dia.TOTAL.USD) : '' }}</td>
-                <td class="border border-slate-400 px-3 py-1.5 text-right text-black text-[13px]">{{ dia.TOTAL.PEN > 0 ? 'S/ ' + formatMoney(dia.TOTAL.PEN) : '' }}</td>
+                <td class="border border-slate-400 px-3 py-1.5 text-right text-black text-[13px]">{{ calcularTotalDia(dia, 'CLP') > 0 ? formatMoney(calcularTotalDia(dia, 'CLP'), 0) : '' }}</td>
+                <td class="border border-slate-400 px-3 py-1.5 text-right text-black text-[13px]">{{ calcularTotalDia(dia, 'USD') > 0 ? formatMoney(calcularTotalDia(dia, 'USD')) : '' }}</td>
+                <td class="border border-slate-400 px-3 py-1.5 text-right text-black text-[13px]">{{ calcularTotalDia(dia, 'PEN') > 0 ? 'S/ ' + formatMoney(calcularTotalDia(dia, 'PEN')) : '' }}</td>
                 <td class="border border-slate-400 px-3 py-1.5 text-left text-black text-[11px] font-bold">
                 </td>
               </tr>

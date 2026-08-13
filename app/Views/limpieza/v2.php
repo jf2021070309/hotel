@@ -139,12 +139,12 @@ include $_projectRoot . 'app/Views/layouts/head.php';
       </div><!-- /printable-area -->
 
       <!-- 🟨🟨 CONTROLES INFERIORES (PDF & GUARDAR) 🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨 -->
-      <div class=\x22pt-3 pb-2 d-flex justify-content-end gap-2 print-hide\x22>
-        <button class=\x22btn btn-primary fw-bold shadow-sm\x22 @click=\x22guardarCambios\x22>
-          <i class=\x22bi bi-save me-1\x22></i> Guardar Cambios
+      <div class="pt-3 pb-2 d-flex justify-content-end gap-2 print-hide">
+        <button class="btn btn-primary fw-bold shadow-sm" @click="guardarCambios">
+          <i class="bi bi-save me-1"></i> Guardar Cambios
         </button>
-        <button class=\x22btn btn-danger fw-bold shadow-sm\x22 onclick=\x22window.print()\x22>
-          <i class=\x22bi bi-file-earmark-pdf-fill me-1\x22></i> Guardar PDF / Imprimir
+        <button class="btn btn-danger fw-bold shadow-sm" onclick="window.print()">
+          <i class="bi bi-file-earmark-pdf-fill me-1"></i> Guardar PDF / Imprimir
         </button>
       </div>
     </div><!-- /hoja unificada -->
@@ -338,4 +338,4 @@ include $_projectRoot . 'app/Views/layouts/head.php';
 <script src="https://cdn.jsdelivr.net/npm/vue@3.3.4/dist/vue.global.prod.js"></script>
 <script src="<?= $base ?>assets/js/limpieza_v2.js?v=<?= time() ?>"></script>
 
-<?php include BASE_PATH . 'app/Views/layouts/footer.php'; ?>
+<?php include $_projectRoot . 'app/Views/layouts/footer.php'; ?>

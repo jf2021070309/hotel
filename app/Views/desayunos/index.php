@@ -164,7 +164,17 @@ $fechaStr = date('Y-m-d');
         -webkit-appearance: none;
     }
     
-    @page { margin: 1cm; size: A4 portrait; }
+    /* Ajustes para forzar que todo entre en una sola página */
+    .table-bordered td, .table-bordered th {
+        padding: 1px 4px !important;
+        height: 27px !important;
+        font-size: 13px !important;
+    }
+    .sheet-content {
+        zoom: 0.95;
+    }
+    
+    @page { margin: 5mm; size: A4 portrait; }
 }
 
 /* Fixes para Inputs */

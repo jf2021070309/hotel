@@ -237,15 +237,28 @@ include $_projectRoot . 'app/Views/layouts/head.php';
   @media print {
     body * { visibility: hidden; }
     #printable-area, #printable-area * { visibility: visible; }
-    #printable-area { position: absolute; left: 0; top: 0; width: 100%; border: 2px solid #000 !important; }
+    #printable-area { position: absolute; left: 0; top: 0; width: 100%; border: 2px solid #000 !important; zoom: 0.92; }
     .print-hide { display: none !important; }
     .main-content { margin-left: 0 !important; padding: 0 !important; width: 100% !important; }
     .lv2-grid-container { max-height: none !important; overflow: visible !important; }
     .paper-table th { background: #f1f5f9 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    /* Garantizar bordes negros exactos */
+    
+    /* Garantizar bordes negros exactos y ajustar alto de filas para forzar 1 página */
     .paper-table th, .paper-table td, #printable-area {
       border-color: #000 !important;
     }
+    .paper-table td, .paper-table th {
+      padding: 1px 2px !important;
+      font-size: 10px !important;
+      height: 22px !important;
+    }
+    .paper-table input[type="text"], .paper-table .lv2-select {
+      font-size: 10px !important;
+      padding: 0 !important;
+      height: 100% !important;
+    }
+    
+    @page { margin: 5mm; size: A4 portrait; }
   }
 
   /* Select editable estilo tabla */

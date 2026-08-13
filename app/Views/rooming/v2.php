@@ -63,6 +63,14 @@ include $_projectRoot . '/app/Views/layouts/head.php';
   .flash-row > td {
     animation: flashBg 3s ease-out forwards;
   }
+  
+  /* Celdas Unidas */
+  .joined-cell {
+    background-color: #e2e8f0 !important; /* Gris suave para destacar que están unidas */
+  }
+  .row-marcado > td.joined-cell {
+    background-color: #70ad47 !important; /* Mantiene el verde si la fila está marcada */
+  }
 </style>
 
 <div id="app-rooming-v2" style="display:contents" v-cloak>
@@ -389,7 +397,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 </td>
                 
                 <!-- PAGO TOTAL -->
-                <td v-if="!f.unido_anterior" class="p-0" style="vertical-align:stretch;" :rowspan="f.rowspan_pagos">
+                <td v-if="!f.unido_anterior" class="p-0" :class="{'joined-cell': f.rowspan_pagos > 1}" style="vertical-align:stretch;" :rowspan="f.rowspan_pagos">
                   <div class="d-flex flex-column h-100">
                     <div v-for="(p, pIdx) in f.periodos_list" :key="'pt'+pIdx" class="pax-input-container w-100 d-flex align-items-center justify-content-end pe-2"
                          :style="{ borderBottom: pIdx===f.periodos_list.length-1?'none':'1px dashed #000', padding:'2px 4px' }">
@@ -403,7 +411,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 </td>
                 
                 <!-- LATE CHECK OUT -->
-                <td v-if="!f.unido_anterior" class="p-0" style="vertical-align:stretch;" :rowspan="f.rowspan_pagos">
+                <td v-if="!f.unido_anterior" class="p-0" :class="{'joined-cell': f.rowspan_pagos > 1}" style="vertical-align:stretch;" :rowspan="f.rowspan_pagos">
                   <div class="d-flex flex-column h-100">
                     <div v-for="(p, pIdx) in f.periodos_list" :key="'lc'+pIdx" class="pax-input-container w-100"
                          :style="{ borderBottom: pIdx===f.periodos_list.length-1?'none':'1px dashed #000', padding:'2px 4px' }">
@@ -417,7 +425,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 </td>
                 
                 <!-- MEDIO DE PAGO -->
-                <td v-if="!f.unido_anterior" class="p-0" style="vertical-align:stretch;" :rowspan="f.rowspan_pagos">
+                <td v-if="!f.unido_anterior" class="p-0" :class="{'joined-cell': f.rowspan_pagos > 1}" style="vertical-align:stretch;" :rowspan="f.rowspan_pagos">
                   <div class="d-flex flex-column h-100">
                     <div v-for="(p, pIdx) in f.periodos_list" :key="'mp'+pIdx" class="pax-input-container w-100"
                          :style="{ borderBottom: pIdx===f.periodos_list.length-1?'none':'1px dashed #000', padding:'2px 4px' }">
@@ -437,7 +445,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 </td>
                 
                 <!-- COMPROBANTE DE PAGO -->
-                <td v-if="!f.unido_anterior" class="p-0" style="vertical-align:stretch;" v-show="filtro.vista !== 'no_registrados'" :rowspan="f.rowspan_pagos">
+                <td v-if="!f.unido_anterior" class="p-0" :class="{'joined-cell': f.rowspan_pagos > 1}" style="vertical-align:stretch;" v-show="filtro.vista !== 'no_registrados'" :rowspan="f.rowspan_pagos">
                   <div class="d-flex flex-column h-100">
                     <div v-for="(p, pIdx) in f.periodos_list" :key="'cp'+pIdx" class="pax-input-container w-100"
                          :style="{ borderBottom: pIdx===f.periodos_list.length-1?'none':'1px dashed #000', padding:'2px 4px' }">
@@ -453,7 +461,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 </td>
                 
                 <!-- NUMERO DE COMPROBANTE -->
-                <td v-if="!f.unido_anterior" class="p-0" style="vertical-align:stretch;" v-show="filtro.vista !== 'no_registrados'" :rowspan="f.rowspan_pagos">
+                <td v-if="!f.unido_anterior" class="p-0" :class="{'joined-cell': f.rowspan_pagos > 1}" style="vertical-align:stretch;" v-show="filtro.vista !== 'no_registrados'" :rowspan="f.rowspan_pagos">
                   <div class="d-flex flex-column h-100">
                     <div v-for="(p, pIdx) in f.periodos_list" :key="'nc'+pIdx" class="pax-input-container w-100"
                          :style="{ borderBottom: pIdx===f.periodos_list.length-1?'none':'1px dashed #000', padding:'2px 4px' }">
@@ -465,7 +473,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 </td>
                 
                 <!-- QUIEN COBRO -->
-                <td v-if="!f.unido_anterior" class="p-0" style="vertical-align:stretch;" :rowspan="f.rowspan_pagos">
+                <td v-if="!f.unido_anterior" class="p-0" :class="{'joined-cell': f.rowspan_pagos > 1}" style="vertical-align:stretch;" :rowspan="f.rowspan_pagos">
                   <div class="d-flex flex-column h-100">
                     <div v-for="(p, pIdx) in f.periodos_list" :key="'qc'+pIdx" class="pax-input-container w-100"
                          :style="{ borderBottom: pIdx===f.periodos_list.length-1?'none':'1px dashed #000', padding:'2px 4px' }">
@@ -477,7 +485,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 </td>
                 
                 <!-- CARRO -->
-                <td v-if="!f.unido_anterior" class="px-1" :rowspan="f.rowspan_pagos">
+                <td v-if="!f.unido_anterior" class="px-1" :class="{'joined-cell': f.rowspan_pagos > 1}" :rowspan="f.rowspan_pagos">
                   <select v-model="f.carro" class="form-select form-select-sm table-editable-select text-center" @change="marcarModificado(f)">
                     <option value="NO">NO</option>
                     <option value="SI">SI</option>
@@ -485,7 +493,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 </td>
                 
                 <!-- OBSERVACIONES -->
-                <td v-if="!f.unido_anterior" class="px-1" :rowspan="f.rowspan_pagos">
+                <td v-if="!f.unido_anterior" class="px-1" :class="{'joined-cell': f.rowspan_pagos > 1}" :rowspan="f.rowspan_pagos">
                   <textarea v-model="f.observaciones" class="form-control form-control-sm table-editable-textarea" rows="1" @input="marcarModificado(f)" style="width: 100%; min-height: 24px; font-size: 11px;"></textarea>
                 </td>
               </tr>

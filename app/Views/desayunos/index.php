@@ -18,32 +18,19 @@ $fechaStr = date('Y-m-d');
 <div id="app-desayunos" style="display:contents" v-cloak>
   <?php include $_projectRoot . 'app/Views/layouts/sidebar.php'; ?>
   <div class="main-content">
-    <!-- BARRA SUPERIOR ESTATICA (Fuera de impresión) -->
-    <div class="d-print-none bg-white border-bottom shadow-sm mb-3">
-        <div class="px-4 py-3 d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
-            <div>
-                <h4 class="mb-1 fw-bold text-dark d-flex align-items-center gap-2">
-                    <div class="bg-primary bg-opacity-10 text-primary p-2 rounded-3">
-                        <i class="bi bi-cup-hot"></i>
-                    </div>
-                    Desayunos Manuales
-                </h4>
-            </div>
-            
-            <div class="d-flex align-items-center gap-2">
-                <button class="btn btn-primary fw-bold shadow-sm d-flex align-items-center gap-2 px-3" 
-                        @click="guardarCambios" :disabled="loading">
-                    <span v-if="loading" class="spinner-border spinner-border-sm"></span>
-                    <i v-else class="bi bi-save"></i> 
-                    Guardar Cambios
-                </button>
-                <button class="btn btn-danger fw-bold shadow-sm d-flex align-items-center gap-2 px-3" 
-                        @click="imprimirHoja" :disabled="loading">
-                    <i class="bi bi-file-pdf"></i> 
-                    Guardar PDF / Imprimir
-                </button>
-            </div>
-        </div>
+    <!-- CONTROLES SUPERIORES (Fuera de impresión) -->
+    <div class="px-3 pt-3 pb-2 d-flex justify-content-end gap-2 d-print-none">
+        <button class="btn btn-primary fw-bold shadow-sm d-flex align-items-center gap-2 px-3" 
+                @click="guardarCambios" :disabled="loading">
+            <span v-if="loading" class="spinner-border spinner-border-sm"></span>
+            <i v-else class="bi bi-save"></i> 
+            Guardar Cambios
+        </button>
+        <button class="btn btn-danger fw-bold shadow-sm d-flex align-items-center gap-2 px-3" 
+                @click="imprimirHoja" :disabled="loading">
+            <i class="bi bi-file-pdf"></i> 
+            Guardar PDF / Imprimir
+        </button>
     </div>
 
     <!-- HOJA IMPRIMIBLE -->

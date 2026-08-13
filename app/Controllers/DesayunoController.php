@@ -115,4 +115,32 @@ class DesayunoController {
             return ['ok' => false, 'msg' => $e->getMessage()];
         }
     }
+
+    public function getDetalleManualDia(): array {
+        $fecha = $_GET['fecha'] ?? date('Y-m-d');
+        try {
+            $data = $this->model->getDetalleManualDia($fecha);
+            return ['ok' => true, 'data' => $data];
+        } catch (Exception $e) {
+            return ['ok' => false, 'msg' => $e->getMessage()];
+        }
+    }
+
+    public function guardarCambiosManuales(): array {
+        $json = file_get_contents('php://input');
+        $data = json_decode($json, true);
+        $registros = $data['registros'] ?? [];
+        $fecha = $data['fecha'] ?? date('Y-m-d');
+
+        if (empty($registros)) {
+            return ['ok' => false, 'msg' => 'No hay registros para guardar.'];
+        }
+
+        try {
+            $this->model->guardarCambiosManuales($registros, $fecha);
+            return ['ok' => true, 'msg' => 'Cambios guardados correctamente.'];
+        } catch (Exception $e) {
+            return ['ok' => false, 'msg' => $e->getMessage()];
+        }
+    }
 }

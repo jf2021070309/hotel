@@ -2,288 +2,184 @@
 /**
  * app/Views/desayunos/index.php
  */
-$base = '../../../';
-$_projectRoot = dirname(__DIR__, 3);
-require_once $_projectRoot . '/app/Middleware/session.php';
-require_once $_projectRoot . '/app/Middleware/auth.php';
+require_once __DIR__ . '/../layouts/header.php';
+require_once __DIR__ . '/../layouts/sidebar.php';
+require_once __DIR__ . '/../layouts/navbar.php';
+
 protegerPorRol('limpieza', 'desayunos');
-$page_title = 'Control de Desayunos — Hotel Manager';
-$export_enabled = true;
-include $_projectRoot . '/app/Views/layouts/head.php';
-include $_projectRoot . '/app/Views/layouts/sidebar.php';
+
+$fechaStr = date('Y-m-d');
 ?>
 
-<style>
-  /* CSS para replicar el diseño de la Planilla Plana (Rooming V2) */
-  :root {
-    --vp-informacion: #0f172a; /* Azul oscuro casi negro */
-    --vp-datos: #2a49ca;        /* Azul vibrante */
-    --vp-acciones: #7c2bd4;     /* Morado */
-    --vp-border: #e2e8f0;
-  }
-
-  /* Tabla Estilo Excel Premium */
-  .desayuno-grid-container {
-    max-height: calc(100vh - 320px);
-    overflow-y: auto;
-    overflow-x: auto;
-    border: 1px solid var(--vp-border);
-    border-radius: 8px;
-    background: #fff;
-  }
-
-  .desayuno-table {
-    border-collapse: separate;
-    border-spacing: 0;
-    width: 100%;
-  }
-
-  .desayuno-table thead tr:first-child th {
-    font-size: 13px;
-    font-weight: 900;
-    text-align: center;
-    padding: 15px;
-    color: #fff !important;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    border: 1px solid rgba(255,255,255,0.1) !important;
-  }
-
-  .desayuno-table thead tr:last-child th {
-    background: #0f172a !important;
-    color: #fff !important;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    padding: 12px 10px;
-    border: 1px solid rgba(255,255,255,0.1) !important;
-    text-align: center;
-    white-space: nowrap;
-  }
-
-  .desayuno-table td {
-    padding: 18px 12px; /* Aumentamos altura significativamente */
-    vertical-align: middle;
-    border: 1px solid var(--vp-border);
-    background: #ffffff;
-    font-size: 13px;
-    color: #1e293b;
-    white-space: nowrap;
-  }
-
-  .desayuno-table tbody tr:hover td {
-    background: #f1f5f9;
-  }
-
-  .sticky-hab {
-    font-weight: 800;
-    text-align: center;
-    color: #0f172a;
-  }
-
-  /* Estilo select premium de desayuno */
-  .desayuno-select {
-    font-size: 12px;
-    font-weight: 800;
-    border-radius: 6px;
-    padding: 6px 12px;
-    cursor: pointer;
-    text-align: center;
-    transition: all 0.2s;
-    height: 34px;
-    border: 1px solid #e2e8f0;
-    width: auto;
-    min-width: 100px;
-    display: inline-block;
-  }
-
-  /* Botón "+" estilo imagen */
-  .btn-add-dashed {
-    border: 1.5px dashed #3b82f6;
-    background: #eff6ff;
-    color: #3b82f6;
-    border-radius: 6px;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-    padding: 0;
-  }
-  .btn-add-dashed:hover {
-    background: #dbeafe;
-    transform: scale(1.05);
-  }
-
-  .row-add-info {
-    font-size: 12px;
-    color: #64748b;
-    margin-left: 12px;
-  }
-</style>
-
+<!-- VUE APP -->
 <div id="app-desayunos" v-cloak style="display:contents">
-<div class="main-content">
-    <!-- TOPBAR -->
-    <div class="topbar" style="background-color: #111827; padding: 0.75rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05);">
-        <div class="d-flex align-items-center justify-content-between w-100">
-            <div class="d-flex align-items-center gap-3">
-                <button class="btn btn-dark btn-sm rounded-circle d-md-none" onclick="handleMenuClick()" style="width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.1); border: none;">
-                    <i class="bi bi-list text-white"></i>
-                </button>
-                <div class="d-flex align-items-center gap-3">
-                    <div style="width: 40px; height: 40px; border-radius: 10px; background:linear-gradient(135deg,#f8fafc,#94a3b8); display: flex; align-items: center; justify-content: center; box-shadow:0 0 15px rgba(148,163,184,0.4);">
-                        <i class="bi bi-egg-fried text-dark fs-5"></i>
+    <!-- BARRA SUPERIOR ESTATICA (Fuera de impresión) -->
+    <div class="d-print-none sticky-top bg-white border-bottom shadow-sm z-3" style="top: 60px;">
+        <div class="px-4 py-3 d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+            <div>
+                <h4 class="mb-1 fw-bold text-dark d-flex align-items-center gap-2">
+                    <div class="bg-primary bg-opacity-10 text-primary p-2 rounded-3">
+                        <i class="bi bi-cup-hot"></i>
                     </div>
-                    <div>
-                        <h4 class="fw-bold mb-0 text-white" style="font-size: 18px; letter-spacing: -0.5px;">Desayunos</h4>
-                        <div class="text-white-50" style="font-size: 11px;">Gestión de desayunos y consumos extra estilo Excel</div>
-                    </div>
-                </div>
+                    Desayunos Manuales
+                </h4>
             </div>
-
-            <!-- Botón Actualizar a la derecha estilo imagen 2 -->
+            
             <div class="d-flex align-items-center gap-2">
-                <button class="btn btn-sm btn-outline-light d-flex align-items-center gap-2" 
-                        @click="verDetallePorFecha" 
-                        style="font-size: 12px; padding: 4px 12px; border-color: rgba(255,255,255,0.2);">
-                    <i class="bi bi-arrow-clockwise"></i> <span class="d-none d-md-inline">Actualizar</span>
+                <button class="btn btn-primary fw-bold shadow-sm d-flex align-items-center gap-2 px-3" 
+                        @click="guardarCambios" :disabled="loading">
+                    <span v-if="loading" class="spinner-border spinner-border-sm"></span>
+                    <i v-else class="bi bi-save"></i> 
+                    Guardar Cambios
+                </button>
+                <button class="btn btn-danger fw-bold shadow-sm d-flex align-items-center gap-2 px-3" 
+                        @click="imprimirHoja" :disabled="loading">
+                    <i class="bi bi-file-pdf"></i> 
+                    Guardar PDF / Imprimir
                 </button>
             </div>
         </div>
     </div>
 
-    <div class="page-body p-4">
-        <!-- FILTROS -->
-        <div class="card border-0 shadow-sm mb-4" style="border-radius: 12px; border: 1px solid #f1f5f9 !important;">
-            <div class="card-body d-flex align-items-center justify-content-between py-2 px-3">
-                <div class="d-flex align-items-center gap-4">
-                    <!-- Búsqueda -->
-                    <div class="input-group" style="width: 500px;">
-                        <span class="input-group-text bg-white border-end-0 text-muted px-3">
-                            <i class="bi bi-search" style="font-size: 15px;"></i>
-                        </span>
-                        <input type="text" v-model="busqueda" class="form-control border-start-0 ps-0 text-dark" 
-                               placeholder="Buscar por Nombre, DNI, RUC, Empresa o Celular..." 
-                               style="font-size: 14px; height: 38px; border-color: #e2e8f0;">
-                    </div>
-                    <!-- Contador -->
-                    <div class="d-flex align-items-center gap-1 text-muted" style="font-size: 14px; white-space: nowrap;">
-                        <i class="bi bi-list-ul fs-5"></i>
-                        <span>{{ actual.detalles.length }} registros</span>
-                    </div>
-
-                    <!-- Selector de Fecha integra -->
-                    <div class="d-flex align-items-center gap-2 ms-2 ps-3 border-start">
-                         <input type="date" v-model="actual.fecha" @change="verDetallePorFecha" 
-                                class="form-control form-control-sm shadow-sm" 
-                                style="width:145px; height: 38px; border-color: #e2e8f0; font-size: 14px;">
-                    </div>
-                </div>
-                
-                <div class="d-flex align-items-center gap-2">
-                    <!-- Botón Exportar -->
-                    <button class="btn btn-success fw-bold px-3 d-flex align-items-center gap-2 shadow-sm" 
-                            @click="exportarReporte" :disabled="actual.detalles.length === 0"
-                            style="background-color: #059669; border: none; height: 38px; border-radius: 6px; font-size: 13px;">
-                        <i class="bi bi-file-earmark-excel-fill"></i>
-                        <span>Exportar Excel</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- TABLA -->
-        <div class="desayuno-grid-container shadow-sm mb-4">
-            <table class="desayuno-table">
-                <thead>
-                    <tr>
-                        <th style="width: 50px;"><i class="bi bi-trash"></i></th>
-                        <th style="width: 100px;">N° HAB.</th>
-                        <th>HUESPED TITULAR</th>
-                        <th style="width: 150px;">CANT. PAX</th>
-                        <th style="width: 200px;">INCLUYE DESAYUNO</th>
-                    </tr>
-                </thead>
+    <!-- HOJA IMPRIMIBLE -->
+    <div class="page-body p-4 sheet-container">
+        <!-- Contenedor con borde que parece hoja física -->
+        <div class="border border-dark bg-white mx-auto sheet-content" style="max-width: 900px;">
+            
+            <!-- HEADER DE LA HOJA -->
+            <table class="table table-bordered border-dark mb-0 table-sm text-uppercase header-table">
                 <tbody>
-                    <tr v-for="(it, idx) in actual.detalles" :key="idx" v-if="matchesFilter(it)">
-                        <td class="text-center">
-                            <button class="btn btn-link text-danger p-0" @click="eliminarFila(idx)"><i class="bi bi-trash fs-5"></i></button>
+                    <tr>
+                        <td rowspan="2" class="text-center align-middle" style="width: 250px;">
+                            <h5 class="fw-bold mb-0" style="letter-spacing: 1px; color: #000;">PLATINIUM<br><small style="font-size:10px;">HOTEL ★★★</small></h5>
                         </td>
-                        <td class="sticky-hab text-primary fw-bold">{{ it.habitacion || '---' }}</td>
-                        <td class="text-uppercase fw-bold">{{ it.titular || 'HUESPED' }}</td>
-                        <td class="text-center fw-bold">{{ it.pax }}</td>
-                        <td class="text-center">
-                            <select v-model="it.incluye_desayuno" @change="autoGuardar"
-                                    class="form-select form-select-sm desayuno-select shadow-sm"
-                                    :style="{
-                                        backgroundColor: it.incluye_desayuno ? '#d1fae5' : '#fee2e2',
-                                        color: it.incluye_desayuno ? '#065f46' : '#991b1b',
-                                        borderColor: it.incluye_desayuno ? '#34d399' : '#f87171'
-                                    }">
-                                <option :value="true">SÍ</option>
-                                <option :value="false">NO</option>
-                            </select>
+                        <td rowspan="2" class="text-center align-middle fs-5 fw-bold" style="color: #000; letter-spacing: 1px;">
+                            PLATINIUM - DESAYUNOS
                         </td>
                     </tr>
-                    
-                    <tr v-if="actual.detalles.length === 0 && !loading">
-                        <td colspan="5" class="text-center py-5 text-muted fst-italic">
-                            No hay huéspedes registrados para esta fecha.
-                        </td>
-                    </tr>
-                    <tr v-if="loading">
-                        <td colspan="5" class="text-center py-5">
-                            <div class="spinner-border text-primary spinner-border-sm"></div> Cargando...
+                    <tr></tr>
+                    <tr>
+                        <td colspan="2" class="p-2 fw-bold" style="color:#000;">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span style="font-size: 14px;">FECHA:</span>
+                                    <input type="date" v-model="fecha" @change="changeFecha" class="form-control form-control-sm border-0 bg-transparent fw-bold p-0 m-0 shadow-none d-print-none" style="width:130px; font-size:14px; color:#000; cursor:pointer;" :disabled="loading">
+                                    <span class="d-none d-print-inline text-decoration-underline ms-2 fs-6">{{ fecha }}</span>
+                                </div>
+                            </div>
                         </td>
                     </tr>
                 </tbody>
             </table>
-            
-            <!-- ADD ROW FOOTER -->
-            <div class="d-flex align-items-center p-2 border-top bg-white">
-                <button class="btn-add-dashed shadow-sm" @click="añadirFila">
-                    <i class="bi bi-plus-lg"></i>
-                </button>
-                <span class="row-add-info">Haga clic en el botón + de la izquierda para agregar un nuevo registro al final de la tabla.</span>
-            </div>
-        </div>
 
-        <!-- NOTAS -->
-        <div class="card border-0 shadow-sm mb-3" style="border-radius:8px; border: 1px solid #e2e8f0 !important;">
-            <div class="card-body d-flex align-items-center gap-3 py-1 px-3" style="min-height: 46px;">
-                 <div class="text-uppercase fw-bold text-muted" style="font-size: 11px; white-space: nowrap; letter-spacing: 0.5px;">
-                    NOTAS DEL DÍA:
-                 </div>
-                 <input type="text" v-model="actual.observacion" @input="triggerAutoGuardarDebounced" 
-                        class="form-control form-control-sm border-0 shadow-none ps-2" 
-                        style="background-color: #f1f5f9; border-radius: 6px; height: 32px; font-size: 13px; color: #1e293b;"
-                        placeholder="Escribir indicaciones adicionales...">
-            </div>
-        </div>
+            <!-- TABLA DE HABITACIONES -->
+            <table class="table table-bordered border-dark mb-0 table-sm text-uppercase body-table">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="text-center py-2" style="width: 100px; color:#000;">HAB</th>
+                        <th class="text-center py-2" style="width: 100px; color:#000;">PAX</th>
+                        <th class="text-center py-2" style="color:#000;">OBSERVACIONES</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Loading State -->
+                    <tr v-if="loading && lista.length === 0">
+                        <td colspan="3" class="text-center py-5">
+                            <div class="spinner-border text-primary spinner-border-sm"></div> Cargando...
+                        </td>
+                    </tr>
+                    
+                    <!-- Filas de datos -->
+                    <tr v-else v-for="h in lista" :key="h.id" :class="getRowClass(h)">
+                        <!-- HAB -->
+                        <td class="text-center fw-bold fs-6 align-middle" style="color:#000; height: 35px;">
+                            {{ h.habitacion }}
+                        </td>
 
-        <!-- Alerta Solo Lectura -->
-        <div v-if="!loading && soloLectura" class="alert d-flex align-items-center py-2 px-3 mb-0" 
-             style="border-radius:8px; background-color: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd !important; min-height: 46px;">
-            <i class="bi bi-info-circle-fill me-2" style="font-size: 18px; color: #0369a1;"></i>
-            <div style="font-size: 13px; line-height: 1.2;">
-                <strong class="fw-bold">Registro Finalizado:</strong> Este registro es histórico o ha superado el límite de las 12:00 PM para edición.
-            </div>
+                        <!-- PAX (Libre) -->
+                        <td class="text-center fw-bold align-middle p-0">
+                            <input type="text" v-model="h.pax" class="form-control border-0 bg-transparent text-center fw-bold shadow-none w-100 h-100" style="color:#000; outline: none; cursor: text;">
+                        </td>
+
+                        <!-- OBSERVACIONES (Libre) -->
+                        <td class="text-center fw-bold align-middle p-0">
+                            <input type="text" v-model="h.observaciones" class="form-control border-0 bg-transparent text-center fw-bold shadow-none w-100 h-100 px-2" style="font-size: 14px; color: #000; outline: none; cursor: text; text-align: left !important;">
+                        </td>
+                    </tr>
+                    
+                    <!-- TOTAL FOOTER -->
+                    <tr>
+                        <td class="text-end fw-bold py-2 pe-3 align-middle" style="color:#000; font-size: 16px;">
+                            TOTAL
+                        </td>
+                        <td class="text-center fw-bold py-2 align-middle" style="color:#000; font-size: 16px;">
+                            {{ totalPax }}
+                        </td>
+                        <td class="bg-light"></td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
-</div>
 
-<!-- SERVER DATA: URLs absolutas para el JS -->
 <script>
-  window.SERVER_DATA = {
-    apiBase: <?= json_encode(project_base_url() . 'ajax/desayunos.php') ?>,
-    hoy:     <?= json_encode((int)date('H') >= 12 ? date('Y-m-d', strtotime('+1 day')) : date('Y-m-d')) ?>
-  };
+    window.SERVER_DATA = {
+        apiBase: <?= json_encode(project_base_url() . 'ajax/desayunos.php') ?>,
+        hoy: <?= json_encode($fechaStr) ?>
+    };
 </script>
-
-<!-- LIBS específicas de Desayunos -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="<?= $_root ?>public/assets/js/desayunos.js?v=<?= time() ?>"></script>
-<?php include $_projectRoot . '/app/Views/layouts/footer.php'; ?>
+
+<style>
+/* ── ESTILOS PARA LA HOJA FÍSICA Y TABLAS ── */
+.table-bordered > :not(caption) > * > * {
+    border-color: #000 !important;
+}
+
+/* Ocultar elementos de UI cuando se imprime */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    #app-desayunos, #app-desayunos * {
+        visibility: visible;
+    }
+    .d-print-none {
+        display: none !important;
+    }
+    .sheet-container {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    .sheet-content {
+        border: none !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    
+    input[type="text"] {
+        border: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        appearance: none;
+        -moz-appearance: none;
+        -webkit-appearance: none;
+    }
+    
+    @page { margin: 1cm; size: A4 portrait; }
+}
+
+/* Fixes para Inputs */
+input[type="text"]:focus {
+    background-color: rgba(0,0,0,0.02) !important;
+}
+
+[v-cloak] { display: none !important; }
+</style>
+
+<?php require_once __DIR__ . '/../layouts/footer.php'; ?>

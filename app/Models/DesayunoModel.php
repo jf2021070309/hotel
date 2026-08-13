@@ -95,4 +95,68 @@ class DesayunoModel {
             throw $e;
         }
     }
+    public function getDetalleManualDia(string $fecha): array {
+        $sql = "SELECT h.numero as habitacion, h.id as habitacion_id, h.tipo as tipo_hab, h.estado as room_estado,
+                       dm.id, dm.pax, dm.observaciones
+                FROM habitaciones h
+                LEFT JOIN desayunos_manual dm ON h.id = dm.habitacion_id AND dm.fecha = :fecha
+                ORDER BY h.numero ASC";
+        
+        try {
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([':fecha' => $fecha]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            // Table might not exist yet
+            $stmt = $this->pdo->prepare("SELECT numero as habitacion, id as habitacion_id, tipo as tipo_hab, estado as room_estado FROM habitaciones ORDER BY numero ASC");
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        }
+    }
+
+    public function guardarCambiosManuales(array $registros, string $fecha): bool {
+        // Create table if not exists
+        try {
+            $sqlCreate = "CREATE TABLE IF NOT EXISTS desayunos_manual (
+                            id INT AUTO_INCREMENT PRIMARY KEY,
+                            fecha DATE NOT NULL,
+                            habitacion_id INT NOT NULL,
+                            pax VARCHAR(255) DEFAULT NULL,
+                            observaciones VARCHAR(255) DEFAULT NULL,
+                            UNIQUE KEY unq_fecha_hab (fecha, habitacion_id)
+                          ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
+            $this->pdo->exec($sqlCreate);
+        } catch (Exception $e) {
+            // Ignore error
+        }
+
+        $this->pdo->beginTransaction();
+        try {
+            $sql = "INSERT INTO desayunos_manual 
+                    (fecha, habitacion_id, pax, observaciones)
+                    VALUES (:fecha, :hab_id, :pax, :observaciones)
+                    ON DUPLICATE KEY UPDATE
+                    pax = VALUES(pax),
+                    observaciones = VALUES(observaciones)";
+            $stmt = $this->pdo->prepare($sql);
+            
+            foreach ($registros as $r) {
+                if (empty($r['id']) && empty($r['pax']) && empty($r['observaciones'])) {
+                    continue; 
+                }
+                
+                $stmt->execute([
+                    ':fecha'         => $fecha,
+                    ':hab_id'        => $r['habitacion_id'],
+                    ':pax'           => $r['pax'] ?? null,
+                    ':observaciones' => $r['observaciones'] ?? null
+                ]);
+            }
+            $this->pdo->commit();
+            return true;
+        } catch (Exception $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
+    }
 }

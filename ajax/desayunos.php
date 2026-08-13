@@ -23,6 +23,14 @@ switch ($action) {
     case 'hoy':
         echo json_encode($controller->getHoy());
         break;
+        
+    case 'detalle_manual_fecha':
+        echo json_encode($controller->getDetalleManualDia());
+        break;
+
+    case 'guardar_cambios_manuales':
+        echo json_encode($controller->guardarCambiosManuales());
+        break;
     
     case 'listar':
         echo json_encode($controller->listar());

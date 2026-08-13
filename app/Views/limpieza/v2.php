@@ -134,30 +134,22 @@ include $_projectRoot . 'app/Views/layouts/head.php';
                   {{ h.habitacion }}
                 </td>
 
-                <!-- RESERVAS (Check) -->
-                <td class="text-center fw-bold align-middle" style="font-size: 16px; color: #000;">
-                  <span v-if="h.tipo_limpieza === 'programada' || h.tipo_limpieza === 'estimacion' || (h.room_estado === 'ocupado' && h.tipo_limpieza !== 'salida' && h.tipo_limpieza !== 'reposo')">✓</span>
-                </td>
+                <!-- RESERVAS (Libre para escribir) -->
+                <td class="text-center fw-bold align-middle" style="font-size: 16px; color: #000; outline: none; cursor: text;" contenteditable="true"></td>
 
-                <!-- PAX -->
-                <td class="text-center fw-bold align-middle" style="color:#000;">
+                <!-- PAX (Editable o auto) -->
+                <td class="text-center fw-bold align-middle" style="color:#000; outline: none; cursor: text;" contenteditable="true">
                   {{ h.pax ?? h.ocupantes ?? '' }}
                 </td>
 
-                <!-- SALIDAS (Check) -->
-                <td class="text-center fw-bold align-middle" style="font-size: 16px; color: #000;">
-                  <span v-if="h.tipo_limpieza === 'salida'">✓</span>
-                </td>
+                <!-- SALIDAS (Libre para escribir) -->
+                <td class="text-center fw-bold align-middle" style="font-size: 16px; color: #000; outline: none; cursor: text;" contenteditable="true"></td>
 
-                <!-- REPASOS (Check) -->
-                <td class="text-center fw-bold align-middle" style="font-size: 16px; color: #000;">
-                  <span v-if="h.tipo_limpieza === 'reposo'">✓</span>
-                </td>
+                <!-- REPASOS (Libre para escribir) -->
+                <td class="text-center fw-bold align-middle" style="font-size: 16px; color: #000; outline: none; cursor: text;" contenteditable="true"></td>
 
-                <!-- PENDIENTES (Check si estado es pendiente o en proceso) -->
-                <td class="text-center fw-bold align-middle" style="font-size: 16px; color: #000;">
-                  <span v-if="h.estado === 'pendiente' || h.estado === 'en proceso'">✓</span>
-                </td>
+                <!-- PENDIENTES (Libre para escribir) -->
+                <td class="text-center fw-bold align-middle" style="font-size: 16px; color: #000; outline: none; cursor: text;" contenteditable="true"></td>
 
                 <!-- ESTADO (Editable, solo si hay registro de limpieza) -->
                 <td class="px-1 text-center align-middle">

@@ -215,7 +215,7 @@ createApp({
     async function guardarCambios() {
       loading.value = true;
       try {
-        const body = { registros: lista.value };
+        const body = { registros: lista.value, fecha: fecha.value };
         const res = await axios.post(`${API}?action=guardar_cambios_manuales`, body);
         if (res.data.ok) {
           Swal.fire({

@@ -152,7 +152,7 @@ class LimpiezaModel {
         return $this->pdo->prepare($sql)->execute($params);
     }
 
-    public function guardarCambiosManuales(array $registros): bool {
+    public function guardarCambiosManuales(array $registros, string $fecha): bool {
         // Asegurar columnas (ignora error si ya existen)
         try {
             $this->pdo->exec("ALTER TABLE limpieza_registros ADD COLUMN pax_mark VARCHAR(255) DEFAULT NULL");
@@ -162,27 +162,37 @@ class LimpiezaModel {
             $this->pdo->exec("ALTER TABLE limpieza_registros ADD COLUMN pendientes_mark VARCHAR(255) DEFAULT NULL");
         } catch (Exception $e) { }
 
+        // Fallback user ID for insertions
+        $fallbackUid = (int)$this->pdo->query("SELECT id FROM usuarios LIMIT 1")->fetchColumn() ?: 1;
+
         $this->pdo->beginTransaction();
         try {
-            $sql = "UPDATE limpieza_registros 
-                    SET pax_mark = :pax_mark,
-                        reservas_mark = :reservas,
-                        salidas_mark = :salidas,
-                        repasos_mark = :repasos,
-                        pendientes_mark = :pendientes
-                    WHERE id = :id";
+            $sql = "INSERT INTO limpieza_registros 
+                    (fecha, habitacion_id, tipo_limpieza, prioridad, usuario_id, pax_mark, reservas_mark, salidas_mark, repasos_mark, pendientes_mark)
+                    VALUES (:fecha, :hab_id, 'estimacion', 'normal', :uid, :pax_mark, :reservas, :salidas, :repasos, :pendientes)
+                    ON DUPLICATE KEY UPDATE
+                    pax_mark = VALUES(pax_mark),
+                    reservas_mark = VALUES(reservas_mark),
+                    salidas_mark = VALUES(salidas_mark),
+                    repasos_mark = VALUES(repasos_mark),
+                    pendientes_mark = VALUES(pendientes_mark)";
             $stmt = $this->pdo->prepare($sql);
             
             foreach ($registros as $r) {
-                if (empty($r['id'])) continue; 
+                // Ignore if it's completely empty and has no id
+                if (empty($r['id']) && empty($r['pax_mark']) && empty($r['reservas_mark']) && empty($r['salidas_mark']) && empty($r['repasos_mark']) && empty($r['pendientes_mark'])) {
+                    continue; 
+                }
                 
                 $stmt->execute([
+                    ':fecha'      => $fecha,
+                    ':hab_id'     => $r['habitacion_id'],
+                    ':uid'        => $fallbackUid,
                     ':pax_mark'   => $r['pax_mark'] ?? null,
                     ':reservas'   => $r['reservas_mark'] ?? null,
                     ':salidas'    => $r['salidas_mark'] ?? null,
                     ':repasos'    => $r['repasos_mark'] ?? null,
-                    ':pendientes' => $r['pendientes_mark'] ?? null,
-                    ':id'         => $r['id']
+                    ':pendientes' => $r['pendientes_mark'] ?? null
                 ]);
             }
             $this->pdo->commit();

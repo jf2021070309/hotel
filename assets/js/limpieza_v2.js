@@ -102,8 +102,32 @@ createApp({
     async function cargarDatos() {
       loading.value = true;
       try {
-        const res = await axios.get(`${API}?action=detalle_fecha&fecha=${fecha.value}`);
-        lista.value = (res.data.data || []).map(h => ({ ...h }));
+        const apiHabs = API.replace('limpieza.php', 'habitaciones.php');
+        const [resLimpieza, resHabs] = await Promise.all([
+          axios.get(`${API}?action=detalle_fecha&fecha=${fecha.value}`),
+          axios.get(`${apiHabs}?action=todos`)
+        ]);
+
+        const limpiezaData = resLimpieza.data.data || [];
+        const habsData = resHabs.data.data || [];
+
+        const combined = habsData.map(h => {
+          const l = limpiezaData.find(x => String(x.habitacion) === String(h.numero)) || {};
+          return {
+            id: l.id || null,
+            habitacion_id: h.id,
+            habitacion: h.numero,
+            tipo_hab: h.tipo,
+            pax: l.pax || '',
+            room_estado: h.estado,
+            estado: l.estado || '',
+            tipo_limpieza: l.tipo_limpieza || ''
+          };
+        });
+
+        // Ordenar numéricamente si es posible
+        combined.sort((a,b) => String(a.habitacion).localeCompare(String(b.habitacion), undefined, {numeric: true}));
+        lista.value = combined;
       } catch (e) {
         console.error('[LimpiezaV2] cargarDatos error', e);
         Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo cargar la lista.', timer: 2500, showConfirmButton: false });

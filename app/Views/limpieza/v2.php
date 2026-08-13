@@ -134,34 +134,26 @@ include $_projectRoot . 'app/Views/layouts/head.php';
                   {{ h.habitacion }}
                 </td>
 
-                <!-- RESERVAS (Check) -->
-                <td class="text-center fw-bold" style="font-size: 16px; color: #000;">
-                  <span v-if="h.tipo_limpieza === 'programada' || h.tipo_limpieza === 'estimacion' || (h.room_estado === 'ocupado' && h.tipo_limpieza !== 'salida' && h.tipo_limpieza !== 'reposo')">✓</span>
-                </td>
+                <!-- RESERVAS (Libre para escribir) -->
+                <td class="text-center fw-bold align-middle" style="font-size: 16px; color: #000; outline: none; cursor: text;" contenteditable="true"></td>
 
-                <!-- PAX -->
-                <td class="text-center fw-bold" style="color:#000;">
+                <!-- PAX (Libre o auto si existe) -->
+                <td class="text-center fw-bold align-middle" style="color:#000; outline: none; cursor: text;" contenteditable="true">
                   {{ h.pax ?? h.ocupantes ?? '' }}
                 </td>
 
-                <!-- SALIDAS (Check) -->
-                <td class="text-center fw-bold" style="font-size: 16px; color: #000;">
-                  <span v-if="h.tipo_limpieza === 'salida'">✓</span>
-                </td>
+                <!-- SALIDAS (Libre para escribir) -->
+                <td class="text-center fw-bold align-middle" style="font-size: 16px; color: #000; outline: none; cursor: text;" contenteditable="true"></td>
 
-                <!-- REPASOS (Check) -->
-                <td class="text-center fw-bold" style="font-size: 16px; color: #000;">
-                  <span v-if="h.tipo_limpieza === 'reposo'">✓</span>
-                </td>
+                <!-- REPASOS (Libre para escribir) -->
+                <td class="text-center fw-bold align-middle" style="font-size: 16px; color: #000; outline: none; cursor: text;" contenteditable="true"></td>
 
-                <!-- PENDIENTES (Check si estado es pendiente o en proceso) -->
-                <td class="text-center fw-bold" style="font-size: 16px; color: #000;">
-                  <span v-if="h.estado === 'pendiente' || h.estado === 'en proceso'">✓</span>
-                </td>
+                <!-- PENDIENTES (Libre para escribir) -->
+                <td class="text-center fw-bold align-middle" style="font-size: 16px; color: #000; outline: none; cursor: text;" contenteditable="true"></td>
 
-                <!-- ESTADO (Editable) -->
-                <td class="px-1 text-center">
-                  <select v-model="h.estado" @change="actualizarEstado(h)"
+                <!-- ESTADO (Editable, solo si hay registro de limpieza) -->
+                <td class="px-1 text-center align-middle">
+                  <select v-if="h.id" v-model="h.estado" @change="actualizarEstado(h)"
                           class="lv2-select fw-bold"
                           :class="getEstadoSelectClass(h.estado)"
                           style="font-size: 11px; text-transform: uppercase;">
@@ -173,22 +165,24 @@ include $_projectRoot . 'app/Views/layouts/head.php';
                 </td>
 
                 <!-- ACCIÓN RÁPIDA -->
-                <td class="text-center px-1">
-                  <button v-if="h.estado !== 'lista' && h.estado !== 'mantenimiento'"
-                          @click="toggleListo(h)" :disabled="loading"
-                          class="btn btn-sm fw-bold w-100 btn-dark"
-                          style="font-size:11px; border-radius:4px; padding:4px;">
-                    <i class="bi bi-check2-square me-1"></i>Marcar Lista
-                  </button>
-                  <button v-else-if="h.estado === 'lista'"
-                          @click="toggleListo(h)" :disabled="loading"
-                          class="btn btn-sm fw-bold w-100 btn-outline-dark"
-                          style="font-size:11px; border-radius:4px; padding:4px;">
-                    <i class="bi bi-check-all me-1"></i>Lista ✓
-                  </button>
-                  <span v-else class="badge bg-danger-subtle text-danger" style="font-size:11px;padding:4px 8px;">
-                    <i class="bi bi-tools"></i> Bloq.
-                  </span>
+                <td class="text-center px-1 align-middle">
+                  <template v-if="h.id">
+                    <button v-if="h.estado !== 'lista' && h.estado !== 'mantenimiento'"
+                            @click="toggleListo(h)" :disabled="loading"
+                            class="btn btn-sm fw-bold w-100 btn-dark"
+                            style="font-size:11px; border-radius:4px; padding:4px;">
+                      <i class="bi bi-check2-square me-1"></i>Marcar Lista
+                    </button>
+                    <button v-else-if="h.estado === 'lista'"
+                            @click="toggleListo(h)" :disabled="loading"
+                            class="btn btn-sm fw-bold w-100 btn-outline-dark"
+                            style="font-size:11px; border-radius:4px; padding:4px;">
+                      <i class="bi bi-check-all me-1"></i>Lista ✓
+                    </button>
+                    <span v-else class="badge bg-danger-subtle text-danger" style="font-size:11px;padding:4px 8px;">
+                      <i class="bi bi-tools"></i> Bloq.
+                    </span>
+                  </template>
                 </td>
 
               </tr>

@@ -225,7 +225,21 @@ createApp({
       } catch (e) {
         h.estado = anterior;
         Swal.fire({ icon: 'error', title: 'Error', text: 'Fallo de red.' });
-      }
+        loading.value = false;
+    }
+
+    async function guardarCambios() {
+      // Simular guardado en base de datos para los campos manuales
+      Swal.fire({
+        icon: 'success',
+        title: '¡Cambios Guardados!',
+        text: 'Las anotaciones manuales de la hoja han sido registradas (Simulación).',
+        timer: 2000,
+        showConfirmButton: false
+      });
+      // NOTA: Para implementar guardado real, se debe enviar lista.value a un endpoint backend
+      // que lo guarde en base de datos, por ejemplo:
+      // await axios.post(`${API}?action=guardar_cambios_manuales`, { registros: lista.value });
     }
 
     // ── Exportar Excel ─────────────────────────────────────────
@@ -259,7 +273,7 @@ createApp({
       countEstado, getColorTipo, labelTipo, getRoomEstadoColor,
       getEstadoSelectClass, getRowClass,
       cargarDatos, generarLista, resetNocturno,
-      actualizarEstado, toggleListo, exportarExcel,
+      actualizarEstado, toggleListo, exportarExcel, guardarCambios,
     };
   }
 }).mount('#app-limpieza-v2');

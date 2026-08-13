@@ -18,8 +18,11 @@ include $_projectRoot . 'app/Views/layouts/head.php';
 
   <div class="main-content">
 
-    <!-- ── CONTROLES SUPERIORES (PDF) ──────────────────────────────────── -->
-    <div class="px-3 pt-3 pb-2 d-flex justify-content-end print-hide">
+    <!-- ── CONTROLES SUPERIORES (PDF & GUARDAR) ──────────────────────────────────── -->
+    <div class="px-3 pt-3 pb-2 d-flex justify-content-end gap-2 print-hide">
+      <button class="btn btn-primary fw-bold shadow-sm" @click="guardarCambios">
+        <i class="bi bi-save me-1"></i> Guardar Cambios
+      </button>
       <button class="btn btn-danger fw-bold shadow-sm" onclick="window.print()">
         <i class="bi bi-file-earmark-pdf-fill me-1"></i> Guardar PDF / Imprimir
       </button>
@@ -94,21 +97,29 @@ include $_projectRoot . 'app/Views/layouts/head.php';
                 </td>
 
                 <!-- RESERVAS (Libre para escribir) -->
-                <td class="text-center fw-bold align-middle" style="font-size: 16px; color: #000; outline: none; cursor: text;" contenteditable="true"></td>
+                <td class="text-center fw-bold align-middle p-0" style="width: 90px;">
+                  <input type="text" v-model="h.reservas_mark" class="form-control border-0 bg-transparent text-center fw-bold shadow-none w-100 h-100" style="font-size: 16px; color: #000; outline: none; cursor: text;">
+                </td>
 
                 <!-- PAX (Editable o auto) -->
-                <td class="text-center fw-bold align-middle" style="color:#000; outline: none; cursor: text;" contenteditable="true">
-                  {{ h.pax ?? h.ocupantes ?? '' }}
+                <td class="text-center fw-bold align-middle p-0" style="width: 60px;">
+                  <input type="text" v-model="h.pax" :placeholder="h.ocupantes" class="form-control border-0 bg-transparent text-center fw-bold shadow-none w-100 h-100" style="color:#000; outline: none; cursor: text;">
                 </td>
 
                 <!-- SALIDAS (Libre para escribir) -->
-                <td class="text-center fw-bold align-middle" style="font-size: 16px; color: #000; outline: none; cursor: text;" contenteditable="true"></td>
+                <td class="text-center fw-bold align-middle p-0" style="width: 90px;">
+                  <input type="text" v-model="h.salidas_mark" class="form-control border-0 bg-transparent text-center fw-bold shadow-none w-100 h-100" style="font-size: 16px; color: #000; outline: none; cursor: text;">
+                </td>
 
                 <!-- REPASOS (Libre para escribir) -->
-                <td class="text-center fw-bold align-middle" style="font-size: 16px; color: #000; outline: none; cursor: text;" contenteditable="true"></td>
+                <td class="text-center fw-bold align-middle p-0" style="width: 90px;">
+                  <input type="text" v-model="h.repasos_mark" class="form-control border-0 bg-transparent text-center fw-bold shadow-none w-100 h-100" style="font-size: 16px; color: #000; outline: none; cursor: text;">
+                </td>
 
                 <!-- PENDIENTES (Libre para escribir) -->
-                <td class="text-center fw-bold align-middle" style="font-size: 16px; color: #000; outline: none; cursor: text;" contenteditable="true"></td>
+                <td class="text-center fw-bold align-middle p-0" style="width: 90px;">
+                  <input type="text" v-model="h.pendientes_mark" class="form-control border-0 bg-transparent text-center fw-bold shadow-none w-100 h-100" style="font-size: 16px; color: #000; outline: none; cursor: text;">
+                </td>
 
               </tr>
             </tbody>

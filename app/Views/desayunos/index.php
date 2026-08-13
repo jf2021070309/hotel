@@ -36,7 +36,7 @@ $fechaStr = date('Y-m-d');
     <!-- HOJA IMPRIMIBLE -->
     <div class="page-body p-4 sheet-container">
         <!-- Contenedor con borde que parece hoja física -->
-        <div class="border border-dark bg-white mx-auto sheet-content" style="max-width: 900px;">
+        <div class="border border-dark bg-white mx-auto sheet-content" style="width: 100%;">
             
             <!-- HEADER DE LA HOJA -->
             <table class="table table-bordered border-dark mb-0 table-sm text-uppercase header-table">

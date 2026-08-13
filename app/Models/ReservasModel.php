@@ -240,7 +240,7 @@ class ReservasModel {
                 observaciones, usuario_id, estado, estado_pago, cliente_titular_id
             ) VALUES (
                 :operador, :fecha_reg, :fecha_out, :medio, 
-                :hab_id, 'RESERVA', 1, 0, 
+                :hab_id, 'RESERVA', :pax_total, 0, 
                 'PEN', 'EFECTIVO', 'TICKET', :cobrador, 
                 :obs, :uid, 'reservado', 'pendiente', :cliente_titular_id
             )";
@@ -255,7 +255,8 @@ class ReservasModel {
                 'obs'       => $data['observaciones'] ?? '',
                 'uid'       => $data['usuario_id'],
                 'medio'     => $data['canal'] ?? 'DIRECTO',
-                'cliente_titular_id' => $clienteId
+                'cliente_titular_id' => $clienteId,
+                'pax_total' => $data['pax'] ?? 1
             ]);
             
             $stay_id = (int)$this->pdo->lastInsertId();
@@ -338,6 +339,7 @@ class ReservasModel {
                 SET fecha_registro = ?,
                     fecha_checkout = ?,
                     medio_reserva = ?,
+                    pax_total = ?,
                     observaciones = ?
                 WHERE id = ?
             ");
@@ -345,6 +347,7 @@ class ReservasModel {
                 $data['fecha_inicio'],
                 $fecha_fin,
                 $data['canal'],
+                $data['pax'] ?? 1,
                 $data['observaciones'] ?? '',
                 $id
             ]);

@@ -758,11 +758,15 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
             </div>
             
             <div class="row g-3 mb-3">
-              <div class="col-6">
+              <div class="col-4">
                 <label class="form-label small fw-bold text-muted">NOCHES</label>
                 <input type="number" class="form-control" v-model.number="formQuick.noches" min="1" max="60" required>
               </div>
-              <div class="col-6">
+              <div class="col-4">
+                <label class="form-label small fw-bold text-muted">PAX</label>
+                <input type="number" class="form-control" v-model.number="formQuick.pax" min="1" max="10" required>
+              </div>
+              <div class="col-4">
                 <label class="form-label small fw-bold text-muted">CANAL</label>
                 <select class="form-select" v-model="formQuick.canal" required>
                   <option value="DIRECTO">DIRECTO</option>

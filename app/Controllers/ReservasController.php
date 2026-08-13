@@ -80,6 +80,7 @@ class ReservasController {
             'hab_id'        => (int)($input['hab_id'] ?? 0),
             'fecha_inicio'  => $input['fecha'] ?? date('Y-m-d'),
             'noches'        => (int)($input['noches'] ?? 1),
+            'pax'           => (int)($input['pax'] ?? 1),
             'titular'       => $input['titular'] ?? 'RESERVADO',
             'observaciones' => $input['observaciones'] ?? '',
             'usuario_id'    => (int)($_SESSION['auth_id'] ?? 1),
@@ -105,6 +106,7 @@ class ReservasController {
         $data = [
             'fecha_inicio'  => $input['fecha'] ?? date('Y-m-d'),
             'noches'        => (int)($input['noches'] ?? 1),
+            'pax'           => (int)($input['pax'] ?? 1),
             'titular'       => trim($input['titular'] ?? 'RESERVADO'),
             'observaciones' => $input['observaciones'] ?? '',
             'canal'         => $input['canal'] ?? 'DIRECTO'

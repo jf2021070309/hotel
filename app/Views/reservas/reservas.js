@@ -326,6 +326,7 @@ createApp({
       }
 
       formQuick.noches  = 1;
+      formQuick.pax     = 1;
       formQuick.canal   = 'DIRECTO';
       bootstrap.Modal.getOrCreateInstance(document.getElementById('modalQuickReserva')).show();
     };
@@ -342,6 +343,7 @@ createApp({
       formQuick.fecha = stay.fecha_inicio;
       formQuick.titular = stay.titular || '';
       formQuick.noches = stay.noches || 1;
+      formQuick.pax = stay.pax || 1;
       formQuick.observaciones = stay.observaciones || '';
       formQuick.canal = stay.canal || 'DIRECTO';
       bootstrap.Modal.getOrCreateInstance(document.getElementById('modalQuickReserva')).show();
@@ -381,6 +383,7 @@ createApp({
           fecha:   formQuick.fecha,
           titular: formQuick.titular,
           noches:  formQuick.noches,
+          pax:     formQuick.pax,
           observaciones: formQuick.observaciones,
           canal:   formQuick.canal
         };

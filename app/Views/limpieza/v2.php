@@ -53,44 +53,6 @@ include $_projectRoot . 'app/Views/layouts/head.php';
     <!-- ── PAGE BODY ─────────────────────────────────────────────── -->
     <div class="page-body pt-3">
 
-      <!-- BARRA DE ACCIONES (Sin bordes grandes, sutil) -->
-      <div class="px-3 mb-2 d-flex flex-wrap gap-2 align-items-center justify-content-between w-100">
-        <div class="d-flex align-items-center gap-2">
-            <!-- Búsqueda -->
-            <div class="input-group input-group-sm shadow-sm" style="width: 250px;">
-              <span class="input-group-text bg-white text-muted px-2 border-dark">
-                <i class="bi bi-search"></i>
-              </span>
-              <input type="text" class="form-control bg-white text-dark border-dark"
-                     style="font-size: 13px;" v-model="busqueda"
-                     placeholder="Buscar...">
-            </div>
-
-            <!-- Filtro de estado -->
-            <select v-model="filtroEstado" class="form-select form-select-sm shadow-sm text-dark bg-white border-dark" style="font-size: 13px; width: 140px; cursor: pointer;">
-              <option value="todos">Todos ({{ lista.length }})</option>
-              <option value="pendiente">Pendiente ({{ countEstado('pendiente') }})</option>
-              <option value="en proceso">En Proceso ({{ countEstado('en proceso') }})</option>
-              <option value="lista">Lista ({{ countEstado('lista') }})</option>
-              <option value="mantenimiento">Manten. ({{ countEstado('mantenimiento') }})</option>
-            </select>
-        </div>
-
-        <div class="d-flex align-items-center gap-2">
-            <button class="btn btn-sm btn-dark d-flex align-items-center gap-2" @click="cargarDatos" :disabled="loading" style="font-size:12px;">
-              <i class="bi bi-arrow-clockwise" :class="{'spin-anim':loading}"></i> Actualizar
-            </button>
-            <button v-if="!yaGenerado" @click="generarLista" :disabled="loading" class="btn btn-sm btn-primary fw-bold d-flex align-items-center gap-1" style="font-size:12px;">
-              <i class="bi bi-magic"></i>Generar Lista
-            </button>
-            <button @click="resetNocturno" :disabled="loading" class="btn btn-sm btn-warning fw-bold d-flex align-items-center gap-1" style="font-size:12px; color: #000;">
-              <i class="bi bi-sun-fill"></i>Diaria
-            </button>
-            <button @click="exportarExcel" :disabled="loading || lista.length === 0" class="btn btn-sm btn-success fw-bold d-flex align-items-center gap-1" style="font-size:12px;">
-              <i class="bi bi-file-earmark-excel"></i>Excel
-            </button>
-        </div>
-      </div>
 
       <!-- TABLA PAPEL -->
       <div class="px-3">

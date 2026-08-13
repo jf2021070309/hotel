@@ -62,12 +62,12 @@ include $_projectRoot . 'app/Views/layouts/head.php';
           <table class="table table-bordered mb-0 lv2-table paper-table">
             <thead>
               <tr class="table-light text-center" style="font-size: 11px; color: #000; border-bottom: 2px solid #000;">
-                <th class="lv2-sticky" style="padding: 10px; width: 60px; z-index: 15 !important;">HAB</th>
-                <th style="padding: 10px; width: 90px;">RESERVAS</th>
-                <th style="padding: 10px; width: 60px;">PAX</th>
-                <th style="padding: 10px; width: 90px;">SALIDAS</th>
-                <th style="padding: 10px; width: 90px;">REPASOS</th>
-                <th style="padding: 10px; width: 90px;">PENDIENTES</th>
+                <th class="lv2-sticky" style="padding: 10px; width: 12%; z-index: 15 !important;">HAB</th>
+                <th style="padding: 10px; width: 19%;">RESERVAS</th>
+                <th style="padding: 10px; width: 12%;">PAX</th>
+                <th style="padding: 10px; width: 19%;">SALIDAS</th>
+                <th style="padding: 10px; width: 19%;">REPASOS</th>
+                <th style="padding: 10px; width: 19%;">PENDIENTES</th>
               </tr>
             </thead>
 
@@ -97,27 +97,27 @@ include $_projectRoot . 'app/Views/layouts/head.php';
                 </td>
 
                 <!-- RESERVAS (Libre para escribir) -->
-                <td class="text-center fw-bold align-middle p-0" style="width: 90px;">
+                <td class="text-center fw-bold align-middle p-0">
                   <input type="text" v-model="h.reservas_mark" class="form-control border-0 bg-transparent text-center fw-bold shadow-none w-100 h-100" style="font-size: 16px; color: #000; outline: none; cursor: text;">
                 </td>
 
                 <!-- PAX (Libre para escribir) -->
-                <td class="text-center fw-bold align-middle p-0" style="width: 60px;">
+                <td class="text-center fw-bold align-middle p-0">
                   <input type="text" v-model="h.pax_mark" class="form-control border-0 bg-transparent text-center fw-bold shadow-none w-100 h-100" style="color:#000; outline: none; cursor: text;">
                 </td>
 
                 <!-- SALIDAS (Libre para escribir) -->
-                <td class="text-center fw-bold align-middle p-0" style="width: 90px;">
+                <td class="text-center fw-bold align-middle p-0">
                   <input type="text" v-model="h.salidas_mark" class="form-control border-0 bg-transparent text-center fw-bold shadow-none w-100 h-100" style="font-size: 16px; color: #000; outline: none; cursor: text;">
                 </td>
 
                 <!-- REPASOS (Libre para escribir) -->
-                <td class="text-center fw-bold align-middle p-0" style="width: 90px;">
+                <td class="text-center fw-bold align-middle p-0">
                   <input type="text" v-model="h.repasos_mark" class="form-control border-0 bg-transparent text-center fw-bold shadow-none w-100 h-100" style="font-size: 16px; color: #000; outline: none; cursor: text;">
                 </td>
 
                 <!-- PENDIENTES (Libre para escribir) -->
-                <td class="text-center fw-bold align-middle p-0" style="width: 90px;">
+                <td class="text-center fw-bold align-middle p-0">
                   <input type="text" v-model="h.pendientes_mark" class="form-control border-0 bg-transparent text-center fw-bold shadow-none w-100 h-100" style="font-size: 16px; color: #000; outline: none; cursor: text;">
                 </td>
 

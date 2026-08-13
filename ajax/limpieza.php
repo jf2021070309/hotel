@@ -50,6 +50,10 @@ switch ($action) {
         echo json_encode(['ok' => true, 'data' => $data]);
         break;
 
+    case 'guardar_cambios_manuales':
+        echo json_encode($controller->guardarCambiosManuales());
+        break;
+
     case 'propuesta':
         $fecha = $_GET['fecha'] ?? date('Y-m-d');
         $model = new LimpiezaModel($pdo);

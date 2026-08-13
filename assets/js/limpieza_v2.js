@@ -121,7 +121,11 @@ createApp({
             pax: l.pax || '',
             room_estado: h.estado,
             estado: l.estado || '',
-            tipo_limpieza: l.tipo_limpieza || ''
+            tipo_limpieza: l.tipo_limpieza || '',
+            reservas_mark: l.reservas_mark || '',
+            salidas_mark: l.salidas_mark || '',
+            repasos_mark: l.repasos_mark || '',
+            pendientes_mark: l.pendientes_mark || ''
           };
         });
 
@@ -208,13 +212,27 @@ createApp({
     }
 
     async function guardarCambios() {
-      Swal.fire({
-        icon: 'success',
-        title: '¡Cambios Guardados!',
-        text: 'Las anotaciones manuales han sido registradas (Simulación).',
-        timer: 2000,
-        showConfirmButton: false
-      });
+      loading.value = true;
+      try {
+        const body = { registros: lista.value };
+        const res = await axios.post(`${API}?action=guardar_cambios_manuales`, body);
+        if (res.data.ok) {
+          Swal.fire({
+            icon: 'success',
+            title: '¡Cambios Guardados!',
+            text: 'Las anotaciones manuales han sido registradas permanentemente.',
+            timer: 2000,
+            showConfirmButton: false
+          });
+          await cargarDatos();
+        } else {
+          Swal.fire({ icon: 'error', title: 'Error', text: res.data.msg || 'No se pudieron guardar.' });
+        }
+      } catch (e) {
+        console.error('[LimpiezaV2] guardarCambios error', e);
+        Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo guardar el cambio.' });
+      }
+      loading.value = false;
     }
 
     // ── Exportar Excel ─────────────────────────────────────────

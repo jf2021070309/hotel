@@ -69,9 +69,15 @@ class LimpiezaModel {
             JOIN habitaciones h ON r.habitacion_id = h.id
             WHERE r.fecha = ? 
             ORDER BY r.prioridad ASC, h.numero ASC";
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([$fecha, $fecha, $fecha]);
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        try {
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([$fecha, $fecha, $fecha]);
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            // If the table doesn't have the new columns and r.* fails, or for safety
+            $rows = [];
+        }
 
         foreach ($rows as &$row) {
             if ($row['room_estado'] === 'mantenimiento') {
@@ -144,6 +150,44 @@ class LimpiezaModel {
         }
         $sql = "UPDATE limpieza_registros SET " . implode(", ", $fields) . " WHERE id = :id";
         return $this->pdo->prepare($sql)->execute($params);
+    }
+
+    public function guardarCambiosManuales(array $registros): bool {
+        // Asegurar columnas (ignora error si ya existen)
+        try {
+            $this->pdo->exec("ALTER TABLE limpieza_registros ADD COLUMN reservas_mark VARCHAR(255) DEFAULT NULL");
+            $this->pdo->exec("ALTER TABLE limpieza_registros ADD COLUMN salidas_mark VARCHAR(255) DEFAULT NULL");
+            $this->pdo->exec("ALTER TABLE limpieza_registros ADD COLUMN repasos_mark VARCHAR(255) DEFAULT NULL");
+            $this->pdo->exec("ALTER TABLE limpieza_registros ADD COLUMN pendientes_mark VARCHAR(255) DEFAULT NULL");
+        } catch (Exception $e) { }
+
+        $this->pdo->beginTransaction();
+        try {
+            $sql = "UPDATE limpieza_registros 
+                    SET reservas_mark = :reservas,
+                        salidas_mark = :salidas,
+                        repasos_mark = :repasos,
+                        pendientes_mark = :pendientes
+                    WHERE id = :id";
+            $stmt = $this->pdo->prepare($sql);
+            
+            foreach ($registros as $r) {
+                if (empty($r['id'])) continue; 
+                
+                $stmt->execute([
+                    ':reservas'   => $r['reservas_mark'] ?? null,
+                    ':salidas'    => $r['salidas_mark'] ?? null,
+                    ':repasos'    => $r['repasos_mark'] ?? null,
+                    ':pendientes' => $r['pendientes_mark'] ?? null,
+                    ':id'         => $r['id']
+                ]);
+            }
+            $this->pdo->commit();
+            return true;
+        } catch (Exception $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
     }
 
     public function getCalculoPropuesta(string $fecha): array {

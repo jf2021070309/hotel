@@ -124,7 +124,25 @@ class LimpiezaController {
     public function getDetalleDia(): array {
         $fecha = $_GET['fecha'] ?? date('Y-m-d');
         try {
-            return ['ok' => true, 'data' => $this->model->getDetalleDia($fecha)];
+            $data = $this->model->getDetalleDia($fecha);
+            return ['ok' => true, 'data' => $data];
+        } catch (Exception $e) {
+            return ['ok' => false, 'msg' => $e->getMessage()];
+        }
+    }
+
+    public function guardarCambiosManuales(): array {
+        $json = file_get_contents('php://input');
+        $data = json_decode($json, true);
+        $registros = $data['registros'] ?? [];
+
+        if (empty($registros)) {
+            return ['ok' => false, 'msg' => 'No hay registros para guardar.'];
+        }
+
+        try {
+            $this->model->guardarCambiosManuales($registros);
+            return ['ok' => true, 'msg' => 'Cambios guardados correctamente.'];
         } catch (Exception $e) {
             return ['ok' => false, 'msg' => $e->getMessage()];
         }

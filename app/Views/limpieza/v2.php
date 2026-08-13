@@ -18,45 +18,44 @@ include $_projectRoot . 'app/Views/layouts/head.php';
 
   <div class="main-content">
 
-    <!-- ── HOJA DE CONTROL HEADER (Estilo Papel) ──────────────────────────────────── -->
-    <div class="px-3 pt-3">
-      <div class="card border-2 border-dark shadow-sm" style="border-radius:0; background-color: #fff;">
-        <div class="card-body p-0">
-          <!-- Logo & Título -->
-          <div class="d-flex border-bottom border-2 border-dark">
-            <div class="d-flex align-items-center justify-content-center border-end border-2 border-dark" style="width: 25%; padding: 10px;">
-              <div class="text-center">
-                <h4 class="fw-black mb-0 text-uppercase" style="letter-spacing:1px; color: #000;">PLATINIUM</h4>
-                <div class="fw-bold" style="font-size: 10px; letter-spacing: 2px; color: #000;">HOTEL ★★★</div>
-              </div>
-            </div>
-            <div class="d-flex align-items-center justify-content-center flex-grow-1" style="padding: 10px;">
-              <h4 class="fw-bold mb-0 text-uppercase text-center" style="color: #000; letter-spacing: 1px;">HOJA DE CONTROL DE LIMPIEZA</h4>
+    <!-- ── CONTROLES SUPERIORES (PDF) ──────────────────────────────────── -->
+    <div class="px-3 pt-3 pb-2 d-flex justify-content-end print-hide">
+      <button class="btn btn-danger fw-bold shadow-sm" onclick="window.print()">
+        <i class="bi bi-file-earmark-pdf-fill me-1"></i> Guardar PDF / Imprimir
+      </button>
+    </div>
+
+    <!-- ── HOJA DE CONTROL UNIFICADA ──────────────────────────────────── -->
+    <div class="px-3 pb-4">
+      <div id="printable-area" style="border: 2px solid #000; background-color: #fff; width: 100%; margin: 0 auto; min-width: 900px;">
+        
+        <!-- Logo & Título -->
+        <div class="d-flex border-bottom border-2 border-dark">
+          <div class="d-flex align-items-center justify-content-center border-end border-2 border-dark" style="width: 25%; padding: 10px;">
+            <div class="text-center">
+              <h4 class="fw-black mb-0 text-uppercase" style="letter-spacing:1px; color: #000;">PLATINIUM</h4>
+              <div class="fw-bold" style="font-size: 10px; letter-spacing: 2px; color: #000;">HOTEL ★★★</div>
             </div>
           </div>
-          <!-- Responsable & Fecha -->
-          <div class="d-flex border-bottom border-2 border-dark">
-            <div class="d-flex align-items-center border-end border-2 border-dark" style="width: 50%; padding: 6px 10px;">
-              <span class="fw-bold me-2" style="color: #000;">RESPONSABLE</span>
-              <input type="text" class="form-control form-control-sm border-0 bg-transparent fw-bold text-uppercase" placeholder="____________________" style="box-shadow: none; color: #000;">
-            </div>
-            <div class="d-flex align-items-center" style="width: 50%; padding: 6px 10px;">
-              <span class="fw-bold me-2" style="color: #000;">FECHA</span>
-              <input type="date" v-model="fecha" @change="cargarDatos" class="form-control form-control-sm border-0 bg-transparent fw-bold" style="box-shadow: none; color: #000; width: 140px;">
-            </div>
+          <div class="d-flex align-items-center justify-content-center flex-grow-1" style="padding: 10px;">
+            <h4 class="fw-bold mb-0 text-uppercase text-center" style="color: #000; letter-spacing: 1px;">HOJA DE CONTROL DE LIMPIEZA</h4>
           </div>
         </div>
-      </div>
-    </div>
-    <!-- /hoja header -->
+        
+        <!-- Responsable & Fecha -->
+        <div class="d-flex border-bottom border-2 border-dark">
+          <div class="d-flex align-items-center border-end border-2 border-dark" style="width: 50%; padding: 6px 10px;">
+            <span class="fw-bold me-2" style="color: #000;">RESPONSABLE</span>
+            <input type="text" class="form-control form-control-sm border-0 bg-transparent fw-bold text-uppercase p-0" placeholder="____________________" style="box-shadow: none; color: #000; flex: 1;">
+          </div>
+          <div class="d-flex align-items-center" style="width: 50%; padding: 6px 10px;">
+            <span class="fw-bold me-2" style="color: #000;">FECHA</span>
+            <input type="date" v-model="fecha" @change="cargarDatos" class="form-control form-control-sm border-0 bg-transparent fw-bold p-0" style="box-shadow: none; color: #000; width: 140px;">
+          </div>
+        </div>
 
-    <!-- ── PAGE BODY ─────────────────────────────────────────────── -->
-    <div class="page-body pt-3">
-
-
-      <!-- TABLA PAPEL -->
-      <div class="px-3">
-        <div class="lv2-grid-container" style="border: 2px solid #000; border-top: none; border-radius: 0;">
+        <!-- TABLA PAPEL -->
+        <div class="lv2-grid-container" style="border: none; border-radius: 0; max-height: none; overflow: visible;">
           <table class="table table-bordered mb-0 lv2-table paper-table">
             <thead>
               <tr class="table-light text-center" style="font-size: 11px; color: #000; border-bottom: 2px solid #000;">
@@ -118,7 +117,7 @@ include $_projectRoot . 'app/Views/layouts/head.php';
           </table>
         </div>
         <!-- Observaciones -->
-        <div class="p-3 border-top-0 d-flex" style="border: 2px solid #000; border-top: 0; background: #fff;">
+        <div class="p-3 border-top-0 d-flex" style="background: #fff;">
             <div class="fw-bold" style="color: #000; font-size: 14px; width: 130px; padding-top: 4px;">OBSERVACIONES</div>
             <div class="flex-grow-1">
               <input type="text" class="form-control border-0 shadow-none p-0 mb-2 fw-bold" style="border-bottom: 1px solid #000 !important; border-radius: 0; background: transparent; color: #000;">
@@ -126,9 +125,9 @@ include $_projectRoot . 'app/Views/layouts/head.php';
               <input type="text" class="form-control border-0 shadow-none p-0 fw-bold" style="border-bottom: 1px solid #000 !important; border-radius: 0; background: transparent; color: #000;">
             </div>
         </div>
-      </div><!-- /card tabla -->
+      </div><!-- /printable-area -->
+    </div><!-- /hoja unificada -->
 
-    </div><!-- /page-body -->
   </div><!-- /main-content -->
 </div><!-- /app -->
 
@@ -198,8 +197,35 @@ include $_projectRoot . 'app/Views/layouts/head.php';
     background: #fff;
     white-space: nowrap;
   }
+  
+  /* Remove outer borders from table to prevent doubling with container */
+  .paper-table th:first-child, .paper-table td:first-child {
+    border-left: none !important;
+  }
+  .paper-table th:last-child, .paper-table td:last-child {
+    border-right: none !important;
+  }
+  .paper-table tbody tr:last-child td {
+    border-bottom: 1px solid #000 !important;
+  }
+
   .lv2-table tbody tr:hover td { background:#f1f5f9; }
   .lv2-table tbody tr:hover td.lv2-sticky { background:#e2e8f0; }
+
+  /* Impresión PDF */
+  @media print {
+    body * { visibility: hidden; }
+    #printable-area, #printable-area * { visibility: visible; }
+    #printable-area { position: absolute; left: 0; top: 0; width: 100%; border: 2px solid #000 !important; }
+    .print-hide { display: none !important; }
+    .main-content { margin-left: 0 !important; padding: 0 !important; width: 100% !important; }
+    .lv2-grid-container { max-height: none !important; overflow: visible !important; }
+    .paper-table th { background: #f1f5f9 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    /* Garantizar bordes negros exactos */
+    .paper-table th, .paper-table td, #printable-area {
+      border-color: #000 !important;
+    }
+  }
 
   /* Select editable estilo tabla */
   .lv2-select {

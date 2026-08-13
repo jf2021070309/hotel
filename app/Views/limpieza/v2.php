@@ -118,10 +118,13 @@ include $_projectRoot . 'app/Views/layouts/head.php';
           </table>
         </div>
         <!-- Observaciones -->
-        <div class="p-3 border-top-0" style="border: 2px solid #000; border-top: 0; background: #fff;">
-            <div class="fw-bold mb-1" style="color: #000; font-size: 14px;">OBSERVACIONES ______________________________________________________________________________________________________</div>
-            <div class="fw-bold mb-1" style="color: #000; font-size: 14px; text-indent: 125px;">______________________________________________________________________________________________________</div>
-            <div class="fw-bold" style="color: #000; font-size: 14px; text-indent: 125px;">______________________________________________________________________________________________________</div>
+        <div class="p-3 border-top-0 d-flex" style="border: 2px solid #000; border-top: 0; background: #fff;">
+            <div class="fw-bold" style="color: #000; font-size: 14px; width: 130px; padding-top: 4px;">OBSERVACIONES</div>
+            <div class="flex-grow-1">
+              <input type="text" class="form-control border-0 shadow-none p-0 mb-2 fw-bold" style="border-bottom: 1px solid #000 !important; border-radius: 0; background: transparent; color: #000;">
+              <input type="text" class="form-control border-0 shadow-none p-0 mb-2 fw-bold" style="border-bottom: 1px solid #000 !important; border-radius: 0; background: transparent; color: #000;">
+              <input type="text" class="form-control border-0 shadow-none p-0 fw-bold" style="border-bottom: 1px solid #000 !important; border-radius: 0; background: transparent; color: #000;">
+            </div>
         </div>
       </div><!-- /card tabla -->
 

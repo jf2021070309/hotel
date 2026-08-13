@@ -19,8 +19,17 @@ $fechaStr = date('Y-m-d');
   <?php include $_projectRoot . 'app/Views/layouts/sidebar.php'; ?>
   <div class="main-content">
     <!-- BARRA SUPERIOR ESTATICA (Fuera de impresión) -->
-    <div class="d-print-none sticky-top bg-white border-bottom shadow-sm z-3" style="top: 60px;">
-        <div class="px-4 py-2 d-flex flex-column flex-md-row justify-content-end align-items-center gap-3">
+    <div class="d-print-none bg-white border-bottom shadow-sm mb-3">
+        <div class="px-4 py-3 d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+            <div>
+                <h4 class="mb-1 fw-bold text-dark d-flex align-items-center gap-2">
+                    <div class="bg-primary bg-opacity-10 text-primary p-2 rounded-3">
+                        <i class="bi bi-cup-hot"></i>
+                    </div>
+                    Desayunos Manuales
+                </h4>
+            </div>
+            
             <div class="d-flex align-items-center gap-2">
                 <button class="btn btn-primary fw-bold shadow-sm d-flex align-items-center gap-2 px-3" 
                         @click="guardarCambios" :disabled="loading">
@@ -40,91 +49,81 @@ $fechaStr = date('Y-m-d');
     <!-- HOJA IMPRIMIBLE -->
     <div class="page-body p-4 sheet-container">
         <!-- Contenedor con borde que parece hoja física -->
-        <div class="border border-dark bg-white mx-auto sheet-content d-flex flex-column" style="max-width: 900px; max-height: calc(100vh - 180px);">
+        <div class="border border-dark bg-white mx-auto sheet-content" style="max-width: 900px;">
             
             <!-- HEADER DE LA HOJA -->
-            <div class="flex-shrink-0">
-                <table class="table table-bordered border-dark mb-0 table-sm text-uppercase header-table" style="border-bottom: none !important;">
-                    <tbody>
-                        <tr>
-                            <td rowspan="2" class="text-center align-middle" style="width: 250px; border-bottom: none !important;">
-                                <h5 class="fw-bold mb-0" style="letter-spacing: 1px; color: #000;">PLATINIUM<br><small style="font-size:10px;">HOTEL ★★★</small></h5>
-                            </td>
-                            <td rowspan="2" class="text-center align-middle fs-5 fw-bold" style="color: #000; letter-spacing: 1px; border-bottom: none !important;">
-                                PLATINIUM - DESAYUNOS
-                            </td>
-                        </tr>
-                        <tr></tr>
-                        <tr>
-                            <td colspan="2" class="p-2 fw-bold" style="color:#000;">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <span style="font-size: 14px;">FECHA:</span>
-                                        <input type="date" v-model="fecha" @change="changeFecha" class="form-control form-control-sm border-0 bg-transparent fw-bold p-0 m-0 shadow-none d-print-none" style="width:130px; font-size:14px; color:#000; cursor:pointer;" :disabled="loading">
-                                        <span class="d-none d-print-inline text-decoration-underline ms-2 fs-6">{{ fecha }}</span>
-                                    </div>
+            <table class="table table-bordered border-dark mb-0 table-sm text-uppercase header-table">
+                <tbody>
+                    <tr>
+                        <td rowspan="2" class="text-center align-middle" style="width: 250px;">
+                            <h5 class="fw-bold mb-0" style="letter-spacing: 1px; color: #000;">PLATINIUM<br><small style="font-size:10px;">HOTEL ★★★</small></h5>
+                        </td>
+                        <td rowspan="2" class="text-center align-middle fs-5 fw-bold" style="color: #000; letter-spacing: 1px;">
+                            PLATINIUM - DESAYUNOS
+                        </td>
+                    </tr>
+                    <tr></tr>
+                    <tr>
+                        <td colspan="2" class="p-2 fw-bold" style="color:#000;">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span style="font-size: 14px;">FECHA:</span>
+                                    <input type="date" v-model="fecha" @change="changeFecha" class="form-control form-control-sm border-0 bg-transparent fw-bold p-0 m-0 shadow-none d-print-none" style="width:130px; font-size:14px; color:#000; cursor:pointer;" :disabled="loading">
+                                    <span class="d-none d-print-inline text-decoration-underline ms-2 fs-6">{{ fecha }}</span>
                                 </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
 
-            <!-- TABLA DE HABITACIONES (SCROLLABLE) -->
-            <div class="flex-grow-1 overflow-auto table-scroll-container">
-                <table class="table table-bordered border-dark mb-0 table-sm text-uppercase body-table" style="border-top: none !important;">
-                    <thead class="bg-light sticky-header">
-                        <tr>
-                            <th class="text-center py-2 border-top-0" style="width: 100px; color:#000;">HAB</th>
-                            <th class="text-center py-2 border-top-0" style="width: 100px; color:#000;">PAX</th>
-                            <th class="text-center py-2 border-top-0" style="color:#000;">OBSERVACIONES</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Loading State -->
-                        <tr v-if="loading && lista.length === 0">
-                            <td colspan="3" class="text-center py-5">
-                                <div class="spinner-border text-primary spinner-border-sm"></div> Cargando...
-                            </td>
-                        </tr>
-                        
-                        <!-- Filas de datos -->
-                        <tr v-else v-for="h in lista" :key="h.id" :class="getRowClass(h)">
-                            <!-- HAB -->
-                            <td class="text-center fw-bold fs-6 align-middle" style="color:#000; height: 35px;">
-                                {{ h.habitacion }}
-                            </td>
+            <!-- TABLA DE HABITACIONES -->
+            <table class="table table-bordered border-dark mb-0 table-sm text-uppercase body-table">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="text-center py-2" style="width: 100px; color:#000;">HAB</th>
+                        <th class="text-center py-2" style="width: 100px; color:#000;">PAX</th>
+                        <th class="text-center py-2" style="color:#000;">OBSERVACIONES</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Loading State -->
+                    <tr v-if="loading && lista.length === 0">
+                        <td colspan="3" class="text-center py-5">
+                            <div class="spinner-border text-primary spinner-border-sm"></div> Cargando...
+                        </td>
+                    </tr>
+                    
+                    <!-- Filas de datos -->
+                    <tr v-else v-for="h in lista" :key="h.id" :class="getRowClass(h)">
+                        <!-- HAB -->
+                        <td class="text-center fw-bold fs-6 align-middle" style="color:#000; height: 35px;">
+                            {{ h.habitacion }}
+                        </td>
 
-                            <!-- PAX (Libre) -->
-                            <td class="text-center fw-bold align-middle p-0">
-                                <input type="text" v-model="h.pax" class="form-control border-0 bg-transparent text-center fw-bold shadow-none w-100 h-100" style="color:#000; outline: none; cursor: text;">
-                            </td>
+                        <!-- PAX (Libre) -->
+                        <td class="text-center fw-bold align-middle p-0">
+                            <input type="text" v-model="h.pax" class="form-control border-0 bg-transparent text-center fw-bold shadow-none w-100 h-100" style="color:#000; outline: none; cursor: text;">
+                        </td>
 
-                            <!-- OBSERVACIONES (Libre) -->
-                            <td class="text-center fw-bold align-middle p-0">
-                                <input type="text" v-model="h.observaciones" class="form-control border-0 bg-transparent text-center fw-bold shadow-none w-100 h-100 px-2" style="font-size: 14px; color: #000; outline: none; cursor: text; text-align: left !important;">
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            
-            <!-- TOTAL FOOTER -->
-            <div class="flex-shrink-0">
-                <table class="table table-bordered border-dark mb-0 table-sm text-uppercase" style="border-top: none !important;">
-                    <tbody>
-                        <tr>
-                            <td class="text-end fw-bold py-2 pe-3 align-middle" style="color:#000; font-size: 16px; border-top: none !important; width: 100px;">
-                                TOTAL
-                            </td>
-                            <td class="text-center fw-bold py-2 align-middle" style="color:#000; font-size: 16px; border-top: none !important; width: 100px;">
-                                {{ totalPax }}
-                            </td>
-                            <td class="bg-light" style="border-top: none !important;"></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+                        <!-- OBSERVACIONES (Libre) -->
+                        <td class="text-center fw-bold align-middle p-0">
+                            <input type="text" v-model="h.observaciones" class="form-control border-0 bg-transparent text-center fw-bold shadow-none w-100 h-100 px-2" style="font-size: 14px; color: #000; outline: none; cursor: text; text-align: left !important;">
+                        </td>
+                    </tr>
+                    
+                    <!-- TOTAL FOOTER -->
+                    <tr>
+                        <td class="text-end fw-bold py-2 pe-3 align-middle" style="color:#000; font-size: 16px;">
+                            TOTAL
+                        </td>
+                        <td class="text-center fw-bold py-2 align-middle" style="color:#000; font-size: 16px;">
+                            {{ totalPax }}
+                        </td>
+                        <td class="bg-light"></td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
     </div>
@@ -143,18 +142,6 @@ $fechaStr = date('Y-m-d');
 .table-bordered > :not(caption) > * > * {
     border-color: #000 !important;
 }
-
-.sticky-header th {
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    background-color: #f8f9fa !important;
-    border-bottom: 2px solid #000 !important;
-}
-
-.table-scroll-container::-webkit-scrollbar { width:8px; height:8px; }
-.table-scroll-container::-webkit-scrollbar-track { background:#f1f5f9; }
-.table-scroll-container::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:4px; }
 
 /* Ocultar elementos de UI cuando se imprime */
 @media print {

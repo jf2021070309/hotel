@@ -755,8 +755,17 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
           
           <form @submit.prevent="guardarQuickReserva">
             <div class="mb-3">
+              <label class="form-label small fw-bold text-muted">TIPO DE ACCIÓN</label>
+              <select class="form-select fw-bold" v-model="formQuick.tipo_accion" required>
+                <option value="reserva">Reserva Rápida</option>
+                <option value="mantenimiento">Bloqueo: Mantenimiento</option>
+                <option value="sucio">Bloqueo: Sucio</option>
+              </select>
+            </div>
+            
+            <div class="mb-3" v-show="formQuick.tipo_accion === 'reserva'">
               <label class="form-label small fw-bold text-muted">NOMBRE DEL HUÉSPED / EMPRESA</label>
-              <input type="text" class="form-control" v-model="formQuick.titular" placeholder="Ej: Juan Pérez" required>
+              <input type="text" class="form-control" v-model="formQuick.titular" placeholder="Ej: Juan Pérez" :required="formQuick.tipo_accion === 'reserva'">
             </div>
             
             <div class="row g-3 mb-3">
@@ -764,13 +773,13 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
                 <label class="form-label small fw-bold text-muted">NOCHES</label>
                 <input type="number" class="form-control" v-model.number="formQuick.noches" min="1" max="60" required>
               </div>
-              <div class="col-4">
+              <div class="col-4" v-show="formQuick.tipo_accion === 'reserva'">
                 <label class="form-label small fw-bold text-muted">PAX</label>
-                <input type="number" class="form-control" v-model.number="formQuick.pax" min="1" max="10" required>
+                <input type="number" class="form-control" v-model.number="formQuick.pax" min="1" max="10" :required="formQuick.tipo_accion === 'reserva'">
               </div>
-              <div class="col-4">
+              <div class="col-4" v-show="formQuick.tipo_accion === 'reserva'">
                 <label class="form-label small fw-bold text-muted">CANAL</label>
-                <select class="form-select" v-model="formQuick.canal" required>
+                <select class="form-select" v-model="formQuick.canal" :required="formQuick.tipo_accion === 'reserva'">
                   <option value="DIRECTO">DIRECTO</option>
                   <option value="LLAMADA">LLAMADA</option>
                   <option value="WHATSAPP">WHATSAPP</option>
@@ -780,7 +789,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
             </div>
             
             <div class="mb-3">
-              <label class="form-label small fw-bold text-muted">OBSERVACIONES / TELÉFONO</label>
+              <label class="form-label small fw-bold text-muted">OBSERVACIONES / MOTIVO</label>
               <textarea class="form-control" v-model="formQuick.observaciones" rows="2" placeholder="Notas breves..."></textarea>
             </div>
             

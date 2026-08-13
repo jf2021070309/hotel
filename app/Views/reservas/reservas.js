@@ -41,8 +41,10 @@ createApp({
       fecha: '',
       titular: '',
       noches: 1,
+      pax: 1,
       observaciones: '',
-      canal: 'DIRECTO'
+      canal: 'DIRECTO',
+      tipo_accion: 'reserva'
     });
     const activeQuickGuest = ref(null);
 
@@ -328,6 +330,7 @@ createApp({
       formQuick.noches  = 1;
       formQuick.pax     = 1;
       formQuick.canal   = 'DIRECTO';
+      formQuick.tipo_accion = 'reserva';
       bootstrap.Modal.getOrCreateInstance(document.getElementById('modalQuickReserva')).show();
     };
 
@@ -346,6 +349,7 @@ createApp({
       formQuick.pax = stay.pax || 1;
       formQuick.observaciones = stay.observaciones || '';
       formQuick.canal = stay.canal || 'DIRECTO';
+      formQuick.tipo_accion = (stay.titular === '[MANTENIMIENTO]') ? 'mantenimiento' : (stay.titular === '[SUCIO]') ? 'sucio' : 'reserva';
       bootstrap.Modal.getOrCreateInstance(document.getElementById('modalQuickReserva')).show();
     };
 
@@ -373,7 +377,20 @@ createApp({
     };
 
     const guardarQuickReserva = async () => {
-      if (!formQuick.titular) return;
+      if (formQuick.tipo_accion === 'mantenimiento') {
+        formQuick.titular = '[MANTENIMIENTO]';
+        formQuick.canal = 'DIRECTO';
+        formQuick.pax = 1;
+      } else if (formQuick.tipo_accion === 'sucio') {
+        formQuick.titular = '[SUCIO]';
+        formQuick.canal = 'DIRECTO';
+        formQuick.pax = 1;
+      }
+
+      if (!formQuick.titular && formQuick.tipo_accion === 'reserva') {
+        Swal.fire('Atención', 'El nombre del huésped es obligatorio', 'warning');
+        return;
+      }
       loading.value = true;
       try {
         const action = formQuick.editando ? 'editar_quick_reserva' : 'quick_reserva';

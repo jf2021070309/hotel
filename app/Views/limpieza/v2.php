@@ -104,15 +104,13 @@ include $_projectRoot . 'app/Views/layouts/head.php';
                 <th style="padding: 10px; width: 90px;">SALIDAS</th>
                 <th style="padding: 10px; width: 90px;">REPASOS</th>
                 <th style="padding: 10px; width: 90px;">PENDIENTES</th>
-                <th style="padding: 10px; width: 120px;">ESTADO</th>
-                <th style="padding: 10px; width: 120px;">ACCIÓN</th>
               </tr>
             </thead>
 
             <tbody>
               <!-- Cargando -->
               <tr v-if="loading">
-                <td colspan="8" class="text-center py-5">
+                <td colspan="6" class="text-center py-5">
                   <div class="spinner-border text-dark me-2"></div>
                   <span class="fw-bold text-dark">Cargando datos...</span>
                 </td>
@@ -120,7 +118,7 @@ include $_projectRoot . 'app/Views/layouts/head.php';
 
               <!-- Sin datos -->
               <tr v-else-if="listaFiltrada.length === 0">
-                <td colspan="8" class="text-center py-5 text-muted">
+                <td colspan="6" class="text-center py-5 text-muted">
                   <i class="bi bi-inbox fs-1 d-block opacity-25 mb-2"></i>
                   <span>No hay registros para esta fecha.</span>
                 </td>
@@ -150,40 +148,6 @@ include $_projectRoot . 'app/Views/layouts/head.php';
 
                 <!-- PENDIENTES (Libre para escribir) -->
                 <td class="text-center fw-bold align-middle" style="font-size: 16px; color: #000; outline: none; cursor: text;" contenteditable="true"></td>
-
-                <!-- ESTADO (Editable, solo si hay registro de limpieza) -->
-                <td class="px-1 text-center align-middle">
-                  <select v-if="h.id" v-model="h.estado" @change="actualizarEstado(h)"
-                          class="lv2-select fw-bold"
-                          :class="getEstadoSelectClass(h.estado)"
-                          style="font-size: 11px; text-transform: uppercase;">
-                    <option value="pendiente">Pendiente</option>
-                    <option value="en proceso">En Proceso</option>
-                    <option value="lista">Lista</option>
-                    <option value="mantenimiento" v-if="h.estado==='mantenimiento'">Mantenimiento</option>
-                  </select>
-                </td>
-
-                <!-- ACCIÓN RÁPIDA -->
-                <td class="text-center px-1 align-middle">
-                  <template v-if="h.id">
-                    <button v-if="h.estado !== 'lista' && h.estado !== 'mantenimiento'"
-                            @click="toggleListo(h)" :disabled="loading"
-                            class="btn btn-sm fw-bold w-100 btn-dark"
-                            style="font-size:11px; border-radius:4px; padding:4px;">
-                      <i class="bi bi-check2-square me-1"></i>Marcar Lista
-                    </button>
-                    <button v-else-if="h.estado === 'lista'"
-                            @click="toggleListo(h)" :disabled="loading"
-                            class="btn btn-sm fw-bold w-100 btn-outline-dark"
-                            style="font-size:11px; border-radius:4px; padding:4px;">
-                      <i class="bi bi-check-all me-1"></i>Lista ✓
-                    </button>
-                    <span v-else class="badge bg-danger-subtle text-danger" style="font-size:11px;padding:4px 8px;">
-                      <i class="bi bi-tools"></i> Bloq.
-                    </span>
-                  </template>
-                </td>
 
               </tr>
             </tbody>

@@ -18,155 +18,153 @@ include $_projectRoot . 'app/Views/layouts/head.php';
 
   <div class="main-content">
 
-    <!-- ── TOPBAR PREMIUM DARK ──────────────────────────────────── -->
-    <div class="topbar" style="background-color:#111827;padding:0.75rem 1.5rem;border-bottom:1px solid rgba(255,255,255,0.05);">
-      <div class="d-flex align-items-center justify-content-between w-100">
-        <div class="d-flex align-items-center gap-3">
-          <button class="btn btn-dark btn-sm rounded-circle d-md-none" onclick="handleMenuClick()" style="width:32px;height:32px;padding:0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.1);border:none;">
-            <i class="bi bi-list text-white"></i>
-          </button>
-          <div class="d-flex align-items-center gap-3">
-            <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#f8fafc,#94a3b8);display:flex;align-items:center;justify-content:center;box-shadow:0 0 15px rgba(148,163,184,0.4);">
-              <i class="bi bi-stars text-dark fs-5"></i>
+    <!-- ── HOJA DE CONTROL HEADER (Estilo Papel) ──────────────────────────────────── -->
+    <div class="px-3 pt-3">
+      <div class="card border-2 border-dark shadow-sm" style="border-radius:0; background-color: #fff;">
+        <div class="card-body p-0">
+          <!-- Logo & Título -->
+          <div class="d-flex border-bottom border-2 border-dark">
+            <div class="d-flex align-items-center justify-content-center border-end border-2 border-dark" style="width: 25%; padding: 10px;">
+              <div class="text-center">
+                <h4 class="fw-black mb-0 text-uppercase" style="letter-spacing:1px; color: #000;">PLATINIUM</h4>
+                <div class="fw-bold" style="font-size: 10px; letter-spacing: 2px; color: #000;">HOTEL ★★★</div>
+              </div>
             </div>
-            <div>
-              <h4 class="fw-bold mb-0 text-white" style="font-size:18px;letter-spacing:-0.5px;">Limpieza V2</h4>
-              <div class="text-white-50" style="font-size:11px;">Control de habitaciones estilo Excel &middot; Edición directa</div>
+            <div class="d-flex align-items-center justify-content-center flex-grow-1" style="padding: 10px;">
+              <h4 class="fw-bold mb-0 text-uppercase text-center" style="color: #000; letter-spacing: 1px;">HOJA DE CONTROL DE LIMPIEZA</h4>
+            </div>
+          </div>
+          <!-- Responsable & Fecha -->
+          <div class="d-flex border-bottom border-2 border-dark">
+            <div class="d-flex align-items-center border-end border-2 border-dark" style="width: 50%; padding: 6px 10px;">
+              <span class="fw-bold me-2" style="color: #000;">RESPONSABLE</span>
+              <input type="text" class="form-control form-control-sm border-0 bg-transparent fw-bold text-uppercase" placeholder="____________________" style="box-shadow: none; color: #000;">
+            </div>
+            <div class="d-flex align-items-center" style="width: 50%; padding: 6px 10px;">
+              <span class="fw-bold me-2" style="color: #000;">FECHA</span>
+              <input type="date" v-model="fecha" @change="cargarDatos" class="form-control form-control-sm border-0 bg-transparent fw-bold" style="box-shadow: none; color: #000; width: 140px;">
             </div>
           </div>
         </div>
-        <div class="d-flex align-items-center gap-2">
-          <button class="btn btn-sm btn-outline-light d-flex align-items-center gap-2" @click="cargarDatos" :disabled="loading" style="font-size:12px;padding:4px 12px;border-color:rgba(255,255,255,0.2);">
-            <i class="bi bi-arrow-clockwise" :class="{'spin-anim':loading}"></i>
-            <span class="d-none d-md-inline">Actualizar</span>
-          </button>
-        </div>
       </div>
-    </div><!-- /topbar -->
+    </div>
+    <!-- /hoja header -->
 
     <!-- ── PAGE BODY ─────────────────────────────────────────────── -->
     <div class="page-body pt-3">
 
-      <!-- BARRA DE FILTROS / RESUMEN -->
-      <div class="card border-0 shadow-sm mb-3" style="border-radius:12px;">
-        <div class="card-body p-3">
-          <div class="d-flex flex-wrap gap-2 align-items-center w-100">
-
+      <!-- BARRA DE ACCIONES (Sin bordes grandes, sutil) -->
+      <div class="px-3 mb-2 d-flex flex-wrap gap-2 align-items-center justify-content-between w-100">
+        <div class="d-flex align-items-center gap-2">
             <!-- Búsqueda -->
-            <div class="input-group input-group-sm rounded shadow-sm" style="width: 320px;">
-              <span class="input-group-text bg-white border-end-0 text-muted px-2">
+            <div class="input-group input-group-sm shadow-sm" style="width: 250px;">
+              <span class="input-group-text bg-white text-muted px-2 border-dark">
                 <i class="bi bi-search"></i>
               </span>
-              <input type="text" class="form-control border-start-0 bg-white text-dark"
+              <input type="text" class="form-control bg-white text-dark border-dark"
                      style="font-size: 13px;" v-model="busqueda"
-                     placeholder="Buscar habitación, estado...">
+                     placeholder="Buscar...">
             </div>
 
-            <!-- Filtro de estado (Combobox) -->
-            <div style="width: 160px;">
-              <select v-model="filtroEstado" class="form-select form-select-sm shadow-sm text-dark bg-white border-secondary-subtle" style="font-size: 13px; cursor: pointer; height: 31px; border-radius: 6px;">
-                <option value="todos">Todos ({{ lista.length }})</option>
-                <option value="pendiente">Pendiente ({{ countEstado('pendiente') }})</option>
-                <option value="en proceso">En Proceso ({{ countEstado('en proceso') }})</option>
-                <option value="lista">Lista ({{ countEstado('lista') }})</option>
-                <option value="mantenimiento">Mantenimiento ({{ countEstado('mantenimiento') }})</option>
-              </select>
-            </div>
+            <!-- Filtro de estado -->
+            <select v-model="filtroEstado" class="form-select form-select-sm shadow-sm text-dark bg-white border-dark" style="font-size: 13px; width: 140px; cursor: pointer;">
+              <option value="todos">Todos ({{ lista.length }})</option>
+              <option value="pendiente">Pendiente ({{ countEstado('pendiente') }})</option>
+              <option value="en proceso">En Proceso ({{ countEstado('en proceso') }})</option>
+              <option value="lista">Lista ({{ countEstado('lista') }})</option>
+              <option value="mantenimiento">Manten. ({{ countEstado('mantenimiento') }})</option>
+            </select>
+        </div>
 
-            <!-- Selector de fecha -->
-            <div style="width: 140px;">
-              <input type="date" v-model="fecha" @change="cargarDatos"
-                     class="form-control form-control-sm shadow-sm text-dark bg-white border-secondary-subtle"
-                     style="font-size: 13px; cursor: pointer; height: 31px; border-radius: 6px; font-weight: 500;" />
-            </div>
-
-            <!-- Botones de Acción alineados a la derecha -->
-            <div class="d-flex align-items-center gap-2 ms-md-auto">
-              <!-- Generar lista -->
-              <button v-if="!yaGenerado" @click="generarLista" :disabled="loading"
-                      class="btn btn-sm btn-custom-blue fw-bold px-3 d-flex align-items-center gap-1 shadow-sm"
-                      style="font-size:12px;height:31px;border-radius:6px;">
-                <i class="bi bi-magic"></i>Generar Lista
-              </button>
-
-              <!-- Limpieza Diaria (Azul celeste) -->
-              <button @click="resetNocturno" :disabled="loading"
-                      class="btn btn-sm btn-custom-blue fw-bold px-3 d-flex align-items-center gap-1 shadow-sm"
-                      style="font-size:12px;height:31px;border-radius:6px;"
-                      title="Marca habitaciones ocupadas como SUCIAS para limpieza diaria">
-                <i class="bi bi-sun-fill"></i>Limpieza Diaria
-              </button>
-
-              <!-- Exportar Excel -->
-              <button @click="exportarExcel" :disabled="loading || lista.length === 0"
-                      class="btn btn-sm btn-custom-green fw-bold px-3 d-flex align-items-center gap-1 shadow-sm"
-                      style="font-size:12px;height:31px;border-radius:6px;">
-                <i class="bi bi-file-earmark-excel"></i>Exportar Excel
-              </button>
-            </div>
-
-          </div>
+        <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-sm btn-dark d-flex align-items-center gap-2" @click="cargarDatos" :disabled="loading" style="font-size:12px;">
+              <i class="bi bi-arrow-clockwise" :class="{'spin-anim':loading}"></i> Actualizar
+            </button>
+            <button v-if="!yaGenerado" @click="generarLista" :disabled="loading" class="btn btn-sm btn-primary fw-bold d-flex align-items-center gap-1" style="font-size:12px;">
+              <i class="bi bi-magic"></i>Generar Lista
+            </button>
+            <button @click="resetNocturno" :disabled="loading" class="btn btn-sm btn-warning fw-bold d-flex align-items-center gap-1" style="font-size:12px; color: #000;">
+              <i class="bi bi-sun-fill"></i>Diaria
+            </button>
+            <button @click="exportarExcel" :disabled="loading || lista.length === 0" class="btn btn-sm btn-success fw-bold d-flex align-items-center gap-1" style="font-size:12px;">
+              <i class="bi bi-file-earmark-excel"></i>Excel
+            </button>
         </div>
       </div>
 
-      <!-- TABLA EXCEL -->
-      <div class="card border-0 shadow-sm overflow-hidden" style="border-radius:12px;">
-        <div class="lv2-grid-container">
-          <table class="table table-bordered mb-0 lv2-table">
+      <!-- TABLA PAPEL -->
+      <div class="px-3">
+        <div class="lv2-grid-container" style="border: 2px solid #000; border-top: none; border-radius: 0;">
+          <table class="table table-bordered mb-0 lv2-table paper-table">
             <thead>
-              <tr class="table-dark text-white text-uppercase text-center" style="font-size: 10px; letter-spacing: 0.5px;">
-                <th class="lv2-sticky" style="padding: 12px 16px; width: 50px; z-index: 15 !important;">HAB</th>
-                <th style="padding: 12px 16px; width: 90px;">TIPO HAB</th>
-                <th style="padding: 12px 16px; width: 110px;">ESTADO</th>
-                <th style="padding: 12px 16px; width: 55px;">PAX</th>
-                <th style="padding: 12px 16px; width: 110px;">ROOM ESTADO</th>
-                <th style="padding: 12px 16px; width: 130px;">ACCIÓN RÁPIDA</th>
+              <tr class="table-light text-center" style="font-size: 11px; color: #000; border-bottom: 2px solid #000;">
+                <th class="lv2-sticky" style="padding: 10px; width: 60px; z-index: 15 !important;">HAB</th>
+                <th style="padding: 10px; width: 90px;">RESERVAS</th>
+                <th style="padding: 10px; width: 60px;">PAX</th>
+                <th style="padding: 10px; width: 90px;">SALIDAS</th>
+                <th style="padding: 10px; width: 90px;">REPASOS</th>
+                <th style="padding: 10px; width: 90px;">PENDIENTES</th>
+                <th style="padding: 10px; width: 120px;">ESTADO</th>
+                <th style="padding: 10px; width: 120px;">ACCIÓN</th>
               </tr>
             </thead>
 
             <tbody>
               <!-- Cargando -->
               <tr v-if="loading">
-                <td colspan="6" class="text-center py-5">
-                  <div class="spinner-border text-primary me-2"></div>
-                  <span class="text-muted fw-semibold">Cargando datos...</span>
+                <td colspan="8" class="text-center py-5">
+                  <div class="spinner-border text-dark me-2"></div>
+                  <span class="fw-bold text-dark">Cargando datos...</span>
                 </td>
               </tr>
 
               <!-- Sin datos -->
               <tr v-else-if="listaFiltrada.length === 0">
-                <td colspan="6" class="text-center py-5 text-muted">
+                <td colspan="8" class="text-center py-5 text-muted">
                   <i class="bi bi-inbox fs-1 d-block opacity-25 mb-2"></i>
-                  <span>No hay registros para esta fecha o filtro.</span>
-                  <br>
-                  <button v-if="!yaGenerado" @click="generarLista"
-                          class="btn btn-sm btn-dark mt-3 fw-bold">
-                    <i class="bi bi-magic me-1"></i>Generar Lista de Hoy
-                  </button>
+                  <span>No hay registros para esta fecha.</span>
                 </td>
               </tr>
 
               <!-- Filas de datos -->
-              <tr v-else v-for="h in listaFiltrada" :key="h.id"
-                  :class="getRowClass(h)">
+              <tr v-else v-for="h in listaFiltrada" :key="h.id" :class="getRowClass(h)">
 
                 <!-- HAB (sticky) -->
-                <td class="lv2-sticky text-center fw-bold"
-                    :style="{ borderLeft: '4px solid ' + getColorTipo(h.tipo_limpieza) }"
-                    style="font-size:12px;color:#1e293b;">
+                <td class="lv2-sticky text-center fw-bold fs-6" style="color:#000;">
                   {{ h.habitacion }}
                 </td>
 
-                <!-- TIPO HAB -->
-                <td class="text-center text-muted fw-semibold" style="font-size:12px;">
-                  {{ h.tipo_hab ? h.tipo_hab.toUpperCase() : '—' }}
+                <!-- RESERVAS (Check) -->
+                <td class="text-center fw-bold" style="font-size: 16px; color: #000;">
+                  <span v-if="h.tipo_limpieza === 'programada' || h.tipo_limpieza === 'estimacion' || (h.room_estado === 'ocupado' && h.tipo_limpieza !== 'salida' && h.tipo_limpieza !== 'reposo')">✓</span>
                 </td>
 
-                <!-- ESTADO (select editable) -->
-                <td class="px-1">
+                <!-- PAX -->
+                <td class="text-center fw-bold" style="color:#000;">
+                  {{ h.pax ?? h.ocupantes ?? '' }}
+                </td>
+
+                <!-- SALIDAS (Check) -->
+                <td class="text-center fw-bold" style="font-size: 16px; color: #000;">
+                  <span v-if="h.tipo_limpieza === 'salida'">✓</span>
+                </td>
+
+                <!-- REPASOS (Check) -->
+                <td class="text-center fw-bold" style="font-size: 16px; color: #000;">
+                  <span v-if="h.tipo_limpieza === 'reposo'">✓</span>
+                </td>
+
+                <!-- PENDIENTES (Check si estado es pendiente o en proceso) -->
+                <td class="text-center fw-bold" style="font-size: 16px; color: #000;">
+                  <span v-if="h.estado === 'pendiente' || h.estado === 'en proceso'">✓</span>
+                </td>
+
+                <!-- ESTADO (Editable) -->
+                <td class="px-1 text-center">
                   <select v-model="h.estado" @change="actualizarEstado(h)"
                           class="lv2-select fw-bold"
-                          :class="getEstadoSelectClass(h.estado)">
+                          :class="getEstadoSelectClass(h.estado)"
+                          style="font-size: 11px; text-transform: uppercase;">
                     <option value="pendiente">Pendiente</option>
                     <option value="en proceso">En Proceso</option>
                     <option value="lista">Lista</option>
@@ -174,40 +172,22 @@ include $_projectRoot . 'app/Views/layouts/head.php';
                   </select>
                 </td>
 
-
-                <!-- PAX -->
-                <td class="text-center fw-bold" style="font-size:12px;color:#1e293b;">
-                  {{ h.pax ?? h.ocupantes ?? '—' }}
-                </td>
-
-                <!-- ROOM ESTADO (texto con color, sin badge de fondo) -->
-                <td class="text-center">
-                  <span v-if="h.room_estado" class="fw-bold text-uppercase" style="font-size:12px;"
-                        :style="{ color: getRoomEstadoColor(h.room_estado) }">
-                    {{ h.room_estado }}
-                  </span>
-                  <span v-else class="text-muted" style="font-size:12px;">—</span>
-                </td>
-
                 <!-- ACCIÓN RÁPIDA -->
                 <td class="text-center px-1">
                   <button v-if="h.estado !== 'lista' && h.estado !== 'mantenimiento'"
                           @click="toggleListo(h)" :disabled="loading"
-                          class="btn btn-sm fw-bold w-100"
-                          style="background:linear-gradient(135deg,#059669,#047857);color:#fff;
-                                 font-size:12px;border:none;border-radius:6px;padding:5px 4px;">
-                    <i class="bi bi-check2-circle me-1"></i>Marcar Lista
+                          class="btn btn-sm fw-bold w-100 btn-dark"
+                          style="font-size:11px; border-radius:4px; padding:4px;">
+                    <i class="bi bi-check2-square me-1"></i>Marcar Lista
                   </button>
                   <button v-else-if="h.estado === 'lista'"
                           @click="toggleListo(h)" :disabled="loading"
-                          class="btn btn-sm fw-bold w-100"
-                          style="background:#d1fae5;color:#065f46;font-size:12px;
-                                 border:1px solid #a7f3d0;border-radius:6px;padding:5px 4px;">
+                          class="btn btn-sm fw-bold w-100 btn-outline-dark"
+                          style="font-size:11px; border-radius:4px; padding:4px;">
                     <i class="bi bi-check-all me-1"></i>Lista ✓
                   </button>
-                  <span v-else class="badge bg-danger-subtle text-danger"
-                        style="font-size:12px;padding:5px 8px;">
-                    <i class="bi bi-tools me-1"></i>Bloqueada
+                  <span v-else class="badge bg-danger-subtle text-danger" style="font-size:11px;padding:4px 8px;">
+                    <i class="bi bi-tools"></i> Bloq.
                   </span>
                 </td>
 
@@ -216,6 +196,12 @@ include $_projectRoot . 'app/Views/layouts/head.php';
 
 
           </table>
+        </div>
+        <!-- Observaciones -->
+        <div class="p-3 border-top-0" style="border: 2px solid #000; border-top: 0; background: #fff;">
+            <div class="fw-bold mb-1" style="color: #000; font-size: 14px;">OBSERVACIONES ______________________________________________________________________________________________________</div>
+            <div class="fw-bold mb-1" style="color: #000; font-size: 14px; text-indent: 125px;">______________________________________________________________________________________________________</div>
+            <div class="fw-bold" style="color: #000; font-size: 14px; text-indent: 125px;">______________________________________________________________________________________________________</div>
         </div>
       </div><!-- /card tabla -->
 
@@ -249,13 +235,15 @@ include $_projectRoot . 'app/Views/layouts/head.php';
     position: sticky;
     top: 0;
     z-index: 10;
-    color: #ffffff !important;
-    font-weight: 700;
+    color: #000 !important;
+    font-weight: 800;
     text-transform: uppercase;
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.5px;
     text-align: center;
-    border: 1px solid #cbd5e1;
+    border: 1px solid #000;
+    border-top: none;
+    background: #f1f5f9;
     vertical-align: middle;
     padding: 10px 6px;
     white-space: nowrap;
@@ -270,20 +258,20 @@ include $_projectRoot . 'app/Views/layouts/head.php';
     position: sticky !important;
     left: 0;
     z-index: 6;
-    background-color: #f8fafc;
-    border-right: 1px solid #cbd5e1 !important;
+    background-color: #fff;
+    border-right: 1px solid #000 !important;
   }
   .lv2-table thead th.lv2-sticky {
     z-index: 16 !important;
     top: 0;
-    background-color: #212529 !important;
-    border-right: none !important;
+    background-color: #f1f5f9 !important;
+    border-right: 1px solid #000 !important;
   }
 
   .lv2-table td {
-    padding: 3px 4px;
+    padding: 6px 4px;
     vertical-align: middle;
-    border: 1px solid #cbd5e1;
+    border: 1px solid #000;
     background: #fff;
     white-space: nowrap;
   }

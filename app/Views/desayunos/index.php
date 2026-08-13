@@ -2,17 +2,22 @@
 /**
  * app/Views/desayunos/index.php
  */
-require_once __DIR__ . '/../layouts/header.php';
-require_once __DIR__ . '/../layouts/sidebar.php';
-require_once __DIR__ . '/../layouts/navbar.php';
-
+$base = '../../../';
+$_projectRoot = defined('BASE_PATH') ? BASE_PATH : (rtrim(realpath(dirname(__DIR__, 3)), '\\/') . DIRECTORY_SEPARATOR);
+require_once $_projectRoot . 'app/Middleware/session.php';
+require_once $_projectRoot . 'app/Middleware/auth.php';
 protegerPorRol('limpieza', 'desayunos');
+
+$page_title = 'Desayunos — Hotel Manager';
+include $_projectRoot . 'app/Views/layouts/head.php';
 
 $fechaStr = date('Y-m-d');
 ?>
 
 <!-- VUE APP -->
-<div id="app-desayunos" v-cloak style="display:contents">
+<div id="app-desayunos" style="display:contents" v-cloak>
+  <?php include $_projectRoot . 'app/Views/layouts/sidebar.php'; ?>
+  <div class="main-content">
     <!-- BARRA SUPERIOR ESTATICA (Fuera de impresión) -->
     <div class="d-print-none sticky-top bg-white border-bottom shadow-sm z-3" style="top: 60px;">
         <div class="px-4 py-3 d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
@@ -121,6 +126,7 @@ $fechaStr = date('Y-m-d');
             </table>
         </div>
     </div>
+    </div>
 </div>
 
 <script>
@@ -129,7 +135,7 @@ $fechaStr = date('Y-m-d');
         hoy: <?= json_encode($fechaStr) ?>
     };
 </script>
-<script src="<?= $_root ?>public/assets/js/desayunos.js?v=<?= time() ?>"></script>
+<script src="<?= $base ?>public/assets/js/desayunos.js?v=<?= time() ?>"></script>
 
 <style>
 /* ── ESTILOS PARA LA HOJA FÍSICA Y TABLAS ── */
@@ -182,4 +188,4 @@ input[type="text"]:focus {
 [v-cloak] { display: none !important; }
 </style>
 
-<?php require_once __DIR__ . '/../layouts/footer.php'; ?>
+<?php include $_projectRoot . 'app/Views/layouts/footer.php'; ?>

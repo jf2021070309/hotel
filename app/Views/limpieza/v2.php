@@ -101,9 +101,9 @@ include $_projectRoot . 'app/Views/layouts/head.php';
                   <input type="text" v-model="h.reservas_mark" class="form-control border-0 bg-transparent text-center fw-bold shadow-none w-100 h-100" style="font-size: 16px; color: #000; outline: none; cursor: text;">
                 </td>
 
-                <!-- PAX (Editable o auto) -->
+                <!-- PAX (Libre para escribir) -->
                 <td class="text-center fw-bold align-middle p-0" style="width: 60px;">
-                  <input type="text" v-model="h.pax" :placeholder="h.ocupantes" class="form-control border-0 bg-transparent text-center fw-bold shadow-none w-100 h-100" style="color:#000; outline: none; cursor: text;">
+                  <input type="text" v-model="h.pax_mark" class="form-control border-0 bg-transparent text-center fw-bold shadow-none w-100 h-100" style="color:#000; outline: none; cursor: text;">
                 </td>
 
                 <!-- SALIDAS (Libre para escribir) -->

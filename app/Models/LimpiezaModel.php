@@ -155,6 +155,7 @@ class LimpiezaModel {
     public function guardarCambiosManuales(array $registros): bool {
         // Asegurar columnas (ignora error si ya existen)
         try {
+            $this->pdo->exec("ALTER TABLE limpieza_registros ADD COLUMN pax_mark VARCHAR(255) DEFAULT NULL");
             $this->pdo->exec("ALTER TABLE limpieza_registros ADD COLUMN reservas_mark VARCHAR(255) DEFAULT NULL");
             $this->pdo->exec("ALTER TABLE limpieza_registros ADD COLUMN salidas_mark VARCHAR(255) DEFAULT NULL");
             $this->pdo->exec("ALTER TABLE limpieza_registros ADD COLUMN repasos_mark VARCHAR(255) DEFAULT NULL");
@@ -164,7 +165,8 @@ class LimpiezaModel {
         $this->pdo->beginTransaction();
         try {
             $sql = "UPDATE limpieza_registros 
-                    SET reservas_mark = :reservas,
+                    SET pax_mark = :pax_mark,
+                        reservas_mark = :reservas,
                         salidas_mark = :salidas,
                         repasos_mark = :repasos,
                         pendientes_mark = :pendientes
@@ -175,6 +177,7 @@ class LimpiezaModel {
                 if (empty($r['id'])) continue; 
                 
                 $stmt->execute([
+                    ':pax_mark'   => $r['pax_mark'] ?? null,
                     ':reservas'   => $r['reservas_mark'] ?? null,
                     ':salidas'    => $r['salidas_mark'] ?? null,
                     ':repasos'    => $r['repasos_mark'] ?? null,

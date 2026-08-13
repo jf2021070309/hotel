@@ -191,6 +191,199 @@ createApp({
 
     async function actualizarEstado(h) {
       // Guardar estado seleccionado inline
+/**
+ * assets/js/limpieza_v2.js
+ * Vue 3 — Panel Limpieza V2 (tabla Excel)
+ */
+'use strict';
+
+const { createApp, ref, computed, onMounted } = Vue;
+
+createApp({
+  setup() {
+    // ── Estado ─────────────────────────────────────────────────
+    const API      = window.SERVER_DATA.apiBase;
+    const fecha    = ref(window.SERVER_DATA.hoy);
+    const lista    = ref([]);
+    const loading  = ref(false);
+    const busqueda = ref('');
+    const filtroEstado = ref('todos');
+
+    // ── Computed ────────────────────────────────────────────────
+    const yaGenerado = computed(() => lista.value.length > 0);
+
+    const listaFiltrada = computed(() => {
+      let result = lista.value;
+
+      // Filtro por estado activo
+      if (filtroEstado.value !== 'todos') {
+        result = result.filter(h => h.estado === filtroEstado.value);
+      }
+
+      // Búsqueda libre
+      if (busqueda.value.trim()) {
+        const q = busqueda.value.toLowerCase().trim();
+        result = result.filter(h =>
+          String(h.habitacion).includes(q) ||
+          (h.estado  || '').toLowerCase().includes(q) ||
+          (h.tipo_limpieza || '').toLowerCase().includes(q) ||
+          (h.room_estado || '').toLowerCase().includes(q)
+        );
+      }
+
+      return result;
+    });
+
+    const porcentajeGlobal = computed(() => {
+      if (!lista.value.length) return 0;
+      const listas = lista.value.filter(h => h.estado === 'lista').length;
+      return Math.round((listas / lista.value.length) * 100);
+    });
+
+    // ── Helpers de conteo ──────────────────────────────────────
+    function countEstado(estado) {
+      return lista.value.filter(h => h.estado === estado).length;
+    }
+
+    // ── Colores / Labels ───────────────────────────────────────
+    function getColorTipo(tipo) {
+      const map = {
+        salida:     '#dc2626',
+        reposo:     '#d97706',
+        programada: '#2563eb',
+        estimacion: '#7c3aed',
+      };
+      return map[tipo] || '#64748b';
+    }
+
+    function labelTipo(tipo) {
+      const map = {
+        salida:     'SALIDA',
+        reposo:     'REPASO',
+        programada: 'PROG.',
+        estimacion: 'ESTIM.',
+      };
+      return map[tipo] || (tipo || '—').toUpperCase();
+    }
+
+    function getRoomEstadoColor(estado) {
+      const map = {
+        ocupado:      '#2563eb',
+        libre:        '#059669',
+        limpieza:     '#d97706',
+        sucio:        '#92400e',
+        mantenimiento:'#dc2626',
+      };
+      return map[(estado||'').toLowerCase()] || '#64748b';
+    }
+
+    function getEstadoSelectClass(estado) {
+      if (estado === 'lista')      return 'estado-lista';
+      if (estado === 'en proceso') return 'estado-proceso';
+      if (estado === 'pendiente')  return 'estado-pendiente';
+      return '';
+    }
+
+    function getRowClass(h) {
+      if (h.estado === 'lista')       return 'row-lista';
+      if (h.estado === 'en proceso')  return 'row-proceso';
+      if (h.estado === 'mantenimiento') return 'row-mant';
+      return '';
+    }
+
+    // ── API calls ──────────────────────────────────────────────
+    async function cargarDatos() {
+      loading.value = true;
+      try {
+        const apiHabs = API.replace('limpieza.php', 'habitaciones.php');
+        const [resLimpieza, resHabs] = await Promise.all([
+          axios.get(`${API}?action=detalle_fecha&fecha=${fecha.value}`),
+          axios.get(`${apiHabs}?action=todos`)
+        ]);
+
+        const limpiezaData = resLimpieza.data.data || [];
+        const habsData = resHabs.data.data || [];
+
+        const combined = habsData.map(h => {
+          const l = limpiezaData.find(x => String(x.habitacion) === String(h.numero)) || {};
+          return {
+            id: l.id || null,
+            habitacion_id: h.id,
+            habitacion: h.numero,
+            tipo_hab: h.tipo,
+            pax: l.pax || '',
+            room_estado: h.estado,
+            estado: l.estado || '',
+            tipo_limpieza: l.tipo_limpieza || ''
+          };
+        });
+
+        // Ordenar numéricamente si es posible
+        combined.sort((a,b) => String(a.habitacion).localeCompare(String(b.habitacion), undefined, {numeric: true}));
+        lista.value = combined;
+      } catch (e) {
+        console.error('[LimpiezaV2] cargarDatos error', e);
+        Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo cargar la lista.', timer: 2500, showConfirmButton: false });
+      }
+      loading.value = false;
+    }
+
+    async function generarLista() {
+      const { isConfirmed } = await Swal.fire({
+        title: '¿Generar lista de limpieza?',
+        text: `Se creará la lista para ${fecha.value}`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, generar',
+        confirmButtonColor: '#7c3aed',
+        cancelButtonText: 'Cancelar',
+      });
+      if (!isConfirmed) return;
+
+      loading.value = true;
+      try {
+        const res = await axios.post(`${API}?action=generar`);
+        if (res.data.ok) {
+          Swal.fire({ icon: 'success', title: '¡Lista generada!', text: res.data.msg || '', timer: 1800, showConfirmButton: false });
+          await cargarDatos();
+        } else {
+          Swal.fire({ icon: 'warning', title: 'Aviso', text: res.data.msg || 'Sin cambios.' });
+        }
+      } catch (e) {
+        Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo generar la lista.' });
+      }
+      loading.value = false;
+    }
+
+    async function resetNocturno() {
+      const { isConfirmed } = await Swal.fire({
+        title: '¿Ejecutar Limpieza Diaria?',
+        text: 'Marcará todas las habitaciones ocupadas como SUCIAS para su repaso.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, ejecutar',
+        confirmButtonColor: '#1a56db',
+        cancelButtonText: 'Cancelar',
+      });
+      if (!isConfirmed) return;
+
+      loading.value = true;
+      try {
+        const res = await axios.post(`${API}?action=noche_reset`);
+        if (res.data.ok) {
+          Swal.fire({ icon: 'success', title: 'Listo', text: res.data.msg, timer: 2000, showConfirmButton: false });
+          await cargarDatos();
+        } else {
+          Swal.fire({ icon: 'error', title: 'Error', text: res.data.msg });
+        }
+      } catch (e) {
+        Swal.fire({ icon: 'error', title: 'Error', text: 'Fallo al ejecutar reset.' });
+      }
+      loading.value = false;
+    }
+
+    async function actualizarEstado(h) {
+      // Guardar estado seleccionado inline
       try {
         const body = new FormData();
         body.append('id', h.id);
@@ -206,40 +399,17 @@ createApp({
     }
 
     async function toggleListo(h) {
-      const nuevoEstado = h.estado === 'lista' ? 'pendiente' : 'lista';
-      const anterior = h.estado;
-      h.estado = nuevoEstado; // Optimistic update
-
-      try {
-        const body = new FormData();
-        body.append('id', h.id);
-        body.append('estado', nuevoEstado);
-        const res = await axios.post(`${API}?action=actualizar`, body);
-        if (!res.data.ok) {
-          h.estado = anterior; // Revertir
-          Swal.fire({ icon: 'error', title: 'Error', text: res.data.msg || 'No se pudo actualizar.' });
-        } else {
-          // Recargar para obtener hora_fin actualizada
-          await cargarDatos();
-        }
-      } catch (e) {
-        h.estado = anterior;
-        Swal.fire({ icon: 'error', title: 'Error', text: 'Fallo de red.' });
-        loading.value = false;
+      // Removido visualmente
     }
 
     async function guardarCambios() {
-      // Simular guardado en base de datos para los campos manuales
       Swal.fire({
         icon: 'success',
         title: '¡Cambios Guardados!',
-        text: 'Las anotaciones manuales de la hoja han sido registradas (Simulación).',
+        text: 'Las anotaciones manuales han sido registradas (Simulación).',
         timer: 2000,
         showConfirmButton: false
       });
-      // NOTA: Para implementar guardado real, se debe enviar lista.value a un endpoint backend
-      // que lo guarde en base de datos, por ejemplo:
-      // await axios.post(`${API}?action=guardar_cambios_manuales`, { registros: lista.value });
     }
 
     // ── Exportar Excel ─────────────────────────────────────────

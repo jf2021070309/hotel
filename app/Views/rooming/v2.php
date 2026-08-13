@@ -227,6 +227,9 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 <td class="sticky-col text-center px-1">
                   <div class="d-flex align-items-center justify-content-center gap-1">
                     <input type="checkbox" v-model="f.excluir" class="form-check-input flex-shrink-0" title="Ocultar en Excel" style="cursor:pointer; width:16px; height:16px; margin:0;">
+                    <button v-if="idx > 0" class="btn btn-sm btn-link p-0" :class="f.unido_anterior ? 'text-primary' : 'text-secondary'" @click="toggleUnirFila(f, idx)" title="Unir con la habitación anterior" style="opacity: 0.8;">
+                      <i class="bi bi-link-45deg fs-5"></i>
+                    </button>
                     <button class="btn btn-sm btn-link text-success p-0" @click="f.marcado = !f.marcado; marcarModificado(f)" title="Marcar/Desmarcar fila" style="opacity: 0.8;">
                       <i class="bi" :class="f.marcado ? 'bi-check-square-fill' : 'bi-square'"></i>
                     </button>
@@ -386,7 +389,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 </td>
                 
                 <!-- PAGO TOTAL -->
-                <td class="p-0" style="vertical-align:stretch;">
+                <td v-if="!f.unido_anterior" class="p-0" style="vertical-align:stretch;" :rowspan="f.rowspan_pagos">
                   <div class="d-flex flex-column h-100">
                     <div v-for="(p, pIdx) in f.periodos_list" :key="'pt'+pIdx" class="pax-input-container w-100 d-flex align-items-center justify-content-end pe-2"
                          :style="{ borderBottom: pIdx===f.periodos_list.length-1?'none':'1px dashed #000', padding:'2px 4px' }">
@@ -400,7 +403,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 </td>
                 
                 <!-- LATE CHECK OUT -->
-                <td class="p-0" style="vertical-align:stretch;">
+                <td v-if="!f.unido_anterior" class="p-0" style="vertical-align:stretch;" :rowspan="f.rowspan_pagos">
                   <div class="d-flex flex-column h-100">
                     <div v-for="(p, pIdx) in f.periodos_list" :key="'lc'+pIdx" class="pax-input-container w-100"
                          :style="{ borderBottom: pIdx===f.periodos_list.length-1?'none':'1px dashed #000', padding:'2px 4px' }">
@@ -414,7 +417,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 </td>
                 
                 <!-- MEDIO DE PAGO -->
-                <td class="p-0" style="vertical-align:stretch;">
+                <td v-if="!f.unido_anterior" class="p-0" style="vertical-align:stretch;" :rowspan="f.rowspan_pagos">
                   <div class="d-flex flex-column h-100">
                     <div v-for="(p, pIdx) in f.periodos_list" :key="'mp'+pIdx" class="pax-input-container w-100"
                          :style="{ borderBottom: pIdx===f.periodos_list.length-1?'none':'1px dashed #000', padding:'2px 4px' }">
@@ -434,7 +437,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 </td>
                 
                 <!-- COMPROBANTE DE PAGO -->
-                <td class="p-0" style="vertical-align:stretch;" v-show="filtro.vista !== 'no_registrados'">
+                <td v-if="!f.unido_anterior" class="p-0" style="vertical-align:stretch;" v-show="filtro.vista !== 'no_registrados'" :rowspan="f.rowspan_pagos">
                   <div class="d-flex flex-column h-100">
                     <div v-for="(p, pIdx) in f.periodos_list" :key="'cp'+pIdx" class="pax-input-container w-100"
                          :style="{ borderBottom: pIdx===f.periodos_list.length-1?'none':'1px dashed #000', padding:'2px 4px' }">
@@ -450,7 +453,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 </td>
                 
                 <!-- NUMERO DE COMPROBANTE -->
-                <td class="p-0" style="vertical-align:stretch;" v-show="filtro.vista !== 'no_registrados'">
+                <td v-if="!f.unido_anterior" class="p-0" style="vertical-align:stretch;" v-show="filtro.vista !== 'no_registrados'" :rowspan="f.rowspan_pagos">
                   <div class="d-flex flex-column h-100">
                     <div v-for="(p, pIdx) in f.periodos_list" :key="'nc'+pIdx" class="pax-input-container w-100"
                          :style="{ borderBottom: pIdx===f.periodos_list.length-1?'none':'1px dashed #000', padding:'2px 4px' }">
@@ -462,7 +465,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 </td>
                 
                 <!-- QUIEN COBRO -->
-                <td class="p-0" style="vertical-align:stretch;">
+                <td v-if="!f.unido_anterior" class="p-0" style="vertical-align:stretch;" :rowspan="f.rowspan_pagos">
                   <div class="d-flex flex-column h-100">
                     <div v-for="(p, pIdx) in f.periodos_list" :key="'qc'+pIdx" class="pax-input-container w-100"
                          :style="{ borderBottom: pIdx===f.periodos_list.length-1?'none':'1px dashed #000', padding:'2px 4px' }">
@@ -474,7 +477,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 </td>
                 
                 <!-- CARRO -->
-                <td class="px-1">
+                <td v-if="!f.unido_anterior" class="px-1" :rowspan="f.rowspan_pagos">
                   <select v-model="f.carro" class="form-select form-select-sm table-editable-select text-center" @change="marcarModificado(f)">
                     <option value="NO">NO</option>
                     <option value="SI">SI</option>
@@ -482,7 +485,7 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 </td>
                 
                 <!-- OBSERVACIONES -->
-                <td class="px-1">
+                <td v-if="!f.unido_anterior" class="px-1" :rowspan="f.rowspan_pagos">
                   <textarea v-model="f.observaciones" class="form-control form-control-sm table-editable-textarea" rows="1" @input="marcarModificado(f)" style="width: 100%; min-height: 24px; font-size: 11px;"></textarea>
                 </td>
               </tr>

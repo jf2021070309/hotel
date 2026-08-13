@@ -91,21 +91,21 @@ createApp({
       } else if (this.filtro.vista === 'sunat') {
         filtradas = filtradas.filter(f => {
           if (f.no_registrado == 1) return false;
-          const excluidos = ['NINGUNO', 'NINGUNA', 'NINGUN', '-', ''];
+          const incluidos = ['BOLETA', 'FACTURA'];
           
-          // Chequea si el comprobante base está excluido
+          // Chequea si el comprobante base está incluido
           const baseComprobante = (f.comprobante_pago || f.tipo_comprobante || '').toUpperCase().trim();
           
-          // O si la fila tiene periodos, verifica que NO tenga solo NINGUNO
-          let periodoNinguno = false;
+          // O si la fila tiene periodos, verifica que al menos uno tenga BOLETA o FACTURA
+          let tieneSunat = false;
           if (f.periodos_list && f.periodos_list.length > 0) {
-              periodoNinguno = f.periodos_list.every(p => excluidos.includes((p.comprobante_pago || '').toUpperCase().trim()));
+              tieneSunat = f.periodos_list.some(p => incluidos.includes((p.comprobante_pago || '').toUpperCase().trim()));
           }
           
           if (f.periodos_list && f.periodos_list.length > 0) {
-              return !periodoNinguno;
+              return tieneSunat;
           } else {
-              return !excluidos.includes(baseComprobante);
+              return incluidos.includes(baseComprobante);
           }
         });
       } else {
@@ -116,7 +116,7 @@ createApp({
         return filtradas;
       }
       const q = this.busqueda.toLowerCase().trim();
-      return filtradas.filter(f => {
+      let res = filtradas.filter(f => {
         return (
           (f.nombre_apellido && f.nombre_apellido.toLowerCase().includes(q)) ||
           (f.hab && f.hab.toLowerCase().includes(q)) ||
@@ -126,6 +126,23 @@ createApp({
           (f.observaciones && f.observaciones.toLowerCase().includes(q))
         );
       });
+      
+      // Calcular rowspan dinámicamente
+      res.forEach(f => f.rowspan_pagos = 1);
+      for (let i = 0; i < res.length; i++) {
+        let fila = res[i];
+        if (fila.unido_anterior) {
+          fila.rowspan_pagos = 0;
+          let j = i - 1;
+          while (j >= 0 && res[j].unido_anterior) {
+            j--;
+          }
+          if (j >= 0) {
+            res[j].rowspan_pagos++;
+          }
+        }
+      }
+      return res;
     },
     cambiosCount() {
       return this.filas.filter(f => f.modificado || !f.stay_id).length;
@@ -224,6 +241,17 @@ createApp({
               else tHab = '';
             }
 
+            // Procesar [UNIDO]
+            let observacionesStr = f.observaciones || '';
+            let unido_anterior = false;
+            if (observacionesStr.startsWith('[UNIDO] ')) {
+              unido_anterior = true;
+              observacionesStr = observacionesStr.replace('[UNIDO] ', '');
+            } else if (observacionesStr.startsWith('[UNIDO]')) {
+              unido_anterior = true;
+              observacionesStr = observacionesStr.replace('[UNIDO]', '');
+            }
+
             return {
               ...f,
               tipo_hab: tHab,
@@ -231,7 +259,10 @@ createApp({
               periodos_list,
               modificado: false,
               marcado: f.marcado == 1 || f.marcado == true,
-              excluir: false
+              excluir: false,
+              unido_anterior: unido_anterior,
+              observaciones: observacionesStr,
+              rowspan_pagos: 1
             };
           });
           
@@ -269,6 +300,30 @@ createApp({
       } finally {
         this.loading = false;
       }
+    },
+
+    toggleUnirFila(fila, idx) {
+      if (idx === 0) return;
+      fila.unido_anterior = !fila.unido_anterior;
+      
+      if (fila.unido_anterior) {
+        // Encontrar padre
+        let j = idx - 1;
+        while (j >= 0 && this.filasFiltradas[j].unido_anterior) {
+            j--;
+        }
+        const padre = this.filasFiltradas[j];
+        if (padre) {
+           // Copiar pagos de padre y resetear total a 0
+           if (fila.periodos_list && fila.periodos_list.length > 0) {
+              fila.periodos_list[0].pago_total = '0';
+              fila.periodos_list[0].medio_pago = padre.periodos_list[0]?.medio_pago || '';
+              fila.periodos_list[0].comprobante_pago = padre.periodos_list[0]?.comprobante_pago || '';
+              fila.periodos_list[0].numero_comprobante = padre.periodos_list[0]?.numero_comprobante || '';
+           }
+        }
+      }
+      this.marcarModificado(fila);
     },
 
     agregarFila() {
@@ -502,8 +557,15 @@ createApp({
 
       const payload = aGuardar.map(f => {
         const p0 = f.periodos_list[0] || {};
+        let obsFinal = f.observaciones || '';
+        if (f.unido_anterior) {
+          if (!obsFinal.includes('[UNIDO]')) {
+            obsFinal = '[UNIDO] ' + obsFinal;
+          }
+        }
         return {
           ...f,
+          observaciones: obsFinal,
           nombre_apellido: f.pax_list.map(p => p.nombre_apellido || '').join('\n'),
           documento_tipo: f.pax_list.map(p => p.documento_tipo || '').join('\n'),
           documento_num: f.pax_list.map(p => p.documento_num || '').join('\n'),

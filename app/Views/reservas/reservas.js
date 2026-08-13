@@ -657,14 +657,16 @@ createApp({
       if (stay.titular === '[MANTENIMIENTO]') return 'est-mantenimiento text-white';
       if (stay.titular === '[SUCIO]') return 'est-sucio text-white';
 
-      // Prioridad 1: Si ya está en el hotel (In-house / Activo)
-      if (stay.estado === 'activo' || stay.estado === 'inhouse' || stay.checkin_realizado) return 'res-inhouse';
-      
       // Prioridad 2: Canal de reserva (para ingresos pendientes)
       const canal = (stay.canal || '').toLowerCase();
-      if (canal.includes('booking')) return 'res-booking';
+      const isBooking = canal.includes('booking');
+
+      // Prioridad 1: Si ya está en el hotel (In-house / Activo)
+      if (stay.estado === 'activo' || stay.estado === 'inhouse' || stay.checkin_realizado) {
+        return isBooking ? 'res-booking-inhouse' : 'res-directo-inhouse';
+      }
       
-      return 'res-directo';
+      return isBooking ? 'res-booking' : 'res-directo';
     };
 
     const esBloqueoEspecial = (stay) => {

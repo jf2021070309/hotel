@@ -379,6 +379,7 @@ class FlujoController {
         $stays = $stmtStays->fetchAll(PDO::FETCH_ASSOC);
 
         $prods = [
+            ['id' => 's_desayuno', 'nombre' => 'DESAYUNO', 'precio_venta' => 0],
             ['id' => 's_san_mateo', 'nombre' => 'SAN MATEO', 'precio_venta' => 5],
             ['id' => 's_inca_kola', 'nombre' => 'INCA KOLA', 'precio_venta' => 7],
             ['id' => 's_coca_cola', 'nombre' => 'COCA COLA', 'precio_venta' => 7],
@@ -431,6 +432,7 @@ class FlujoController {
 
             if ($tipo === 'BEBIDA' && $prodId) {
                 $staticProds = [
+                    's_desayuno' => 'DESAYUNO',
                     's_san_mateo' => 'SAN MATEO',
                     's_inca_kola' => 'INCA KOLA',
                     's_coca_cola' => 'COCA COLA',
@@ -460,7 +462,7 @@ class FlujoController {
                 }
             }
             
-            if ($destino === 'cuenta_hab') {
+            if ($destino === 'cuenta_hab' || $destino === 'cuenta_hab_boleta') {
                 $obsAdicional = " - Se adiciona {$precio} del {$obs}";
                 
                 $stmtCheck = $this->pdo->prepare("SELECT total_pago, pagos_json, observaciones FROM rooming_stays WHERE id = ?");

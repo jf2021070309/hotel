@@ -304,6 +304,7 @@ include $_projectRoot . '/app/Views/layouts/sidebar.php';
              <select class="form-select form-select-sm fw-bold" v-model="formConsumo.destino">
                <option value="independiente">Independiente</option>
                <option value="cuenta_hab">Agregar a factura</option>
+               <option value="cuenta_hab_boleta">Agregar a boleta</option>
              </select>
            </div>
            

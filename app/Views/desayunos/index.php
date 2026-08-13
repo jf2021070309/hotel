@@ -20,16 +20,7 @@ $fechaStr = date('Y-m-d');
   <div class="main-content">
     <!-- BARRA SUPERIOR ESTATICA (Fuera de impresión) -->
     <div class="d-print-none sticky-top bg-white border-bottom shadow-sm z-3" style="top: 60px;">
-        <div class="px-4 py-3 d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
-            <div>
-                <h4 class="mb-1 fw-bold text-dark d-flex align-items-center gap-2">
-                    <div class="bg-primary bg-opacity-10 text-primary p-2 rounded-3">
-                        <i class="bi bi-cup-hot"></i>
-                    </div>
-                    Desayunos Manuales
-                </h4>
-            </div>
-            
+        <div class="px-4 py-2 d-flex flex-column flex-md-row justify-content-end align-items-center gap-3">
             <div class="d-flex align-items-center gap-2">
                 <button class="btn btn-primary fw-bold shadow-sm d-flex align-items-center gap-2 px-3" 
                         @click="guardarCambios" :disabled="loading">

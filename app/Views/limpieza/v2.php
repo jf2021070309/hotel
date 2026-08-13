@@ -137,6 +137,16 @@ include $_projectRoot . 'app/Views/layouts/head.php';
             </div>
         </div>
       </div><!-- /printable-area -->
+
+      <!-- 🟨🟨 CONTROLES INFERIORES (PDF & GUARDAR) 🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨 -->
+      <div class=\x22pt-3 pb-2 d-flex justify-content-end gap-2 print-hide\x22>
+        <button class=\x22btn btn-primary fw-bold shadow-sm\x22 @click=\x22guardarCambios\x22>
+          <i class=\x22bi bi-save me-1\x22></i> Guardar Cambios
+        </button>
+        <button class=\x22btn btn-danger fw-bold shadow-sm\x22 onclick=\x22window.print()\x22>
+          <i class=\x22bi bi-file-earmark-pdf-fill me-1\x22></i> Guardar PDF / Imprimir
+        </button>
+      </div>
     </div><!-- /hoja unificada -->
 
   </div><!-- /main-content -->

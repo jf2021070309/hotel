@@ -7,32 +7,27 @@ class DocumentLookupService
 
     public function consultarDni(string $dni): ?array
     {
-        // Scraping de DNI desactivado a petición del usuario
-        return null;
-
+        $dni = trim($dni);
         if (!preg_match('/^\d{8}$/', $dni)) {
             return null;
         }
 
-        $data = $this->requestJson(self::DNI_ENDPOINT . urlencode($dni), 10);
-        if (!$data) {
-            return null;
-        }
+        $data = $this->requestJson(self::DNI_ENDPOINT . urlencode($dni), 8);
+        if ($data) {
+            if (!empty($data['nombres']) || !empty($data['apellidoPaterno'])) {
+                $nombreCompleto = trim(($data['nombres'] ?? '') . ' ' . ($data['apellidoPaterno'] ?? '') . ' ' . ($data['apellidoMaterno'] ?? ''));
+                if ($nombreCompleto !== '') {
+                    return [
+                        'nombre_completo' => $this->titleCase($nombreCompleto),
+                    ];
+                }
+            }
 
-        if (!empty($data['nombres'])) {
-            $nombreCompleto = trim($data['nombres'])
-                . ' ' . trim($data['apellidoPaterno'] ?? '')
-                . ' ' . trim($data['apellidoMaterno'] ?? '');
-
-            return [
-                'nombre_completo' => $this->titleCase($nombreCompleto),
-            ];
-        }
-
-        if (!empty($data['nombre'])) {
-            return [
-                'nombre_completo' => $this->titleCase($data['nombre']),
-            ];
+            if (!empty($data['nombre'])) {
+                return [
+                    'nombre_completo' => $this->titleCase($data['nombre']),
+                ];
+            }
         }
 
         return null;

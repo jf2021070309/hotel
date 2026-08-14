@@ -562,6 +562,8 @@ createApp({
           if (!obsFinal.includes('[UNIDO]')) {
             obsFinal = '[UNIDO] ' + obsFinal;
           }
+        } else {
+          obsFinal = obsFinal.replace(/\[UNIDO\]\s*/g, '');
         }
         return {
           ...f,
@@ -646,14 +648,16 @@ createApp({
       }, 300);
     },
 
-    // Búsqueda automática por número de documento (DNI lookup) de un pax específico
+    // Búsqueda automática por número de documento (Scraping DNI directo)
     lookupDni(f, idx, pIdx) {
       if (this.lookupDebounce) clearTimeout(this.lookupDebounce);
       
       const p = f.pax_list[pIdx];
-      const doc = p ? p.documento_num : '';
+      const doc = p ? (p.documento_num || '').trim() : '';
       const key = idx + '_' + pIdx;
-      if (!doc || doc.length < 4) {
+      
+      // Solo dispara la consulta si son exactamente 8 dígitos numéricos
+      if (!doc || doc.length !== 8 || !/^\d{8}$/.test(doc)) {
         this.lookupLoading[key] = false;
         this.lookupOk[key] = false;
         return;
@@ -662,27 +666,28 @@ createApp({
       this.lookupLoading[key] = true;
       this.lookupDebounce = setTimeout(async () => {
         try {
-          const resp = await fetch(`${window.SERVER_DATA.clientSearchEndpoint}?action=buscar_pax&q=${encodeURIComponent(doc)}`);
+          const endpoint = window.SERVER_DATA.dniLookupEndpoint || `${window.SERVER_DATA.apiEndpoint}?action=consultar_dni`;
+          const sep = endpoint.includes('?') ? '&' : '?';
+          const resp = await fetch(`${endpoint}${sep}dni=${encodeURIComponent(doc)}`);
           const json = await resp.json();
-          if (json.ok && json.data && json.data.length > 0) {
-            // Match exacto o sugerencia directa
-            const exact = json.data.find(c => c.documento_num === doc) || json.data[0];
-            if (exact) {
-              p.nombre_apellido = exact.nombre_completo;
-              p.documento_tipo = exact.documento_tipo;
-              if (exact.nacionalidad) p.nacionalidad = exact.nacionalidad;
-              if (exact.ciudad) p.ciudad = exact.ciudad;
-              this.lookupOk[key] = true;
-            }
+          
+          if (json.success && json.data && json.data.nombre_completo) {
+            p.nombre_apellido = json.data.nombre_completo;
+            p.documento_tipo = 'DNI';
+            if (!p.nacionalidad) p.nacionalidad = 'Peruana';
+            this.lookupOk[key] = true;
+            f.modificado = true;
           } else {
+            // Si el DNI es inválido o no se encontró en Reniec, dejar para que digite manualmente
             this.lookupOk[key] = false;
           }
         } catch (err) {
-          console.error("Error consultando documento:", err);
+          console.error("Error consultando DNI scraping:", err);
+          this.lookupOk[key] = false;
         } finally {
           this.lookupLoading[key] = false;
         }
-      }, 500);
+      }, 400);
     },
 
     aplicarSugerencia(f, idx, pIdx, s) {

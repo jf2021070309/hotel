@@ -65,22 +65,26 @@ include $_projectRoot . '/app/Views/layouts/head.php';
   }
   
   /* Celdas Unidas */
+  .table-mensual tbody tr td.joined-cell,
   .joined-cell {
-    background-color: #e2e8f0 !important; /* Gris suave para destacar que están unidas */
+    background-color: #f8fafc !important; /* Fondo suave para destacar que están unidas */
+    border-top: 2px solid #3b82f6 !important;
+    border-bottom: 2px solid #3b82f6 !important;
   }
+  .table-mensual tbody tr td.joined-cell .pax-input-container,
   .joined-cell .pax-input-container {
     background-color: transparent !important;
   }
   .joined-input {
     background-color: #ffffff !important;
-    border: 1px solid #94a3b8 !important;
-    border-radius: 4px !important;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.12) !important;
-    padding: 2px 4px !important;
+    border: 1.5px solid #3b82f6 !important;
+    border-radius: 5px !important;
+    box-shadow: 0 1px 3px rgba(59, 130, 246, 0.15) !important;
+    padding: 3px 6px !important;
   }
   .joined-input:focus {
-    border-color: #3b82f6 !important;
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25) !important;
+    border-color: #1d4ed8 !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3) !important;
     outline: none !important;
   }
   .row-marcado > td.joined-cell {
@@ -250,8 +254,11 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 <td class="sticky-col text-center px-1">
                   <div class="d-flex align-items-center justify-content-center gap-1">
                     <input type="checkbox" v-model="f.excluir" class="form-check-input flex-shrink-0" title="Ocultar en Excel" style="cursor:pointer; width:16px; height:16px; margin:0;">
-                    <button v-if="idx > 0" class="btn btn-sm btn-link p-0" :class="f.unido_anterior ? 'text-primary' : 'text-secondary'" @click="toggleUnirFila(f, idx)" title="Unir con la habitación anterior" style="opacity: 0.8;">
-                      <i class="bi bi-link-45deg fs-5"></i>
+                    <button v-if="idx > 0" class="btn btn-sm btn-link p-0" 
+                            :class="f.unido_anterior ? 'text-primary' : 'text-muted opacity-50'" 
+                            @click="toggleUnirFila(f, idx)" 
+                            :title="f.unido_anterior ? 'Unida con la habitación de arriba (Clic para desunir)' : 'Unir con la habitación de arriba'">
+                      <i class="bi fs-5" :class="f.unido_anterior ? 'bi-link-45deg fw-bold' : 'bi-link-45deg'"></i>
                     </button>
                     <button class="btn btn-sm btn-link text-success p-0" @click="f.marcado = !f.marcado; marcarModificado(f)" title="Marcar/Desmarcar fila" style="opacity: 0.8;">
                       <i class="bi" :class="f.marcado ? 'bi-check-square-fill' : 'bi-square'"></i>
@@ -420,8 +427,9 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                       <input type="number" step="0.50" v-model.number="p.pago_total"
                              class="table-editable-input text-end fw-bold text-dark"
                              :class="f.rowspan_pagos > 1 ? 'joined-input' : 'border-0 bg-transparent'"
+                             :placeholder="f.rowspan_pagos > 1 ? 'Total...' : ''"
                              :title="extraerDesgloseConsumos(f.observaciones, p.pago_total)"
-                             @input="marcarModificado(f)" style="width:70px;height:28px;font-size:12px;">
+                             @input="marcarModificado(f)" style="width:75px;height:28px;font-size:12px;">
                     </div>
                   </div>
                 </td>

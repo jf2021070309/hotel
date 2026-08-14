@@ -541,12 +541,30 @@ createApp({
             icon: 'error',
             title: 'Error de red',
             text: 'No se pudo conectar con el servidor.'
-          });
         }
       }
     },
 
     async guardarCambios() {
+      // Sincronizar datos de pago desde el padre a los hijos unidos
+      let parentForSync = null;
+      for (let i = 0; i < this.filasFiltradas.length; i++) {
+        let f = this.filasFiltradas[i];
+        if (f.unido_anterior && parentForSync) {
+          if (f.periodos_list && f.periodos_list.length > 0 && parentForSync.periodos_list && parentForSync.periodos_list.length > 0) {
+            f.periodos_list[0].pago_total = '0';
+            f.periodos_list[0].medio_pago = parentForSync.periodos_list[0].medio_pago;
+            f.periodos_list[0].comprobante_pago = parentForSync.periodos_list[0].comprobante_pago;
+            f.periodos_list[0].numero_comprobante = parentForSync.periodos_list[0].numero_comprobante;
+          }
+          if (parentForSync.modificado) {
+            f.modificado = true;
+          }
+        } else {
+          parentForSync = f;
+        }
+      }
+
       // Filtrar filas modificadas o creadas con datos mínimos
       const aGuardar = this.filas.filter(f => f.modificado && (f.pax_list.some(p => p.nombre_apellido) || f.hab));
       

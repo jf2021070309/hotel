@@ -541,6 +541,7 @@ createApp({
             icon: 'error',
             title: 'Error de red',
             text: 'No se pudo conectar con el servidor.'
+          });
         }
       }
     },

@@ -136,9 +136,18 @@ createApp({
   methods: {
     calcularRowspan(idx) {
       const filas = this.filasFiltradas;
+      const f = filas[idx];
+      if (!f.en_grupo) return 1;
+      
+      // Si es en_grupo pero la anterior también lo es, entonces esta fila es "hija"
+      // y no debe renderizar el td (rowspan 0 o no se llama).
+      // El td solo se renderiza si es el "padre" (el primero del grupo).
+      if (idx > 0 && filas[idx-1].en_grupo) return 0; // Es hija
+      
+      // Si llegamos aquí, es el padre del grupo. Contar cuántos en_grupo contiguos hay.
       let rowspan = 1;
       for (let i = idx + 1; i < filas.length; i++) {
-        if (filas[i].unido_anterior) {
+        if (filas[i].en_grupo) {
           rowspan++;
         } else {
           break;
@@ -240,12 +249,12 @@ createApp({
 
             // Procesar [UNIDO]
             let observacionesStr = f.observaciones || '';
-            let unido_anterior = false;
+            let is_child = false;
             if (observacionesStr.startsWith('[UNIDO] ')) {
-              unido_anterior = true;
+              is_child = true;
               observacionesStr = observacionesStr.replace('[UNIDO] ', '');
             } else if (observacionesStr.startsWith('[UNIDO]')) {
-              unido_anterior = true;
+              is_child = true;
               observacionesStr = observacionesStr.replace('[UNIDO]', '');
             }
 
@@ -257,11 +266,22 @@ createApp({
               modificado: false,
               marcado: f.marcado == 1 || f.marcado == true,
               excluir: false,
-              unido_anterior: unido_anterior,
-              observaciones: observacionesStr,
-              rowspan_pagos: 1
+              is_child: is_child,
+              en_grupo: false,
+              observaciones: observacionesStr
             };
           });
+          
+          // Segunda pasada para establecer 'en_grupo' a los padres e hijos basándose en is_child
+          for (let i = 0; i < this.filas.length; i++) {
+            if (this.filas[i].is_child) {
+              this.filas[i].en_grupo = true;
+              // El padre inmediato hacia arriba también pertenece al grupo
+              if (i > 0) {
+                this.filas[i-1].en_grupo = true;
+              }
+            }
+          }
           
           // Lógica de Highlight
           const urlParams = new URLSearchParams(window.location.search);
@@ -300,32 +320,10 @@ createApp({
     },
 
     toggleUnirFila(fila, idx) {
-      if (idx === 0) return;
-      fila.unido_anterior = !fila.unido_anterior;
-      
-      let padre = null;
-      if (fila.unido_anterior) {
-        // Encontrar padre
-        let j = idx - 1;
-        while (j >= 0 && this.filasFiltradas[j].unido_anterior) {
-            j--;
-        }
-        padre = this.filasFiltradas[j];
-        if (padre) {
-           // Copiar pagos de padre y resetear total a 0
-           if (fila.periodos_list && fila.periodos_list.length > 0) {
-              fila.periodos_list[0].pago_total = '0';
-              fila.periodos_list[0].medio_pago = padre.periodos_list[0]?.medio_pago || '';
-              fila.periodos_list[0].comprobante_pago = padre.periodos_list[0]?.comprobante_pago || '';
-              fila.periodos_list[0].numero_comprobante = padre.periodos_list[0]?.numero_comprobante || '';
-              fila.periodos_list[0].quien_cobro = padre.periodos_list[0]?.quien_cobro || '';
-           }
-        }
-      }
+      fila.en_grupo = !fila.en_grupo;
       this.marcarModificado(fila);
-      console.log("Clip aplicado en fila:", fila);
-      console.log("Padre encontrado:", padre || "Ninguno");
-      // Forzar re-evaluación de filasFiltradas y repintado del DOM
+      console.log("Fila marcada para grupo:", fila);
+      // Forzar re-evaluación y repintado
       this.filas = [...this.filas];
     },
 
@@ -550,23 +548,37 @@ createApp({
     },
 
     async guardarCambios() {
-      // Sincronizar datos de pago desde el padre a los hijos unidos
       let parentForSync = null;
+      let inGroup = false;
+
       for (let i = 0; i < this.filasFiltradas.length; i++) {
         let f = this.filasFiltradas[i];
-        if (f.unido_anterior && parentForSync) {
-          if (f.periodos_list && f.periodos_list.length > 0 && parentForSync.periodos_list && parentForSync.periodos_list.length > 0) {
-            f.periodos_list[0].pago_total = '0';
-            f.periodos_list[0].medio_pago = parentForSync.periodos_list[0].medio_pago;
-            f.periodos_list[0].comprobante_pago = parentForSync.periodos_list[0].comprobante_pago;
-            f.periodos_list[0].numero_comprobante = parentForSync.periodos_list[0].numero_comprobante;
-            f.periodos_list[0].quien_cobro = parentForSync.periodos_list[0].quien_cobro;
-          }
-          if (parentForSync.modificado) {
-            f.modificado = true;
+        
+        if (f.en_grupo) {
+          if (!inGroup || !parentForSync) {
+            // Primer elemento del grupo (Padre)
+            parentForSync = f;
+            inGroup = true;
+            f.is_child_for_db = false;
+          } else {
+            // Siguientes elementos del grupo (Hijos)
+            f.is_child_for_db = true;
+            if (f.periodos_list && f.periodos_list.length > 0 && parentForSync.periodos_list && parentForSync.periodos_list.length > 0) {
+              f.periodos_list[0].pago_total = '0';
+              f.periodos_list[0].medio_pago = parentForSync.periodos_list[0].medio_pago;
+              f.periodos_list[0].comprobante_pago = parentForSync.periodos_list[0].comprobante_pago;
+              f.periodos_list[0].numero_comprobante = parentForSync.periodos_list[0].numero_comprobante;
+              f.periodos_list[0].quien_cobro = parentForSync.periodos_list[0].quien_cobro;
+            }
+            if (parentForSync.modificado) {
+              f.modificado = true;
+            }
           }
         } else {
-          parentForSync = f;
+          // No está en un grupo
+          inGroup = false;
+          parentForSync = null;
+          f.is_child_for_db = false;
         }
       }
 
@@ -581,12 +593,11 @@ createApp({
       const payload = aGuardar.map(f => {
         const p0 = f.periodos_list[0] || {};
         let obsFinal = f.observaciones || '';
-        if (f.unido_anterior) {
-          if (!obsFinal.includes('[UNIDO]')) {
-            obsFinal = '[UNIDO] ' + obsFinal;
-          }
-        } else {
-          obsFinal = obsFinal.replace(/\[UNIDO\]\s*/g, '');
+        
+        // Agregar o quitar [UNIDO] según sea hijo o padre
+        obsFinal = obsFinal.replace(/\[UNIDO\]\s*/g, '').trim();
+        if (f.is_child_for_db) {
+          obsFinal = '[UNIDO] ' + obsFinal;
         }
         return {
           ...f,

@@ -325,7 +325,10 @@ createApp({
         }
       }
       this.marcarModificado(fila);
-      this.$forceUpdate();
+      console.log("Clip aplicado en fila:", fila);
+      console.log("Padre encontrado:", padre || "Ninguno");
+      // Forzar re-evaluación de filasFiltradas y repintado del DOM
+      this.filas = [...this.filas];
     },
 
     agregarFila() {

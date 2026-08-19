@@ -419,25 +419,22 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 </td>
                 
                 <!-- PAGO TOTAL -->
-                <td v-if="!f.unido_anterior" :class="{'joined-cell': f.rowspan_pagos > 1}" style="vertical-align: middle !important; padding: 4px;" :rowspan="f.rowspan_pagos">
+                <td class="p-0" style="vertical-align: middle !important;">
                   <div v-for="(p, pIdx) in f.periodos_list" :key="'pt'+pIdx" class="d-flex align-items-center justify-content-center"
                        :style="{ borderBottom: pIdx===f.periodos_list.length-1?'none':'1px dashed #000', padding:'2px 0' }">
                     <span class="fw-bold small text-muted me-1">{{ obtenerSimboloMoneda(p.medio_pago) }}</span>
                     <input type="number" step="0.50" v-model.number="p.pago_total"
-                           class="table-editable-input text-end fw-bold text-dark"
-                           :class="f.rowspan_pagos > 1 ? 'joined-input text-center' : 'border-0 bg-transparent'"
-                           :placeholder="f.rowspan_pagos > 1 ? 'Total...' : ''"
+                           class="table-editable-input text-end fw-bold text-dark border-0 bg-transparent px-1"
                            :title="extraerDesgloseConsumos(f.observaciones, p.pago_total)"
                            @input="marcarModificado(f)" style="width:75px;height:28px;font-size:12px;">
                   </div>
                 </td>
                 
                 <!-- LATE CHECK OUT -->
-                <td v-if="!f.unido_anterior" :class="{'joined-cell': f.rowspan_pagos > 1}" style="vertical-align: middle !important; padding: 4px;" :rowspan="f.rowspan_pagos">
+                <td class="p-0" style="vertical-align: middle !important;">
                   <div v-for="(p, pIdx) in f.periodos_list" :key="'lc'+pIdx"
                        :style="{ borderBottom: pIdx===f.periodos_list.length-1?'none':'1px dashed #000', padding:'2px 0' }">
-                    <select v-model="p.late_checkout" class="form-select form-select-sm table-editable-select text-center"
-                            :class="f.rowspan_pagos > 1 ? 'joined-input' : 'border-0 bg-transparent'"
+                    <select v-model="p.late_checkout" class="form-select form-select-sm table-editable-select text-center border-0 bg-transparent px-1"
                             @change="marcarModificado(f)" style="height:28px;font-size:11px;width:100%;">
                       <option value="NO">NO</option>
                       <option value="SI">SI</option>

@@ -314,12 +314,12 @@ createApp({
         }
         const padre = this.filasFiltradas[j];
         if (padre) {
-           // Copiar pagos de padre y resetear total a 0
+           // Copiar pagos de padre
            if (fila.periodos_list && fila.periodos_list.length > 0) {
-              fila.periodos_list[0].pago_total = '0';
               fila.periodos_list[0].medio_pago = padre.periodos_list[0]?.medio_pago || '';
               fila.periodos_list[0].comprobante_pago = padre.periodos_list[0]?.comprobante_pago || '';
               fila.periodos_list[0].numero_comprobante = padre.periodos_list[0]?.numero_comprobante || '';
+              fila.periodos_list[0].quien_cobro = padre.periodos_list[0]?.quien_cobro || '';
            }
         }
       }
@@ -553,10 +553,10 @@ createApp({
         let f = this.filasFiltradas[i];
         if (f.unido_anterior && parentForSync) {
           if (f.periodos_list && f.periodos_list.length > 0 && parentForSync.periodos_list && parentForSync.periodos_list.length > 0) {
-            f.periodos_list[0].pago_total = '0';
             f.periodos_list[0].medio_pago = parentForSync.periodos_list[0].medio_pago;
             f.periodos_list[0].comprobante_pago = parentForSync.periodos_list[0].comprobante_pago;
             f.periodos_list[0].numero_comprobante = parentForSync.periodos_list[0].numero_comprobante;
+            f.periodos_list[0].quien_cobro = parentForSync.periodos_list[0].quien_cobro;
           }
           if (parentForSync.modificado) {
             f.modificado = true;

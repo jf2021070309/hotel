@@ -126,22 +126,6 @@ createApp({
           (f.observaciones && f.observaciones.toLowerCase().includes(q))
         );
       });
-      
-      // Calcular rowspan dinámicamente
-      res.forEach(f => f.rowspan_pagos = 1);
-      for (let i = 0; i < res.length; i++) {
-        let fila = res[i];
-        if (fila.unido_anterior) {
-          fila.rowspan_pagos = 0;
-          let j = i - 1;
-          while (j >= 0 && res[j].unido_anterior) {
-            j--;
-          }
-          if (j >= 0) {
-            res[j].rowspan_pagos++;
-          }
-        }
-      }
       return res;
     },
     cambiosCount() {
@@ -150,6 +134,19 @@ createApp({
   },
 
   methods: {
+    calcularRowspan(idx) {
+      const filas = this.filasFiltradas;
+      let rowspan = 1;
+      for (let i = idx + 1; i < filas.length; i++) {
+        if (filas[i].unido_anterior) {
+          rowspan++;
+        } else {
+          break;
+        }
+      }
+      return rowspan;
+    },
+
     async cargarDatos() {
       this.loading = true;
       try {

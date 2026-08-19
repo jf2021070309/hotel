@@ -419,25 +419,25 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                 </td>
                 
                 <!-- PAGO TOTAL -->
-                <td v-if="!f.unido_anterior" :class="{'joined-cell': f.rowspan_pagos > 1}" style="vertical-align: middle !important; padding: 4px;" :rowspan="f.rowspan_pagos">
+                <td v-if="!f.unido_anterior" :class="{'joined-cell': calcularRowspan(idx) > 1}" style="vertical-align: middle !important; padding: 4px;" :rowspan="calcularRowspan(idx)">
                   <div v-for="(p, pIdx) in f.periodos_list" :key="'pt'+pIdx" class="d-flex align-items-center justify-content-center"
                        :style="{ borderBottom: pIdx===f.periodos_list.length-1?'none':'1px dashed #000', padding:'2px 0' }">
                     <span class="fw-bold small text-muted me-1">{{ obtenerSimboloMoneda(p.medio_pago) }}</span>
                     <input type="number" step="0.50" v-model.number="p.pago_total"
                            class="table-editable-input text-end fw-bold text-dark"
-                           :class="f.rowspan_pagos > 1 ? 'joined-input text-center' : 'border-0 bg-transparent px-1'"
-                           :placeholder="f.rowspan_pagos > 1 ? 'Total...' : ''"
+                           :class="calcularRowspan(idx) > 1 ? 'joined-input text-center' : 'border-0 bg-transparent px-1'"
+                           :placeholder="calcularRowspan(idx) > 1 ? 'Total...' : ''"
                            :title="extraerDesgloseConsumos(f.observaciones, p.pago_total)"
                            @input="marcarModificado(f)" style="width:75px;height:28px;font-size:12px;">
                   </div>
                 </td>
                 
                 <!-- LATE CHECK OUT -->
-                <td v-if="!f.unido_anterior" :class="{'joined-cell': f.rowspan_pagos > 1}" style="vertical-align: middle !important; padding: 4px;" :rowspan="f.rowspan_pagos">
+                <td v-if="!f.unido_anterior" :class="{'joined-cell': calcularRowspan(idx) > 1}" style="vertical-align: middle !important; padding: 4px;" :rowspan="calcularRowspan(idx)">
                   <div v-for="(p, pIdx) in f.periodos_list" :key="'lc'+pIdx"
                        :style="{ borderBottom: pIdx===f.periodos_list.length-1?'none':'1px dashed #000', padding:'2px 0' }">
                     <select v-model="p.late_checkout" class="form-select form-select-sm table-editable-select text-center"
-                            :class="f.rowspan_pagos > 1 ? 'joined-input' : 'border-0 bg-transparent px-1'"
+                            :class="calcularRowspan(idx) > 1 ? 'joined-input' : 'border-0 bg-transparent px-1'"
                             @change="marcarModificado(f)" style="height:28px;font-size:11px;width:100%;">
                       <option value="NO">NO</option>
                       <option value="SI">SI</option>
@@ -445,76 +445,77 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                   </div>
                 </td>
                 
-                <!-- MEDIO DE PAGO -->
-                <td v-if="!f.unido_anterior" :class="{'joined-cell': f.rowspan_pagos > 1}" style="vertical-align: middle !important; padding: 4px;" :rowspan="f.rowspan_pagos">
+                           <!-- MEDIO PAGO -->
+                <td v-if="!f.unido_anterior" :class="{'joined-cell': calcularRowspan(idx) > 1}" style="vertical-align: middle !important; padding: 4px;" :rowspan="calcularRowspan(idx)">
                   <div v-for="(p, pIdx) in f.periodos_list" :key="'mp'+pIdx"
                        :style="{ borderBottom: pIdx===f.periodos_list.length-1?'none':'1px dashed #000', padding:'2px 0' }">
-                    <select v-model="p.medio_pago" class="form-select form-select-sm table-editable-select text-center fw-semibold"
-                            :class="f.rowspan_pagos > 1 ? 'joined-input' : 'border-0 bg-transparent'"
-                            @change="marcarModificado(f)" style="height:28px;font-size:11px;width:100%;">
-                      <option value="">-</option>
-                      <option value="SOLES EFECTIVO">SOLES EFECTIVO</option>
+                    <select v-model="p.medio_pago" class="form-select form-select-sm table-editable-select fw-bold text-center"
+                            :class="calcularRowspan(idx) > 1 ? 'joined-input' : 'border-0 bg-transparent'"
+                            @change="marcarModificado(f)" style="height:28px;font-size:10px;width:100%;">
+                      <option value=""></option>
+                      <option value="EFECTIVO_USD">EFECTIVO USD</option>
+                      <option value="EFECTIVO_CLP">EFECTIVO CLP</option>
+                      <option value="EFECTIVO_BOB">EFECTIVO BOB</option>
                       <option value="POS SOLES">POS SOLES</option>
-                      <option value="DOLARES EFECTIVO">DOLARES EFECTIVO</option>
-                      <option value="POS DOLARES">POS DOLARES</option>
-                      <option value="PESOS EFECTIVO">PESOS EFECTIVO</option>
+                      <option value="POS USD">POS USD</option>
                       <option value="YAPE/PLIN">YAPE/PLIN</option>
                       <option value="TRANSFERENCIA">TRANSFERENCIA</option>
+                      <option value="SOLES EFECTIVO">SOLES EFECTIVO</option>
+                      <option value="CREDITO EMPRESA">CREDITO EMPRESA</option>
                     </select>
                   </div>
                 </td>
                 
-                <!-- COMPROBANTE DE PAGO -->
-                <td v-if="!f.unido_anterior" :class="{'joined-cell': f.rowspan_pagos > 1}" style="vertical-align: middle !important; padding: 4px;" v-show="filtro.vista !== 'no_registrados'" :rowspan="f.rowspan_pagos">
+                <!-- COMPROBANTE -->
+                <td v-if="!f.unido_anterior" :class="{'joined-cell': calcularRowspan(idx) > 1}" style="vertical-align: middle !important; padding: 4px;" v-show="filtro.vista !== 'no_registrados'" :rowspan="calcularRowspan(idx)">
                   <div v-for="(p, pIdx) in f.periodos_list" :key="'cp'+pIdx"
                        :style="{ borderBottom: pIdx===f.periodos_list.length-1?'none':'1px dashed #000', padding:'2px 0' }">
-                    <select v-model="p.comprobante_pago" class="form-select form-select-sm table-editable-select text-center fw-semibold"
-                            :class="f.rowspan_pagos > 1 ? 'joined-input' : 'border-0 bg-transparent'"
+                    <select v-model="p.comprobante_pago" class="form-select form-select-sm table-editable-select fw-bold text-center"
+                            :class="calcularRowspan(idx) > 1 ? 'joined-input' : 'border-0 bg-transparent'"
                             @change="marcarModificado(f)" style="height:28px;font-size:11px;width:100%;">
-                      <option value="NINGUNO">NINGUNO</option>
+                      <option value="F.X.">F.X.</option>
                       <option value="BOLETA">BOLETA</option>
                       <option value="FACTURA">FACTURA</option>
-                      <option value="F.X.">F.X.</option>
+                      <option value="NINGUNO">NINGUNO</option>
                     </select>
                   </div>
                 </td>
                 
-                <!-- NUMERO DE COMPROBANTE -->
-                <td v-if="!f.unido_anterior" :class="{'joined-cell': f.rowspan_pagos > 1}" style="vertical-align: middle !important; padding: 4px;" v-show="filtro.vista !== 'no_registrados'" :rowspan="f.rowspan_pagos">
+                            <!-- NÚMERO COMPROBANTE -->
+                <td v-if="!f.unido_anterior" :class="{'joined-cell': calcularRowspan(idx) > 1}" style="vertical-align: middle !important; padding: 4px;" v-show="filtro.vista !== 'no_registrados'" :rowspan="calcularRowspan(idx)">
                   <div v-for="(p, pIdx) in f.periodos_list" :key="'nc'+pIdx"
                        :style="{ borderBottom: pIdx===f.periodos_list.length-1?'none':'1px dashed #000', padding:'2px 0' }">
-                    <input type="text" v-model="p.numero_comprobante"
-                           class="table-editable-input text-center w-100"
-                           :class="f.rowspan_pagos > 1 ? 'joined-input' : 'border-0 bg-transparent px-1'"
-                           @input="marcarModificado(f)" placeholder="001-452" style="height:28px;font-size:11px;">
+                    <input type="text" v-model="p.numero_comprobante" class="table-editable-input text-center"
+                           :class="calcularRowspan(idx) > 1 ? 'joined-input' : 'border-0 bg-transparent px-1'"
+                           @input="marcarModificado(f)" style="width:100%;height:28px;font-size:11px;">
                   </div>
                 </td>
                 
                 <!-- QUIEN COBRO -->
-                <td v-if="!f.unido_anterior" :class="{'joined-cell': f.rowspan_pagos > 1}" style="vertical-align: middle !important; padding: 4px;" :rowspan="f.rowspan_pagos">
+                <td v-if="!f.unido_anterior" :class="{'joined-cell': calcularRowspan(idx) > 1}" style="vertical-align: middle !important; padding: 4px;" :rowspan="calcularRowspan(idx)">
                   <div v-for="(p, pIdx) in f.periodos_list" :key="'qc'+pIdx"
                        :style="{ borderBottom: pIdx===f.periodos_list.length-1?'none':'1px dashed #000', padding:'2px 0' }">
-                    <input type="text" v-model="p.quien_cobro"
-                           class="table-editable-input text-center fw-semibold text-warning-emphasis w-100 text-uppercase"
-                           :class="f.rowspan_pagos > 1 ? 'joined-input' : 'border-0 bg-transparent px-1'"
-                           @input="marcarModificado(f)" placeholder="OPERADOR" style="height:28px;font-size:11px;">
+                    <input type="text" v-model="p.quien_cobro" class="table-editable-input text-center text-uppercase fw-bold text-warning-emphasis"
+                           :class="calcularRowspan(idx) > 1 ? 'joined-input' : 'border-0 bg-transparent px-1'"
+                           @input="marcarModificado(f)" style="width:100%;height:28px;font-size:10px;">
                   </div>
                 </td>
                 
                 <!-- CARRO -->
-                <td v-if="!f.unido_anterior" class="px-1" :class="{'joined-cell': f.rowspan_pagos > 1}" style="vertical-align: middle !important;" :rowspan="f.rowspan_pagos">
-                  <select v-model="f.carro" class="form-select form-select-sm table-editable-select text-center"
-                          :class="{'joined-input': f.rowspan_pagos > 1}" @change="marcarModificado(f)">
+                <td v-if="!f.unido_anterior" class="px-1" :class="{'joined-cell': calcularRowspan(idx) > 1}" style="vertical-align: middle !important;" :rowspan="calcularRowspan(idx)">
+                  <select v-model="f.carro" class="form-select form-select-sm table-editable-select fw-bold text-center" 
+                          :class="{'joined-input': calcularRowspan(idx) > 1}" @change="marcarModificado(f)"
+                          style="font-size:11px;">
                     <option value="NO">NO</option>
                     <option value="SI">SI</option>
                   </select>
                 </td>
                 
                 <!-- OBSERVACIONES -->
-                <td v-if="!f.unido_anterior" class="px-1" :class="{'joined-cell': f.rowspan_pagos > 1}" style="vertical-align: middle !important;" :rowspan="f.rowspan_pagos">
-                  <textarea v-model="f.observaciones" class="form-control form-control-sm table-editable-textarea"
-                            :class="{'joined-input': f.rowspan_pagos > 1}" rows="1" @input="marcarModificado(f)"
-                            style="width: 100%; min-height: 24px; font-size: 11px;"></textarea>
+                <td v-if="!f.unido_anterior" class="px-1" :class="{'joined-cell': calcularRowspan(idx) > 1}" style="vertical-align: middle !important;" :rowspan="calcularRowspan(idx)">
+                  <textarea v-model="f.observaciones" class="table-editable-input text-start p-1 bg-transparent" 
+                            :class="{'joined-input': calcularRowspan(idx) > 1}" rows="1" @input="marcarModificado(f)"
+                            style="width: 100%; font-size: 11px; resize: none; overflow: hidden; min-height: 28px;"></textarea>
                 </td>
               </tr>
             </tbody>

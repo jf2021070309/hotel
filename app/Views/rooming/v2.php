@@ -453,15 +453,13 @@ include $_projectRoot . '/app/Views/layouts/head.php';
                             :class="calcularRowspan(idx) > 1 ? 'joined-input' : 'border-0 bg-transparent'"
                             @change="marcarModificado(f)" style="height:28px;font-size:10px;width:100%;">
                       <option value=""></option>
-                      <option value="EFECTIVO_USD">EFECTIVO USD</option>
-                      <option value="EFECTIVO_CLP">EFECTIVO CLP</option>
-                      <option value="EFECTIVO_BOB">EFECTIVO BOB</option>
+                      <option value="DEPOS/TRANS.">DEPOS/TRANS.</option>
+                      <option value="YAPE O PLIN">YAPE O PLIN</option>
+                      <option value="POS DOLARES">POS DOLARES</option>
                       <option value="POS SOLES">POS SOLES</option>
-                      <option value="POS USD">POS USD</option>
-                      <option value="YAPE/PLIN">YAPE/PLIN</option>
-                      <option value="TRANSFERENCIA">TRANSFERENCIA</option>
+                      <option value="PESOS EFECTIVO">PESOS EFECTIVO</option>
+                      <option value="DOLARES EFECTIVO">DOLARES EFECTIVO</option>
                       <option value="SOLES EFECTIVO">SOLES EFECTIVO</option>
-                      <option value="CREDITO EMPRESA">CREDITO EMPRESA</option>
                     </select>
                   </div>
                 </td>

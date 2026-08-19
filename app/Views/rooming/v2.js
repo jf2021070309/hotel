@@ -306,13 +306,14 @@ createApp({
       if (idx === 0) return;
       fila.unido_anterior = !fila.unido_anterior;
       
+      let padre = null;
       if (fila.unido_anterior) {
         // Encontrar padre
         let j = idx - 1;
         while (j >= 0 && this.filasFiltradas[j].unido_anterior) {
             j--;
         }
-        const padre = this.filasFiltradas[j];
+        padre = this.filasFiltradas[j];
         if (padre) {
            // Copiar pagos de padre y resetear total a 0
            if (fila.periodos_list && fila.periodos_list.length > 0) {

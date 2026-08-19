@@ -395,9 +395,6 @@ class RoomingV2Model {
                             ]);
 
                             // Sincronizar directo a flujo_caja_movimientos
-                            $horaCheckinVal = !empty($row['hora_checkin']) ? (int)explode(':', $row['hora_checkin'])[0] : (int)date('H');
-                            $turnoRegVal = FinanzasHelper::getTurnoActual($horaCheckinVal);
-                            
                             $this->finanzas->registrarMovimientoAutomatico([
                                 'usuario_id'  => $_SESSION['auth_id'] ?? 1,
                                 'stay_id'     => $stayId,
@@ -405,9 +402,7 @@ class RoomingV2Model {
                                 'monto'       => $montoPer, 
                                 'moneda'      => $monedaPer,
                                 'medio_pago'  => $medioPer,
-                                'observacion' => "HOSPEDAJE: " . (explode("\n", $row['nombre_apellido'])[0] ?? 'Huésped') . " (Modificado en grilla V2) - Registro #$stayId (Hab #" . ($row['hab'] ?? 'N/A') . ")" . ($pIdx > 0 ? " [Extensión]" : ""),
-                                'fecha'       => $fechaReg,
-                                'turno'       => $turnoRegVal
+                                'observacion' => "HOSPEDAJE: " . (explode("\n", $row['nombre_apellido'])[0] ?? 'Huésped') . " (Modificado en grilla V2) - Registro #$stayId (Hab #" . ($row['hab'] ?? 'N/A') . ")" . ($pIdx > 0 ? " [Extensión]" : "")
                             ]);
                         }
                     }

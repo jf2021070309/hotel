@@ -325,6 +325,7 @@ createApp({
         }
       }
       this.marcarModificado(fila);
+      this.$forceUpdate();
     },
 
     agregarFila() {

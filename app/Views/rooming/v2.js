@@ -89,26 +89,9 @@ createApp({
       if (this.filtro.vista === 'no_registrados') {
         filtradas = filtradas.filter(f => f.no_registrado == 1);
       } else if (this.filtro.vista === 'sunat') {
-        filtradas = filtradas.filter(f => {
-          if (f.no_registrado == 1) return false;
-          const incluidos = ['BOLETA', 'FACTURA'];
-          
-          // Chequea si el comprobante base está incluido
-          const baseComprobante = (f.comprobante_pago || f.tipo_comprobante || '').toUpperCase().trim();
-          
-          // O si la fila tiene periodos, verifica que al menos uno tenga BOLETA o FACTURA
-          let tieneSunat = false;
-          if (f.periodos_list && f.periodos_list.length > 0) {
-              tieneSunat = f.periodos_list.some(p => incluidos.includes((p.comprobante_pago || '').toUpperCase().trim()));
-          }
-          
-          if (f.periodos_list && f.periodos_list.length > 0) {
-              return tieneSunat;
-          } else {
-              return incluidos.includes(baseComprobante);
-          }
-        });
+        filtradas = filtradas.filter((f, idx) => f.no_registrado != 1 && this.esSunat(f, idx));
       } else {
+        // Principales: Muestra todos los registrados (BOLETA, FACTURA, F.X., NINGUNO)
         filtradas = filtradas.filter(f => f.no_registrado != 1);
       }
 
@@ -134,6 +117,35 @@ createApp({
   },
 
   methods: {
+    esSunatRow(f) {
+      if (!f || f.no_registrado == 1) return false;
+      const incluidos = ['BOLETA', 'FACTURA', 'F.X.', 'TICKET'];
+      const baseComprobante = (f.comprobante_pago || f.tipo_comprobante || '').toUpperCase().trim();
+      const tieneEnPeriodos = f.periodos_list && f.periodos_list.some(p => incluidos.includes((p.comprobante_pago || '').toUpperCase().trim()));
+      return incluidos.includes(baseComprobante) || Boolean(tieneEnPeriodos);
+    },
+
+    esSunat(f, idx) {
+      if (!f || f.no_registrado == 1) return false;
+      if (this.esSunatRow(f)) return true;
+
+      // Si está en grupo, verificar si el padre o algún miembro del grupo contiguo es SUNAT
+      if (f.en_grupo) {
+        const index = typeof idx === 'number' ? idx : this.filas.indexOf(f);
+        if (index !== -1) {
+          // Buscar hacia arriba en el grupo
+          for (let i = index - 1; i >= 0 && this.filas[i] && this.filas[i].en_grupo; i--) {
+            if (this.esSunatRow(this.filas[i])) return true;
+          }
+          // Buscar hacia abajo en el grupo
+          for (let i = index + 1; i < this.filas.length && this.filas[i] && this.filas[i].en_grupo; i++) {
+            if (this.esSunatRow(this.filas[i])) return true;
+          }
+        }
+      }
+      return false;
+    },
+
     calcularRowspan(idx) {
       const filas = this.filasFiltradas;
       const f = filas[idx];
@@ -551,8 +563,8 @@ createApp({
       let parentForSync = null;
       let inGroup = false;
 
-      for (let i = 0; i < this.filasFiltradas.length; i++) {
-        let f = this.filasFiltradas[i];
+      for (let i = 0; i < this.filas.length; i++) {
+        let f = this.filas[i];
         
         if (f.en_grupo) {
           if (!inGroup || !parentForSync) {
@@ -915,7 +927,7 @@ createApp({
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        const vistaTexto = isNoReg ? 'No_Registrados' : 'Principales';
+        const vistaTexto = isNoReg ? 'No_Registrados' : (this.filtro.vista === 'sunat' ? 'SUNAT' : 'Principales');
         a.download = `Rooming_V2_${vistaTexto}_${this.filtro.mes}_${this.filtro.anio}.xlsx`;
         a.click();
         URL.revokeObjectURL(url);

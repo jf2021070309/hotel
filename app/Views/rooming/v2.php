@@ -168,13 +168,13 @@ include $_projectRoot . '/app/Views/layouts/head.php';
               </span>
 
               <div class="btn-group" style="box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);">
-                <input type="radio" class="btn-check" name="btnradio_vista" id="btn-principales" autocomplete="off" checked @click="filtro.vista = 'principales'">
+                <input type="radio" class="btn-check" name="btnradio_vista" id="btn-principales" autocomplete="off" value="principales" v-model="filtro.vista">
                 <label class="btn btn-sm btn-outline-primary fw-bold px-3" for="btn-principales" style="border-radius: 6px 0 0 6px;">Principales</label>
 
-                <input type="radio" class="btn-check" name="btnradio_vista" id="btn-sunat" autocomplete="off" @click="filtro.vista = 'sunat'">
+                <input type="radio" class="btn-check" name="btnradio_vista" id="btn-sunat" autocomplete="off" value="sunat" v-model="filtro.vista">
                 <label class="btn btn-sm btn-outline-success fw-bold px-3" for="btn-sunat" style="border-radius: 0;">SUNAT</label>
 
-                <input type="radio" class="btn-check" name="btnradio_vista" id="btn-noreg" autocomplete="off" @click="filtro.vista = 'no_registrados'">
+                <input type="radio" class="btn-check" name="btnradio_vista" id="btn-noreg" autocomplete="off" value="no_registrados" v-model="filtro.vista">
                 <label class="btn btn-sm btn-outline-secondary fw-bold px-3" for="btn-noreg" style="border-radius: 0 6px 6px 0;">No registrados</label>
               </div>
               
